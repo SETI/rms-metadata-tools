@@ -1,0 +1,59 @@
+$ONCE(csv_file = LABEL_PATH()[:-4] + '.csv')
+$ONCE(records = FILE_RECORDS(csv_file))
+$ONCE(record_bytes = RECORD_BYTES(csv_file))
+$ONCE(name_bytes = record_bytes - (7 + 3 + 32 + 3 + 2 + 2))
+$ONCE(index_type = 'CUMULATIVE' if VOLUME_ID.endswith('999') else 'SINGLE')
+PDS_VERSION_ID                  = PDS3
+RECORD_TYPE                     = STREAM
+RECORD_BYTES                    = $str(record_bytes).ljust(3)$   /* max length including <CR><LF> */
+FILE_RECORDS                    = $records$
+
+PRODUCT_CREATION_TIME           = $FILE_TIME(csv_file)$
+$IF(index_type != 'CUMULATIVE')
+VOLUME_ID                       = "$VOLUME_ID$"
+$END_IF
+
+$INCLUDE("./templates/host_defs.lbl")
+
+^INVENTORY_SPREADSHEET          = "$BASENAME(csv_file)$"
+OBJECT                          = INVENTORY_SPREADSHEET
+  INTERCHANGE_FORMAT            = ASCII
+  ROWS                          = $records$
+  ROW_BYTES                     = $str(record_bytes).ljust(3)$   /* max length including <CR><LF> */
+  FIELDS                        = 3
+  FIELD_DELIMITER               = COMMA
+  INDEX_TYPE                    = $index_type$
+  DESCRIPTION                   = "This table identifies every body partially or fully
+    inside each image's field of view."
+
+  OBJECT                        = FIELD
+    FIELD_NUMBER                = 1
+    NAME                        = VOLUME_ID
+    DATA_TYPE                   = CHARACTER
+    BYTES                       = 7
+    FORMAT                      = A7
+    DESCRIPTION                 = "The unique identifier for the PDS data volume."
+  END_OBJECT                    = FIELD
+
+  OBJECT                        = FIELD
+    FIELD_NUMBER                = 2
+    NAME                        = FILE_SPECIFICATION_NAME
+    DATA_TYPE                   = CHARACTER
+    BYTES                       = 32
+    FORMAT                      = A32
+    DESCRIPTION                 = "The full name of the raw image file, including the
+        directory path, relative to the root directory of the PDS volume."
+  END_OBJECT                    = FIELD
+
+  OBJECT                        = FIELD
+    FIELD_NUMBER                = 3
+    NAME                        = BODY_NAMES
+    DATA_TYPE                   = CHARACTER
+    BYTES                       = $str(name_bytes).ljust(3)$   /* max length */
+
+    DESCRIPTION                 = "The names of all the bodies estimated to be
+        partially or fully inside the field of view, separated by commas."
+  END_OBJECT                    = FIELD
+
+END_OBJECT                      = INVENTORY_SPREADSHEET
+END

@@ -1,0 +1,20 @@
+$IF(is_visual and not night_override)
+  $IF(is_saturn)
+      The body's shape has been modeled as an ellipsoid. Surface intercept
+      points that are obscured by the planet, dense rings, or a targeted body
+      are ignored. Points on the night side of the body are also ignored."
+  $ELSE
+      The body's shape has been modeled as an ellipsoid. Surface intercept
+      points that are obscured by the planet or a targeted body are ignored.
+      Points on the night side of the body are also ignored."
+  $END_IF
+$ELSE
+  $IF(is_saturn)
+      The body's shape has been modeled as an ellipsoid. Surface intercept
+      points that are obscured by the planet, dense rings, or a targeted body
+      are ignored."
+  $ELSE
+      The body's shape has been modeled as an ellipsoid. Surface intercept
+      points that are obscured by the planet or a targeted body are ignored."
+  $END_IF
+$END_IF

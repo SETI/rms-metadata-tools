@@ -1,0 +1,17 @@
+$ONCE(volume_id = '_'.join(BASENAME(LABEL_PATH()).split('_')[:2]))
+$ONCE(index_path = LABEL_PATH()[:-4] + '.tab')
+$ONCE(table_name = BASENAME(index_path))
+$ONCE(records = FILE_RECORDS(index_path))
+$ONCE(record_bytes = RECORD_BYTES(index_path))
+$ONCE(index_type = 'CUMULATIVE' if volume_id.endswith('999') else 'SINGLE')
+PDS_VERSION_ID                  = PDS3
+RECORD_TYPE                     = $LABEL_VALUE("RECORD_TYPE")$
+RECORD_BYTES                    = $record_bytes$
+FILE_RECORDS                    = $records$
+
+$IF(index_type != 'CUMULATIVE')
+VOLUME_ID                       = "$volume_id$"
+$END_IF
+PRODUCT_CREATION_TIME           = $FILE_TIME(index_path)$
+
+$INCLUDE("./templates/host_defs.lbl")

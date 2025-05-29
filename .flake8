@@ -1,0 +1,38 @@
+[flake8]
+max-line-length: 90
+exclude =
+    metadata-venv
+    host_init.py
+    defs.py
+    COLUMNS_BODY.py
+    COLUMNS_RING.py
+    COLUMNS_SKY.py
+    COLUMNS_SUN.py
+extend-ignore =
+    # whitespace before ':'
+    E203
+    # block comment should start with '# '
+    E265
+    # expected 2 blank lines, found 1
+    E302
+    # some imports are requred for definitiond and initialization
+    F401
+    # table spacing requires mulitple spaces
+    E221
+    # COLUMN file undefined symbols are resolved due to exec()
+    F821
+    # These occur when a line of a table or other aligned entries is commented out
+    E122
+    E127
+    # This occurs in tables, and is easy to diagnose visually otherwise
+    E501
+    # Needed for alignement of tables, import, etc.
+    E272
+    # Trigered by NINETY_PERCENT_RANGE_DEGREES table
+    E131
+    # I'll decide when I want to do this
+    E266
+    # I'll start inline comments as I want
+    E262
+    # Too strict
+    E401
