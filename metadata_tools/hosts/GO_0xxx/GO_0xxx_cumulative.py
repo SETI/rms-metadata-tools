@@ -37,6 +37,6 @@
 import host_init
 import metadata_tools.cumulative_support as cml
 
-cml.create_cumulative_indexes(host='GOISS',
+cml.create_cumulative_indexes('GO_0xxx_supplemental_index',
                               exclude=['GO_0999'])
 ################################################################################

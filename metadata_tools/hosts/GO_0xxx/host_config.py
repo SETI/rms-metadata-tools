@@ -24,7 +24,7 @@ SCLK_BASES = [16777215, 91, 10, 8]
 
 # SYSTEM and SECONDARIES are always included in the body table regardless
 # of whether the intersect the FOV.
-#      SCLK_START range (inclusive)   PRIMARY      SECONDARIES
+#      SCLK_START range (inclusive)   PRIMARY   SECONDARIES
 DEFAULT_BODIES_TABLE = [
     (('00180626.00', '00190641.00'), 'VENUS',   []),
     (('00597197.00', '00623035.00'), 'EARTH',   []),

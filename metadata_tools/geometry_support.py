@@ -662,7 +662,6 @@ class Record(object):
         # Create a list of the numeric values for this column
         if number_of_values == 1:
             meanval = values.mean().as_builtin()
-#            if type(meanval) == oops.Scalar and meanval.mask:
             if isinstance(meanval, oops.Scalar) and meanval.mask:
                 results = [null_value]
             else:
@@ -1139,7 +1138,7 @@ def get_args(host=None, selection=None, exclude=None, sampling=8):
     return parser
 
 #===============================================================================
-def process_tables(host=None,
+def process_tables(template_name,
                    selection=None,
                    exclude=None,
                    sampling=8,
@@ -1147,7 +1146,7 @@ def process_tables(host=None,
     """Create geometry tables for a collection of volumes.
 
     Args:
-        host (str): Host name e.g. 'GOISS'.
+        template_name (str): Name of index template.
         selection (str, optional):
             A string containing...
             "S" to generate summary files;
@@ -1160,16 +1159,17 @@ def process_tables(host=None,
   """
 
     # Parse arguments
+    host, index_type = util.parse_template_name(template_name)
     parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
     args = parser.parse_args()
 
     input_tree = FCPath(args.input_tree)
     output_tree = FCPath(args.output_tree)
-    volume = args.volume
+    volumes = args.volumes
     new_only = args.new_only is not False
     labels_only = args.labels is not False
 
-    if volume:
+    if volumes:
         new_only = False
 
     # Build volume glob
@@ -1192,7 +1192,7 @@ def process_tables(host=None,
 
         # Proceed only if this root is a volume
         if fnmatch.filter([vol], vol_glob):
-            if not volume or vol == volume:
+            if not volumes or vol in volumes:
                 # Set up input and output directories
                 indir = root
                 if output_tree.parts[-1] != coll:

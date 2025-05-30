@@ -14,7 +14,7 @@ from filecache import FCPath
 
 #===============================================================================
 def _cat_rows(volume_tree, cumulative_dir, volume_glob, table, *,
-              exclude=None, volume=None):
+              exclude=None, volumes=None):
     """Creates the cumulative files for a collection of volumes.
 
     Args:
@@ -24,7 +24,7 @@ def _cat_rows(volume_tree, cumulative_dir, volume_glob, table, *,
         volume_glob (str): Glob pattern for volume identification.
         table (geom.Table or idx.Index): Table object.
         exclude (list, optional): List of volumes to exclude.
-        volume (str, optional): If given, only this volume is processed.
+        volumes (str, optional): If given, only these volumes are processed.
     """
     logger = meta.get_logger()
 
@@ -64,7 +64,7 @@ def _cat_rows(volume_tree, cumulative_dir, volume_glob, table, *,
 
         # Test whether this root is a volume
         if fnmatch.filter([vol], volume_glob):
-            if not volume or vol == volume:
+            if not volumes or vol in volumes:
                 if vol != cumulative_dir.name:
                     volume_id = config.get_volume_id(root)
                     cumulative_id = config.get_volume_id(cumulative_dir)
@@ -117,20 +117,21 @@ def get_args(host=None, exclude=None):
     return parser
 
 #===============================================================================
-def create_cumulative_indexes(host=None, exclude=None):
+def create_cumulative_indexes(template_name, exclude=None):
     """Creates the cumulative files for a collection of volumes.
 
     Args:
-        host (str): Host name e.g. 'GOISS'.
+        template_name (str): Name of index template.
         exclude (list, optional): List of volumes to exclude.
     """
     # Parse arguments
+    host, index_type = util.parse_template_name(template_name)
     parser = get_args(host=host, exclude=exclude)
     args = parser.parse_args()
 
     volume_tree = FCPath(args.input_tree)
     cumulative_dir = FCPath(args.output_tree)
-    volume = args.volume
+    volumes = args.volumes
 
     # Set logger
     logger = meta.get_logger()
@@ -142,27 +143,27 @@ def create_cumulative_indexes(host=None, exclude=None):
     # Build the cumulative tables
     _cat_rows(volume_tree, cumulative_dir, volume_glob,
               geom.SkyTable(level='summary'),
-              exclude=exclude, volume=volume)
+              exclude=exclude, volumes=volumes)
     _cat_rows(volume_tree, cumulative_dir, volume_glob,
               geom.SkyTable(level='detailed'),
-              exclude=exclude, volume=volume)
+              exclude=exclude, volumes=volumes)
     _cat_rows(volume_tree, cumulative_dir, volume_glob,
               geom.BodyTable(level='summary'),
-              exclude=exclude, volume=volume)
+              exclude=exclude, volumes=volumes)
     _cat_rows(volume_tree, cumulative_dir, volume_glob,
               geom.BodyTable(level='detailed'),
-              exclude=exclude, volume=volume)
+              exclude=exclude, volumes=volumes)
     _cat_rows(volume_tree, cumulative_dir, volume_glob,
               geom.RingTable(level='summary'),
-              exclude=exclude, volume=volume)
+              exclude=exclude, volumes=volumes)
     _cat_rows(volume_tree, cumulative_dir, volume_glob,
               geom.RingTable(level='detailed'),
-              exclude=exclude, volume=volume)
+              exclude=exclude, volumes=volumes)
     _cat_rows(volume_tree, cumulative_dir, volume_glob,
               geom.InventoryTable(),
-              exclude=exclude, volume=volume)
+              exclude=exclude, volumes=volumes)
     _cat_rows(volume_tree, cumulative_dir, volume_glob,
               idx.IndexTable(qualifier='supplemental'),
-              exclude=exclude, volume=volume)
+              exclude=exclude, volumes=volumes)
 
 ################################################################################

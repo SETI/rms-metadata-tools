@@ -41,7 +41,6 @@
 import host_init
 import metadata_tools.index_support as idx
 
-idx.process_index(host='GOISS',
-                  type='supplemental',
+idx.process_index('GO_0xxx_supplemental_index',
                   glob='C0*')
 ################################################################################

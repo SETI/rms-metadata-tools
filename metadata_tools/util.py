@@ -51,6 +51,28 @@ def get_template_name(filename, volume_id):
     return filename.replace(volume_id, collection).split('.')[0]
 
 #===============================================================================
+def parse_template_name(template_name):
+    """Determine host and index type from template name of the form:
+
+        <host>_<index type>_index
+    
+    index_type cannot contain undescores.
+
+    Args:
+        template_name (str): Name of template file.
+
+    Returns:
+        str: Host name.
+        str: index type.
+    """
+    base = template_name.split('_index')[0]
+    parts = base.split('_')
+    index_type = parts[-1]
+    host = '_'.join(parts[0:-1])
+
+    return (host, index_type)
+
+#===============================================================================
 def splitpath(path: str, string: str):               ### move to utilities
     """Split a path at a given string.
 
@@ -116,7 +138,6 @@ def replace(tree, placeholder, name):
             new_tree.append(replacement)
 
         # Simple str with placeholders: replace placeholder and add to tree
-#        elif type(leaf) == str and leaf.find(placeholder) != -1:
         elif isinstance(leaf, str) and leaf.find(placeholder) != -1:
             new_tree.append(leaf.replace(placeholder, name))
 
@@ -124,7 +145,6 @@ def replace(tree, placeholder, name):
         else:
             new_tree.append(leaf)
 
-#    if type(tree) == tuple:
     if isinstance(tree, tuple):
         return tuple(new_tree)
     else:

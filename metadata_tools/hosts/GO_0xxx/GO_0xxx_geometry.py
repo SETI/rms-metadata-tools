@@ -54,7 +54,7 @@
 import host_init
 import metadata_tools.geometry_support as geom
 
-geom.process_tables(host='GOISS',
+geom.process_tables('GO_0xxx_supplemental_index',
                     glob='GO_????_index.lbl',
                     selection="S",
                     exclude=['GO_0999'])

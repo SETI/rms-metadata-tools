@@ -13,7 +13,7 @@ rms-filecache>=2.3.0
 rms-pdslogger>=3.0.0
 rms-interval
 rms-julian
-rms-pdsparser
+#rms-pdsparser
 rms-pdstable
 rms-polymath
 rms-tabulation

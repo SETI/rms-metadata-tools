@@ -10,6 +10,7 @@ import metadata_tools as meta
 import metadata_tools.util as util
 import pdstable
 
+from pdsparser             import Pds3Label
 from filecache             import FCPath
 from pdstemplate.pds3table import Pds3Table
 
@@ -167,6 +168,7 @@ class IndexTable(meta.Table):
         # Read the PDS3 label
         path = root/name
         label = pds3.get_label(path.as_posix())
+#        label = Pds3Label(path, method='fast')
 
         # Write columns
         first = True
@@ -177,7 +179,6 @@ class IndexTable(meta.Table):
 
             # Add column name to usage dict if not already there
             name = column_stub['NAME']
-#            if not name in self.usage:
             if name not in self.usage:
                 self.usage[name] = False
 
@@ -447,12 +448,12 @@ def key__file_specification_name(label_path, label_dict):
 ################################################################################
 
 #===============================================================================
-def get_args(host=None, type=None):
+def get_args(host=None, index_type=None):
     """Argument parser for index files.
 
     Args:
         host (str): Host name e.g. 'GOISS'.
-        type (str, optional):
+        index_type (str, optional):
             Qualifying string identifying the type of index file
             to create, e.g., 'supplemental'.
 
@@ -467,7 +468,7 @@ def get_args(host=None, type=None):
     # Add parser for index args
     gr = parser.add_argument_group('Index Arguments')
     gr.add_argument('--type', '-t', type=str, metavar='type',
-                    default=type,
+                    default=index_type,
                     help='''Type of index file to create, e.g.,
                             "supplemental".''')
 
@@ -475,14 +476,11 @@ def get_args(host=None, type=None):
     return parser
 
 #===============================================================================
-def process_index(host=None, type='', glob=None):
+def process_index(template_name, glob=None):
     """Creates index files for a collection of volumes.
 
     Args:
-        host (str): Host name e.g. 'GOISS'.
-        type (str, optional):
-            Qualifying string identifying the type of index file
-            to create, e.g., 'supplemental'.
+        template_name (str): Name of input template.
         glob (str, optional): Glob pattern for index files.
 
     Returns:
@@ -491,12 +489,13 @@ def process_index(host=None, type='', glob=None):
     logger = meta.get_logger()
 
     # Parse arguments
-    parser = get_args(host=host, type=type)
+    host, index_type = util.parse_template_name(template_name)
+    parser = get_args(host=host, index_type=index_type)
     args = parser.parse_args()
 
     input_tree = FCPath(args.input_tree)
     output_tree = FCPath(args.output_tree)
-    volume = args.volume
+    volumes = args.volumes
     labels_only = args.labels is not False
 
     # Build volume glob
@@ -520,7 +519,7 @@ def process_index(host=None, type='', glob=None):
         unused = None
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
-            if not volume or vol == volume:
+            if not volumes or vol in volumes:
                 indir = root
                 if output_tree.parts[-1] != col:
                     outdir = output_tree/col

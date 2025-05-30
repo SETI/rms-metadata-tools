@@ -115,7 +115,7 @@ def get_common_args(host=None):
     """Common argument parser for metadata tools.
 
         Args:
-            host (str): Host name e.g. 'GOISS'.
+            host (str): Host name e.g. 'GO_0xxx'.
 
          Returns:
             argparser.ArgumentParser :
@@ -133,7 +133,7 @@ def get_common_args(host=None):
     parser = argparse.ArgumentParser(
                     description='Metadata generation utility%s.'
                                 % ('' if not host else
-                                   ' for host ' + host))
+                                   ' for ' + host))
 
     # Generate parser
     gr = parser.add_argument_group('Common Arguments')
@@ -143,8 +143,8 @@ def get_common_args(host=None):
     gr.add_argument('output_tree', type=str, metavar='output_tree',
                     help='''File path to the top to tree in which to place the
                             volume files.''')
-    gr.add_argument('volume', type=str, nargs='?', metavar='volume',
-                    help='''If given, only this volume is processed.''')
+    gr.add_argument('volumes', type=str, nargs='*', metavar='volumes',
+                    help='''If given, only these volumes are processed.''')
     gr.add_argument('--labels', '-l', nargs='*', type=str, metavar='labels',
                     default=False,
                     help='''If given, labels are generated for existing files.''')
