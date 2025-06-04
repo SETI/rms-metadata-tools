@@ -14,7 +14,8 @@ from pdsparser             import Pds3Label
 from filecache             import FCPath
 from pdstemplate.pds3table import Pds3Table
 
-import host_config as config
+import host_config as hconf
+import index_config as config
 
 ################################################################################
 # IndexTable class
@@ -53,7 +54,7 @@ class IndexTable(meta.Table):
         self.unused = set()
 
         # Get volume id
-        self.volume_id = config.get_volume_id(self.input_dir)
+        self.volume_id = hconf.get_volume_id(self.input_dir)
 
         logger = meta.get_logger()
         s = ' '+qualifier if qualifier else ' primary'
@@ -139,7 +140,7 @@ class IndexTable(meta.Table):
                     continue
 
                 # Log volume ID and subpath
-                subdir = util.get_volume_subdir(root, config.get_volume_id(root))
+                subdir = util.get_volume_subdir(root, hconf.get_volume_id(root))
                 logger.info('%s %4d/%4d  %s' % (self.volume_id, i+1, n, subdir/name))
 
                 # Make the index for this file
@@ -426,7 +427,7 @@ def key__volume_id(label_path, label_dict):
     Returns:
         str: Volume ID
     """
-    return config.get_volume_id(label_path)
+    return hconf.get_volume_id(label_path)
 
 #===============================================================================
 def key__file_specification_name(label_path, label_dict):
@@ -440,7 +441,7 @@ def key__file_specification_name(label_path, label_dict):
     Returns:
         str: File Specification name.
     """
-    return util.get_volume_subdir(label_path, config.get_volume_id(label_path))
+    return util.get_volume_subdir(label_path, hconf.get_volume_id(label_path))
 
 
 ################################################################################

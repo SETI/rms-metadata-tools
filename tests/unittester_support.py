@@ -5,7 +5,6 @@ import glob
 import os
 import numpy as np
 
-#METADATA = './'
 METADATA = os.environ['RMS_METADATA']
 VOLUMES = os.environ['RMS_VOLUMES']
 

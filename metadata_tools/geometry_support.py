@@ -15,7 +15,8 @@ import metadata_tools.columns as col
 
 from filecache import FCPath
 
-import host_config as config
+import host_config as hconf
+import geometry_config as config
 
 ################################################################################
 # FORMAT_DICT tuples are:
@@ -115,7 +116,7 @@ ALT_FORMAT_DICT = {
     ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999.)}
 
 DEFAULT_BODIES_TABLE = \
-    util.convert_default_bodies_table(config.DEFAULT_BODIES_TABLE, config.SCLK_BASES)
+    util.convert_default_bodies_table(config.DEFAULT_BODIES_TABLE, hconf.SCLK_BASES)
 
 ################################################################################
 # Record class
@@ -139,7 +140,7 @@ class Record(object):
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
         self.primary, self.secondaries = \
-            util.get_primary(DEFAULT_BODIES_TABLE, sclk, config.SCLK_BASES)
+            util.get_primary(DEFAULT_BODIES_TABLE, sclk, hconf.SCLK_BASES)
         self.level = level
 
         # Level-specific column dictionaries

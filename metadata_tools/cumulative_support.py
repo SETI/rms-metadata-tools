@@ -1,7 +1,7 @@
 ################################################################################
 # cumulative_support.py - Code for cumulative index files
 ################################################################################
-import host_config as config
+import host_config as hconf
 import fnmatch
 
 import metadata_tools as meta
@@ -66,8 +66,8 @@ def _cat_rows(volume_tree, cumulative_dir, volume_glob, table, *,
         if fnmatch.filter([vol], volume_glob):
             if not volumes or vol in volumes:
                 if vol != cumulative_dir.name:
-                    volume_id = config.get_volume_id(root)
-                    cumulative_id = config.get_volume_id(cumulative_dir)
+                    volume_id = hconf.get_volume_id(root)
+                    cumulative_id = hconf.get_volume_id(cumulative_dir)
 
                     # Check existence of table
                     try:

@@ -10,7 +10,7 @@ import metadata_tools.defs as defs
 ################################################################################
 # Create a list of body IDs
 ################################################################################
-def define_bodies(body_names):
+def get_bodies(body_names):
     bodies = []
     for name in body_names:
         bod = oops.Body.lookup(name)
@@ -19,7 +19,7 @@ def define_bodies(body_names):
     return {body.name: body for body in bodies}
 
 
-BODIES = define_bodies(defs.BODY_NAMES)
+BODIES = get_bodies(defs.BODY_NAMES)
 
 #############################################
 # Define geometry columns

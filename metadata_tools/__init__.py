@@ -40,11 +40,13 @@ The procedure for generating metadata tables is as follows:
     subdirectory, e.g., GO_0xxx, COISS_xxxx, etc.
 
  2. Copy the python files from an existing host directory and rename them
-    according to the new collection.  You should have six files:
+    according to the new collection.  You should have these files:
 
     __init.py__
     host_init.py
     host_config.py
+    index_config.py
+    geometry_config.py
     <collection>_index.py
     <collection>_geometry.py
     <collection>_cumulative.py
@@ -58,11 +60,13 @@ The procedure for generating metadata tables is as follows:
     templates/host_defs.lbl
     templates/host_description.lbl
 
- 4. Edit the supplemental and summary templates and generate the tables
+ 4. Edit the config modules as needed.
+
+ 5. Edit the supplemental and summary templates and generate the tables
     using <collection>_index.py and <collection>_geometry.py according to
     the instructions in those files.
 
- 5. Generate the cumulative tables using <collection>_cumulative.py
+ 6. Generate the cumulative tables using <collection>_cumulative.py
     according to the instructions in that file.
 
 ##########
