@@ -11,9 +11,7 @@ $NOTE
 #     host subdirectory.
 #  2. Copy and edit the <collection>_index.py script to reflect the 
 #     type of index and glob pattern for the data files.
-#  3. Copy and edit host_description.py to contain any host-specific text to
-#     appear at the end of the table DESCRIPTION fields.
-#  4. Copy and edit host_config.py to address any host-dependent processing.
+#  3. Copy and edit host_config.py to address any host-dependent processing.
 #
 #     In the host_defs files, replace all values describing the new host.
 #     In this template, quantities enclosed in dollar signs are automatically
@@ -33,9 +31,24 @@ $NOTE
 #
 ##############################################################################
 $END_NOTE
-$INCLUDE("$template_path$/../../../templates/header.lbl")
-
+$ONCE(volume_id = '_'.join(BASENAME(LABEL_PATH()).split('_')[:2]))
+$ONCE(index_path = LABEL_PATH()[:-4] + '.tab')
+$ONCE(records = FILE_RECORDS(index_path))
+$ONCE(record_bytes = RECORD_BYTES(index_path))
+$ONCE(index_type = 'CUMULATIVE' if volume_id.endswith('999') else 'SINGLE')
+PDS_VERSION_ID                  = PDS3
+RECORD_TYPE                     = $LABEL_VALUE("RECORD_TYPE")$
+RECORD_BYTES                    = $record_bytes$
+FILE_RECORDS                    = $records$
 ^SUPPLEMENTAL_INDEX_TABLE       = "$BASENAME(index_path)$"
+
+$IF(index_type != 'CUMULATIVE')
+VOLUME_ID                       = "$volume_id$"
+$END_IF
+PRODUCT_CREATION_TIME           = $FILE_TIME(index_path)$
+
+$INCLUDE("./templates/host_defs.lbl")
+
 OBJECT                          = SUPPLEMENTAL_INDEX_TABLE
   INTERCHANGE_FORMAT            = ASCII
   ROWS                          = $records$

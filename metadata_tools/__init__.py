@@ -58,7 +58,6 @@ The procedure for generating metadata tables is as follows:
     templates/<collection>_body_summary.lbl
     templates/<collection>_ring_summary.lbl
     templates/host_defs.lbl
-    templates/host_description.lbl
 
  4. Edit the config modules as needed.
 
