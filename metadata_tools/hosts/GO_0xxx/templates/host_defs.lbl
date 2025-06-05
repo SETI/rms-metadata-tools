@@ -1,0 +1,35 @@
+$NOTE
+##############################################################################
+# Host-specific label definitions.
+#
+#  This file provides host-specific definitions to appear in the supplemental
+#  and geometry labels.
+#
+##############################################################################
+$END_NOTE
+MISSION_NAME                    = "GALILEO"
+INSTRUMENT_HOST_NAME            = "GALILEO"
+INSTRUMENT_HOST_ID              = "GLL"
+INSTRUMENT_NAME                 = "SOLID STATE IMAGER"
+INSTRUMENT_ID                   = "SSI"
+
+$NOTE
+##############################################################################
+# DATA_SET_ID definitions
+##############################################################################
+$END_NOTE
+$ONCE(volume_number = int(BASENAME(LABEL_PATH()).split('_')[1]))
+$IF(volume_number <= 6)
+DATA_SET_ID                     = "GO-V/E-SSI-2-REDR-V1.1"
+$ELSE_IF(volume_number <= 15)
+DATA_SET_ID                     = "GO-A/E-SSI-2-REDR-V1.1"
+$ELSE_IF(volume_number == 16)
+DATA_SET_ID                     = "GO-A/C-SSI-2-REDR-V1.1"
+$ELSE_IF(volume_number <= 23)
+DATA_SET_ID                     = "GO-J/JSA-SSI-2-REDR-V1.0"
+$ELSE
+DATA_SET_ID                     = {"GO-V/E-SSI-2-REDR-V1.1",
+                                   "GO-A/E-SSI-2-REDR-V1.1",
+                                   "GO-A/C-SSI-2-REDR-V1.1",
+                                   "GO-J/JSA-SSI-2-REDR-V1.0"}
+$END_IF

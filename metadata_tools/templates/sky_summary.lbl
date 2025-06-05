@@ -1,0 +1,118 @@
+$NOTE 
+##############################################################################
+# Geometry file template for sky quantities.  
+#
+#  This template controls the creation of body sky files.  The procedure
+#  for generating geometry files for a host is as follows.  Files referred to 
+#  below should be copied into the top directory for the collection, e.g., 
+#  GO_0xxx:
+#
+#  2. Copy and edit the <collection>_geometry.py script to reflect the 
+#     type of index and glob pattern for the table files.
+#  3. Copy and edit *config.py to address any host-dependent processing.
+#  4. Run <collection>_geometry.py from the collection top directory.
+#
+#  In the host_defs files, replace all values describing the new host.  
+#  In this template, quantities enclosed in dollar signs are automatically 
+#  filled in and should not be edited.  Add a column for each quantity to be 
+#  copied from the product label into the index.  
+#
+##############################################################################
+$END_NOTE
+$INCLUDE("../../templates/header.lbl")
+
+^SKY_SUMMARY_TABLE              = "$table_name$"
+OBJECT                          = SKY_SUMMARY_TABLE
+  INTERCHANGE_FORMAT            = ASCII
+  ROWS                          = $records$
+  COLUMNS                       = $LABEL_VALUE("COLUMNS")$
+  ROW_BYTES                     = $LABEL_VALUE("ROW_BYTES")$
+  INDEX_TYPE                    = $index_type$
+$IF(TABLE_TYPE == 'CUMULATIVE')
+  DESCRIPTION                   = "This index describes the sky intercept
+    geometry of the field of all observations in the collection.
+$ELSE
+  DESCRIPTION                   = "This index describes the sky intercept
+    geometry of the field of each observation found on the volume identified
+    by the VOLUME_ID keyword above.
+$END_IF
+
+    For each sampled pixel, a variety of geometric quantitities have been
+    calculated. All quantites are tabulated in terms of a global minimum and
+    maximum value with respect to the varying geometry during the interval in
+    which the obsevation was taken. For angular quantities that cycle from
+    360 degrees to zero, the tabulated minimum can be numerically greater
+    than the maximum.
+
+    Occasionally, SPICE pointing information is unavailable for the time at
+    which an observation was taken. When this situation occurs, no row has
+    been added to the file.
+
+    $INCLUDE("./templates/host_description.lbl")
+    "
+
+$NOTE
+################################################################
+# Add a column below for each desired index quantity
+# Edit COLUMN NAME and any fields not enclosed in dollar signs
+################################################################
+$END_NOTE
+  OBJECT                        = COLUMN
+    NAME                        = "VOLUME_ID"
+    DESCRIPTION                 = "The volume ID provides a unique
+      for a PDS data volume."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "FILE_SPECIFICATION_NAME"
+    DESCRIPTION                 = "The file specification name provides the
+      full name of a file, including a path name, relative to the root
+      directory of the PDS volume."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MINIMUM_RIGHT_ASCENSION"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "This is the minimum value for J2000 right
+      ascension within the field of view sampled by this observation. For
+      fields of view that cross 360 degrees, the tabulated minimum value
+      will be greater than the maximum."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MAXIMUM_RIGHT_ASCENSION"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "This is the maximum value for J2000 right
+      ascension within the field of view sampled by this observation. For
+      fields of view that cross 360 degrees, the tabulated minimum value
+      will be greater than the maximum."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MINIMUM_DECLINATION"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "This is the minimum value for J2000
+      declination within the field of view sampled by the observation."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MAXIMUM_DECLINATION"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "This is the maximum value for J2000
+      declination within the field of view sampled by the observation."
+  END_OBJECT                    = COLUMN
+
+END_OBJECT                      = SKY_SUMMARY_TABLE
+END

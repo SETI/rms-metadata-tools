@@ -1,1 +1,1 @@
-# rms-metadata_tools
+# rms-metadata-tools

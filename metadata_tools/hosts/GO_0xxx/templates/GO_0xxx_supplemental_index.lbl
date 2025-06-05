@@ -1,0 +1,249 @@
+$NOTE 
+##############################################################################
+# Supplemental index file template for Galileo SSI.
+#
+#  This template controls the creation of supplemental index files. The
+#  procedure for generating index files for a host is as follows. Files
+#  referred to below should be copied into the top directory for the
+#  collection, e.g., GO_0xxx:
+#
+#  1. Copy and edit this template and the host_defs file from an existing
+#     host subdirectory.
+#  2. Copy and edit the <collection>_index.py script to reflect the 
+#     type of index and glob pattern for the data files.
+#  3. Copy and edit host_description.py to contain any host-specific text to
+#     appear at the end of the table DESCRIPTION fields.
+#  4. Copy and edit host_config.py to address any host-dependent processing.
+#
+#     In the host_defs files, replace all values describing the new host.
+#     In this template, quantities enclosed in dollar signs are automatically
+#     filled in and should not be edited.  Add a column for each quantity to
+#     be copied from the product label into the index.  For quantities that
+#     require processing beyond simply copying from the product label and
+#     reformatting, a key function should be provided in host_config.py,
+#     defined as :
+#
+#           key__<COLUMN NAME>(name, label),
+#
+#     and returning the value to place in the index.
+#
+#  5. Copy and edit host_init.py to import and initialize the host module.
+#  6. Run <collection>_index.py from the collection top directory.
+#
+#
+##############################################################################
+$END_NOTE
+$INCLUDE("$template_path$/../../../templates/header.lbl")
+
+^SUPPLEMENTAL_INDEX_TABLE       = "$BASENAME(index_path)$"
+OBJECT                          = SUPPLEMENTAL_INDEX_TABLE
+  INTERCHANGE_FORMAT            = ASCII
+  ROWS                          = $records$
+  COLUMNS                       = $LABEL_VALUE("COLUMNS")$
+  ROW_BYTES                     = $LABEL_VALUE("ROW_BYTES")$
+  INDEX_TYPE                    = $index_type$
+  DESCRIPTION                   = "This index supplements the file
+INDEX/INDEX.TAB found on each Galileo SSI archive volume in the PDS. It
+contains a large set of useful parameter values that are not found in the
+default index, all collected from the PDS label files."
+
+$NOTE 
+################################################################
+# Add a column below for each desired supplemental quantity
+# Edit COLUMN NAME and any fields not enclosed in dollar signs
+################################################################
+$END_NOTE
+  OBJECT                        = COLUMN
+    NAME                        = "VOLUME_ID"
+    FORMAT                      = "A7"
+    DESCRIPTION                 = "The volume ID provides a unique 
+      for a PDS data volume."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "FILE_SPECIFICATION_NAME"
+    FORMAT                      = "A32"
+    DESCRIPTION                 = "The full name of a file, including a path
+name, relative to a PDS volume. It excludes node or volume location. Example:
+E26/EUROPA/C0532836239R.LBL"
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "TELEMETRY_FORMAT_ID"
+    FORMAT                      = "A3"
+    DESCRIPTION                 = "Telemetry format, one of 'HCJ', 'HIM',
+'HIS', 'HMA', 'IM4', or 'IM8'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "PRODUCT_CREATION_TIME"
+    FORMAT                      = "A19"
+    NOT_APPLICABLE_CONSTANT     = "UNKNOWN"
+    DESCRIPTION                 = "The product creation time in
+'YYYY-MM-DDThh:mm:ss' format."
+  END_OBJECT                    = COLUMN
+
+
+  OBJECT                        = COLUMN
+    NAME                        = "CUT_OUT_WINDOW"
+    ITEMS                       = 4
+    FORMAT                      = "I3"
+    NOT_APPLICABLE_CONSTANT     = -1
+    DESCRIPTION                 = "Galileo SSI images can be edited so that
+only an image area or CUT OUT WINDOW is compressed using Integer Cosine
+Transform, BARC or Huffman compression and transmitted to Earth. The cut out -
+window element indicates the location and size of this image area as defined
+by four numbers: starting line, starting sample, number of lines, number of
+samples (the origin of the image coordinate system is at line, sample=1,1 for
+the upper-left corner with samples increasing to the right and lines
+increasing down)."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "TRUTH_WINDOW"
+    ITEMS                       = 4
+    FORMAT                      = "I3"
+    NOT_APPLICABLE_CONSTANT     = -1
+    DESCRIPTION                 = "The position of an up to 96x96 truth
+window defined as four numbers: starting line, starting sample, number of
+lines, number of samples (the origin of the image coordinate system is at
+line, sample=1,1 for the upper-left corner with samples increasing to the
+right and lines increasing down)."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "LIGHT_FLOOD_STATE_FLAG"
+    FORMAT                      = "A3"
+    DESCRIPTION                 = "The mode ('ON' or 'OFF') of light flooding
+for an instrument."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "EXPOSURE_TYPE"
+    FORMAT                      = "A8"
+    DESCRIPTION                 = "The exposure setting on the camera,
+'NORMAL' or 'EXTENDED'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "INVERTED_CLOCK_STATE_FLAG"
+    FORMAT                      = "A12"
+    DESCRIPTION                 = "The parallel clock state, 'INVERTED' or
+'NOT INVERTED'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "ON_CHIP_MOSAIC_FLAG"
+    FORMAT                      = "A3"
+    NOT_APPLICABLE_CONSTANT     = "N"
+    DESCRIPTION                 = "A flag indicating whether on-chip
+mosaicking was performed, 'YES' or 'NO'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "INSTRUMENT_MODE_ID"
+    FORMAT                      = "A18"
+    NOT_APPLICABLE_CONSTANT     = "N/A"
+    DESCRIPTION                 = "The instrument readout mode,
+'CONTIGUOUS READOUT' or 'SAMPLE READOUT'. Otherwise, the 'not applicable'
+constant 'N/A'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "HUFFMAN_TABLE_TYPE"
+    FORMAT                      = "A7"
+    NOT_APPLICABLE_CONSTANT     = "N/A"
+    DESCRIPTION                 = "The table type used for Huffman
+compression, 'SKEWED' or 'UNIFORM'. If Huffman compression was not used, the
+'not applicable' constant 'N/A'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "ICT_DESPIKE_THRESHOLD"
+    FORMAT                      = "I3"
+    NOT_APPLICABLE_CONSTANT     = -1
+    DESCRIPTION                 = "Despike threshold for the Integer Cosine
+Transform (ICT). Despiking is used as a pre-processing step to the ICT in
+order to minimize the effects of radiation-induced noise on compression
+efficiency."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = PRODUCT_VERSION_ID
+    FORMAT                      = "I1"
+    NOT_APPLICABLE_CONSTANT     = 0
+    DESCRIPTION                 = "The version number of the individual
+product within this data set."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "ICT_QUANTIZATION_STEP_SIZE"
+    FORMAT                      = "I3"
+    NOT_APPLICABLE_CONSTANT     = -1
+    DESCRIPTION                 = "The compression step size for the Integer
+Cosine Transform (ICT), i.e., the integer value by which the ICT transform is
+divided. The greater the step-size, the greater the data loss."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "ICT_ZIGZAG_PATTERN"
+    FORMAT                      = "A6"
+    NOT_APPLICABLE_CONSTANT     = "N/A"
+    DESCRIPTION                 = "The zigzag pattern used to rearrange the
+Integer Cosine Transform (ICT), one of 'ZIGZAG' or 'ALT'. If ICT compression
+was not used, the 'not applicable' constant 'N/A'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = COMPRESSION_QUANTIZATION_TABLE_ID
+    FORMAT                      = "A7"
+    NOT_APPLICABLE_CONSTANT     = "N/A"
+    DESCRIPTION                 = "The 8X8 quantization matrix identifier
+for the Integer Cosine Transform. Valid values are 'UNIFORM', 'VG2', and
+'VG3'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "ENTROPY"
+    FORMAT                      = "F7.3"
+    DESCRIPTION                 = "The average entropy level (bits/pixel).
+Entropy is a measure of scene activity and it applies to the entire image. For
+the Galileo SSI flight images the entropy is defined as: H = - SUM (from j=
+-255 to j= +255) p(j) [log(2) p(j)] where p(j) is the probability that two
+horizontally adjacent pixels have a different j, where - 255 <= j <= 255."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "START_TIME"
+    FORMAT                      = "A26"
+    UNKNOWN_CONSTANT            = "UNK"
+    DESCRIPTION                 = "The start time of the image exposure as
+derived from the IMAGE_TIME (midtime) and exposure duration in the label. The
+format is YYYY-MM-DDThh:mm:ss.ffffff."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "STOP_TIME"
+    FORMAT                      = "A26"
+    UNKNOWN_CONSTANT            = "UNK"
+    DESCRIPTION                 = "The stop time of the image exposure as
+derived from the IMAGE_TIME (midtime) and exposure duration in the label. The
+format is YYYY-MM-DDThh:mm:ss.ffffff."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "SPACECRAFT_CLOCK_START_COUNT"
+    FORMAT                      = "A15"
+    DESCRIPTION                 = "The spacecraft clock at the time of shutter
+open. The format is RIM:MOD91:MOD10:MOD8."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "SPACECRAFT_CLOCK_STOP_COUNT"
+    FORMAT                      = "A15"
+    DESCRIPTION                 = "The spacecraft clock at the time of shutter
+close, rounded to the next tick. The format is RIM:MOD91:MOD10:MOD8."
+  END_OBJECT                    = COLUMN
+
+END_OBJECT                      = SUPPLEMENTAL_INDEX_TABLE
+END

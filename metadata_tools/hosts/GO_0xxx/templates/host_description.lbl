@@ -1,0 +1,12 @@
+$NOTE
+##############################################################################
+# Host-specific description text.
+#
+#  This file provides any host-specific text to appear at the end of the
+#  DESCRIPTION field in the geometry labels.
+#
+##############################################################################
+$END_NOTE
+    To accommodate pointing uncertainty, the Galileo SSI field of view has
+    been expanded on every side by a distance equivalent to 25 narrow-angle
+    pixels.

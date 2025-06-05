@@ -1,0 +1,95 @@
+$NOTE
+##############################################################################
+# Geometry file template for bodies.
+#
+#  This template controls the creation of body geometry labels. The procedure
+#  for generating geometry tables for a host is as follows. Files referred to
+#  below should be copied into the top directory for the collection, e.g.,
+#  GO_0xxx:
+#
+#  1. Follow the instructions in <collection>_supplmental_index.lbl to generate
+#     the supplemental index files.
+#  1. Copy and edit this template host subdirectory.
+#  2. Copy and edit the <collection>_geometry.py script to reflect the
+#     type of index and glob pattern for the table files.
+#  3. Edit the DEFAULT_BODIES_TABLE and meshgrid definitions in host_config.py.
+#  4. Run <collection>_geometry.py from the collection top directory.
+#
+##############################################################################
+$END_NOTE
+$INCLUDE("$template_path$/../../../templates/header.lbl")
+
+^BODY_SUMMARY_TABLE             = "$table_name$"
+OBJECT                          = BODY_SUMMARY_TABLE
+  INTERCHANGE_FORMAT            = ASCII
+  ROWS                          = $records$
+  ROW_BYTES                     = $record_bytes$
+  INDEX_TYPE                    = $index_type$
+  DESCRIPTION                   = "This index describes the geometry of all
+    observations in the volume or collection. The index contains one row for
+    each planet, regular satellite, or other targeted body that appears in
+    the field of view.  In addition, geometry is always tabulated for the body
+    identified by the SYSTEM_NAME keyword below.
+
+    Two types of geometry are represented in this index. Gridded quantites
+    were constructed by uniformly sampling the pixels that comprise each data
+    product on an 8x8 grid, i.e., every 64th pixel, spanning the field of
+    view. Gridless quantities represent a single value.
+
+    For each sampled pixel, a variety of geometric quantitities have been
+    calculated. All quantites, gridded and gridless, are tabulated in terms
+    of a global minimum and maximum value with respect to the varying
+    geometry during the interval in which the obsevation was taken. For
+    angular quantities that cycle from 360 degrees to zero, the tabulated
+    minimum can be numerically greater than the maximum.
+
+    Occasionally, SPICE pointing information is unavailable for the time at
+    which an observation was taken. When this situation occurs, no row has
+    been added to the file.
+
+    Regions of a body that are obscured by another body are excluded from the
+    tabulation. The dark side of each body is also generally excluded. If a
+    body is too small to have been captured in an 8x8 sampling of the image,
+    then the associated NULL_CONSTANT will appear in each column. Quantities
+    that are independent of the field of view are tabulated regardless of
+    obstruction or apparent body size.
+
+    $INCLUDE("./templates/host_description.lbl")
+    "
+
+  OBJECT                        = COLUMN
+    NAME                        = "VOLUME_ID"
+    FORMAT                      = A7
+    DESCRIPTION                 = "The unique identifier for the PDS3 data
+      volume."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "FILE_SPECIFICATION_NAME"
+    FORMAT                      = A32
+    DESCRIPTION                 = "The full directory path to the data file's,
+      label, relative to the root directory of the PDS volume."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "SYSTEM_NAME"
+    FORMAT                      = A7
+    NULL_CONSTANT               = "NONE"
+    DESCRIPTION                 = "The planetary system to which this body
+      belongs."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "BODY_NAME"
+    FORMAT                      = A12
+    DESCRIPTION                 = "The name of the body for which the surface
+      geometry parameters in this row of the table are applicable."
+  END_OBJECT                    = COLUMN
+
+
+$ONCE(is_visual = True)
+$ONCE(is_saturn = False)
+$INCLUDE('../../templates/body_summary_columns.lbl')
+
+END_OBJECT                      = BODY_SUMMARY_TABLE
+END
