@@ -49,7 +49,18 @@ Geometry files tabulate the values of geometrc quantites for each data file, whi
 derived from SPICE using the information in the index file or from the PDS3 label using
 OOPS.  The purpose of the geometry files is to provide input to OPUS.
 
-# Generating New Matadata Tables
+`metadata-tools` is a product of the [PDS Ring-Moon Systems Node](https://pds-rings.seti.org).
+
+# Installation
+
+The `metadata-tools` module is available via the `rms-metadata-tools`[![image](https://raw.githubusercontent.com/SETI/rms-metadata-tools/main/icons/link.png)](https://pypi.org/project/rms-metadata-tools)
+package on PyPI and can be installed with:
+
+```sh
+pip install rms-metadata-tools
+```
+
+# Getting Started
 
 The procedure for generating metadata tables is as follows:
 
@@ -85,13 +96,18 @@ The procedure for generating metadata tables is as follows:
  6. Generate the cumulative tables using <collection>_cumulative.py according to the
     instructions in that file.
 
-# Unit Tests
+# Contributing
 
-Copy and edit the unit tests from the tests/ directory of an existing host. Run all tests
-from the rms-metadata-tools/ directory using:
+Information on contributing to this package can be found in the
+[Contributing Guide](https://github.com/SETI/rms-metadata-tools/blob/main/CONTRIBUTING.md).
 
-    python -m unitest
+# Links
 
-        or
+- [Documentation](https://rms-metadata-tools.readthedocs.io)
+- [Repository](https://github.com/SETI/rms-metadata-tools)
+- [Issue tracker](https://github.com/SETI/rms-metadata-tools/issues)
+- [PyPi](https://pypi.org/project/rms-metadata-tools)
 
-    python -m pytest
+# Licensing
+
+This code is licensed under the [Apache License v2.0](https://github.com/SETI/rms-metadata-tools/blob/main/LICENSE).
