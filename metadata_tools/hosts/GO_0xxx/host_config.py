@@ -30,5 +30,3 @@ def get_volume_id(label_path):
     """
     top = 'GO_0xxx'
     return util.splitpath(label_path, top)[1].parts[0]
-
-

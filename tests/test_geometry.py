@@ -24,7 +24,7 @@ class Test_Geometry(unittest.TestCase):
         print()
         for file in files:
             print('Reading', file)
-            label = pdsparser.PdsLabel.from_file(file)
+            _ = pdsparser.PdsLabel.from_file(file)
 
     #===========================================================================
     # test cumulative geometry file
@@ -39,7 +39,7 @@ class Test_Geometry(unittest.TestCase):
         print()
         for file in files:
             print('Reading', file)
-            table = pdstable.PdsTable(file)
+            _ = pdstable.PdsTable(file)
 
     #===========================================================================
     # test geometry common fields

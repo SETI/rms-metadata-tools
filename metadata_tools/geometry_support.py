@@ -202,14 +202,15 @@ class Record(object):
                 self.blocker = self.target
 
             # Add a targeted irregular moon to the dictionaries if present
-            if self.target in self.bodies and \
-               self.target not in self.dicts['body'].keys():
-                    self.dicts['body'][self.target] = \
-                        util.replace(col.BODY_SUMMARY_COLUMNS,
-                                     defs.BODYX, self.target)
-                    self.body_tile_dict[self.target] = \
-                        util.replace(col.BODY_TILES,
-                                     col.BODYX, self.target)
+            targeted_irregular = self.target in self.bodies and \
+                                 self.target not in self.dicts['body'].keys()
+            if targeted_irregular:
+                self.dicts['body'][self.target] = \
+                    util.replace(col.BODY_SUMMARY_COLUMNS,
+                                 defs.BODYX, self.target)
+                self.body_tile_dict[self.target] = \
+                    util.replace(col.BODY_TILES,
+                                 col.BODYX, self.target)
 
     #===============================================================================
     def _meshgrid(self, observation, meshgrids):

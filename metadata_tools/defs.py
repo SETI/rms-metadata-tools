@@ -11,8 +11,8 @@ _metadata = sys.modules[__name__]
 COLUMN_DIR = Path(_metadata.__file__).parent / 'column'
 GLOBAL_TEMPLATE_PATH = Path(_metadata.__file__).parent / 'templates'
 NULL = "null"
-BODYX = "bodyx"   # Placeholder for an arbitrary body to be filled in by
-                  # replacement_dict()
+BODYX = "bodyx"     # Placeholder for an arbitrary body to be filled in by
+                    # replacement_dict()
 NAME_LENGTH = 12
 
 # Maintain a list of translations for target names

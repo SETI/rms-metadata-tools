@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm[toml]"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rms-metadata-tools"
+dynamic = ["version"]
+description = "Tools for metadata file creation"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "IPython",
+    "coverage",
+    "flake8",
+    "pytest",
+    "numpy",
+    "rms-oops",
+    "rms-filecache>=2.3.0",
+    "rms-pdslogger>=3.0.0",
+    "rms-julian",
+    "rms-pdstable",
+    "rms-vicar",
+    "fortranformat"
+]
+license = {text = "Apache-2.0"}
+maintainers = [
+  {name = "Joseph N. Spitale", email = "jspitale@seti.org"}
+]
+keywords = ["metadata"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Natural Language :: English",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Astronomy",
+  "Topic :: Scientific/Engineering :: Image Processing",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Utilities",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: POSIX :: Linux",
+]
+
+[project.urls]
+Homepage = "https://github.com/SETI/rms-metadata-tools"
+Documentation = "https://rms-metadata-tools.readthedocs.io/en/latest"
+Repository = "https://github.com/SETI/rms-metadata-tools"
+Source = "https://github.com/SETI/rms-metadata-tools"
+Issues = "https://github.com/SETI/rms-metadata-tools/issues"
+
+[tool.setuptools]
+packages = ["metadata_tools"]
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+write_to = "metadata_tools/_version.py"

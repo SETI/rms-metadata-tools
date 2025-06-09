@@ -55,7 +55,7 @@ def parse_template_name(template_name):
     """Determine host and index type from template name of the form:
 
         <host>_<index type>_index
-    
+
     index_type cannot contain undescores.
 
     Args:
@@ -658,7 +658,6 @@ def _get_range_mod360(values, alt_format=None):
 
     # With only one value, we know nothing
     if values.size <= 1:
-#        return complete_coverage
         return [values, values]
 
     # Locate the largest gap in coverage

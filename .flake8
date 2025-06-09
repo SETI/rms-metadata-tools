@@ -1,38 +1,102 @@
 [flake8]
 max-line-length: 90
+
+extend-ignore =
+    ############## Always ignore:
+    # E116 Unexpected indentation (comment)
+    # -> Never useful, prevents readable comments
+    E116
+
+    # E131 Continuation line unaligned for hanging indent
+    # E201 Whitespace after '('
+    # E202 Whitespace before ')'
+    # E203 Whitespace before ':'
+    # E211 Whitespace before '('
+    # E221 Multiple spaces before operator
+    # E222 Multiple spaces after operator
+    # E231 Missing whitespace after ',', ';', or ':'
+    # E241 Multiple spaces after ','
+    # E272 Multiple spaces before keyword
+    # E501 Line too long (82 > 79 characters)
+    # -> These are all case dependent and prevent readable tables, etc.
+    E131, E201, E202, E203, E211, E221, E222, E231, E241, E272, E501
+
+    # E266 Too many leading '#' for block comment
+    # -> I'll decide how many '#' are warranted
+    E266
+
+    ############## Specific to this package:
+    # E302 Expected 2 blank lines, found 0
+    # E122 Continuation line missing indentation or outdented
+    # E127 Continuation line over-indented for visual indent
+    # E261 At least two spaces before inline comment
+    # E262 Inline comment should start with '# '
+    # E265 Block comment should start with '# '
+    # F401 module imported but unused
+    E302, E122, E127, E261, E262, E265, F401
+
+
+per-file-ignores =
+    # E131 Continuation line unaligned for hanging indent
+    # -> NINETY_PERCENT_RANGE_DEGREES table triggers this one
+    metadata_tools/util.py: E131
+
+    # E401 module imported but unused
+    # -> metadata_tools.columns initializes the columns
+    # E402 Module level import not at top of file
+    # -> host must be initialized before metadata_tools.columns import
+    metadata_tools/hosts/GO_0xxx/host_init.py: E401, E402
+
+    # F821 undefined name
+    # -> NINETY_PERCENT_RANGE_DEGREES table triggers this one
+    metadata_tools/hosts/GO_0xxx/geometry_config.py: F821
+
+
 exclude =
-    metadata-venv
-    host_init.py
-    defs.py
-    COLUMNS_BODY.py
+    venv-metadata       # Non-standard venv name I guess
+    COLUMNS_BODY.py     # COLUMNS files have lots of non-standard stuff
     COLUMNS_RING.py
     COLUMNS_SKY.py
     COLUMNS_SUN.py
-extend-ignore =
-    # whitespace before ':'
-    E203
-    # block comment should start with '# '
-    E265
-    # expected 2 blank lines, found 1
-    E302
-    # some imports are requred for definitiond and initialization
-    F401
-    # table spacing requires mulitple spaces
-    E221
-    # COLUMN file undefined symbols are resolved due to exec()
-    F821
-    # These occur when a line of a table or other aligned entries is commented out
-    E122
-    E127
-    # This occurs in tables, and is easy to diagnose visually otherwise
-    E501
-    # Needed for alignement of tables, import, etc.
-    E272
-    # Trigered by NINETY_PERCENT_RANGE_DEGREES table
-    E131
-    # I'll decide when I want to do this
-    E266
-    # I'll start inline comments as I want
-    E262
-    # Too strict
-    E401
+
+
+# E111 Indentation is not a multiple of four
+# E114 Indentation is not a multiple of four (comment)
+# E115 Expected an indented block (comment)
+# E116 Unexpected indentation (comment)
+# E117 Over-indented
+# E121 Continuation line under-indented for hanging indent
+# E122 Continuation line missing indentation or outdented
+# E124 Closing bracket does not match visual indentation
+# E126 Continuation line over-indented for hanging indent
+# E127 Continuation line over-indented for visual indent
+# E128 Continuation line under-indented for visual indent
+# E129 Visually indented line with same indent as next logical line
+# E131 Continuation line unaligned for hanging indent
+# E201 Whitespace after '('
+# E202 Whitespace before ')'
+# E203 Whitespace before ':'
+# E211 Whitespace before '('
+# E221 Multiple spaces before operator
+# E222 Multiple spaces after operator
+# E225 Missing whitespace around operator
+# E226 Missing whitespace around arithmetic operator
+# E227 Missing whitespace around bitwise or shift operator
+# E228 Missing whitespace around modulo operator
+# E231 Missing whitespace after ',', ';', or ':'
+# E241 Multiple spaces after ','
+# E251 Unexpected spaces around keyword / parameter equals
+# E261 At least two spaces before inline comment
+# E262 Inline comment should start with '# '
+# E265 Block comment should start with '# '
+# E266 Too many leading '#' for block comment
+# E272 Multiple spaces before keyword
+# E302 Expected 2 blank lines, found 0
+# E303 Too many blank lines (3)
+# E305 Expected 2 blank lines after end of function or class
+# E402 Module level import not at top of file
+# E501 Line too long (82 > 79 characters)
+# E731 do not assign a lambda expression, use a def
+# E741 Do not use variables named 'I', 'O', or 'l'
+# F401 module imported but unused
+# F821 undefined name

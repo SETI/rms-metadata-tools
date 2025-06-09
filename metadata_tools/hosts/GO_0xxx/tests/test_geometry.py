@@ -3,7 +3,8 @@
 ################################################################################
 import unittest
 
-import pdstable, pdsparser
+import pdstable
+#import pdsparser
 import numpy as np
 
 import metadata_tools.util as util
@@ -44,11 +45,11 @@ class Test_Geometry_GOSSI(unittest.TestCase):
         print()
         for file in files:
             print('Reading', file)
-            table = pdstable.PdsTable(file)
+            _ = pdstable.PdsTable(file)
 
 #            system, secondaries = util.get_system(SYSTEMS_TABLE, sclk, config.SCLK_BASES)
 
-            body = table.column_values['BODY_NAME']
+#            body = table.column_values['BODY_NAME']
 
             # validate value bounds
 # These bounds only apply to the Jupiter orbits, if any.

@@ -3,7 +3,8 @@
 ################################################################################
 import unittest
 
-import pdstable, pdsparser
+import pdstable
+#import pdsparser
 import numpy as np
 
 import tests.unittester_support as unit

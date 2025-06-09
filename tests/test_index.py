@@ -22,7 +22,7 @@ class Test_Index_Common(unittest.TestCase):
         for file in files:
             print()
             print('Reading', file)
-            table = pdstable.PdsTable(file)
+            _ = pdstable.PdsTable(file)
 
     #===========================================================================
     # test supplemental index common fields

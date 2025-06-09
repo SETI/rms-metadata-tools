@@ -10,7 +10,7 @@ import metadata_tools as meta
 import metadata_tools.util as util
 import pdstable
 
-from pdsparser             import Pds3Label
+#from pdsparser             import Pds3Label
 from filecache             import FCPath
 from pdstemplate.pds3table import Pds3Table
 
@@ -168,8 +168,8 @@ class IndexTable(meta.Table):
 
         # Read the PDS3 label
         path = root/name
-        label = pds3.get_label(path.as_posix())
-#        label = Pds3Label(path, method='fast')
+        label = pds3.get_label(path)
+#        label = Pds3Label(path)
 
         # Write columns
         first = True
@@ -404,7 +404,7 @@ class IndexTable(meta.Table):
 
         # Validate the formatted value
         try:
-            test = eval(result)
+            _ = eval(result)
         except Exception:
             logger.warn('Format error for %s: %s' % (name, value))
 

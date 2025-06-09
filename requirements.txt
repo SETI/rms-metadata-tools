@@ -1,23 +1,13 @@
-# oops
 IPython
-astropy
 coverage
 flake8
 pytest
-cspyce
 numpy
-Pillow
-pyparsing
-rms-fpzip
+rms-oops
 rms-filecache>=2.3.0
 rms-pdslogger>=3.0.0
-rms-interval
 rms-julian
 #rms-pdsparser
 rms-pdstable
-rms-polymath
-rms-tabulation
-rms-vax
 rms-vicar
-requests
 fortranformat

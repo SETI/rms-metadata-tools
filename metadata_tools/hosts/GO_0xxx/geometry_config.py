@@ -4,8 +4,6 @@
 #  Host-specific definitions and utilites for geometry file generation.
 #
 ################################################################################
-from filecache import FCPath
-
 import oops
 import oops.hosts.galileo.ssi as ssi
 import metadata_tools.util as util
@@ -148,5 +146,3 @@ def cleanup():
         Returns: None.
     """
     pass
-
-
