@@ -1158,7 +1158,7 @@ def process_tables(template_name,
         glob (str, optional): Glob pattern for index files.
         labels_only (bool):
             If True, labels are generated for any existing geometry tables.
-  """
+    """
 
     # Parse arguments
     host, index_type = util.parse_template_name(template_name)
