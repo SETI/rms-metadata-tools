@@ -11,3 +11,7 @@ rms-julian
 rms-pdstable
 rms-vicar
 fortranformat
+myst-parser
+sphinx
+sphinxcontrib-napoleon
+sphinx-rtd-theme
