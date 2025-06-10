@@ -70,7 +70,7 @@ The procedure for generating metadata tables is as follows:
 
 """
 ##########################################################################################
-__all__ = ['Table']
+__all__ = ['get_common_args']
 
 import re
 import argparse
