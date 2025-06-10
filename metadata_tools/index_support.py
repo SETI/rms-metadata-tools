@@ -10,7 +10,7 @@ import metadata_tools as meta
 import metadata_tools.util as util
 import pdstable
 
-#from pdsparser             import Pds3Label
+from pdsparser             import Pds3Label
 from filecache             import FCPath
 from pdstemplate.pds3table import Pds3Table
 
@@ -179,11 +179,14 @@ class IndexTable(meta.Table):
                 continue
 
             # Add column name to usage dict if not already there
-            name = column_stub['NAME']
-            if name not in self.usage:
-                self.usage[name] = False
+            column_name = column_stub['NAME']
+            if column_name not in self.usage:
+                self.usage[column_name] = False
 
             # Get the value
+#            if name == 'C0349542165R.LBL':
+#                if column_name == 'CUT_OUT_WINDOW':
+#                    from IPython import embed; print('+++++++++++++'); embed()
             value = self._index_one_value(column_stub, path, label)
 
             # Write the value into the index
@@ -349,7 +352,7 @@ class IndexTable(meta.Table):
 
         return (width, data_type)
 
-    #===============================================================================
+    #==========================================================================
     @staticmethod
     def _format_column(column_stub, value, count=None):
         """Format a column.
@@ -357,8 +360,8 @@ class IndexTable(meta.Table):
         Args:
             column_stub (list): Preprocessed column stub.
             value (str): Value to format.
-            count (int): Number of items to process.  If not given, the 'ITEMS'
-                         entry is used.
+            count (int): Number of items to process. If not given, the 'ITEMS' entry is
+                         used.
 
         Returns:
             str: Formatted value.

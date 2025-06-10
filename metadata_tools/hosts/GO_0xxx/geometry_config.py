@@ -1,20 +1,20 @@
-################################################################################
+##########################################################################################
 # host_config.py for GLL SSI
 #
 #  Host-specific definitions and utilites for geometry file generation.
 #
-################################################################################
+##########################################################################################
 import oops
 import oops.hosts.galileo.ssi as ssi
 import metadata_tools.util as util
 import metadata_tools.hosts.GO_0xxx.host_init
 
 
-################################################################################
+##########################################################################################
 # SCLK-dependent mission-specific data (required)
-################################################################################
-# SYSTEM and SECONDARIES are always included in the body table regardless
-# of whether the intersect the FOV.
+##########################################################################################
+# SYSTEM and SECONDARIES are always included in the body table regardless of whether they
+# intersect the FOV.
 #      SCLK_START range (inclusive)   PRIMARY   SECONDARIES
 DEFAULT_BODIES_TABLE = [
     (('00180626.00', '00190641.00'), 'VENUS',   []),
@@ -28,11 +28,11 @@ NAC_PIXEL = 6.0e-6           # approximate full-size SSI pixel in units of radia
 EXPAND = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians
 from_index = ssi.from_index
 
-################################################################################
+##########################################################################################
 # Meshgrid functions (required)
-################################################################################
+##########################################################################################
 
-#===============================================================================
+#=========================================================================================
 def meshgrids(sampling):
 
     MODE_SIZES  = {"FULL": 1,
@@ -68,7 +68,7 @@ def meshgrids(sampling):
 
     return meshgrids
 
-#===============================================================================
+#=========================================================================================
 def meshgrid(meshgrids, snapshot):
     """Determines the meshgrid given the dictionary derived from the SSI index file.
 
@@ -82,14 +82,14 @@ def meshgrid(meshgrids, snapshot):
     return meshgrids[snapshot.dict['TELEMETRY_FORMAT_ID']]
 
 
-################################################################################
+##########################################################################################
 # Utilities (required)
-################################################################################
+##########################################################################################
 
-#===============================================================================
+#=========================================================================================
 def get_volume_id(label_path):
-    """Utility function to determine the volume ID for this collection
-       using the label path when there is no observation or label available.
+    """Utility function to determine the volume ID for this collection using the label
+       path when there is no observation or label available.
 
     Args:
         label_path (str): Path to the PDS label.
@@ -101,15 +101,14 @@ def get_volume_id(label_path):
     return util.splitpath(label_path, top)[1].parts[0]
 
 
-################################################################################
+##########################################################################################
 # SSI geometry functions (required)
-################################################################################
+##########################################################################################
 
-#===============================================================================
+#=========================================================================================
 def target_name(dict):
-    """Determines the target name from the snapshot's dictionary. If the given
-    name is "SKY", it checks the CIMS ID and the TARGET_DESC for something
-    different.
+    """Determines the target name from the snapshot's dictionary. If the given name is
+       "SKY", it checks the CIMS ID and the TARGET_DESC for something different.
 
     Args:
         dict (dict): Snapshot observation dictionary.
@@ -137,10 +136,10 @@ def target_name(dict):
     except KeyError:
         return target
 
-#===============================================================================
+#=========================================================================================
 def cleanup():
-    """Cleanup function for geometry code.  This function is called after
-       the geometry table and labels are written, before exiting.
+    """Cleanup function for geometry code.  This function is called after the geometry
+       table and labels are written, before exiting.
 
         Args: None
         Returns: None.
