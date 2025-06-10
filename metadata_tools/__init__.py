@@ -70,6 +70,8 @@ The procedure for generating metadata tables is as follows:
 
 """
 ##########################################################################################
+__all__ = ['Table']
+
 import re
 import argparse
 
