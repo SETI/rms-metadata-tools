@@ -11,6 +11,17 @@ from filecache import FCPath
 import metadata_tools.defs as defs
 
 
+#==========================================================================
+def delete_task_file():
+    """Remove the task file.
+    Args:
+        None
+    Returns: 
+        None
+    """
+    task_file = FCPath('./tasks.json')############
+    task_file.unlink(missing_ok=True)
+
 #===============================================================================
 def get_index_name(dir, vol_id, type):
     """Determine the name of the index file.
@@ -321,6 +332,47 @@ def write_txt_file(filespec, content, terminator='\r\n'):    ### move to utiliti
     # Write file
     filespec.write_text(content, encoding='utf-8')
 
+#===============================================================================
+def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilities
+    """Append text to a file, with some options.
+
+    Args:
+        filespec (str, Path, or FCPath): Path to the file to write.
+        content (str or list):
+            Text to write.  If list, each element is a line that will be terminated
+            using the specified terminator.  If string, existing terminators are
+            replaced with the specified terminator.
+        terminator (str): Desired line terminator.
+
+    Returns:
+        None
+    """
+    filespec = FCPath(filespec)
+
+    # Expand environment variables and resolve to absolute path
+    filespec = expandvars(filespec)
+
+    # Determine terminator
+    if terminator is None:
+        if isinstance(content, list):
+            crlf = content[0].endswith('\r\n')
+        else:
+            crlf = content.endswith('\r\n')
+        terminator = '\r\n' if crlf else '\n'
+
+    # Split into list of lines with no terminator
+    if not isinstance(content, list):
+        content = content.split('\n')
+    content = [c.rstrip('\r\n') for c in content]
+
+    # Reconstitute with correct terminator
+    content = terminator.join(content) + terminator
+
+    # Write file
+    with open(Path(filespec.as_posix()), "a") as file:
+        for line in content:
+            file.write(line)
+            
 #===============================================================================
 def rebase(x, bases, ceil=False):    ### move to utilities
     """Convert a decimal number to a different base.

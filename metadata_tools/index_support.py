@@ -4,6 +4,7 @@
 import fortranformat as ff
 import fnmatch
 import warnings
+import json
 import hosts.pds3 as pds3
 
 import metadata_tools.common as com
@@ -413,6 +414,31 @@ class IndexTable(com.Table):
 
         return result
 
+    #==========================================================================
+    @staticmethod
+    def _udpate_task_file(indir, outdir, volume_id, qualifier=None):
+        """Add a task to the task file.
+
+        Args:
+            column_stub (list): Preprocessed column stub.
+            value (str): Value to format.
+            count (int): Number of items to process. If not given, the 'ITEMS' entry is
+                         used.
+
+        Returns: 
+            None
+        """
+        logger = com.get_logger()
+        task_file = FCPath('./tasks.json')############
+
+        task_id = 'index-task-' + volume_id
+        task_args = {'volume_id' : volume_id,
+                     'indir'     : indir.as_posix(),
+                     'outdir'    : outdir.as_posix()}
+        new_line = json.dumps({'task_id':task_id, 'data':task_args})    
+        
+        util.append_txt_file(task_file, new_line)
+
 
 ################################################################################
 # Built-in key functions
@@ -452,7 +478,7 @@ def key__file_specification_name(label_path, label_dict):
 ################################################################################
 
 #===============================================================================
-def _get_args(host=None, index_type=None):
+def get_args(host=None, index_type=None):
     """Argument parser for index files.
 
     Args:
@@ -481,7 +507,11 @@ def _get_args(host=None, index_type=None):
 
 #===============================================================================
 def _create_index(input_tree, output_tree, 
-                  volumes=None, labels_only=False, qualifier=None, glob=None):
+                  volumes=None, 
+                  labels_only=False, 
+                  qualifier=None, 
+                  glob=None, 
+                  task_file_only=False):
     """Creates index files for a collection of volumes.
 
     Args:
@@ -520,41 +550,56 @@ def _create_index(input_tree, output_tree,
                     outdir = output_tree/col
                 outdir = output_tree/vol
 
-                # Process this volumne
                 index = IndexTable(indir, outdir,
                                    qualifier=qualifier, volume_id=vol, glob=glob)
-                index.create(labels_only=labels_only)
 
-                unused = index.unused if not unused else unused & index.unused
+                # Update the task file...
+                if task_file_only:
+                    print(indir, outdir)
+                    index._udpate_task_file(indir, outdir, vol, qualifier=qualifier)
+                # ... or process this volumne
+                else:
+                    # Process this volumne
+                    index.create(labels_only=labels_only)
+                    unused = index.unused if not unused else unused & index.unused
 
         # Log a warning for any columns that never had non-null values
         if unused:
             logger.warn('Unused columns: %s', unused)
 
 #===============================================================================
-def process_index(template_name, glob=None, args=None):
+def process_index(template_name, glob=None, volumes=None, args=None, task_file_only=False):
     """Creates index files for a collection of volumes.
 
     Args:
         template_name (str): Name of input template.
         glob (str, optional): Glob pattern for index files.
+        volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
+        args (argparse.Namespace): Parsed arguments.
 
     Returns:
         None.
     """
     logger = com.get_logger()
 
+    if task_file_only:
+        util.delete_task_file()
+
     # Parse arguments
     if args is None:
         host, index_type = util.parse_template_name(template_name)
-        parser = _get_args(host=host, index_type=index_type)
+        parser = get_args(host=host, index_type=index_type)
         args = parser.parse_args()
+
+    if volumes is None:
+        volumes = args.volumes
 
     # Create the index
     _create_index(FCPath(args.input_tree), FCPath(args.output_tree), 
-                  volumes=args.volumes, 
+                  volumes=volumes, 
                   labels_only=args.labels is not False,
                   qualifier=args.type,
-                  glob=glob)
+                  glob=glob,
+                  task_file_only=task_file_only)
 
 ################################################################################
