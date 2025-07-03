@@ -39,8 +39,9 @@
 #
 ################################################################################
 import host_init
-import metadata_tools.index_support as idx
+import host_config as hconf
+import index_config as config
+from metadata_tools.index_support import process_index
 
-idx.process_index('GO_0xxx_supplemental_index',
-                  glob='C0*')
+process_index(hconf.template_name, glob=config.glob)
 ################################################################################

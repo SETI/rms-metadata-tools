@@ -4,7 +4,7 @@
 import host_config as hconf
 import fnmatch
 
-import metadata_tools as meta
+import metadata_tools.common as com
 import metadata_tools.util as util
 import metadata_tools.label_support as lab
 import metadata_tools.geometry_support as geom
@@ -26,7 +26,7 @@ def _cat_rows(volume_tree, cumulative_dir, volume_glob, table, *,
         exclude (list, optional): List of volumes to exclude.
         volumes (str, optional): If given, only these volumes are processed.
     """
-    logger = meta.get_logger()
+    logger = com.get_logger()
 
     table_type = table.qualifier
     if table.level:
@@ -105,7 +105,7 @@ def get_args(host=None, exclude=None):
     """
 
     # Get parser with common args
-    parser = meta.get_common_args(host=host)
+    parser = com.get_common_args(host=host)
 
     # Add parser for index args
     gr = parser.add_argument_group('Cumulative Arguments')
@@ -134,7 +134,7 @@ def create_cumulative_indexes(template_name, exclude=None):
     volumes = args.volumes
 
     # Set logger
-    logger = meta.get_logger()
+    logger = com.get_logger()
     logger.info('New cumulative indexes for %s.' % volume_tree.name)
 
     # Build volume glob

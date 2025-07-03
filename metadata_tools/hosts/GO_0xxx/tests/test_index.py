@@ -2,9 +2,7 @@
 # GOSSI-specific metadata index unit tests
 ################################################################################
 import unittest
-
 import pdstable
-#import pdsparser
 import numpy as np
 
 import tests.unittester_support as unit

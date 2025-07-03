@@ -52,10 +52,12 @@
 #
 ################################################################################
 import host_init
-import metadata_tools.geometry_support as geom
+import host_config as hconf
+import geometry_config as config
+from metadata_tools.geometry_support import process_tables
 
-geom.process_tables('GO_0xxx_supplemental_index',
-                    glob='GO_????_index.lbl',
-                    selection="S",
-                    exclude=['GO_0999'])
+process_tables(hconf.template_name,
+               glob=config.glob,
+               selection=config.selection,
+               exclude=config.exclude)
 ################################################################################

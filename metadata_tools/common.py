@@ -1,0 +1,146 @@
+##########################################################################################
+# common.py: common classes and functions
+##########################################################################################
+import re
+import argparse
+
+from filecache import FCPath
+from pdslogger import PdsLogger
+
+import metadata_tools.util as util
+import metadata_tools.label_support as lab
+
+##########################################################################################
+# Logger management
+##########################################################################################
+
+# Define the global logger with streamlined output, no handlers so printing to stdout
+_LOGGER = PdsLogger.get_logger('metadata', timestamps=False, digits=0, lognames=False,
+                               pid=False, indent=True, blanklines=False, level='info')
+
+SYSTEM_NULL = "NONE"
+
+#=========================================================================================
+def get_logger():
+    """The global PdsLogger for the metadata tools."""
+    return _LOGGER
+
+##########################################################################################
+# Argument parser
+##########################################################################################
+
+#=========================================================================================
+def get_common_args(host=None):
+    """Common argument parser for metadata tools.
+
+        Args:
+            host (str): Host name e.g. 'GO_0xxx'.
+
+         Returns:
+            argparser.ArgumentParser :
+                Parser containing the common argument specifications.
+   """
+    # Action method for path arguments
+    class PathAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            vals = re.sub('://', '<<token>>', values)
+            vals = re.sub('//*', '/', vals)
+            vals = re.sub('<<token>>', '://', vals)
+            setattr(namespace, self.dest, vals)
+
+    # Define parser
+    parser = argparse.ArgumentParser(
+                    description='Metadata generation utility%s.'
+                                % ('' if not host else
+                                   ' for ' + host))
+
+    # Generate parser
+    gr = parser.add_argument_group('Common Arguments')
+    gr.add_argument('input_tree', type=str, metavar='input_tree',
+                    help='''File path to the top to tree containing the
+                            volume files.''', action=PathAction)
+    gr.add_argument('output_tree', type=str, metavar='output_tree',
+                    help='''File path to the top to tree in which to place the
+                            volume files.''')
+    gr.add_argument('volumes', type=str, nargs='*', metavar='volumes',
+                    help='''If given, only these volumes are processed.''')
+    gr.add_argument('--labels', '-l', nargs='*', type=str, metavar='labels',
+                    default=False,
+                    help='''If given, labels are generated for existing files.''')
+
+    # Return parser
+    return parser
+
+##########################################################################################
+# Table class
+##########################################################################################
+class Table(object):
+    """Class describing a single table for a single volume.
+    """
+
+    #=====================================================================================
+    def __init__(self, output_dir=None,
+                 volume_id=None, level=None, qualifier=None, prefix=None,
+                 suffix=None, use_global_template=False):
+        """Constructor for a table object.
+
+        Args:
+            output_dir (str, Path, or FCPath):
+                Directory in which to write the index files.
+            volume_id (str): Volume ID.
+            level (str, optional):
+                Processing level: "summary", "detailed", or "index".
+            qualifier (str):
+                "sky", "sun", "ring", "body", "inventory", or "supplemental".
+            prefix (str): File path prefix.
+            suffix (str): File name suffix.
+            use_global_template (bool):
+                If True, the label template is to be found in the global
+                template directory.
+
+        """
+        self.volume_id = volume_id
+        self.level = level
+        self.qualifier = qualifier
+        self.use_global_template = use_global_template
+
+        if not output_dir:
+            return
+
+        if not suffix:
+            suffix = "_%s_%s.tab" % (self.qualifier, self.level)
+        prefix = output_dir.joinpath(self.volume_id).as_posix()
+        self.filename = FCPath(prefix + suffix)
+
+        self.rows = []
+
+    #=====================================================================================
+    def write(self, labels_only=False):
+        """Write a table and its label.
+
+        Args:
+            labels_only (bool, optional):
+                If True, labels are generated for any existing geometry
+                tables.
+
+        Returns:
+            None.
+        """
+        logger = get_logger()
+
+        if not labels_only:
+            if self.rows == []:
+                return
+
+            # Write table
+            logger.info("Writing:", self.filename)
+            util.write_txt_file(self.filename, self.rows)
+
+        # Write label
+        table_type = self.qualifier
+        if self.level:
+            table_type += '_' + self.level
+        lab.create(self.filename,
+                   table_type=table_type, use_global_template=self.use_global_template)
+
+##########################################################################################

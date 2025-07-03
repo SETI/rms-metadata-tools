@@ -6,6 +6,8 @@
 ################################################################################
 import metadata_tools.util as util
 
+template_name = 'GO_0xxx_supplemental_index'
+
 
 ################################################################################
 # Spacecraft clock modulo

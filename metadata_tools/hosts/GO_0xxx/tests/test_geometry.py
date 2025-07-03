@@ -2,13 +2,11 @@
 # GOSSI-specific metadata geometry unit tests
 ################################################################################
 import unittest
-
 import pdstable
-#import pdsparser
 import numpy as np
 
-import metadata_tools.util as util
-import metadata_tools.hosts.GO_0xxx.host_config as config
+#metadata_tools.util as util
+#import metadata_tools.hosts.GO_0xxx.host_config as config
 import tests.unittester_support as unit
 
 #SYSTEMS_TABLE = util.convert_systems_table(config.SYSTEMS_TABLE, config.SCLK_BASES)

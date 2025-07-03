@@ -9,6 +9,9 @@ import oops.hosts.galileo.ssi as ssi
 import metadata_tools.util as util
 import metadata_tools.hosts.GO_0xxx.host_init
 
+glob='GO_????_index.lbl'
+selection="S"
+exclude=['GO_0999']
 
 ##########################################################################################
 # SCLK-dependent mission-specific data (required)

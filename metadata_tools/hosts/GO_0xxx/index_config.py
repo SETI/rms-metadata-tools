@@ -13,6 +13,8 @@ from filecache import FCPath
 import metadata_tools.util as util
 import host_config as hconf
 
+glob='C0*'
+
 
 ##########################################################################################
 # Key functions (optional)

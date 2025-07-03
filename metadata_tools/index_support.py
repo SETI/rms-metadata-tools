@@ -6,12 +6,12 @@ import fnmatch
 import warnings
 import hosts.pds3 as pds3
 
-import metadata_tools as meta
+import metadata_tools.common as com
 import metadata_tools.util as util
 import pdstable
 
-from pdsparser             import Pds3Label
-from filecache             import FCPath
+from pdsparser import Pds3Label
+from filecache import FCPath
 from pdstemplate.pds3table import Pds3Table
 
 import host_config as hconf
@@ -20,7 +20,7 @@ import index_config as config
 ################################################################################
 # IndexTable class
 ################################################################################
-class IndexTable(meta.Table):
+class IndexTable(com.Table):
     """Class describing an index table for a single volume.
     """
 
@@ -56,7 +56,7 @@ class IndexTable(meta.Table):
         # Get volume id
         self.volume_id = hconf.get_volume_id(self.input_dir)
 
-        logger = meta.get_logger()
+        logger = com.get_logger()
         s = ' '+qualifier if qualifier else ' primary'
         logger.info('New%s index for %s.' % (s, self.volume_id))
 
@@ -118,7 +118,7 @@ class IndexTable(meta.Table):
         if not hasattr(self, 'files'):
             return
 
-        logger = meta.get_logger()
+        logger = com.get_logger()
 
         # Open the output file; create dir if necessary
         try:
@@ -366,7 +366,7 @@ class IndexTable(meta.Table):
         Returns:
             str: Formatted value.
         """
-        logger = meta.get_logger()
+        logger = com.get_logger()
 
         # Get value parameters
         name = column_stub['NAME']
@@ -452,7 +452,7 @@ def key__file_specification_name(label_path, label_dict):
 ################################################################################
 
 #===============================================================================
-def get_args(host=None, index_type=None):
+def _get_args(host=None, index_type=None):
     """Argument parser for index files.
 
     Args:
@@ -467,7 +467,7 @@ def get_args(host=None, index_type=None):
    """
 
     # Get parser with common args
-    parser = meta.get_common_args(host=host)
+    parser = com.get_common_args(host=host)
 
     # Add parser for index args
     gr = parser.add_argument_group('Index Arguments')
@@ -480,7 +480,8 @@ def get_args(host=None, index_type=None):
     return parser
 
 #===============================================================================
-def process_index(template_name, glob=None):
+def _create_index(input_tree, output_tree, 
+                  volumes=None, labels_only=False, qualifier=None, glob=None):
     """Creates index files for a collection of volumes.
 
     Args:
@@ -490,17 +491,7 @@ def process_index(template_name, glob=None):
     Returns:
         None.
     """
-    logger = meta.get_logger()
-
-    # Parse arguments
-    host, index_type = util.parse_template_name(template_name)
-    parser = get_args(host=host, index_type=index_type)
-    args = parser.parse_args()
-
-    input_tree = FCPath(args.input_tree)
-    output_tree = FCPath(args.output_tree)
-    volumes = args.volumes
-    labels_only = args.labels is not False
+    logger = com.get_logger()
 
     # Build volume glob
     vol_glob = util.get_volume_glob(input_tree.name)
@@ -531,7 +522,7 @@ def process_index(template_name, glob=None):
 
                 # Process this volumne
                 index = IndexTable(indir, outdir,
-                                   qualifier=args.type, volume_id=vol, glob=glob)
+                                   qualifier=qualifier, volume_id=vol, glob=glob)
                 index.create(labels_only=labels_only)
 
                 unused = index.unused if not unused else unused & index.unused
@@ -539,5 +530,31 @@ def process_index(template_name, glob=None):
         # Log a warning for any columns that never had non-null values
         if unused:
             logger.warn('Unused columns: %s', unused)
+
+#===============================================================================
+def process_index(template_name, glob=None, args=None):
+    """Creates index files for a collection of volumes.
+
+    Args:
+        template_name (str): Name of input template.
+        glob (str, optional): Glob pattern for index files.
+
+    Returns:
+        None.
+    """
+    logger = com.get_logger()
+
+    # Parse arguments
+    if args is None:
+        host, index_type = util.parse_template_name(template_name)
+        parser = _get_args(host=host, index_type=index_type)
+        args = parser.parse_args()
+
+    # Create the index
+    _create_index(FCPath(args.input_tree), FCPath(args.output_tree), 
+                  volumes=args.volumes, 
+                  labels_only=args.labels is not False,
+                  qualifier=args.type,
+                  glob=glob)
 
 ################################################################################

@@ -8,7 +8,7 @@ import traceback
 import warnings
 import fnmatch
 
-import metadata_tools as meta
+import metadata_tools.common as com
 import metadata_tools.util as util
 import metadata_tools.defs as defs
 import metadata_tools.columns as col
@@ -731,7 +731,7 @@ class Record(object):
 ################################################################################
 """Class describing an inventory geometry table.
 """
-class InventoryTable(meta.Table):
+class InventoryTable(com.Table):
     #===========================================================================
     def __init__(self, output_dir=None, **kwargs):
         """Constructor for an InventoryTable object.
@@ -765,7 +765,7 @@ class InventoryTable(meta.Table):
 ################################################################################
 """Class describing a sky geometry table.
 """
-class SkyTable(meta.Table):
+class SkyTable(com.Table):
     #===========================================================================
     def __init__(self, output_dir=None, **kwargs):
         """Constructor for a SkyTable object.
@@ -796,7 +796,7 @@ class SkyTable(meta.Table):
 ################################################################################
 """Class describing a sun geometry table.
 """
-class SunTable(meta.Table):
+class SunTable(com.Table):
     #===========================================================================
     def __init__(self, output_dir=None, **kwargs):
         """Constructor for a SunTable object.
@@ -825,7 +825,7 @@ class SunTable(meta.Table):
 ################################################################################
 """Class describing a ring geometry table.
 """
-class RingTable(meta.Table):
+class RingTable(com.Table):
     #===========================================================================
     def __init__(self, output_dir=None, **kwargs):
         """Constructor for a RingTable object.
@@ -864,7 +864,7 @@ class RingTable(meta.Table):
 ################################################################################
 """Class describing a body geometry table.
 """
-class BodyTable(meta.Table):
+class BodyTable(com.Table):
     #===========================================================================
     def __init__(self, output_dir=None, **kwargs):
         """Constructor for a BodyTable object.
@@ -922,7 +922,7 @@ class Suite(object):
                 If given, at most this many files are processed in each volume.
             sampling (int, optional): Pixel sampling density.
         """
-        logger = meta.get_logger()
+        logger = com.get_logger()
 
         # Save inputs
         self.input_dir = FCPath(input_dir)
@@ -1046,7 +1046,7 @@ class Suite(object):
         Returns:
             None
         """
-        logger = meta.get_logger()
+        logger = com.get_logger()
 
         if not hasattr(self, 'observations'):
             return
@@ -1114,7 +1114,7 @@ def get_args(host=None, selection=None, exclude=None, sampling=8):
     """
 
     # Get parser with common args
-    parser = meta.get_common_args(host=host)
+    parser = com.get_common_args(host=host)
 
     # Add parser for index args
     gr = parser.add_argument_group('Geometry Arguments')

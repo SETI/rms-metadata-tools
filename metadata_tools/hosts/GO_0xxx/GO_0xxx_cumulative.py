@@ -35,8 +35,9 @@
 #
 ################################################################################
 import host_init
-import metadata_tools.cumulative_support as cml
+import host_config as hconf
+import geometry_config as config
+from metadata_tools.cumulative_support import create_cumulative_indexes
 
-cml.create_cumulative_indexes('GO_0xxx_supplemental_index',
-                              exclude=['GO_0999'])
+create_cumulative_indexes('GO_0xxx_supplemental_index', exclude=config.exclude)
 ################################################################################
