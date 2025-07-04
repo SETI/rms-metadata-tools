@@ -13,15 +13,15 @@ import metadata_tools.defs as defs
 
 
 #==========================================================================
-def write_tasks_file(tasks_file, content):
+def write_task_file(task_file, content):
     """Write the tasks file.
     Args:
-        tasks_file(str): Name of file to write.
+        task_file(str): Name of file to write.
         content (list): Dictionaries to be written in to the json file.
     Returns: 
         None
     """
-    with open(tasks_file, "w") as file:
+    with open(task_file, "w") as file:
         json.dump(content, file, indent=2)
     file.close()
 
