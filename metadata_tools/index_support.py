@@ -18,6 +18,8 @@ from pdstemplate.pds3table import Pds3Table
 import host_config as hconf
 import index_config as config
 
+tasks_file_content = []
+
 ################################################################################
 # IndexTable class
 ################################################################################
@@ -415,29 +417,25 @@ class IndexTable(com.Table):
         return result
 
     #==========================================================================
-    @staticmethod
-    def _udpate_task_file(indir, outdir, volume_id, qualifier=None):
+    def _add_task(self, indir, outdir, volume_id):
         """Add a task to the task file.
 
         Args:
-            column_stub (list): Preprocessed column stub.
-            value (str): Value to format.
-            count (int): Number of items to process. If not given, the 'ITEMS' entry is
-                         used.
+            indir (str, Path, or FCPath):  Directory containing the volume.
+            outdir (str, Path, or FCPath): Directory in which to  write the new index files.
+            volume_id (str): ID of volune to add.
 
         Returns: 
             None
         """
         logger = com.get_logger()
-        task_file = FCPath('./tasks.json')############
 
         task_id = 'index-task-' + volume_id
         task_args = {'volume_id' : volume_id,
                      'indir'     : indir.as_posix(),
                      'outdir'    : outdir.as_posix()}
-        new_line = json.dumps({'task_id':task_id, 'data':task_args})    
         
-        util.append_txt_file(task_file, new_line)
+        tasks_file_content.append({'task_id':task_id, 'data':task_args})
 
 
 ################################################################################
@@ -511,12 +509,24 @@ def _create_index(input_tree, output_tree,
                   labels_only=False, 
                   qualifier=None, 
                   glob=None, 
-                  task_file_only=False):
+                  tasks_file=None,
+                  tasks_file_only=False):
     """Creates index files for a collection of volumes.
 
     Args:
-        template_name (str): Name of input template.
+        input_tree (str, Path, or FCPath):
+            Top of the directory tree containing the volume, specifically the data labels.
+        output_tree (str, Path, or FCPath):
+            Top of the directory tree in which to find the "updated" index file (e.g.,
+            <volume>_index.tab, and in which to write the new index files.
+        volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
+        qualifier (str, optional):
+            Qualifying string identifying the type of index file to create, e.g., 
+            'supplemental'.
         glob (str, optional): Glob pattern for index files.
+        tasks_file (str, optional): Name of tasks file.
+        tasks_file_only (bool, optional): 
+            If True, a tasks file is created and no processing is performed.
 
     Returns:
         None.
@@ -554,21 +564,24 @@ def _create_index(input_tree, output_tree,
                                    qualifier=qualifier, volume_id=vol, glob=glob)
 
                 # Update the task file...
-                if task_file_only:
-                    print(indir, outdir)
-                    index._udpate_task_file(indir, outdir, vol, qualifier=qualifier)
+                if tasks_file_only:
+                    index._add_task(indir, outdir, vol)
                 # ... or process this volumne
                 else:
                     # Process this volumne
                     index.create(labels_only=labels_only)
                     unused = index.unused if not unused else unused & index.unused
 
+        if tasks_file_only:
+            util.write_tasks_file(tasks_file, tasks_file_content)
+
         # Log a warning for any columns that never had non-null values
         if unused:
             logger.warn('Unused columns: %s', unused)
 
 #===============================================================================
-def process_index(template_name, glob=None, volumes=None, args=None, task_file_only=False):
+def process_index(template_name, glob=None, volumes=None, args=None, 
+                  tasks_file=None, tasks_file_only=False):
     """Creates index files for a collection of volumes.
 
     Args:
@@ -576,14 +589,14 @@ def process_index(template_name, glob=None, volumes=None, args=None, task_file_o
         glob (str, optional): Glob pattern for index files.
         volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
         args (argparse.Namespace): Parsed arguments.
+        tasks_file (str, optional): Name of tasks file.
+        tasks_file_only (bool, optional): 
+            If True, a tasks file is created and no processing is performed.
 
     Returns:
         None.
     """
     logger = com.get_logger()
-
-    if task_file_only:
-        util.delete_task_file()
 
     # Parse arguments
     if args is None:
@@ -600,6 +613,7 @@ def process_index(template_name, glob=None, volumes=None, args=None, task_file_o
                   labels_only=args.labels is not False,
                   qualifier=args.type,
                   glob=glob,
-                  task_file_only=task_file_only)
+                  tasks_file=tasks_file,
+                  tasks_file_only=tasks_file_only)
 
 ################################################################################

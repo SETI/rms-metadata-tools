@@ -4,6 +4,7 @@
 import os
 import re
 import numpy as np
+import json
 
 from pathlib   import Path
 from filecache import FCPath
@@ -12,15 +13,17 @@ import metadata_tools.defs as defs
 
 
 #==========================================================================
-def delete_task_file():
-    """Remove the task file.
+def write_tasks_file(tasks_file, content):
+    """Write the tasks file.
     Args:
-        None
+        tasks_file(str): Name of file to write.
+        content (list): Dictionaries to be written in to the json file.
     Returns: 
         None
     """
-    task_file = FCPath('./tasks.json')############
-    task_file.unlink(missing_ok=True)
+    with open(tasks_file, "w") as file:
+        json.dump(content, file, indent=2)
+    file.close()
 
 #===============================================================================
 def get_index_name(dir, vol_id, type):

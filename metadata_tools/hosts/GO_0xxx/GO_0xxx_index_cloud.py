@@ -17,8 +17,10 @@ def process_task(task_id: str,
 
 
     # process the volume
-#    process_index(hconf.template_name, glob=config.glob, args=worker_data.args,
-#                  volume_id=task_data['volume_id'])
+    process_index(hconf.template_name,
+                  glob=config.glob,
+                  args=worker_data.args,
+                  volumes=[task_data['volume_id']], tasks_file=worker_data.task_file)
 
 #    return (status tuple)
     return False, 'test'
@@ -33,13 +35,18 @@ async def main():
     host, index_type = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host, index_type=index_type)
 
+    tasks_file = 'tasks.json'
 
     # initialize the worker
-    worker = Worker(process_task, args=sys.argv[1:], argparser=parser)
+    worker = Worker(process_task,
+                    args=sys.argv[1:], argparser=parser, tasks_file=tasks_file)
 
     # set up the task file containing one entry per volume
-    process_index(hconf.template_name, glob=config.glob, args=worker._data.args,
-                  task_file_only=True)### , tasks_file=[[temp file]])
+
+    process_index(hconf.template_name,
+                  glob=config.glob,
+                  args=worker._data.args,
+                  tasks_file_only=True, tasks_file=tasks_file)
 
     # cue the processing
     await worker.start()
