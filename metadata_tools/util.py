@@ -13,6 +13,19 @@ import metadata_tools.defs as defs
 
 
 #==========================================================================
+def add_task(task_file_content, volume_id, index_type):
+    """Add a task to the task file.
+    Args:
+        volume_id (str): ID of volune to add.
+    Returns: 
+        None
+    """
+    task_id = index_type + '-task-' + volume_id
+    task_args = {'volume_id' : volume_id}
+    
+    task_file_content.append({'task_id':task_id, 'data':task_args})
+
+#==========================================================================
 def write_task_file(task_file, content):
     """Write the tasks file.
     Args:

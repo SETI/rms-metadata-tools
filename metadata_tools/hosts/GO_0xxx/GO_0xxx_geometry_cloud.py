@@ -5,21 +5,22 @@ from cloud_tasks.worker import Worker, WorkerData
 
 import metadata_tools.util as util
 import host_config as hconf
-import index_config as config
-from metadata_tools.index_support import process_index, get_args
+import geometry_config as config
+from metadata_tools.geometry_support import process_tables, get_args
 
 #===============================================================================
 def process_task(task_id: str,
                  task_data: dict[str, any],
                  worker_data: WorkerData) -> tuple[bool, any]:
 
-
     # process the volume
-    process_index(hconf.template_name,
-                  glob=config.glob,
-                  args=worker_data.args,
-                  volumes=[task_data['volume_id']],
-                  task_file=worker_data.task_file)
+    process_tables(hconf.template_name,
+                   glob=config.glob,
+                   selection=config.selection,
+                   exclude=config.exclude,
+                   args=worker_data.args,
+                   volumes=[task_data['volume_id']],
+                   task_file=worker_data.task_file)
 
 #    return (status tuple)
     return False, 'test'
@@ -32,7 +33,10 @@ async def main():
 
     # parse metadata arguments
     host, index_type = util.parse_template_name(hconf.template_name)
-    parser = get_args(host=host, index_type=index_type)
+    parser = get_args(host=host,
+                      selection=config.selection,
+                      exclude=config.exclude,
+                      sampling=8) #################
 
     tempdir = tempfile.mkdtemp()
     #task_file = os.path.join(tempdir, 'tasks.json')
@@ -45,10 +49,12 @@ async def main():
 
     # set up the task file containing one entry per volume
 
-    process_index(hconf.template_name,
-                  glob=config.glob,
-                  args=worker._data.args,
-                  task_file_only=True, task_file=task_file)
+    process_tables(hconf.template_name,
+                   glob=config.glob,
+                   selection=config.selection,
+                   exclude=config.exclude,
+                   args=worker._data.args,
+                   task_file_only=True, task_file=task_file)
 
     # queue the processing
     await worker.start()

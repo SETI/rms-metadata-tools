@@ -416,27 +416,6 @@ class IndexTable(com.Table):
 
         return result
 
-    #==========================================================================
-    def _add_task(self, indir, outdir, volume_id):
-        """Add a task to the task file.
-
-        Args:
-            indir (str, Path, or FCPath):  Directory containing the volume.
-            outdir (str, Path, or FCPath): Directory in which to  write the new index files.
-            volume_id (str): ID of volune to add.
-
-        Returns: 
-            None
-        """
-        logger = com.get_logger()
-
-        task_id = 'index-task-' + volume_id
-        task_args = {'volume_id' : volume_id,
-                     'indir'     : indir.as_posix(),
-                     'outdir'    : outdir.as_posix()}
-        
-        task_file_content.append({'task_id':task_id, 'data':task_args})
-
 
 ################################################################################
 # Built-in key functions
@@ -565,13 +544,15 @@ def _create_index(input_tree, output_tree,
 
                 # Update the task file...
                 if task_file_only:
-                    index._add_task(indir, outdir, vol)
+#                    index._add_task(vol)
+                    util.add_task(task_file_content, vol, 'index')
                 # ... or process this volumne
                 else:
                     # Process this volumne
                     index.create(labels_only=labels_only)
                     unused = index.unused if not unused else unused & index.unused
 
+        # Write the task file
         if task_file_only:
             util.write_task_file(task_file, task_file_content)
 
@@ -580,8 +561,12 @@ def _create_index(input_tree, output_tree,
             logger.warn('Unused columns: %s', unused)
 
 #===============================================================================
-def process_index(template_name, glob=None, volumes=None, args=None, 
-                  task_file=None, task_file_only=False):
+def process_index(template_name, 
+                  glob=None, 
+                  volumes=None, 
+                  args=None, 
+                  task_file=None, 
+                  task_file_only=False):
     """Creates index files for a collection of volumes.
 
     Args:

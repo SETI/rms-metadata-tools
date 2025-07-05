@@ -18,6 +18,8 @@ from filecache import FCPath
 import host_config as hconf
 import geometry_config as config
 
+task_file_content = []
+
 ################################################################################
 # FORMAT_DICT tuples are:
 #
@@ -1035,6 +1037,23 @@ class Suite(object):
         for table in self.tables:
             table.write(labels_only=labels_only)
 
+    #==========================================================================
+    def _add_task(self, volume_id):
+        """Add a task to the task file.
+
+        Args:
+            volume_id (str): ID of volune to add.
+
+        Returns:
+            None
+        """
+        logger = com.get_logger()
+
+        task_id = 'geometry-task-' + volume_id
+        task_args = {'volume_id' : volume_id}
+
+        task_file_content.append({'task_id':task_id, 'data':task_args})
+
     #===========================================================================
     def create(self, labels_only=False):
         """Process the volume and write a suite of geometry files.
@@ -1042,6 +1061,9 @@ class Suite(object):
         Args:
             labels_only (bool):
                 If True, labels are generated for any existing geometry tables.
+            task_file (str, optional): Name of tasks file.
+            task_file_only (bool, optional):
+                If True, a tasks file is created and no processing is performed.
 
         Returns:
             None
@@ -1084,7 +1106,7 @@ class Suite(object):
                         LookupError, TypeError, ValueError):
                     logger.error(traceback.format_exc())
 
-        # Write tables and make labels
+        #  Write tables and make labels
         self.write(labels_only=labels_only)
 
         # Clean up
@@ -1141,14 +1163,19 @@ def get_args(host=None, selection=None, exclude=None, sampling=8):
 
 #===============================================================================
 def process_tables(template_name,
+                   volumes=None, 
                    selection=None,
                    exclude=None,
                    sampling=8,
-                   glob=None):
+                   glob=None,
+                   args=None,
+                   task_file=None,
+                   task_file_only=False):
     """Create geometry tables for a collection of volumes.
 
     Args:
         template_name (str): Name of index template.
+        volumes (list, optional): List of volume ids to process. Overrides args.volumes.
         selection (str, optional):
             A string containing...
             "S" to generate summary files;
@@ -1156,20 +1183,25 @@ def process_tables(template_name,
         exclude (list, optional): List of volumes to exclude.
         sampling (int, optional): Pixel sampling density.
         glob (str, optional): Glob pattern for index files.
-        labels_only (bool):
-            If True, labels are generated for any existing geometry tables.
+        args (argparse.Namespace): Parsed arguments.
+        task_file (str, optional): Name of tasks file.
+        task_file_only (bool, optional):
+            If True, a tasks file is created and no processing is performed.
     """
 
     # Parse arguments
-    host, index_type = util.parse_template_name(template_name)
-    parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
-    args = parser.parse_args()
+    if args is None:
+        host, index_type = util.parse_template_name(template_name)
+        parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
+        args = parser.parse_args()
 
     input_tree = FCPath(args.input_tree)
     output_tree = FCPath(args.output_tree)
-    volumes = args.volumes
     new_only = args.new_only is not False
     labels_only = args.labels is not False
+
+    if volumes is None:
+        volumes = args.volumes
 
     if volumes:
         new_only = False
@@ -1214,10 +1246,20 @@ def process_tables(template_name,
                 if new_only & (list(outdir.glob('*_inventory.csv')) != []):
                     continue
 
-                # Process this volume
+                # Initialize the tables
                 tables = Suite(indir, outdir,
                                selection=args.selection, glob=glob, first=args.first,
                                sampling=args.sampling)
-                tables.create(labels_only=labels_only)
+
+                # Update the task file...
+                if task_file_only:
+                    util.add_task(task_file_content, vol, 'geometry')
+                # ... or process this volume
+                else:
+                    tables.create(labels_only=labels_only)
+
+    # Write the task file
+    if task_file_only:
+        util.write_task_file(task_file, task_file_content)
 
 ################################################################################
