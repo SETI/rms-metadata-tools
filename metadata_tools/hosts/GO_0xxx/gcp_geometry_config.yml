@@ -1,0 +1,9 @@
+provider: gcp
+gcp:
+  job_id: metadata_geometry-job
+  startup_script_file: gcp_geometry_startup.sh
+  max-instances: 5
+  max-cpu: 8
+  min-memory-per-cpu: 4  # GB
+  max-total-price-per-hour: 1.00  # USD/hour
+  instance-types: "n2-"

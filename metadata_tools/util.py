@@ -4,39 +4,11 @@
 import os
 import re
 import numpy as np
-import json
 
 from pathlib   import Path
 from filecache import FCPath
 
 import metadata_tools.defs as defs
-
-
-#==========================================================================
-def add_task(task_file_content, volume_id, index_type):
-    """Add a task to the task file.
-    Args:
-        volume_id (str): ID of volune to add.
-    Returns: 
-        None
-    """
-    task_id = index_type + '-task-' + volume_id
-    task_args = {'volume_id' : volume_id}
-    
-    task_file_content.append({'task_id':task_id, 'data':task_args})
-
-#==========================================================================
-def write_task_file(task_file, content):
-    """Write the tasks file.
-    Args:
-        task_file(str): Name of file to write.
-        content (list): Dictionaries to be written in to the json file.
-    Returns: 
-        None
-    """
-    with open(task_file, "w") as file:
-        json.dump(content, file, indent=2)
-    file.close()
 
 #===============================================================================
 def get_index_name(dir, vol_id, type):

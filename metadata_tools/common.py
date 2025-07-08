@@ -25,6 +25,40 @@ def get_logger():
     """The global PdsLogger for the metadata tools."""
     return _LOGGER
 
+
+##########################################################################################
+# Cloud task management
+##########################################################################################
+task_list = []
+
+#==========================================================================
+def task_source():
+    """Task source function for cloud_tasks.
+    Args:
+        None.
+    Returns: 
+        None
+    """
+    for task in task_list:
+        yield task
+
+#==========================================================================
+def add_task(volume_id, index_type):
+    """Add a task to the task file.
+    Args:
+        volume_id (str): ID of volune to add.
+    Returns: 
+        None
+    """
+    logger = get_logger()
+    logger.info('Adding task for %s.' % volume_id)
+
+    task_id = index_type + '-task-' + volume_id
+    task_args = {'volume_id' : volume_id}
+    
+    task_list.append({'task_id':task_id, 'data':task_args})
+
+
 ##########################################################################################
 # Argument parser
 ##########################################################################################

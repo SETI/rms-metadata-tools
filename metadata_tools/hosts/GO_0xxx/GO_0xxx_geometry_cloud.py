@@ -1,14 +1,24 @@
+#!/usr/bin/env python
+#########################################################################################
+# GO_0xxx_geometry_cloud.py:
+#   Generates all geometry tables and labels for Galileo SSI using the cloud_tasks module.
+#
+# Basic usage is identical to GO_0xxx_geometry.py. In addition, all cloud_tasks aruments
+# are accepted.
+#
+#########################################################################################
 import asyncio
 import os, sys
 import tempfile
 from cloud_tasks.worker import Worker, WorkerData
 
 import metadata_tools.util as util
+import metadata_tools.common as com
 import host_config as hconf
 import geometry_config as config
 from metadata_tools.geometry_support import process_tables, get_args
 
-#===============================================================================
+#========================================================================================
 def process_task(task_id: str,
                  task_data: dict[str, any],
                  worker_data: WorkerData) -> tuple[bool, any]:
@@ -19,13 +29,11 @@ def process_task(task_id: str,
                    selection=config.selection,
                    exclude=config.exclude,
                    args=worker_data.args,
-                   volumes=[task_data['volume_id']],
-                   task_file=worker_data.task_file)
+                   volumes=[task_data['volume_id']])
 
-#    return (status tuple)
-    return False, 'test'
+    return False, None
 
-#===============================================================================
+#========================================================================================
 async def main():
     # These command line arguments are used to override environment variables when
     # specifying the behavior of the worker process manager. They are optional
@@ -35,17 +43,13 @@ async def main():
     host, index_type = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host,
                       selection=config.selection,
-                      exclude=config.exclude,
-                      sampling=8) #################
-
-    tempdir = tempfile.mkdtemp()
-    #task_file = os.path.join(tempdir, 'tasks.json')
-    task_file = 'tasks.json'
-    print(task_file)
+                      exclude=config.exclude)
 
     # initialize the worker
     worker = Worker(process_task,
-                    args=sys.argv[1:], argparser=parser, task_file=task_file)
+                    task_source=com.task_source,
+                    args=sys.argv[1:],
+                    argparser=parser)
 
     # set up the task file containing one entry per volume
 
@@ -54,16 +58,11 @@ async def main():
                    selection=config.selection,
                    exclude=config.exclude,
                    args=worker._data.args,
-                   task_file_only=True, task_file=task_file)
+                   task_list_only=True)
 
     # queue the processing
     await worker.start()
 
-    # cleanup
-    ############ need a cleanup function that's called at end or when interrupted'
-#    os.remove(task_file)
-    os.path.rmdir(tempdir)
-
-################################################################################
+#########################################################################################
 if __name__ == "__main__":
     asyncio.run(main())

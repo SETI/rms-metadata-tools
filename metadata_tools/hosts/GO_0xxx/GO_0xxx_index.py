@@ -1,10 +1,9 @@
 #!/usr/bin/env python
-################################################################################
-# GO_0xxx_index.py: Generate supplemental index tables and labels for Galileo
-# SSI.
+#########################################################################################
+# GO_0xxx_index.py: Generate supplemental index tables and labels for Galileo SSI.
 #
 # Usage:
-#    GO_0xxx_index.py [-h] [--labels [labels ...]] [--type type]
+#    python GO_0xxx_index.py [-h] [--labels [labels ...]] [--type type]
 #
 #    options:
 #      -h, --help            show this help message and exit
@@ -37,11 +36,11 @@
 #
 #  3) Follow the instructions in the supplemental label template file.
 #
-################################################################################
+#########################################################################################
 import host_init
 import host_config as hconf
 import index_config as config
 from metadata_tools.index_support import process_index
 
 process_index(hconf.template_name, glob=config.glob)
-################################################################################
+#########################################################################################

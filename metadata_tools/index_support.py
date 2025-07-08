@@ -18,8 +18,6 @@ from pdstemplate.pds3table import Pds3Table
 import host_config as hconf
 import index_config as config
 
-task_file_content = []
-
 ################################################################################
 # IndexTable class
 ################################################################################
@@ -488,8 +486,7 @@ def _create_index(input_tree, output_tree,
                   labels_only=False, 
                   qualifier=None, 
                   glob=None, 
-                  task_file=None,
-                  task_file_only=False):
+                  task_list_only=False):
     """Creates index files for a collection of volumes.
 
     Args:
@@ -503,8 +500,7 @@ def _create_index(input_tree, output_tree,
             Qualifying string identifying the type of index file to create, e.g., 
             'supplemental'.
         glob (str, optional): Glob pattern for index files.
-        task_file (str, optional): Name of tasks file.
-        task_file_only (bool, optional): 
+        task_list_only (bool, optional): 
             If True, a tasks file is created and no processing is performed.
 
     Returns:
@@ -539,22 +535,17 @@ def _create_index(input_tree, output_tree,
                     outdir = output_tree/col
                 outdir = output_tree/vol
 
-                index = IndexTable(indir, outdir,
-                                   qualifier=qualifier, volume_id=vol, glob=glob)
-
                 # Update the task file...
-                if task_file_only:
-#                    index._add_task(vol)
-                    util.add_task(task_file_content, vol, 'index')
+                if task_list_only:
+                    com.add_task(vol, 'index')
                 # ... or process this volumne
                 else:
                     # Process this volumne
+                    index = IndexTable(indir, outdir,
+                                       qualifier=qualifier, volume_id=vol, glob=glob)
+
                     index.create(labels_only=labels_only)
                     unused = index.unused if not unused else unused & index.unused
-
-        # Write the task file
-        if task_file_only:
-            util.write_task_file(task_file, task_file_content)
 
         # Log a warning for any columns that never had non-null values
         if unused:
@@ -565,8 +556,7 @@ def process_index(template_name,
                   glob=None, 
                   volumes=None, 
                   args=None, 
-                  task_file=None, 
-                  task_file_only=False):
+                  task_list_only=False):
     """Creates index files for a collection of volumes.
 
     Args:
@@ -574,9 +564,8 @@ def process_index(template_name,
         glob (str, optional): Glob pattern for index files.
         volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
         args (argparse.Namespace): Parsed arguments.
-        task_file (str, optional): Name of tasks file.
-        task_file_only (bool, optional): 
-            If True, a tasks file is created and no processing is performed.
+        task_list_only (bool, optional): 
+            If True, a task list is created and no processing is performed.
 
     Returns:
         None.
@@ -598,7 +587,6 @@ def process_index(template_name,
                   labels_only=args.labels is not False,
                   qualifier=args.type,
                   glob=glob,
-                  task_file=task_file,
-                  task_file_only=task_file_only)
+                  task_list_only=task_list_only)
 
 ################################################################################

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-################################################################################
+#########################################################################################
 # GO_0xxx_geometry.py: Generates all geometry tables and labels for Galileo SSI.
 #
 # Usage:
-#    GO_0xxx_geometry.py [-h] [--labels [labels ...]]
-#                             [--selection selection] [--exclude [exclude ...]]
-#                             [--new_only [new_only ...]] [--first first]
-#                             [--sampling sampling]
-#                             input_tree output_tree [volume]
+#    python GO_0xxx_geometry.py [-h] [--labels [labels ...]]
+#                               [--selection selection] [--exclude [exclude ...]]
+#                               [--new_only [new_only ...]] [--first first]
+#                               [--sampling sampling]
+#                               input_tree output_tree [volume]
 #
 #    options:
 #      -h, --help            show this help message and exit
@@ -50,7 +50,7 @@
 #
 #  3) Follow the instructions in either summary label template file.
 #
-################################################################################
+#########################################################################################
 import host_init
 import host_config as hconf
 import geometry_config as config
@@ -60,4 +60,4 @@ process_tables(hconf.template_name,
                glob=config.glob,
                selection=config.selection,
                exclude=config.exclude)
-################################################################################
+#########################################################################################

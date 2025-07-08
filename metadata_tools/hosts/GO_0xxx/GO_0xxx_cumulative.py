@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-################################################################################
+#########################################################################################
 # GO_0xxx_cumulative.py: Generate cumulative files and labels for Galileo SSI.
 #
 # Usage:
@@ -33,11 +33,11 @@
 #  3) Edit this script for your new host and run to generate the cumulative
 #     tables in the output tree.
 #
-################################################################################
+#########################################################################################
 import host_init
 import host_config as hconf
 import geometry_config as config
 from metadata_tools.cumulative_support import create_cumulative_indexes
 
 create_cumulative_indexes('GO_0xxx_supplemental_index', exclude=config.exclude)
-################################################################################
+#########################################################################################
