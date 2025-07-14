@@ -1141,12 +1141,13 @@ def get_args(host=None, selection=None, exclude=None, sampling=8):
 
 #===============================================================================
 def process_tables(template_name,
-                   volumes=None, 
+                   volumes=None,
                    selection=None,
                    exclude=None,
                    sampling=8,
                    glob=None,
                    args=None,
+                   task_file=None, 
                    task_list_only=False):
     """Create geometry tables for a collection of volumes.
 
@@ -1161,8 +1162,13 @@ def process_tables(template_name,
         sampling (int, optional): Pixel sampling density.
         glob (str, optional): Glob pattern for index files.
         args (argparse.Namespace): Parsed arguments.
+        task_file (str, optional): 
+            Name of tasks file.  This file is overwritten. If not given, tasks are provided 
+            via the task_source generator.
         task_list_only (bool, optional):
-            If True, a task list is created and no processing is performed.
+            If True, a task list is created and no processing is performed. If task_file is
+            given, then the task list is written to that file. Otherwise, the task list is
+            accessed via the task_source generator. 
     """
 
     # Parse arguments
@@ -1231,5 +1237,9 @@ def process_tables(template_name,
                                    selection=args.selection, glob=glob, first=args.first,
                                    sampling=args.sampling)
                     suite.create(labels_only=labels_only)
+
+    # Write the task file
+    if task_list_only:
+        com.write_task_file(task_file)
 
 ################################################################################

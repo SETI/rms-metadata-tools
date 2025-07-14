@@ -4,13 +4,18 @@
 #   Generate supplemental index tables and labels for Galileo SSI using the cloud_tasks
 #   module.
 #
-# Basic usage is identical to GO_0xxx_index.py. In addition, all cloud_tasks aruments are
-# accepted.
+# For local runs, the basic usage is identical to GO_0xxx_index.py. In addition, all
+# cloud_tasks arguments are accepted. For example:
+#
+#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ --num-simultaneous-tasks 12
+#
+#
+# cloud_tasks run --config gcp_index_config.yml --project-id rms-node-419806 --task-file index_tasks.json
+#
 #
 #########################################################################################
 import asyncio
 import os, sys
-import tempfile
 from cloud_tasks.worker import Worker, WorkerData
 
 import metadata_tools.util as util
@@ -44,16 +49,16 @@ async def main():
 
     # initialize the worker
     worker = Worker(process_task,
-                   task_source=com.task_source,
-                   args=sys.argv[1:],
-                   argparser=parser)
+                    task_source=com.task_source,
+                    args=sys.argv[1:],
+                    argparser=parser)
 
     # set up the task file containing one entry per volume
-
     process_index(hconf.template_name,
                   glob=config.glob,
                   args=worker._data.args,
-                  task_list_only=True)
+                  task_list_only=True,
+                  task_file=worker._data.args.task_file)
 
     # queue the processing
     await worker.start()

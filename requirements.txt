@@ -7,8 +7,8 @@ rms-oops
 rms-filecache>=2.3.0
 rms-pdslogger>=3.0.0
 rms-julian
-#rms-pdsparser
-#rms-cloud-tasks
+rms-pdsparser
+rms-cloud-tasks
 json_stream
 pydantic
 rms-pdstable

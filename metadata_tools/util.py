@@ -360,7 +360,7 @@ def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilit
     with open(Path(filespec.as_posix()), "a") as file:
         for line in content:
             file.write(line)
-            
+
 #===============================================================================
 def rebase(x, bases, ceil=False):    ### move to utilities
     """Convert a decimal number to a different base.

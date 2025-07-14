@@ -9,9 +9,14 @@ import oops.hosts.galileo.ssi as ssi
 import metadata_tools.util as util
 import metadata_tools.hosts.GO_0xxx.host_init
 
-glob='GO_????_index.lbl'
-selection="S"
-exclude=['GO_0999']
+
+##########################################################################################
+# GO_0xxx arguments
+##########################################################################################
+glob = 'GO_????_index.lbl'
+selection = "S"
+exclude = ['GO_0999']
+
 
 ##########################################################################################
 # SCLK-dependent mission-specific data (required)
@@ -30,6 +35,7 @@ BORDER = 25                  # in units of full-size SSI pixels
 NAC_PIXEL = 6.0e-6           # approximate full-size SSI pixel in units of radians
 EXPAND = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians
 from_index = ssi.from_index
+
 
 ##########################################################################################
 # Meshgrid functions (required)

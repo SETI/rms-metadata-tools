@@ -48,8 +48,14 @@ The procedure for generating metadata tables is as follows:
     index_config.py
     geometry_config.py
     <collection>_index.py
+    <collection>_index_cloud.py
     <collection>_geometry.py
+    <collection>_geometry_cloud.py
     <collection>_cumulative.py
+    gcp_geometry_config.yml
+    gcp_index_config.yml
+    gcp_geometry_startup.sh
+    gcp_index_startup.sh
 
  3. Create a templates/ subdirectory and copy the label templates from an
     existing host, and rename accordingly, yielding:

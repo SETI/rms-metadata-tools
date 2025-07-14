@@ -7,4 +7,4 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 export MY_WORKER_DEST_BUCKET=gs://my-bucket/results
-python3 GO_0xxx_index_cloud.py  $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/
+python3 GO_0xxx_index_cloud.py rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ rms-node-metadata/GO_0xxx/ --index_tree rms-node-holdings/pds3-holdings/metadata/GO_0xxx/

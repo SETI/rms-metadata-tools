@@ -3,6 +3,7 @@
 ##########################################################################################
 import re
 import argparse
+import json
 
 from filecache import FCPath
 from pdslogger import PdsLogger
@@ -33,10 +34,10 @@ task_list = []
 
 #==========================================================================
 def task_source():
-    """Task source function for cloud_tasks.
+    """Task source generator for cloud_tasks.
     Args:
         None.
-    Returns: 
+    Returns:
         None
     """
     for task in task_list:
@@ -47,7 +48,7 @@ def add_task(volume_id, index_type):
     """Add a task to the task file.
     Args:
         volume_id (str): ID of volune to add.
-    Returns: 
+    Returns:
         None
     """
     logger = get_logger()
@@ -55,8 +56,22 @@ def add_task(volume_id, index_type):
 
     task_id = index_type + '-task-' + volume_id
     task_args = {'volume_id' : volume_id}
-    
+
     task_list.append({'task_id':task_id, 'data':task_args})
+
+#==========================================================================
+def write_task_file(task_file):
+    """Write the tasks file.
+    Args:
+        task_file(str): Name of file to write.
+    Returns: 
+        None
+    """
+    if not task_file:
+        return
+    with open(task_file, "w") as file:
+        json.dump(task_list, file, indent=2)
+    file.close()
 
 
 ##########################################################################################
@@ -101,6 +116,9 @@ def get_common_args(host=None):
     gr.add_argument('--labels', '-l', nargs='*', type=str, metavar='labels',
                     default=False,
                     help='''If given, labels are generated for existing files.''')
+    gr.add_argument('--index_tree', '-i', type=str, metavar='index_tree',
+                    help='''File path to the top to tree containing the
+                            index files.''', action=PathAction)
 
     # Return parser
     return parser

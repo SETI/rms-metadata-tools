@@ -7,3 +7,4 @@ gcp:
   min-memory-per-cpu: 4  # GB
   max-total-price-per-hour: 1.00  # USD/hour
   instance-types: "n2-"
+  region: us-central1

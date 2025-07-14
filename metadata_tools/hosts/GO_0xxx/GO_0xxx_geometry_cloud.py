@@ -3,13 +3,16 @@
 # GO_0xxx_geometry_cloud.py:
 #   Generates all geometry tables and labels for Galileo SSI using the cloud_tasks module.
 #
-# Basic usage is identical to GO_0xxx_geometry.py. In addition, all cloud_tasks aruments
-# are accepted.
+# For local runs, the basic usage is identical to GO_0xxx_geometry.py. In addition, all
+# cloud_tasks arguments are accepted. For example:
+#
+#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA/GO_0xxx/ --num-simultaneous-tasks 12
+#
+#
 #
 #########################################################################################
 import asyncio
 import os, sys
-import tempfile
 from cloud_tasks.worker import Worker, WorkerData
 
 import metadata_tools.util as util
@@ -52,13 +55,13 @@ async def main():
                     argparser=parser)
 
     # set up the task file containing one entry per volume
-
     process_tables(hconf.template_name,
                    glob=config.glob,
                    selection=config.selection,
                    exclude=config.exclude,
                    args=worker._data.args,
-                   task_list_only=True)
+                   task_list_only=True,
+                   task_file=worker._data.args.task_file)
 
     # queue the processing
     await worker.start()

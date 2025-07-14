@@ -26,16 +26,17 @@ class IndexTable(com.Table):
     """
 
     #===========================================================================
-    def __init__(self, input_dir=None, output_dir=None, qualifier='', glob=None,
-                 **kwargs):
+    def __init__(self, input_dir=None, output_dir=None, index_dir=None,
+                       qualifier='', glob=None, **kwargs):
         """Constructor for an IndexTable object.
 
         Args:
             input_dir (str, Path, or FCPath):
                 Directory containing the volume, specifically the data labels.
             output_dir (str, Path, or FCPath):
-                Directory in which to find the "updated" index file (e.g.,
-                <volume>_index.tab, and in which to write the new index files.
+                Directory in which to write the new index files.
+            index_dir (str, Path, or FCPath):
+                Directory in which to find the "updated" index file (e.g., <volume>_index.tab).
             qualifier (str, optional):
                 Qualifying string identifying the type of index file to create,
                 e.g., 'supplemental'.
@@ -50,6 +51,7 @@ class IndexTable(com.Table):
         # Save inputs
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
+        self.index_dir = FCPath(index_dir)
         self.glob = glob
         self.usage = {}
         self.unused = set()
@@ -65,7 +67,7 @@ class IndexTable(com.Table):
         primary_index_name = util.get_index_name(self.input_dir, self.volume_id, None)
         index_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
         template_name = util.get_template_name(index_name, self.volume_id)
-        self.index_path = self.output_dir/(index_name + '.tab')
+        self.index_path = self.index_dir/(index_name + '.tab')
 
         # If the index name is the same as the primary inxex name,
         # then this is the primary index.
@@ -169,8 +171,9 @@ class IndexTable(com.Table):
 
         # Read the PDS3 label
         path = root/name
+
         label = pds3.get_label(path)
-#        label = Pds3Label(path)
+#        label = Pds3Label(path)  # see issue SETI/rms-pdsparser#14
 
         # Write columns
         first = True
@@ -481,11 +484,12 @@ def get_args(host=None, index_type=None):
     return parser
 
 #===============================================================================
-def _create_index(input_tree, output_tree, 
-                  volumes=None, 
-                  labels_only=False, 
-                  qualifier=None, 
-                  glob=None, 
+def _create_index(input_tree, output_tree, index_tree=None,
+                  volumes=None,
+                  labels_only=False,
+                  qualifier=None,
+                  glob=None,
+                  task_file=None,
                   task_list_only=False):
     """Creates index files for a collection of volumes.
 
@@ -493,20 +497,30 @@ def _create_index(input_tree, output_tree,
         input_tree (str, Path, or FCPath):
             Top of the directory tree containing the volume, specifically the data labels.
         output_tree (str, Path, or FCPath):
+            Top of the directory tree in which to to write the new index files. "Updated" 
+            index files (e.g., <volume>_index.tab) are assumed to reside here unless
+            index_tree is given.
+        index_tree (str, Path, or FCPath, optional):
             Top of the directory tree in which to find the "updated" index file (e.g.,
-            <volume>_index.tab, and in which to write the new index files.
+            <volume>_index.tab).
         volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
         qualifier (str, optional):
-            Qualifying string identifying the type of index file to create, e.g., 
+            Qualifying string identifying the type of index file to create, e.g.,
             'supplemental'.
         glob (str, optional): Glob pattern for index files.
-        task_list_only (bool, optional): 
+        task_file (str, optional): Name of tasks file.
+        task_list_only (bool, optional):
             If True, a tasks file is created and no processing is performed.
 
     Returns:
         None.
     """
     logger = com.get_logger()
+
+    if index_tree is not None:
+        index_tree = FCPath(index_tree)
+    else:
+        index_tree = output_tree
 
     # Build volume glob
     vol_glob = util.get_volume_glob(input_tree.name)
@@ -531,9 +545,14 @@ def _create_index(input_tree, output_tree,
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
                 indir = root
+
                 if output_tree.parts[-1] != col:
                     outdir = output_tree/col
                 outdir = output_tree/vol
+
+                if index_tree.parts[-1] != col:
+                    index_tree = index_tree/col
+                index_dir = index_tree/vol
 
                 # Update the task file...
                 if task_list_only:
@@ -541,21 +560,26 @@ def _create_index(input_tree, output_tree,
                 # ... or process this volumne
                 else:
                     # Process this volumne
-                    index = IndexTable(indir, outdir,
+                    index = IndexTable(indir, outdir, index_dir=index_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
 
                     index.create(labels_only=labels_only)
                     unused = index.unused if not unused else unused & index.unused
+
+        # Write the task file
+        if task_list_only:
+            com.write_task_file(task_file)
 
         # Log a warning for any columns that never had non-null values
         if unused:
             logger.warn('Unused columns: %s', unused)
 
 #===============================================================================
-def process_index(template_name, 
-                  glob=None, 
-                  volumes=None, 
-                  args=None, 
+def process_index(template_name,
+                  glob=None,
+                  volumes=None,
+                  args=None,
+                  task_file=None, 
                   task_list_only=False):
     """Creates index files for a collection of volumes.
 
@@ -564,13 +588,17 @@ def process_index(template_name,
         glob (str, optional): Glob pattern for index files.
         volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
         args (argparse.Namespace): Parsed arguments.
-        task_list_only (bool, optional): 
-            If True, a task list is created and no processing is performed.
+        task_file (str, optional): 
+            Name of tasks file. This file is overwritten. If not given, tasks are provided 
+            via the task_source generator.
+        task_list_only (bool, optional):
+            If True, a task list is created and no processing is performed. If task_file is
+            given, then the task list is written to that file. Otherwise, the task list is
+            accessed via the task_source generator. 
 
     Returns:
         None.
     """
-    logger = com.get_logger()
 
     # Parse arguments
     if args is None:
@@ -582,11 +610,13 @@ def process_index(template_name,
         volumes = args.volumes
 
     # Create the index
-    _create_index(FCPath(args.input_tree), FCPath(args.output_tree), 
-                  volumes=volumes, 
+    _create_index(FCPath(args.input_tree), FCPath(args.output_tree),
+                  index_tree=args.index_tree,
+                  volumes=volumes,
                   labels_only=args.labels is not False,
                   qualifier=args.type,
                   glob=glob,
+                  task_file=task_file,
                   task_list_only=task_list_only)
 
 ################################################################################
