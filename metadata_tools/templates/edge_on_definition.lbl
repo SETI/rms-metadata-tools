@@ -1,0 +1,8 @@
+
+      Edge-on intercept geometry is optimized for describing observations of
+      planetary rings obtained from viewpoints close to the ring plane. It
+      employs cylindrical coordinates (radius, altitude, longitude), where
+      radius values are measured from the ring rotation pole and altitude is
+      normal to the ring plane. Altitude increases in the direction of
+      positive angular momentum. The intercept is defined as the point where a
+      line of sight is tangent to a cylinder with a particular radius.

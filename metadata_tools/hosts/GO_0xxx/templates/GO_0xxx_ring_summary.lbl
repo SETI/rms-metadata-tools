@@ -34,16 +34,22 @@ VOLUME_ID                       = "$volume_id$"
 $END_IF
 PRODUCT_CREATION_TIME           = $FILE_TIME(index_path)$
 
-$INCLUDE("./templates/host_defs.lbl")
+$INCLUDE("host_defs.lbl")
 
 OBJECT                          = RING_SUMMARY_TABLE
   INTERCHANGE_FORMAT            = ASCII
   ROWS                          = $records$
   ROW_BYTES                     = $record_bytes$
   INDEX_TYPE                    = $index_type$
-  DESCRIPTION                   = "This index describes the geometry of all
-    observations in the volume or collection. The index contains one row for
-    each observation in which the rings appear in the field of view.
+  DESCRIPTION                   = "This index describes the ring viewing
+    geometry for the Galileo SSI image collection. The file contains one row
+    per image targeted at the Jupiter system.
+
+$IF(TABLE_TYPE == 'CUMULATIVE')
+    This is the cumulative index, describing all the images in the collection.
+$ELSE
+    This index describes the images found on volume $volume_id$.
+$END_IF
 
     Two types of geometry are represented in this index. Gridded quantites
     were constructed by uniformly sampling the pixels that comprise each data
@@ -51,24 +57,20 @@ OBJECT                          = RING_SUMMARY_TABLE
     view. Gridless quantities represent a single value.
 
     For each sampled pixel, a variety of geometric quantitities have been
-    calculated. All quantites, gridded and gridless, are tabulated in terms
-    of a global minimum and maximum value with respect to the varying
-    geometry during the interval in which the obsevation was taken. For
-    angular quantities that cycle from 360 degrees to zero, the tabulated
-    minimum can be numerically greater than the maximum. If the ring plane
-    does not fall within the field of view, values of the NULL_CONSTANT appear
-    in the table.
+    calculated. All quantites, gridded and gridless, are tabulated in terms of
+    a global minimum and maximum value with respect to the varying geometry
+    during the interval in which the obsevation was taken. For angular
+    quantities that cycle from 360 degrees to zero, the tabulated minimum can
+    be numerically greater than the maximum. If the ring plane does not fall
+    within the field of view, values of the NULL_CONSTANT appear in the table.
 
     Occasionally, SPICE pointing information is unavailable for the time at
     which an observation was taken. When this situation occurs, no row has
     been added to the file.
 
-    Regions of a body that are obscured by another body are excluded from the
-    tabulation. The dark side of each body is also generally excluded. If a
-    body is too small to have been captured in an 8x8 sampling of the image,
-    then the associated NULL_CONSTANT will appear in each column. Quantities
-    that are independent of the field of view are tabulated regardless of
-    obstruction or apparent body size.
+    Regions of the ring plane that are obscured by the planet or a moon are
+    excluded from the tabulation. Quantities that are independent of the field
+    of view are tabulated regardless of any obstruction.
 
     To accommodate pointing uncertainty, the Galileo SSI field of view has
     been expanded on every side by a distance equivalent to 25 narrow-angle
@@ -92,13 +94,12 @@ OBJECT                          = RING_SUMMARY_TABLE
     NAME                        = "SYSTEM_NAME"
     FORMAT                      = A7
     NULL_CONSTANT               = "NONE"
-    DESCRIPTION                 = "The planetary system to which this body
+    DESCRIPTION                 = "The planetary system to which this ring
       belongs."
   END_OBJECT                    = COLUMN
 
 $ONCE(is_visual = True)
-$ONCE(is_saturn = True)
-$INCLUDE('../../templates/ring_summary_columns.lbl')
+$INCLUDE('ring_summary_columns.lbl')
 
 END_OBJECT                      = RING_SUMMARY_TABLE
 END

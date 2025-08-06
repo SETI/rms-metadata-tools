@@ -1,37 +1,39 @@
+$NOTE
+##############################################################################
+# Inputs:
+#   is_visual:      True if this product was taken in visual light. If so,
+#                   regions on the dark side of target bodies are ignored;
+#                   otherwise, they are included.
+##############################################################################
+$END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_RADIUS"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring radius is the distance from the center
       of the planet to the point where a line of sight intercepts the ring
       plane.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
-
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_RADIUS"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring radius is the distance from the center
       of the planet to the point where a line of sight intercepts the ring
       plane.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
-
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -39,44 +41,40 @@
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring intercept resolution is the size of
-      one edge of a pixel at the distance of the ring intercept point. If
-      the pixel shape is not square, it is defined by the smaller of the two
-      edges. Unlike the quantity 'radial resolution', these values are not
-      projected into the ring plane.
+      a pixel at the distance of the ring intercept point. If the pixel shape
+      is not square, it is defined by the smaller of the two edges. Unlike the
+      RADIAL_ and LONGITUDINAL_RESOLUTION values, this value is not projected
+      into the ring plane.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the ring, indicating the finest spatial resolution found
+      in the data product.
 
-      This column tabulates the minimum (finest) value among the pixels whose
-      lines of sight intercept the ring."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_RING_INTERCEPT_RESOLUTION"
-    UNIT                        = "km"
+    FORMAT                      = "F10.5"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring intercept resolution is the size of
-      one edge of a pixel at the distance of the ring intercept point. If
-      the pixel shape is not square, it is defined by the larger of the two
-      edges. Unlike the quantity 'radial resolution', these values are not
-      projected into the ring plane.
+      a pixel at the distance of the ring intercept point. If the pixel shape
+      is not square, it is defined by the smaller of the two edges. Unlike the
+      RADIAL_ and LONGITUDINAL_RESOLUTION values, this value is not projected
+      into the ring plane.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the ring, indicating the coarsest spatial resolution
+      found in the data product.
 
-      This column tabulates the minimum (coarsest) value among the pixels
-      whose lines of sight intercept the ring."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "FINEST_RADIAL_RESOLUTION"
-    UNIT                        = "km"
+    FORMAT                      = "F10.5"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Radial resolution is related to the
       gradient of the ring intercept radius. It is equal to the largest
@@ -84,664 +82,624 @@
       sight. In practice, it defines the approximate size of the narrowest
       ring feature that can be resolved.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the ring, indicating the finest radial resolution found
+      in the data product.
 
-      This column tabulates the minimum (finest) value among the pixels whose
-      lines of sight intercept the ring."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_RADIAL_RESOLUTION"
-    UNIT                        = "km"
+    FORMAT                      = "F10.5"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Radial resolution is the gradient of the
+    DESCRIPTION                 = "Radial resolution is related to the
       gradient of the ring intercept radius. It is equal to the largest
       change in the radius resulting from a one-pixel shift of the line of
       sight. In practice, it defines the approximate size of the narrowest
       ring feature that can be resolved.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the ring, corresponding to the coarsest radial
+      resolution found in the data product.
 
-      This column tabulates the minimum (coarsest) value among the pixels
-      whose lines of sight intercept the ring."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "FINEST_LONGITUDINAL_RESOLUTION"
-    UNIT                        = "DEG"
+    FORMAT                      = "F10.5"
+    UNIT                        = "deg/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Longitudinal resolution is related to the
       gradient of the ring intercept longitude. It is equal to the largest
-      change in the longitude resulting from a one-pixel shift of the line of
-      sight. In practice, it defines the approximate size of the narrowest
-      ring clump that can be resolved.
+      change in longitude resulting from a one-pixel shift of the line of
+      sight. In practice, it defines the approximate angular size of the
+      narrowest ring clump that can be resolved.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the ring, indicating the finest longitudinal resolution
+      found in the data product.
 
-      This column tabulates the minimum (finest) value among the pixels whose
-      lines of sight intercept the ring, expressed in degrees."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_LONGITUDINAL_RESOLUTION"
-    UNIT                        = "DEG"
+    FORMAT                      = "F10.5"
+    UNIT                        = "deg/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Longitudinal resolution is related to the
       gradient of the ring intercept longitude. It is equal to the largest
-      change in the longitude resulting from a one-pixel shift of the line of
-      sight. In practice, it defines the approximate size of the narrowest
-      ring clump that can be resolved.
+      change in longitude resulting from a one-pixel shift of the line of
+      sight. In practice, it defines the approximate angular size of the
+      narrowest ring clump that can be resolved.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the ring, indicating the coarsest longitudinal
+      resolution found in the data product.
 
-      This column tabulates the minimum (coarsest) value among the pixels
-      whose lines of sight intercept the ring."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "FINEST_LONGITUDINAL_RESOLUTION_KM"
-    UNIT                        = "km"
+    FORMAT                      = "F10.5"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Longitudinal resolution is related to the
-      gradient of the ring intercept longitude. It is equal to the largest
-      change in the longitude resulting from a one-pixel shift of the line of
-      sight. In practice, it defines the approximate size of the narrowest
-      ring clump that can be resolved.
+    DESCRIPTION                 = "Longitudinal resolution in km is related to
+      the gradient of the ring intercept longitude. It is equal to the largest
+      change in position along the ring circumference resulting from a
+      one-pixel shift of the line of sight. In practice, it defines the
+      approximate size in km of the narrowest ring clump that can be resolved.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the ring, indicating the finest longitudinal resolution
+      found in the data product.
 
-      This column tabulates the minimum (finest) among the pixels whose lines
-      of sight intercept the ring, expressed in kilometers."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_LONGITUDINAL_RESOLUTION_KM"
-    UNIT                        = "km"
+    FORMAT                      = "F10.5"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Longitudinal resolution is related to the
-      gradient of the ring intercept longitude. It is equal to the largest
-      change in the longitude resulting from a one-pixel shift of the line of
-      sight. In practice, it defines the approximate size of the narrowest
-      ring clump that can be resolved.
+    DESCRIPTION                 = "Longitudinal resolution in km is related to
+      the gradient of the ring intercept longitude. It is equal to the largest
+      change in position along the ring circumference resulting from a
+      one-pixel shift of the line of sight. In practice, it defines the
+      approximate size in km of the narrowest ring clump that can be resolved.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the ring, indicating the coarsest longitudinal
+      resolution found in the data product.
 
-      This column tabulates the maximum (coarsest) among the pixels whose
-      lines of sight intercept the ring, expressed in kilometers."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_DISTANCE"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring distance equals the separation between
       the observer and the point where a line of sight intercepts the ring
       plane.
 
-      Ring intercept points that are obscured by the planet or a moon are
-      ignored. For observations capturing reflected sunlight (i.e., with
-      wavelengths in the visual or near-infrared), ring intercept points
-      that are shadowed by the planet are also ignored.
-
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_DISTANCE"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring distance equals the separation between
       the observer and the point where a line of sight intercepts the ring
       plane.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
-
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_LONGITUDE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring longitude specifies the inertial
-      longitude of the ring plane intercept point. Longitudes increase in
-      the prograde direction. Values are defined by a broken angle from the
-      J2000 First Point of Aries (right ascension = 0), along the J2000 x-y
-      plane to the ascending node of the ring system's invariable plane, and
-      then along the ring plane.
+      longitude of the ring plane intercept point. Values are defined by a
+      broken angle from the J2000 First Point of Aries (right ascension = 0),
+      along the J2000 x-y plane to the ascending node of the ring system's
+      invariable plane, and then along the ring plane. Longitudes increase in
+      the direction of prograde motion.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the lower limit of the range of longitudes
+      captured by the observation. Note that if the zero longitude falls
+      inside the field of view, this value will be greater than the so-called
+      'maximum' longitude, meaning that the longitude range extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_LONGITUDE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring longitude specifies the inertial
-      longitude of the ring plane intercept point. Longitudes increase in
-      the prograde direction. Values are defined by a broken angle from the
-      J2000 First Point of Aries (right ascension = 0), along the J2000 x-y
-      plane to the ascending node of the ring system's invariable plane, and
-      then along the ring plane.
+      longitude of the ring plane intercept point. Values are defined by a
+      broken angle from the J2000 First Point of Aries (right ascension = 0),
+      along the J2000 x-y plane to the ascending node of the ring system's
+      invariable plane, and then along the ring plane. Longitudes increase in
+      the direction of prograde motion.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the upper limit of the range of longitudes
+      captured by the observation. Note that if the zero longitude falls
+      inside the field of view, this value will be less than the so-called
+      'minimum' longitude, meaning that the longitude range extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_LONGITUDE_WRT_NODE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Ring longitude specifies the inertial
-      longitude of the ring plane intercept point. Longitudes increase in
-      the prograde direction. Values are measured in the ringplane from the
-      ascending node of the ring system's invariable plane on J2000.
+    DESCRIPTION                 = "Ring longitude with respect to the node is
+      an angle referenced to the ascending node of the ring system's
+      invariable plane on the J2000 x-y plane. It is measured in the prograde
+      direction along the ring plane to the point where the line of sight
+      intercepts the ring.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the lower limit of the range of longitudes
+      captured by the observation. Note that if the zero longitude falls
+      inside the field of view, this value will be greater than the so-called
+      'maximum' longitude, meaning that the longitude range extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_LONGITUDE_WRT_NODE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Ring longitude specifies the inertial
-      longitude of the ring plane intercept point. Longitudes increase in
-      the prograde direction. Values are measured in the ringplane from the
-      ascending node of the ring system's invariable plane on J2000.
+    DESCRIPTION                 = "Ring longitude with respect to the node is
+      an angle referenced to the ascending node of the ring system's
+      invariable plane on the J2000 x-y plane. It is measured in the prograde
+      direction along the ring plane to the point where the line of sight
+      intercepts the ring.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the upper limit of the range of longitudes
+      captured by the observation. Note that if the zero longitude falls
+      inside the field of view, this value will be less than the so-called
+      'minimum' longitude, meaning that the longitude range extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_SOLAR_HOUR_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Solar hour angle specifies the longitude of
       the ring plane intercept point relative to the anti-solar direction.
-      At 90 degrees, the ring particles are moving toward the Sun, whereas
-      at 270 degrees they are moving away.
+      Longitudes increase in the direction of prograde motion, so at 90
+      degrees they are moving toward the Sun, whereas at 270 degrees they are
+      moving away.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. However, ring intercept points
-      that are shadowed by the planet are not ignored.
+      This column tabulates the lower limit of the range of hour angles
+      captured by the observation. Note that if the zero hour angle falls
+      inside the field of view, this value will be greater than the so-called
+      'maximum', meaning that the range of hour angles extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the midnight
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_SOLAR_HOUR_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Solar hour angle specifies the longitude of
       the ring plane intercept point relative to the anti-solar direction.
-      At 90 degrees, the ring particles are moving toward the Sun, whereas
-      at 270 degrees they are moving away.
+      Longitudes increase in the direction of prograde motion, so at 90
+      degrees they are moving toward the Sun, whereas at 270 degrees they are
+      moving away.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. However, ring intercept points
-      that are shadowed by the planet are not ignored.
+      This column tabulates the upper limit of the range of hour angles
+      captured by the observation. Note that if the zero hour angle falls
+      inside the field of view, this value will be greater than the so-called
+      'maximum', meaning that the range of hour angles extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the midnight
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_LONGITUDE_WRT_OBSERVER"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -180.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "This alternative definition of ring
-      longitude is measured relative to the direction toward the observer.
-      Values increase in the prograde direction. Unlike other ring
-      longitudes, this quantity ranges from -180 to 180 degrees instead of 0
-      to 360 degrees.
+    DESCRIPTION                 = "Ring longitude with respect to the observer
+      specifies the longitude of the ring plane intercept point relative to
+      the direction to the observer. Longitudes increase in the direction of
+      prograde motion, so at 90 degrees the ring particles are moving away
+      from the observer, whereas at 270 degrees they are moving toward the
+      observer. Note that, unlike other ring longitudes, this quantity ranges
+      from -180 to 180 degrees instead of 0 to 360 degrees.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the lower limit of the range of longitudes
+      captured by the observation. Note that if the longitude 180 falls
+      inside the field of view, this value will be greater than the so-called
+      'maximum' longitude, meaning that the longitude range extends from the
+      'minimum' to 180 and then from -180 to the 'maximum'.
 
-      This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_LONGITUDE_WRT_OBSERVER"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -180.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "This alternative definition of ring
-      longitude is measured relative to the direction toward the observer.
-      Values increase in the prograde direction. Unlike other ring
-      longitudes, this quantity ranges from -180 to 180 degrees instead of 0
-      to 360 degrees.
+    DESCRIPTION                 = "Ring longitude with respect to the observer
+      specifies the longitude of the ring plane intercept point relative to
+      the direction to the observer. Longitudes increase in the direction of
+      prograde motion, so at 90 degrees the ring particles are moving away
+      from the observer, whereas at 270 degrees they are moving toward the
+      observer. Note that, unlike other ring longitudes, this quantity ranges
+      from -180 to 180 degrees instead of 0 to 360 degrees.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the upper limit of the range of longitudes
+      captured by the observation. Note that if the longitude 180 falls inside
+      the field of view, this value will be less than the so-called 'minimum'
+      longitude, meaning that the longitude range extends from the 'minimum'
+      to 180 and then from -180 to the 'maximum'.
 
-      This column tabulates the maximum value of this ring longitude within
-      the field of view of the observation."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_AZIMUTH"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Ring azimuth is the angle measured at a
-      point in the ring plane, starting from the direction of a photon
-      heading to the observer, and ending at the direction of a local radial
-      vector. This angle is projected into the ring plane and measured in
-      the prograde direction. As seen from the observer, it equals 90
-      degrees along the right ansa and 270 degrees along the left ansa. Note
-      that this quantity differs from ring longitudes for viewpoints
-      relatively close to the rings, because angles are measured at the ring
-      intercept point rather than at the center of the planet.
+    DESCRIPTION                 = "Ring azimuth specifies the angle, measured
+      at the ring intercept point, between the direction to the observer and
+      the local radial direction. This angle is projected into the ring plane
+      and measured in the direction of prograde motion, so it equals 90
+      degrees along the right ansa (where ring particles are moving away from
+      the observer) and 270 degrees along the left ansa (where particles are
+      moving toward the observer). Note that this quantity differs from ring
+      longitudes for viewpoints relatively close to the rings, because angles
+      are measured at the ring intercept point rather than at the center of
+      the planet.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the lower limit of the range of azimuth angles
+      captured by the observation. Note that if the zero azimuth falls
+      inside the field of view, this value will be greater than the so-called
+      'maximum', meaning that the range of azimuth angles extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross 360 degrees, the
-      tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_AZIMUTH"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Ring azimuth is the angle measured at a
-      point in the ring plane, starting from the direction of a photon
-      heading to the observer, and ending at the direction of a local radial
-      vector. This angle is projected into the ring plane and measured in
-      the prograde direction. As seen from the observer, it equals 90
-      degrees along the right ansa and 270 degrees along the left ansa. Note
-      that this quantity differs from ring longitudes for viewpoints
-      relatively close to the rings, because angles are measured at the ring
-      intercept point rather than at the center of the planet.
+    DESCRIPTION                 = "Ring azimuth specifies the angle, measured
+      at the ring intercept point, between the direction to the observer and
+      the local radial direction. This angle is projected into the ring plane
+      and measured in the direction of prograde motion, so it equals 90
+      degrees along the right ansa (where ring particles are moving away from
+      the observer) and 270 degrees along the left ansa (where particles are
+      moving toward the observer). Note that this quantity differs from ring
+      longitudes for viewpoints relatively close to the rings, because angles
+      are measured at the ring intercept point rather than at the center of
+      the planet.
 
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      This column tabulates the upper limit of the range of azimuth angles
+      captured by the observation. Note that if the zero azimuth falls inside
+      the field of view, this value will be less than the so-called 'minimum',
+      meaning that the range of azimuth angles extends from the 'minimum' to
+      360 and then from 0 to the 'maximum'.
 
-      This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross 360 degrees, the
-      tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_PHASE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring phase angle is the angle, measured at
-      the ring intercept point, between the direction of the incoming photon
-      from the Sun and the direction of the outgoing photon to the observer.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      the ring intercept point, between the direction to the Sun and the
+      direction to the observer.
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_PHASE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring phase angle is the angle, measured at
-      the ring intercept point, between the direction of the incoming photon
-      from the Sun and the direction of the outgoing photon to the observer.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      the ring intercept point, between the direction to the Sun and the
+      direction to the observer.
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_INCIDENCE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring incidence angle is the angle, measured
-      at the ring intercept point, between the local surface normal vector
-      on the sunlit side of the ring plane, to the direction of the incoming
-      photon from the Sun. Note that it never exceeds 90 degrees.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      at the ring intercept point, between the local surface normal vector on
+      the sunlit side of the ring plane and the direction to the Sun. Note
+      that it never exceeds 90 degrees.
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_INCIDENCE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring incidence angle is the angle, measured
-      at the ring intercept point, between the local surface normal vector
-      on the sunlit side of the ring plane, to the direction of the incoming
-      photon from the Sun. Note that it never exceeds 90 degrees.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      at the ring intercept point, between the local surface normal vector on
+      the sunlit side of the ring plane and the direction to the Sun. Note
+      that it never exceeds 90 degrees.
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_NORTH_BASED_INCIDENCE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "North-based ring incidence angle is the
       angle, measured at the ring intercept point, between the local surface
-      normal vector on the north side of the ring plane, to the direction of
-      the incoming photon from the Sun. It is > 90 degrees when the Sun
-      shines on the south face of the rings.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      normal vector on the north side of the ring plane and the direction to
+      the Sun. It is > 90 degrees when the Sun shines on the south face of the
+      rings. Note that, for purposes of ring geometry, 'north' is the
+      direction of positive angular momentum; this is IAU-defined north for
+      Jupiter, Saturn, and Neptune, but IAU-defined south for Uranus.
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_NORTH_BASED_INCIDENCE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "North-based ring incidence angle is the
       angle, measured at the ring intercept point, between the local surface
-      normal vector on the north side of the ring plane, to the direction of
-      the incoming photon from the Sun. It is > 90 degrees when the Sun
-      shines on the south face of the rings.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      normal vector on the north side of the ring plane and the direction to
+      the Sun. It is > 90 degrees when the Sun shines on the south face of the
+      rings. Note that, for purposes of ring geometry, 'north' is the
+      direction of positive angular momentum; this is IAU-defined north for
+      Jupiter, Saturn, and Neptune, but IAU-defined south for Uranus.
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_EMISSION_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring emission angle is the angle, measured
-      at the ring intercept point, between the local surface normal vector
-      on the sunlit side of the ring plane, to the direction of the outgoing
-      photon to the observer. Note that it is less than 90 degrees on the
-      sunlit side of the ring plane, and greater than 90 degrees on the
-      'dark' side.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      at the ring intercept point, between the local surface normal vector on
+      the sunlit side of the ring plane and the direction to the observer. It
+      is less than 90 degrees on the sunlit face of the rings and greater than
+      90 degrees on the unlit face.
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_EMISSION_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring emission angle is the angle, measured
-      at the ring intercept point, between the local surface normal vector
-      on the sunlit side of the ring plane, to the direction of the outgoing
-      photon to the observer. Note that it is less than 90 degrees on the
-      sunlit side of the ring plane, and greater than 90 degrees on the
-      'dark' side.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      at the ring intercept point, between the local surface normal vector on
+      the sunlit side of the ring plane and the direction to the observer. It
+      is less than 90 degrees on the sunlit face of the rings and greater than
+      90 degrees on the unlit face.
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_NORTH_BASED_EMISSION_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "North-based ring emission angle is the
       angle, measured at the ring intercept point, between the local surface
-      normal vector on the north side of the ring plane, to the direction of
-      the outgoing photon to the observer. Note that it is < 90 degrees on
-      the north side of the ring plane and > 90 degrees on the south side.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      normal vector on the north side of the ring plane and the direction to
+      the observer. It is < 90 degrees on the north side of the rings and > 90
+      degrees on the south side. Note that, for purposes of ring geometry,
+      'north' is the direction of positive angular momentum; this is
+      IAU-defined north for Jupiter, Saturn, and Neptune, but IAU-defined
+      south for Uranus.
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_NORTH_BASED_EMISSION_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "North-based ring emission angle is the
       angle, measured at the ring intercept point, between the local surface
-      normal vector on the north side of the ring plane, to the direction of
-      the outgoing photon to the observer. Note that it is < 90 degrees on
-      the north side of the ring plane and > 90 degrees on the south side.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      normal vector on the north side of the ring plane and the direction to
+      the observer. It is < 90 degrees on the north side of the rings and > 90
+      degrees on the south side. Note that, for purposes of ring geometry,
+      'north' is the direction of positive angular momentum; this is
+      IAU-defined north for Jupiter, Saturn, and Neptune, but IAU-defined
+      south for Uranus.
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_SOLAR_RING_ELEVATION"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Solar ring elevation is the angle, measured
-      at the ring intercept point, between the ring plane and the direction
-      of the incoming photon from the Sun. The value is positive on the side
-      of the ring plane defined by prograde rotation; note that this is the
-      north side of the ring plane for Jupiter, Saturn and Neptune, but the
-      IAU-defined south side for Uranus.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      at the ring intercept point, between the ring plane and the direction to
+      the Sun. The value is positive on the north side of the rings and
+      negative on the south side. Note that, for purposes of ring geometry,
+      'north' is the direction of positive angular momentum; this is
+      IAU-defined north for Jupiter, Saturn, and Neptune, but IAU-defined
+      south for Uranus.
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_SOLAR_RING_ELEVATION"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Solar ring elevation is the angle, measured
-      at the ring intercept point, between the ring plane and the direction
-      of the incoming photon from the Sun. The value is positive on the side
-      of the ring plane defined by prograde rotation; note that this is the
-      north side of the ring plane for Jupiter, Saturn and Neptune, but the
-      IAU-defined south side for Uranus.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      at the ring intercept point, between the ring plane and the direction to
+      the Sun. The value is positive on the north side of the rings and
+      negative on the south side. Note that, for purposes of ring geometry,
+      'north' is the direction of positive angular momentum; this is
+      IAU-defined north for Jupiter, Saturn, and Neptune, but IAU-defined
+      south for Uranus.
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_OBSERVER_RING_ELEVATION"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Observer ring elevation is the angle,
       measured at the ring intercept point, between the ring plane and the
-      direction of the outgoing photon to the observer. The value is
-      positive on the side of the ring plane defined by prograde rotation;
-      note that this is the north side of the ring plane for Jupiter, Saturn
-      and Neptune, but the IAU-defined south side for Uranus.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      direction to the observer. The value is positive on the north side of
+      the rings and negative on the south side. Note that, for purposes of
+      ring geometry, 'north' is the direction of positive angular momentum;
+      this is IAU-defined north for Jupiter, Saturn, and Neptune, but
+      IAU-defined south for Uranus.
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -752,453 +710,319 @@
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Observer ring elevation is the angle,
       measured at the ring intercept point, between the ring plane and the
-      direction of the outgoing photon to the observer. The value is
-      positive on the side of the ring plane defined by prograde rotation;
-      note that this is the north side of the ring plane for Jupiter, Saturn
-      and Neptune, but the IAU-defined south side for Uranus.
-
-      Ring intercept points that are obscured by the planet or a moon within
-      the observed field of view are ignored. For observations capturing
-      reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), ring intercept points that are shadowed by the planet
-      are also ignored.
+      direction to the observer. The value is positive on the north side of
+      the rings and negative on the south side. Note that, for purposes of
+      ring geometry, 'north' is the direction of positive angular momentum;
+      this is IAU-defined north for Jupiter, Saturn, and Neptune, but
+      IAU-defined south for Uranus.
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_SURFACE_INTERCEPT_TIME"
-    NULL_CONSTANT               = "UNK"
-    DESCRIPTION                 = "Surface intercept time is the time when
-      the received photon left the surface intercept point.  It is given in
-      ISO format: YYYY-MM-DDTHH:mm:ss.sss.
+    NAME                        = "MINIMUM_RING_INTERCEPT_TIME"
+    NULL_CONSTANT               = ""
+    DESCRIPTION                 = "Surface intercept time is the time when the
+      received photons left the ring intercept point. It is given in ISO
+      format: YYYY-MM-DDTHH:mm:ss.sss.
 
-      The surface has been modeled as a plane. Surface intercept points
-      that are obscured by the planet or another moon within the observed
-      field of view are ignored.
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the ring.
 
-      This column tabulates the maximum value of the surface intercept time
-      within the field of view of the observation."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_SURFACE_INTERCEPT_TIME"
-    NULL_CONSTANT               = "UNK"
-    DESCRIPTION                 = "Surface intercept time is the time when
-      the received photon left the surface intercept point.  It is given in
-      ISO format: YYYY-MM-DDTHH:mm:ss.sss.
-
-      The surface has been modeled as a plane. Surface intercept points
-      that are obscured by the planet or another moon within the observed
-      field of view are ignored.
+    NAME                        = "MINIMUM_RING_INTERCEPT_TIME"
+    NULL_CONSTANT               = ""
+    DESCRIPTION                 = "Surface intercept time is the time when the
+      received photons left the ring intercept point. It is given in ISO
+      format: YYYY-MM-DDTHH:mm:ss.sss.
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_RING_RADIUS"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on ring radius is the distance from
-      the planet's rotation pole to the edge-on intercept point.
-
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
-
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
+      the planet's rotation pole to the edge-on ring intercept point.
+      $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring system.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_RING_RADIUS"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on ring radius is the distance from
-      the planet's rotation pole to the edge-on intercept point.
-
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
-
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
+      the planet's rotation pole to the edge-on ring intercept point.
+      $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring system.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_RING_ALTITUDE"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -99999.
     DESCRIPTION                 = "Edge-on ring altitude is the distance from
-      the ring plane to the edge-on intercept point. The value is positive
-      on the side of the ring plane defined by prograde rotation; note that
-      this is the north side of the ring plane for Jupiter, Saturn and
-      Neptune, but the IAU-defined south side for Uranus.
-
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
-
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
+      the ring plane to the edge-on ring intercept point.
+      $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring system.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_RING_ALTITUDE"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -99999.
     DESCRIPTION                 = "Edge-on ring altitude is the distance from
-      the ring plane to the edge-on intercept point. The value is positive
-      on the side of the ring plane defined by prograde rotation; note that
-      this is the north side of the ring plane for Jupiter, Saturn and
-      Neptune, but the IAU-defined south side for Uranus.
-
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
-
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
+      the ring plane to the edge-on ring intercept point.
+      $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring system.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "FINEST_EDGE_ON_RADIAL_RESOLUTION"
-    UNIT                        = "km"
+    FORMAT                      = "F10.5"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Edge-on radial resolution is the gradient
-      of the edge-on ring radius. It is equal to the largest change in the
-      radius resulting from a one-pixel shift of the line of sight. In
-      practice, it defines the approximate size of the narrowest ring
-      feature that can be resolved.
-
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
-
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
+    DESCRIPTION                 = "Edge-on radial resolution is related to the
+      gradient of the edge-on ring radius. It is equal to the largest change
+      in the radius resulting from a one-pixel shift of the line of sight. In
+      practice, it defines the approximate size of the narrowest ring feature
+      that can be resolved in an edge-on view of the rings.
+      $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring system, indicating the finest spatial
+      resolution found in the data product.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_EDGE_ON_RADIAL_RESOLUTION"
-    UNIT                        = "km"
+    FORMAT                      = "F10.5"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Edge-on radial resolution is the gradient
-      of the edge-on ring radius. It is equal to the largest change in the
-      radius resulting from a one-pixel shift of the line of sight. In
-      practice, it defines the approximate size of the narrowest ring
-      feature that can be resolved.
+    DESCRIPTION                 = "Edge-on radial resolution is related to the
+      gradient of the edge-on ring radius. It is equal to the largest change
+      in the radius resulting from a one-pixel shift of the line of sight. In
+      practice, it defines the approximate size of the narrowest ring feature
+      that can be resolved in an edge-on view of the rings.
+      $INCLUDE('edge_on_definition.lbl')
 
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the ring system, indicating the coarsest spatial
+      resolution found in the data product.
 
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
-
-      This column tabulates the maximum value of the edge-on radial
-      resolution within the field of view of the observation."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_INTERCEPT_DISTANCE"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on intercept distance is distance from
       the observer to the edge-on intercept point.
-
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
-
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
+      $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring system.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_INTERCEPT_DISTANCE"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on intercept distance is distance from
       the observer to the edge-on intercept point.
-
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
-
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
+      $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring."
+      sight intercept the ring system.
+
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_RING_LONGITUDE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on ring longitude is the inertial
-      longitude of the edge-on intercept point. Longitudes increase in the
-      prograde direction. Values are defined by a broken angle from the
-      J2000 First Point of Aries (right ascension = 0), along the J2000 x-y
-      plane to the ascending node of the ring system's invariable plane, and
-      then along the ring plane.
+      longitude of the edge-on intercept point. Longitudes are defined by a
+      broken angle from the J2000 First Point of Aries (right ascension = 0),
+      along the J2000 x-y plane to the ascending node of the ring system's
+      invariable plane, and then along the ring plane. Longitudes increase in
+      the direction of prograde motion.
+      $INCLUDE('edge_on_definition.lbl')
 
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
+      This column tabulates the lower limit of the range of edge-on longitudes
+      captured by the observation. Note that if the zero longitude falls
+      inside the field of view, this value will be greater than the so-called
+      'maximum' longitude, meaning that the range extends from the 'minimum'
+      to 360 and then from 0 to the 'maximum'.
 
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
-
-      This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_RING_LONGITUDE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on ring longitude is the inertial
-      longitude of the edge-on intercept point. Longitudes increase in the
-      prograde direction. Values are defined by a broken angle from the
-      J2000 First Point of Aries (right ascension = 0), along the J2000 x-y
-      plane to the ascending node of the ring system's invariable plane, and
-      then along the ring plane.
+      longitude of the edge-on intercept point. Longitudes are defined by a
+      broken angle from the J2000 First Point of Aries (right ascension = 0),
+      along the J2000 x-y plane to the ascending node of the ring system's
+      invariable plane, and then along the ring plane. Longitudes increase in
+      the direction of prograde motion.
+      $INCLUDE('edge_on_definition.lbl')
 
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
+      This column tabulates the upper limit of the range of edge-on longitudes
+      captured by the observation. Note that if the zero longitude falls
+      inside the field of view, this value will be less than the so-called
+      'minimum' longitude, meaning that the range extends from the 'minimum'
+      to 360 and then from 0 to the 'maximum'.
 
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
-
-      This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_RING_LONGITUDE_WRT_NODE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Edge-on ring longitude is the inertial
-      longitude of the edge-on intercept point. Longitudes increase in the
-      prograde direction. Values are measured in the ringplane from the
-      ascending node of the ring system's invariable plane on J2000.
+    DESCRIPTION                 = "Edge-on ring longitude with respect to the
+      node is an angle referenced to the ascending node of the ring system's
+      invariable plane on the J2000 x-y plane. It is measured in the prograde
+      direction, perpendicular to the rotation pole, to the point where the
+      line of sight intercepts the edge-on ring.
+      $INCLUDE('edge_on_definition.lbl')
 
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
+      This column tabulates the lower limit of the range of edge-on longitudes
+      captured by the observation. Note that if the zero longitude falls
+      inside the field of view, this value will be greater than the so-called
+      'maximum' longitude, meaning that the range extends from the 'minimum'
+      to 360 and then from 0 to the 'maximum'.
 
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
-
-      This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_RING_LONGITUDE_WRT_NODE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Edge-on ring longitude is the inertial
-      longitude of the edge-on intercept point. Longitudes increase in the
-      prograde direction. Values are measured in the ringplane from the
-      ascending node of the ring system's invariable plane on J2000.
+    DESCRIPTION                 = "Edge-on ring longitude with respect to the
+      node is an angle referenced to the ascending node of the ring system's
+      invariable plane on the J2000 x-y plane. It is measured in the prograde
+      direction, perpendicular to the rotation pole, to the point where the
+      line of sight intercepts the edge-on ring.
+      $INCLUDE('edge_on_definition.lbl')
 
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
+      This column tabulates the upper limit of the range of edge-on longitudes
+      captured by the observation. Note that if the zero longitude falls
+      inside the field of view, this value will be less than the so-called
+      'minimum' longitude, meaning that the range extends from the 'minimum'
+      to 360 and then from 0 to the 'maximum'.
 
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
-
-      This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_SOLAR_HOUR_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Edge-on solar hour angle is the longitude
-      of the edge-on intercept point relative to the anti-solar direction.
-      At 90 degrees, the ring particles are moving toward the Sun, whereas
-      at 270 degrees they are moving away.
+    DESCRIPTION                 = "Edge-on solar hour angle specifies the
+      longitude of the edge-on intercept point relative to the anti-solar
+      direction. Longitudes increase in the direction of prograde motion, so
+      at 90 degrees they are moving toward the Sun, whereas at 270 degrees
+      they are moving away.
+      $INCLUDE('edge_on_definition.lbl')
 
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
+      This column tabulates the lower limit of the range of edge-on hour
+      angles captured by the observation. Note that if the zero hour angle
+      falls inside the field of view, this value will be greater than the
+      so-called 'maximum' hour angle, meaning that the range extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
-
-      This column tabulates the minimum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the midnight
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_SOLAR_HOUR_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Edge-on solar hour angle is the longitude
-      of the edge-on intercept point relative to the anti-solar direction.
-      At 90 degrees, the ring particles are moving toward the Sun, whereas
-      at 270 degrees they are moving away.
+    DESCRIPTION                 = "Edge-on solar hour angle specifies the
+      longitude of the edge-on intercept point relative to the anti-solar
+      direction. Longitudes increase in the direction of prograde motion, so
+      at 90 degrees they are moving toward the Sun, whereas at 270 degrees
+      they are moving away.
+      $INCLUDE('edge_on_definition.lbl')
 
-      Edge-on intercept geometry is optimized for describing observations of
-      planetary rings obtained from viewpoints close to the ring plane. It
-      employs cylindrical coordinates (radius, altitude, longitude), where
-      radius values are measured from the ring rotation pole and altitude is
-      normal to the ring plane. The intercept is defined as the point along
-      a line of sight where that line is tangent to a cylinder with a
-      particular radius.
+      This column tabulates the upper limit of the range of edge-on hour
+      angles captured by the observation. Note that if the zero hour angle
+      falls inside the field of view, this value will be less than the
+      so-called 'minimum' hour angle, meaning that the range extends from the
+      'minimum' to 360 and then from 0 to the 'maximum'.
 
-      Edge-on intercept points that are obscured by the planet or a moon
-      within the observed field of view are ignored. For observations
-      capturing reflected sunlight (i.e., with wavelengths in the visual or
-      near-infrared), intercept points that are shadowed by the planet are
-      also ignored.
-
-      This column tabulates the maximum value among the pixels whose lines of
-      sight intercept the ring. For fields of view that cross the prime
-      meridian, the tabulated minimum value will be greater than the maximum."
+      $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_CENTER_DISTANCE"
+    FORMAT                      = "F8.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Distance from the observer to the center of
-      the ring system.
+    DESCRIPTION                 = "Ring center distance is the distance from
+      the observer to the center of the ring system.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1206,10 +1030,11 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_CENTER_DISTANCE"
+    FORMAT                      = "F8.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Distance from the observer to the center of
-      the ring system.
+    DESCRIPTION                 = "Ring center distance is the distance from
+      the observer to the center of the ring system.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1217,15 +1042,17 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_SUB_SOLAR_RING_LONGITUDE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Inertial longitude of the sub-solar point
-      on the ring plane. Longitudes increase in the prograde direction. Values
-      are defined by a broken angle from the J2000 First Point of Aries (right
-      ascension = 0), along the J2000 x-y plane to the ascending node of the
-      ring system's invariable plane, and then along the ring plane.
+    DESCRIPTION                 = "Sub-solar ring longitude is the inertial
+      longitude of the sub-solar point on the ring plane. Values are defined
+      by a broken angle from the J2000 First Point of Aries (right ascension =
+      0), along the J2000 x-y plane to the ascending node of the ring system's
+      invariable plane, and then along the ring plane. Longitudes increase in
+      the prograde direction.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1233,15 +1060,17 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_SUB_SOLAR_RING_LONGITUDE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Inertial longitude of the sub-solar point
-      on the ring plane. Longitudes increase in the prograde direction. Values
-      are defined by a broken angle from the J2000 First Point of Aries (right
-      ascension = 0), along the J2000 x-y plane to the ascending node of the
-      ring system's invariable plane, and then along the ring plane.
+    DESCRIPTION                 = "Sub-solar ring longitude is the inertial
+      longitude of the sub-solar point on the ring plane. Values are defined
+      by a broken angle from the J2000 First Point of Aries (right ascension =
+      0), along the J2000 x-y plane to the ascending node of the ring system's
+      invariable plane, and then along the ring plane. Longitudes increase in
+      the prograde direction.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1249,14 +1078,15 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_SUB_SOLAR_RING_LONGITUDE_WRT_NODE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Inertial longitude of the sub-solar point
-      on the ring plane. Longitudes increase in the prograde direction. Values
-      are measured in the ringplane from the ascending node of the ring
-      system's invariable plane on J2000.
+    DESCRIPTION                 = "Sub-solar ring longitude with respect to
+      the node is an angle referenced to the ascending node of the ring
+      system's invariable plane on the J2000 x-y plane. It is measured in the
+      prograde direction along the ring plane to the sub-solar direction.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1264,14 +1094,15 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_SUB_SOLAR_RING_LONGITUDE_WRT_NODE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Inertial longitude of the sub-solar point
-      on the ring plane. Longitudes increase in the prograde direction. Values
-      are measured in the ringplane from the ascending node of the ring
-      system's invariable plane on J2000.
+    DESCRIPTION                 = "Sub-solar ring longitude with respect to
+      the node is an angle referenced to the ascending node of the ring
+      system's invariable plane on the J2000 x-y plane. It is measured in the
+      prograde direction along the ring plane to the sub-solar direction.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1279,15 +1110,17 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_SUB_OBSERVER_RING_LONGITUDE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Inertial longitude of the sub-observer
-      point on the ring plane. Longitudes increase in the prograde direction.
-      Values are defined by a broken angle from the J2000 First Point of Aries
-      (right ascension = 0), along the J2000 x-y plane to the ascending node
-      of the ring system's invariable plane, and then along the ring plane.
+    DESCRIPTION                 = "Sub-observer ring longitude is the inertial
+      longitude of the sub-observer point on the ring plane. Values are
+      defined by a broken angle from the J2000 First Point of Aries (right
+      ascension = 0), along the J2000 x-y plane to the ascending node of the
+      ring system's invariable plane, and then along the ring plane.
+      Longitudes increase in the prograde direction.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1295,45 +1128,51 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_SUB_OBSERVER_RING_LONGITUDE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Inertial longitude of the sub-observer
-      point on the ring plane. Longitudes increase in the prograde direction.
-      Values are defined by a broken angle from the J2000 First Point of Aries
-      (right ascension = 0), along the J2000 x-y plane to the ascending node
-      of the ring system's invariable plane, and then along the ring plane.
+    DESCRIPTION                 = "Sub-observer ring longitude is the inertial
+      longitude of the sub-observer point on the ring plane. Values are
+      defined by a broken angle from the J2000 First Point of Aries (right
+      ascension = 0), along the J2000 x-y plane to the ascending node of the
+      ring system's invariable plane, and then along the ring plane.
+      Longitudes increase in the prograde direction.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_SUB_OBSERVER_RING_LONGITUDE_WRT_NODE"
+    NAME                      = "MINIMUM_SUB_OBSERVER_RING_LONGITUDE_WRT_NODE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Inertial longitude of the sub-observer
-      point on the ring plane. Longitudes increase in the prograde direction.
-      Values are measured in the ringplane from the ascending node of the ring
-      system's invariable plane on J2000.
+    DESCRIPTION                 = "Sub-observer ring longitude with respect to
+      the node is the longitude of the sub-observer point on the ring plane
+      relative to the ascending node of the ring system's invariable plane on
+      the J2000 x-y plane. Longitudes increase in the direction of prograde
+      motion.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_SUB_OBSERVER_RING_LONGITUDE_WRT_NODE"
+    NAME                      = "MAXIMUM_SUB_OBSERVER_RING_LONGITUDE_WRT_NODE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Inertial longitude of the sub-observer
-      point on the ring plane. Longitudes increase in the prograde direction.
-      Values are measured in the ringplane from the ascending node of the ring
-      system's invariable plane on J2000.
+    DESCRIPTION                 = "Sub-observer ring longitude with respect to
+      the node is the longitude of the sub-observer point on the ring plane
+      relative to the ascending node of the ring system's invariable plane on
+      the J2000 x-y plane. Longitudes increase in the direction of prograde
+      motion.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1341,14 +1180,14 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_CENTER_PHASE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Phase angle at the center of the ring
-      system. This is the angle between the local direction of in incoming
-      photon from the Sun and the local direction of an outgoing photon to
-      the observer.
+    DESCRIPTION                 = "Ring center phase angle is the angle
+      between the direction to the Sun and the direction to the observer as
+      measured at the center of the ring system.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1356,14 +1195,14 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_CENTER_PHASE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Phase angle at the center of the ring
-      system. This is the angle between the local direction of in incoming
-      photon from the Sun and the local direction of an outgoing photon to
-      the observer.
+    DESCRIPTION                 = "Ring center phase angle is the angle
+      between the direction to the Sun and the direction to the observer as
+      measured at the center of the ring system.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1371,14 +1210,15 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_CENTER_INCIDENCE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Ring incidence angle at the center of the
-      ring system. This is the angle measured from the local surface normal
-      vector on the sunlit side of the ring plane to the direction of the
-      incoming photon from the Sun. Note that it never exceeds 90 degrees.
+    DESCRIPTION                 = "Ring center incidence angle is the angle,
+      measured at the center of the ring system, between the local surface
+      normal vector on the sunlit side of the ring plane and the direction to
+      the Sun. Note that it never exceeds 90 degrees.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1386,46 +1226,49 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_CENTER_INCIDENCE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Ring incidence angle at the center of the
-      ring system. This is the angle measured from the local surface normal
-      vector on the sunlit side of the ring plane to the direction of the
-      incoming photon from the Sun. Note that it never exceeds 90 degrees.
+    DESCRIPTION                 = "Ring center incidence angle is the angle,
+      measured at the center of the ring system, between the local surface
+      normal vector on the sunlit side of the ring plane and the direction to
+      the Sun. Note that it never exceeds 90 degrees.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RING_CENTER_NORTH_BASED_INCIDENCE_ANGLE"
+    NAME                        = "MINIMUM_NORTH_BASED_CENTER_INCIDENCE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "North-based ring incidence angle at the
-      center of the ring system. This is the angle measured from the local
-      surface normal vector on the north side of the ring plane to the
-      direction of the incoming photon from the Sun. It is > 90 degrees when
-      the Sun shines on the south face of the rings.
+    DESCRIPTION                 = "Ring center north-based incidence angle is
+      the angle, measured at the center of the ring system, between the
+      prograde rotation axis and the direction to the Sun. It is > 90 degrees
+      when the Sun shines on the south (negative angular momentum) side of the
+      rings.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_RING_CENTER_NORTH_BASED_INCIDENCE_ANGLE"
+    NAME                        = "MAXIMUM_NORTH_BASED_CENTER_INCIDENCE_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "North-based ring incidence angle at the
-      center of the ring system. This is the angle measured from the local
-      surface normal vector on the north side of the ring plane to the
-      direction of the incoming photon from the Sun. It is > 90 degrees when
-      the Sun shines on the south face of the rings.
+    DESCRIPTION                 = "Ring center north-based incidence angle is
+      the angle, measured at the center of the ring system, between the
+      prograde rotation axis and the direction to the Sun. It is > 90 degrees
+      when the Sun shines on the south (negative angular momentum) side of the
+      rings.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1433,15 +1276,15 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_CENTER_EMISSION_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Ring emission angle at the center of the
-      ring system. This is the angle measured from the local surface normal
-      vector on the sunlit side of the ring plane to the direction of the
-      outgoing photon to the observer. It is < 90 degrees on the sunlit side
-      of the ring plane and > 90 degrees on the 'dark' side.
+    DESCRIPTION                 = "Ring center emission angle is the angle,
+      measured at the center of the ring system, from the positive rotation
+      axis to the direction to the observer. It is > 90 degrees when observing
+      the unlit face of the rings.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
@@ -1449,171 +1292,250 @@
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_CENTER_EMISSION_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Ring emission angle at the center of the
-      ring system. This is the angle measured from the local surface normal
-      vector on the sunlit side of the ring plane to the direction of the
-      outgoing photon to the observer. It is < 90 degrees on the sunlit side
-      of the ring plane and > 90 degrees on the 'dark' side.
+    DESCRIPTION                 = "Ring center emission angle is the angle,
+      measured at the center of the ring system, from the positive rotation
+      axis to the direction to the observer. It is > 90 degrees when observing
+      the unlit face of the rings.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RING_CENTER_NORTH_BASED_EMISSION_ANGLE"
+    NAME                        = "MINIMUM_NORTH_BASED_CENTER_EMISSION_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "North-based ring emission angle at the
-      center of the ring system. This is the angle measured from the local
-      surface normal vector on the north side of the ring plane to the
-      direction of the outgoing photon to the observer. It is < 90 degrees on
-      the north side of the ring plane and > 90 degrees on the south side.
+    DESCRIPTION                 = "North-based ring center emission angle is
+      the angle, measured at the center of the ring system, between the
+      prograde rotation axis and the direction to the observer. It is > 90
+      degrees when viewing the south (negative angular momentum) side of the
+      rings.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_RING_CENTER_NORTH_BASED_EMISSION_ANGLE"
+    NAME                        = "MAXIMUM_NORTH_BASED_CENTER_EMISSION_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "North-based ring emission angle at the
-      center of the ring system. This is the angle measured from the local
-      surface normal vector on the north side of the ring plane to the
-      direction of the outgoing photon to the observer. It is < 90 degrees on
-      the north side of the ring plane and > 90 degrees on the south side.
+    DESCRIPTION                 = "North-based ring center emission angle is
+      the angle, measured at the center of the ring system, between the
+      prograde rotation axis and the direction to the observer. It is > 90
+      degrees when viewing the south (negative angular momentum) side of the
+      rings.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_SOLAR_RING_OPENING_ANGLE"
+    NAME                        = "MINIMUM_SOLAR_RING_CENTER_OPENING_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Solar ring opening angle at the center of
-      the ring system. This is the angle from the ring plane to the direction
-      of incoming photon from the Sun. It is positive on the north side of the ring plane and negative on the south side.
+    DESCRIPTION                 = "Solar ring center opening angle is the
+      angle, measured at the center of the ring system, between the ring plane
+      and the direction to the Sun. It is positive on the north (positive
+      angular momentum) side of the ring plane and negative on the south side.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_SOLAR_RING_OPENING_ANGLE"
+    NAME                        = "MAXIMUM_SOLAR_RING_CENTER_OPENING_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Solar ring opening angle at the center of
-      the ring system. This is the angle from the ring plane to the direction
-      of incoming photon from the Sun. It is positive on the north side of the
-      ring plane and negative on the south side.
+    DESCRIPTION                 = "Solar ring center opening angle is the
+      angle, measured at the center of the ring system, between the ring plane
+      and the direction to the Sun. It is positive on the north (positive
+      angular momentum) side of the ring plane and negative on the south side.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_OBSERVER_RING_OPENING_ANGLE"
+    NAME                        = "MINIMUM_OBSERVER_RING_CENTER_OPENING_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Observed ring opening angle at the center
-      of the ring system. This is the angle from the ring plane to the
-      direction of outgoing photon to the observer. It is positive on the
-      north side of the ring plane and negative on the south side.
+    DESCRIPTION                 = "Observer ring center opening angle is the
+      angle, measured at the center of the ring system, between the ring plane
+      and the direction to the observer. It is positive on the north (positive
+      angular momentum) side of the ring plane and negative on the south side.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_OBSERVER_RING_OPENING_ANGLE"
+    NAME                        = "MAXIMUM_OBSERVER_RING_CENTER_OPENING_ANGLE"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Observed ring opening angle at the center
-      of the ring system. This is the angle from the ring plane to the
-      direction of outgoing photon to the observer. It is positive on the
-      north side of the ring plane and negative on the south side.
+    DESCRIPTION                 = "Observer ring center opening angle is the
+      angle, measured at the center of the ring system, between the ring plane
+      and the direction to the observer. It is positive on the north (positive
+      angular momentum) side of the ring plane and negative on the south side.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_DIAMETER_IN_PIXELS"
-    NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Projected diameter of the classical ring
-      system, converted to pixels. This diameter is computed based on the
-      body's current distance, but as if it fell at the center of the field
-      of view.
+    NAME                        = "MINIMUM_RING_DIAMETER_IN_PIXELS"
+    FORMAT                      = "F10.3"
+    DESCRIPTION                 = "Projected diameter of the main ring system,
+      converted to pixels. This diameter is computed based on the body's
+      current distance, but as if it fell at the center of the field of view.
 
       This column tabulates the minimum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_DIAMETER_IN_PIXELS"
-    NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "Projected diameter of the classical ring
-      system, converted to pixels. This diameter is computed based on the
-      body's current distance, but as if it fell at the center of the field
-      of view.
+    NAME                        = "MAXIMUM_RING_DIAMETER_IN_PIXELS"
+    FORMAT                      = "F10.3"
+    DESCRIPTION                 = "Projected diameter of the main ring system,
+      converted to pixels. This diameter is computed based on the body's
+      current distance, but as if it fell at the center of the field of view.
 
       This column tabulates the maximum value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_CENTER_X_COORDINATE"
-    NULL_CONSTANT               = -99999999.999
-    DESCRIPTION                 = "The horizontal coordinate of the center of
-      the body in the data product. A fractional value of 0.5 indicates the
-      center of the pixel.
+    NAME                        = "MINIMUM_RING_POLE_CLOCK_ANGLE"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    DESCRIPTION                 = "The ring pole clock angle is the projected
+      direction of the ring system's pole (angular momentum) vector on the
+      sky, measured as an angle clockwise from celestial north (i.e., toward
+      celestial west).
+
+      This column tabulates the minimum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MAXIMUM_RING_POLE_CLOCK_ANGLE"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    DESCRIPTION                 = "The ring pole clock angle is the projected
+      direction of the ring system's pole (angular momentum) vector on the
+      sky, measured as an angle clockwise from celestial north (i.e., toward
+      celestial west).
+
+      This column tabulates the maximum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MINIMUM_RING_POLE_POSITION_ANGLE"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The ring pole position angle is the
+      projected direction of the ring system's pole (angular momentum) vector
+      on the sky, measured as an angle counterclockwise from celestial north
+      (i.e., toward celestial east).
+
+      This column tabulates the minimum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MAXIMUM_RING_POLE_POSITION_ANGLE"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The ring pole position angle is the
+      projected direction of the ring system's pole (angular momentum) vector
+      on the sky, measured as an angle counterclockwise from celestial north
+      (i.e., toward celestial east).
+
+      This column tabulates the maximum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MINIMUM_RING_CENTER_X_COORDINATE"
+    FORMAT                      = "F9.2"
+    NULL_CONSTANT               = -99999.
+    VALID_MINIMUM               = -10000.
+    VALID_MAXIMUM               =  10000.
+    DESCRIPTION                 = "Ring center X coordinate is the predicted
+      horizontal coordinate of the center of the ring system within this data
+      product.
 
       This column tabulates the minimum value during the observation."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_CENTER_X_COORDINATE"
-    NULL_CONSTANT               = -99999999.999
-    DESCRIPTION                 = "The horizontal coordinate of the center of
-      the body in the data product. A fractional value of 0.5 indicates the
-      center of the pixel.
+    NAME                        = "MAXIMUM_RING_CENTER_X_COORDINATE"
+    FORMAT                      = "F9.2"
+    NULL_CONSTANT               = -99999.
+    VALID_MINIMUM               = -10000.
+    VALID_MAXIMUM               =  10000.
+    DESCRIPTION                 = "Ring center X coordinate is the predicted
+      horizontal coordinate of the center of the ring system within this data
+      product.
 
       This column tabulates the maximum value during the observation."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_CENTER_Y_COORDINATE"
-    NULL_CONSTANT               = -99999999.999
-    DESCRIPTION                 = "The vertical coordinate of the center of
-      the body in the data product. A fractional value of 0.5 indicates the
-      center of the pixel.
+    NAME                        = "MINIMUM_RING_CENTER_Y_COORDINATE"
+    FORMAT                      = "F9.2"
+    NULL_CONSTANT               = -99999.
+    VALID_MINIMUM               = -10000.
+    VALID_MAXIMUM               =  10000.
+    DESCRIPTION                 = "Ring center Y coordinate is the predicted
+      vertical coordinate of the center of the ring system within this data
+      product.
 
       This column tabulates the minimum value during the observation."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_CENTER_Y_COORDINATE"
-    NULL_CONSTANT               = -99999999.999
-    DESCRIPTION                 = "The vertical coordinate of the center of
-      the body in the data product. A fractional value of 0.5 indicates the
-      center of the pixel.
+    NAME                        = "MAXIMUM_RING_CENTER_Y_COORDINATE"
+    FORMAT                      = "F9.2"
+    NULL_CONSTANT               = -99999.
+    VALID_MINIMUM               = -10000.
+    VALID_MAXIMUM               =  10000.
+    DESCRIPTION                 = "Ring center Y coordinate is the predicted
+      vertical coordinate of the center of the ring system within this data
+      product.
 
       This column tabulates the maximum value during the observation."
   END_OBJECT                    = COLUMN

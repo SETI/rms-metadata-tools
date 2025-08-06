@@ -1,0 +1,62 @@
+$NOTE
+##############################################################################
+# Template for GO_0xxx sky_summary files
+##############################################################################
+$END_NOTE
+$ONCE(volume_id = '_'.join(BASENAME(LABEL_PATH()).split('_')[:2]))
+$ONCE(index_path = LABEL_PATH()[:-4] + '.tab')
+$ONCE(table_name = BASENAME(index_path))
+$ONCE(records = FILE_RECORDS(index_path))
+$ONCE(record_bytes = RECORD_BYTES(index_path))
+$ONCE(index_type = 'CUMULATIVE' if volume_id.endswith('999') else 'SINGLE')
+PDS_VERSION_ID                  = PDS3
+RECORD_TYPE                     = $LABEL_VALUE("RECORD_TYPE")$
+RECORD_BYTES                    = $record_bytes$
+FILE_RECORDS                    = $records$
+^RING_SUMMARY_TABLE             = "$table_name$"
+
+$IF(index_type != 'CUMULATIVE')
+VOLUME_ID                       = "$volume_id$"
+$END_IF
+PRODUCT_CREATION_TIME           = $FILE_TIME(index_path)$
+
+$INCLUDE("host_defs.lbl")
+
+OBJECT                          = SKY_SUMMARY_TABLE
+  INTERCHANGE_FORMAT            = ASCII
+  ROWS                          = $records$
+  ROW_BYTES                     = $record_bytes$
+  INDEX_TYPE                    = $index_type$
+  DESCRIPTION                   = "This index describes the pointing
+    geometry for the Galileo SSI image collection. The file contains one row
+    per image, indicating the ranges of J2000 right ascension and declination
+    sampled by the field of view.
+
+$IF(TABLE_TYPE == 'CUMULATIVE')
+    This is the cumulative index, describing all the images in the collection.
+$ELSE
+    This index describes the images found on volume $volume_id$.
+$END_IF
+
+    To accommodate pointing uncertainty, the Galileo SSI field of view has
+    been expanded on every side by a distance equivalent to 25 narrow-angle
+    pixels."
+
+  OBJECT                        = COLUMN
+    NAME                        = "VOLUME_ID"
+    FORMAT                      = A7
+    DESCRIPTION                 = "The unique identifier for the PDS3 data
+      volume."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "FILE_SPECIFICATION_NAME"
+    FORMAT                      = A32
+    DESCRIPTION                 = "The full directory path to the data file's,
+      label, relative to the root directory of the PDS volume."
+  END_OBJECT                    = COLUMN
+
+$INCLUDE('sky_summary_columns.lbl')
+
+END_OBJECT                      = SKY_SUMMARY_TABLE
+END
