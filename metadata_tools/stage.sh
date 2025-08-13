@@ -40,7 +40,8 @@ mkdir -p $cur
 for dir in $pfx*
 do
     mkdir $cur/"$dir"
-    cp $dir/GO* $cur/"$dir"
+    cp $dir/GO*.lbl $cur/"$dir"
+    cp $dir/GO*.tab $cur/"$dir"
 done
 
 

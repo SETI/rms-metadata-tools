@@ -72,6 +72,20 @@ def parse_template_name(template_name):
     return (host, index_type)
 
 #===============================================================================
+def smooth(data, width):               ### move to utilities, why is this not in numpy?
+    """Smooth a curve using a moving box.
+
+    Args:
+        data (numpy.ndarray): Data to smooth.
+        width (int): Width of smoothing box.
+
+    Returns:
+        numpy.ndarray: Smoothed dataS
+    """
+    kernel = np.ones(width)/width
+    return np.convolve(data, kernel, mode='same')
+
+#===============================================================================
 def splitpath(path: str, string: str):               ### move to utilities
     """Split a path at a given string.
 
@@ -654,13 +668,14 @@ NINETY_PERCENT_RANGE_DEGREES = np.array([
 ])
 
 #===============================================================================
-def _ninety_percent_gap_degrees(n):
+def _ninety_percent_gap_degrees(n, scale=1.):
     """For n samples, determine the approximate number of degrees for the largest
     gap in coverage providing 90% confidence that the angular coverage is not
     actually complete.
 
     Args:
         n (int): Number of samples.
+        scale (float): Scale factor for result.
 
     Returns:
         float: Estimated number of degrees.
@@ -668,10 +683,10 @@ def _ninety_percent_gap_degrees(n):
 
     # Below 1000, use the tabulation
     if n < 1000:
-        return 360. - NINETY_PERCENT_RANGE_DEGREES[n]
+        return (360. - NINETY_PERCENT_RANGE_DEGREES[n]) * scale
 
     # Otherwise, this empirical fit does a good job
-    return 1808. * n**(-0.912)
+    return (1808. * n**(-0.912)) * scale
 
 #===============================================================================
 def _get_range_mod360(values, alt_format=None):
@@ -706,6 +721,10 @@ def _get_range_mod360(values, alt_format=None):
     diffs[:-1] = values[1:] - values[:-1]
     diffs[-1] = values[0] + 360. - values[-1]
 
+    # Smooth the diffs to remove noise from subsampling.  This box size should probably be
+    # realted to the subsamping width
+    diffs = smooth(diffs, 5)
+
     # Locate the largest gap and use it to define the range
     gap_index = np.argmax(diffs)
     diff_max = diffs[gap_index]
@@ -720,7 +739,9 @@ def _get_range_mod360(values, alt_format=None):
 
     # We want 90% confidence that the coverage is not complete. Otherwise,
     # return the complete range
-    if diff_max >= _ninety_percent_gap_degrees(values.size):
+    # NOTE the scale correction is empirical and needs further checking.
+#+    from IPython import embed; print('+++++++++++++'); embed()
+    if diff_max >= _ninety_percent_gap_degrees(values.size, scale=2):
         return range_mod360
     else:
         return complete_coverage

@@ -85,9 +85,9 @@ FORMAT_DICT = {
     "sub_observer_latitude"     : ("DEG", 2,  8, "%8.3f",  None,     -999.),
 
     "limb_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999.),
-    "limb_clock_angle"          : ("DEG", 2,  8, "%8.3f",  None,     -999.),
+    "limb_clock_angle"          : ("360", 2,  8, "%8.3f",  None,     -999.),
 
-    "pole_clock_angle"          : ("DEG", 2,  8, "%8.3f",  None,     -999.),
+    "pole_clock_angle"          : ("360", 2,  8, "%8.3f",  None,     -999.),
     "pole_position_angle"       : ("DEG", 2,  8, "%8.3f",  None,     -999.),
 
     "phase_angle"               : ("DEG", 2,  8, "%8.3f",  None,     -999.),
@@ -177,7 +177,7 @@ class Record(object):
         self.prefixes = ['"' + volume_id + '"',
                          '"%-32s"' % filespec.replace(".IMG", ".LBL")]
 
-        # Create the backplane
+        # Create the backplanes
         meshgrid = self._meshgrid(observation, meshgrids)
         self.backplane = oops.backplane.Backplane(observation, meshgrid)
 
@@ -485,6 +485,7 @@ class Record(object):
                 else:
                     format = FORMAT_DICT[event_key[0]]
 
+#+                print(column_desc)
                 data_columns.append(Record._formatted_column(values, format))
 
             # Save the row if it was completed
@@ -1056,6 +1057,8 @@ class Suite(object):
         count = 0
         if not labels_only:
             for i in range(nobs):
+#                if self.observations[i].basename != 'C0373036000R.LBL':
+#                    continue
                 # Abort if count exceeds a specified limit
                 if self.first and count >= self.first:
                     continue
