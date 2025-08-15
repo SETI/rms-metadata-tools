@@ -32,7 +32,7 @@ import geometry_config as config
 #
 # Adding a geometry column:
 #   1. Add a column definition to column definition file, e.g. COLUMNS_BODY.py.
-#   2. Add corresponding function to appropriate backplane module.
+#   2. Add a corresponding function to appropriate backplane module.
 #   3. Add a row to the format dictionary below.
 #   4. Add column description(s) to the label template, e.g., body_summary.lbl.
 #   5. Run the host-specific geometry program, e.g., GO_xxxx_geometry.py.
@@ -66,7 +66,7 @@ FORMAT_DICT = {
     "center_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999.),
     "body_diameter_in_pixels"   : ("",    2, 12, "%12.3f", "%12.5e", -999.),
 
-    "event_time"                : ("ISO", 2, 25, "%25s", "%25s", '"UNK"'),
+    "event_time"                : ("ISO", 2, 25, "%25s", "%25s", '"NA"'),
 
     "ring_angular_resolution"   : ("DEG", 2, 10, "%10.5f",  "%10.4e", -999.),
 
@@ -685,13 +685,14 @@ class Record(object):
         if flag in ("ISO", "iso"):
             if not isinstance(results[0], str):
                 s = julian.iso_from_tai(results, digits=3)
-                results = ['"'+str(s[0])+'"', '"'+str(s[1])+'"']
+                results = [str(s[0]), str(s[1])]
 
         # Write the formatted value(s)
         strings = []
         for number in results:
             error_message = ""
 
+            # numeric values: flag common exceptions and use standard format
             if not isinstance(number, str):
                 if np.isnan(number):
                     warnings.warn("NaN encountered")
@@ -699,9 +700,12 @@ class Record(object):
                 if np.isinf(number):
                     warnings.warn("infinity encountered")
                     number = null_value
+                string = standard_format % number
+            # string values: left justify and enclose in double quotes
+            else:
+                string = '"' + number.strip('"').ljust(column_width-2) + '"'
 
-            string = standard_format % number
-
+            # handle formatting overflow
             if len(string) > column_width:
                 string = overflow_format % number
 
@@ -718,6 +722,7 @@ class Record(object):
 
                     string = string[:column_width]
 
+            # add the formatted value
             strings.append(string)
 
             if error_message != "":

@@ -79,7 +79,7 @@ E26/EUROPA/C0532836239R.LBL"
     NOT_APPLICABLE_CONSTANT     = -1
     DESCRIPTION                 = "Galileo SSI images can be edited so that
 only an image area or CUT OUT WINDOW is compressed using Integer Cosine
-Transform, BARC or Huffman compression and transmitted to Earth. The cut out -
+Transform, BARC, or Huffman compression and transmitted to Earth. The cut out -
 window element indicates the location and size of this image area as defined
 by four numbers: starting line, starting sample, number of lines, number of
 samples (the origin of the image coordinate system is at line, sample=1,1 for
