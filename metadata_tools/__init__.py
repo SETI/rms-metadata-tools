@@ -31,42 +31,35 @@ the PDS3 label using OOPS.  The purpose of the geometry files is to provide
 input to OPUS.
 
 ##############################
-Generating New Matadata Tables
+Generating New Metadata Tables
 ##############################
+
+The procedure for creatin a new host configuration is as follows:
+
+ 1. Create a directory for the new host collection under the hosts/ subdirectory, e.g., 
+    hosts/GO_0xxx/, hosts/COISS_xxxx/, etc.
+
+ 2. Copy the python files from an existing host directory and rename them as needed
+    for the new collection.
+
+ 3. Edit the config and init modules as needed.
+
+ 4. Create a templates/ subdirectory and copy the files from an existing host. Rename 
+    the files as needed.
+
+ 5. Edit host_defs.lbl for the new host.
+
+ 6. Edit the descriptions in the summary templates as needed.
+
+ 7. Edit the supplemental template to define the supplemental metadata for the new host.
 
 The procedure for generating metadata tables is as follows:
 
- 1. Create a directory for the new host collection under the hosts/
-    subdirectory, e.g., GO_0xxx, COISS_xxxx, etc.
+ 1. Create the supplemental index using <collection>_index.py.
 
- 2. Copy the python files from an existing host directory and rename them
-    according to the new collection.  You should have these files:
+ 2. Create the geometry tables using <collection>_geometry.py.
 
-    __init.py__
-    host_init.py
-    host_config.py
-    index_config.py
-    geometry_config.py
-    <collection>_index.py
-    <collection>_geometry.py
-    <collection>_cumulative.py
-
- 3. Create a templates/ subdirectory and copy the label templates from an
-    existing host, and rename accordingly, yielding:
-
-    templates/<collection>_supplmental_index.lbl
-    templates/<collection>_body_summary.lbl
-    templates/<collection>_ring_summary.lbl
-    templates/host_defs.lbl
-
- 4. Edit the config modules as needed.
-
- 5. Edit the supplemental and summary templates and generate the tables
-    using <collection>_index.py and <collection>_geometry.py according to
-    the instructions in those files.
-
- 6. Generate the cumulative tables using <collection>_cumulative.py
-    according to the instructions in that file.
+ 3. Generate the cumulative tables using <collection>_cumulative.py.
 
 """
 ##########################################################################################

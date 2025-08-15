@@ -2,18 +2,7 @@ $NOTE
 ##############################################################################
 # Geometry file template for bodies.
 #
-#  This template controls the creation of body geometry labels. The procedure
-#  for generating geometry tables for a host is as follows. Files referred to
-#  below should be copied into the top directory for the collection, e.g.,
-#  GO_0xxx:
-#
-#  1. Follow the instructions in <collection>_supplmental_index.lbl to generate
-#     the supplemental index files.
-#  1. Copy and edit this template host subdirectory.
-#  2. Copy and edit the <collection>_geometry.py script to reflect the
-#     type of index and glob pattern for the table files.
-#  3. Edit the DEFAULT_BODIES_TABLE and meshgrid definitions in host_config.py.
-#  4. Run <collection>_geometry.py from the collection top directory.
+#  This template controls the creation of body geometry labels.
 #
 ##############################################################################
 $END_NOTE

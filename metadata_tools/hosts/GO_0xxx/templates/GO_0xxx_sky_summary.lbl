@@ -1,6 +1,9 @@
 $NOTE
 ##############################################################################
-# Template for GO_0xxx sky_summary files
+# Geometry file template for sky geometry.
+#
+#  This template controls the creation of sky geometry labels.
+#
 ##############################################################################
 $END_NOTE
 $ONCE(volume_id = '_'.join(BASENAME(LABEL_PATH()).split('_')[:2]))
