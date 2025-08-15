@@ -167,10 +167,11 @@ class Record(object):
             self.ring_tile_dict = col.RING_TILE_DICT[self.primary]
             self.body_tile_dict = col.BODY_TILE_DICT[self.primary]
 
-        # Determine target
+        # Determine target and its parent
         self.target = config.target_name(observation.dict)
         if self.target in defs.TRANSLATIONS.keys():
             self.target = defs.TRANSLATIONS[self.target]
+        self.parent = oops.Body.BODY_REGISTRY[self.target].parent.name
 
         # Create the record prefix
         filespec = observation.dict["FILE_SPECIFICATION_NAME"]
@@ -780,9 +781,6 @@ class SkyTable(meta.Table):
                 Directory in which to write the geometry files.
         """
         super().__init__(output_dir, qualifier='sky', **kwargs)
-#        super().__init__(output_dir,
-#                         qualifier='sky',
-#                         use_global_template=True, **kwargs)
 
     #===============================================================================
     def add(self, record):
@@ -900,7 +898,8 @@ class BodyTable(meta.Table):
         # Add other bodies
         for name in record.bodies:
             if name != record.primary:
-                self.rows += record.add(self.qualifier, name=name, target=name)
+                if record.primary == record.parent:
+                    self.rows += record.add(self.qualifier, name=name, target=name)
 
 
 ################################################################################

@@ -13,7 +13,7 @@ import metadata_tools.hosts.GO_0xxx.host_init
 ##########################################################################################
 # SCLK-dependent mission-specific data (required)
 ##########################################################################################
-# SYSTEM and SECONDARIES are always included in the body table regardless of whether they
+# PRIMARY and SECONDARIES are always included in the body table regardless of whether they
 # intersect the FOV.
 #      SCLK_START range (inclusive)   PRIMARY   SECONDARIES
 DEFAULT_BODIES_TABLE = [
