@@ -736,7 +736,7 @@ $END_NOTE
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RING_INTERCEPT_TIME"
+    NAME                        = "MAXIMUM_RING_INTERCEPT_TIME"
     NULL_CONSTANT               = ""
     DESCRIPTION                 = "Surface intercept time is the time when the
       received photons left the ring intercept point. It is given in ISO

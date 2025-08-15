@@ -13,7 +13,7 @@ PDS_VERSION_ID                  = PDS3
 RECORD_TYPE                     = $LABEL_VALUE("RECORD_TYPE")$
 RECORD_BYTES                    = $record_bytes$
 FILE_RECORDS                    = $records$
-^RING_SUMMARY_TABLE             = "$table_name$"
+^SKY_SUMMARY_TABLE             = "$table_name$"
 
 $IF(index_type != 'CUMULATIVE')
 VOLUME_ID                       = "$volume_id$"

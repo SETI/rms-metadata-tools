@@ -1,4 +1,4 @@
-$IF(is_visual and not night_override)
+$IF(is_visual)
       Ring intercept points that are obscured or shadowed by the planet or a
       targeted moon are ignored."
 $ELSE

@@ -774,9 +774,10 @@ class SkyTable(meta.Table):
             output_dir (str, Path, or FCPath):
                 Directory in which to write the geometry files.
         """
-        super().__init__(output_dir,
-                         qualifier='sky',
-                         use_global_template=True, **kwargs)
+        super().__init__(output_dir, qualifier='sky', **kwargs)
+#        super().__init__(output_dir,
+#                         qualifier='sky',
+#                         use_global_template=True, **kwargs)
 
     #===============================================================================
     def add(self, record):

@@ -76,14 +76,14 @@ class Test_Geometry_GOSSI(unittest.TestCase):
             unit.bounds(self, file, table, 'NORTH_BASED_INCIDENCE_ANGLE', min=35, max=145)
             unit.bounds(self, file, table, 'SOLAR_RING_ELEVATION', min=-35, max=35)
             unit.bounds(self, file, table, 'RING_CENTER_INCIDENCE_ANGLE', min=60, max=90)
-            unit.bounds(self, file, table, 'RING_CENTER_NORTH_BASED_INCIDENCE_ANGLE', min=35, max=145)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_INCIDENCE_ANGLE', min=35, max=145)
 
             #################### Slightly exceeds 90 deg in GO_0022
 #            unit.bounds(self, file, table, 'RING_CENTER_EMISSION_ANGLE', min=-30, max=30)
 
-            unit.bounds(self, file, table, 'RING_CENTER_NORTH_BASED_EMISSION_ANGLE', min=35, max=145)
-            unit.bounds(self, file, table, 'SOLAR_RING_OPENING_ANGLE', min=-35, max=35)
-            unit.bounds(self, file, table, 'OBSERVER_RING_OPENING_ANGLE', min=-30, max=30)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_EMISSION_ANGLE', min=35, max=145)
+            unit.bounds(self, file, table, 'SOLAR_RING_CENTER_OPENING_ANGLE', min=-35, max=35)
+            unit.bounds(self, file, table, 'OBSERVER_RING_CENTER_OPENING_ANGLE', min=-30, max=30)
 
 
 #########################################
