@@ -512,7 +512,7 @@ $ONCE(night_override = False)
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
-    NULL_CONSTANT               = ""
+    NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the time when the
       received photon left a point on the body's surface. It is given in ISO
       format: YYYY-MM-DDTHH:mm:ss.sss.
@@ -526,7 +526,7 @@ $ONCE(night_override = False)
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
-    NULL_CONSTANT               = ""
+    NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the time when the
       received photon left a point on the body's surface. It is given in ISO
       format: YYYY-MM-DDTHH:mm:ss.sss.
@@ -852,12 +852,12 @@ $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MINIMUM_DIAMETER_IN_PIXELS
+    NAME                        = DIAMETER_IN_PIXELS
     FORMAT                      = "F10.3"
     DESCRIPTION                 = "The physical diameter of the body,
       converted to pixels.
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing.
       It is computed for the body at its true distance, but as if it fell at
       the center of the field of view, with its longest axis perpendicular to
@@ -865,20 +865,7 @@ $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_DIAMETER_IN_PIXELS
-    FORMAT                      = "F10.3"
-    DESCRIPTION                 = "The physical diameter of the body,
-      converted to pixels.
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing.
-      It is computed for the body at its true distance, but as if it fell at
-      the center of the field of view, with its longest axis perpendicular to
-      the line of sight."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = MINIMUM_NORTH_POLE_CLOCK_ANGLE
+    NAME                        = NORTH_POLE_CLOCK_ANGLE
     FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
@@ -887,26 +874,12 @@ $ONCE(night_override = False)
       direction of the body's pole vector on the sky, measured as an angle
       clockwise from celestial north (i.e., toward celestial west).
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_NORTH_POLE_CLOCK_ANGLE
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    DESCRIPTION                 = "The north pole clock angle is the projected
-      direction of the body's pole vector on the sky, measured as an angle
-      clockwise from celestial north (i.e., toward celestial west).
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = MINIMUM_NORTH_POLE_POSITION_ANGLE
+    NAME                        = NORTH_POLE_POSITION_ANGLE
     FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
@@ -916,27 +889,13 @@ $ONCE(night_override = False)
       angle counterclockwise from celestial north (i.e., toward celestial
       east).
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
-  OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_NORTH_POLE_POSITION_ANGLE
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    DESCRIPTION                 = "The north pole position angle is the
-      projected direction of the body's pole vector on the sky, measured as an
-      angle counterclockwise from celestial north (i.e., toward celestial
-      east).
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing."
-  END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MINIMUM_CENTER_X_COORDINATE
+    NAME                        = CENTER_X_COORDINATE
     FORMAT                      = "F9.2"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
@@ -945,24 +904,12 @@ $ONCE(night_override = False)
       horizontal coordinate of the center of the body within this data
       product.
 
-      This column tabulates the minimum value during the observation."
+      This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN
 
-  OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_CENTER_X_COORDINATE
-    FORMAT                      = "F9.2"
-    NULL_CONSTANT               = -99999.
-    VALID_MINIMUM               = -10000.
-    VALID_MAXIMUM               =  10000.
-    DESCRIPTION                 = "Center X coordinate is the predicted
-      horizontal coordinate of the center of the body within this data
-      product.
-
-      This column tabulates the maximum value during the observation."
-  END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MINIMUM_CENTER_Y_COORDINATE
+    NAME                        = CENTER_Y_COORDINATE
     FORMAT                      = "F9.2"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
@@ -971,18 +918,5 @@ $ONCE(night_override = False)
       vertical coordinate of the center of the body within this data
       product.
 
-      This column tabulates the minimum value during the observation."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_CENTER_Y_COORDINATE
-    FORMAT                      = "F9.2"
-    NULL_CONSTANT               = -99999.
-    VALID_MINIMUM               = -10000.
-    VALID_MAXIMUM               =  10000.
-    DESCRIPTION                 = "Center Y coordinate is the predicted
-      vertical coordinate of the center of the body within this data
-      product.
-
-      This column tabulates the maximum value during the observation."
+      This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN

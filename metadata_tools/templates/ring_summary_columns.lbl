@@ -724,7 +724,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_INTERCEPT_TIME"
-    NULL_CONSTANT               = ""
+    NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the time when the
       received photons left the ring intercept point. It is given in ISO
       format: YYYY-MM-DDTHH:mm:ss.sss.
@@ -737,7 +737,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_INTERCEPT_TIME"
-    NULL_CONSTANT               = ""
+    NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the time when the
       received photons left the ring intercept point. It is given in ISO
       format: YYYY-MM-DDTHH:mm:ss.sss.
@@ -1405,29 +1405,18 @@ $END_NOTE
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RING_DIAMETER_IN_PIXELS"
+    NAME                        = "RING_DIAMETER_IN_PIXELS"
     FORMAT                      = "F10.3"
     DESCRIPTION                 = "Projected diameter of the main ring system,
       converted to pixels. This diameter is computed based on the body's
       current distance, but as if it fell at the center of the field of view.
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_RING_DIAMETER_IN_PIXELS"
-    FORMAT                      = "F10.3"
-    DESCRIPTION                 = "Projected diameter of the main ring system,
-      converted to pixels. This diameter is computed based on the body's
-      current distance, but as if it fell at the center of the field of view.
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RING_POLE_CLOCK_ANGLE"
+    NAME                        = "RING_POLE_CLOCK_ANGLE"
     FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
@@ -1437,27 +1426,13 @@ $END_NOTE
       sky, measured as an angle clockwise from celestial north (i.e., toward
       celestial west).
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
-  OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_RING_POLE_CLOCK_ANGLE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    DESCRIPTION                 = "The ring pole clock angle is the projected
-      direction of the ring system's pole (angular momentum) vector on the
-      sky, measured as an angle clockwise from celestial north (i.e., toward
-      celestial west).
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing."
-  END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RING_POLE_POSITION_ANGLE"
+    NAME                        = "RING_POLE_POSITION_ANGLE"
     FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
@@ -1468,28 +1443,13 @@ $END_NOTE
       on the sky, measured as an angle counterclockwise from celestial north
       (i.e., toward celestial east).
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
-  OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_RING_POLE_POSITION_ANGLE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "The ring pole position angle is the
-      projected direction of the ring system's pole (angular momentum) vector
-      on the sky, measured as an angle counterclockwise from celestial north
-      (i.e., toward celestial east).
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing."
-  END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RING_CENTER_X_COORDINATE"
+    NAME                        = "RING_CENTER_X_COORDINATE"
     FORMAT                      = "F9.2"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
@@ -1498,24 +1458,12 @@ $END_NOTE
       horizontal coordinate of the center of the ring system within this data
       product.
 
-      This column tabulates the minimum value during the observation."
+      This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN
 
-  OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_RING_CENTER_X_COORDINATE"
-    FORMAT                      = "F9.2"
-    NULL_CONSTANT               = -99999.
-    VALID_MINIMUM               = -10000.
-    VALID_MAXIMUM               =  10000.
-    DESCRIPTION                 = "Ring center X coordinate is the predicted
-      horizontal coordinate of the center of the ring system within this data
-      product.
-
-      This column tabulates the maximum value during the observation."
-  END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RING_CENTER_Y_COORDINATE"
+    NAME                        = "RING_CENTER_Y_COORDINATE"
     FORMAT                      = "F9.2"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
@@ -1524,18 +1472,5 @@ $END_NOTE
       vertical coordinate of the center of the ring system within this data
       product.
 
-      This column tabulates the minimum value during the observation."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_RING_CENTER_Y_COORDINATE"
-    FORMAT                      = "F9.2"
-    NULL_CONSTANT               = -99999.
-    VALID_MINIMUM               = -10000.
-    VALID_MAXIMUM               =  10000.
-    DESCRIPTION                 = "Ring center Y coordinate is the predicted
-      vertical coordinate of the center of the ring system within this data
-      product.
-
-      This column tabulates the maximum value during the observation."
+      This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN
