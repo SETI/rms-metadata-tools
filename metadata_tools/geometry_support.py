@@ -172,7 +172,7 @@ class Record(object):
             self.body_tile_dict = col.BODY_TILE_DICT[self.primary]
 
         # Determine target and its parent
-        self.target = config.target_name(observation.dict)
+        self.target = str(config.target_name(observation.dict))
         if self.target in defs.TRANSLATIONS.keys():
             self.target = defs.TRANSLATIONS[self.target]
 
@@ -190,36 +190,69 @@ class Record(object):
         meshgrid = self._meshgrid(observation, meshgrids)
         self.backplane = oops.backplane.Backplane(observation, meshgrid)
 
-        # Build body list
-        body_names = col.BODIES.keys()
-        if self.target not in col.BODIES and oops.Body.exists(self.target):
-            body_names += [self.target]
+        # Select bodies for this record
+        self.bodies = Record._select_bodies(self,col.BODIES)
 
-        # Inventory the bodies in the FOV
-        if body_names:
-            body_names = self.observation.inventory(body_names,
-                                                    expand=config.EXPAND, cache=False)
+        # Define a blocker body, if any
+        if self.target in self.bodies:
+            blocker = self.observation.inventory([self.target],
+                                                expand=config.EXPAND, cache=False)
+            if blocker:
+                self.blocker = blocker[0]
 
-        # Add any secondaries to body_names
+        # Add a targeted irregular moon to the dictionaries if present
+        if self.target in self.bodies and self.target not in self.dicts['body'].keys():
+            self.dicts['body'][self.target] = \
+                util.replace(col.BODY_SUMMARY_COLUMNS,
+                                defs.BODYX, self.target)
+            self.body_tile_dict[self.target] = \
+                util.replace(col.BODY_TILES,
+                                col.BODYX, self.target)
+
+    #===============================================================================
+    def _select_bodies(self, bodies):
+        """Select all bodies to include in this record according to the following rules:
+        
+           1. The primary and secondary bodies are always included. 
+           2. Children of the primary are included if they intersect the FOV. 
+           3. The target is included if it intersects the FOV. 
+           4. If the target is a satellite and intersects the FOV, the parent is included.
+
+        Args:
+            bodies (list): All bodies.
+
+        Returns:
+            List of selected bodies.
+        """
+        # Add bodies
+        body_names = []
+
+        # Add primary body and FOV children
+        if self.primary:
+            body_names += [self.primary]
+            children = [child.name for child in col.BODIES[self.primary].children
+                            if child.name in bodies.keys()]
+            body_names += self.observation.inventory(children,
+                                                     expand=config.EXPAND, cache=False)
+
+        # Add any secondary bodies
         if self.secondaries:
             body_names += self.secondaries
-        self.bodies = body_names
 
-        if self.primary:
-            # Define a blocker body, if any
-            if self.target in self.bodies:
-                self.blocker = self.target
+        # Add target body and parent
+        if self.target and oops.Body.exists(self.target):
+            fov_target = self.observation.inventory([self.target],
+                                                     expand=config.EXPAND, cache=False)
+            if fov_target:
+                if self.parent and self.parent != 'SUN':
+                    body_names += [self.parent]
+                body_names += fov_target
 
-            # Add a targeted irregular moon to the dictionaries if present
-            targeted_irregular = self.target in self.bodies and \
-                                 self.target not in self.dicts['body'].keys()
-            if targeted_irregular:
-                self.dicts['body'][self.target] = \
-                    util.replace(col.BODY_SUMMARY_COLUMNS,
-                                 defs.BODYX, self.target)
-                self.body_tile_dict[self.target] = \
-                    util.replace(col.BODY_TILES,
-                                 col.BODYX, self.target)
+
+        # Cull duplicate bodies and verify all bodies are in the registry
+        body_names = list(dict.fromkeys(body_names))
+
+        return [body_name for body_name in body_names if oops.Body.exists(body_name)]
 
     #===============================================================================
     def _meshgrid(self, observation, meshgrids):
@@ -1143,6 +1176,7 @@ class Suite(object):
         count = 0
         if not labels_only:
             for i in range(nobs):
+
                 # Abort if count exceeds a specified limit
                 if self.first and count >= self.first:
                     continue
