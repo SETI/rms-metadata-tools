@@ -248,7 +248,6 @@ class Record(object):
                     body_names += [self.parent]
                 body_names += fov_target
 
-
         # Cull duplicate bodies and verify all bodies are in the registry
         body_names = list(dict.fromkeys(body_names))
 
