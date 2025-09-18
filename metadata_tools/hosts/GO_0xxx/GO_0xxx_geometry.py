@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-#########################################################################################
-# GO_0xxx_geometry.py: Generates all geometry tables and labels for Galileo SSI.
+##########################################################################################
+# GO_0xxx_geometry.py: Generates all geometry tables and labels for Galileo SSI. Run this
+# script from the host subdirectory.
 #
 # Usage:
 #    python GO_0xxx_geometry.py [-h] [--labels [labels ...]]
@@ -39,25 +40,12 @@
 #   e.g., python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA/GO_0xxx/
 #         python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA/GO_0xxx/ GO_0017
 #
-# Procedure:
-#  1) Create the supplemental index files in the input tree using
-#     GO_0xxx_index.py.
-#
-#  2) Copy and rename the summary label templates from an existing host, e.g.:
-#
-#         hosts/GO_0xxx/templates/GO_0xxx_body_summary.lbl
-#         hosts/GO_0xxx/templates/GO_0xxx_ring_summary.lbl
-#
-#  3) Follow the instructions in either summary label template file.
-#
-#########################################################################################
+##########################################################################################
 import host_init
-import host_config as hconf
-import geometry_config as config
-from metadata_tools.geometry_support import process_tables
+import metadata_tools.geometry_support as geom
 
-process_tables(hconf.template_name,
-               glob=config.glob,
-               selection=config.selection,
-               exclude=config.exclude)
-#########################################################################################
+geom.process_tables('GO_0xxx_supplemental_index',
+                    glob='GO_????_index.lbl',
+                    selection="S",
+                    exclude=['GO_0999'])
+##########################################################################################

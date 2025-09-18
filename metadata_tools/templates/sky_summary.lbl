@@ -1,21 +1,21 @@
-$NOTE 
+$NOTE
 ##############################################################################
-# Geometry file template for sky quantities.  
+# Geometry file template for sky quantities.
 #
 #  This template controls the creation of body sky files.  The procedure
-#  for generating geometry files for a host is as follows.  Files referred to 
-#  below should be copied into the top directory for the collection, e.g., 
+#  for generating geometry files for a host is as follows.  Files referred to
+#  below should be copied into the top directory for the collection, e.g.,
 #  GO_0xxx:
 #
-#  2. Copy and edit the <collection>_geometry.py script to reflect the 
+#  2. Copy and edit the <collection>_geometry.py script to reflect the
 #     type of index and glob pattern for the table files.
 #  3. Copy and edit *config.py to address any host-dependent processing.
 #  4. Run <collection>_geometry.py from the collection top directory.
 #
-#  In the host_defs files, replace all values describing the new host.  
-#  In this template, quantities enclosed in dollar signs are automatically 
-#  filled in and should not be edited.  Add a column for each quantity to be 
-#  copied from the product label into the index.  
+#  In the host_defs files, replace all values describing the new host.
+#  In this template, quantities enclosed in dollar signs are automatically
+#  filled in and should not be edited.  Add a column for each quantity to be
+#  copied from the product label into the index.
 #
 ##############################################################################
 $END_NOTE

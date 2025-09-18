@@ -22,7 +22,7 @@ import geometry_config as config
 # FORMAT_DICT tuples are:
 #
 #   (flag, number_of_values, column_width, standard_format, overflow_format,
-#    null_value)
+#    null_value, valid_minimum, valid_maximum)
 #
 # where...
 #
@@ -30,9 +30,13 @@ import geometry_config as config
 #        = "360" = convert to degrees, with 360-deg periodicity;
 #        = ""    = do not modify value.
 #
+# Note null_value, valid_minimum, valid_maximum are tracked in the override dicts, but
+# not currently used to populate the label, which would remove the redundancy of 
+# specifying them separately in the both the format dict and the label template.
+#
 # Adding a geometry column:
 #   1. Add a column definition to column definition file, e.g. COLUMNS_BODY.py.
-#   2. Add corresponding function to appropriate backplane module.
+#   2. Add a corresponding function to appropriate backplane module.
 #   3. Add a row to the format dictionary below.
 #   4. Add column description(s) to the label template, e.g., body_summary.lbl.
 #   5. Run the host-specific geometry program, e.g., GO_xxxx_geometry.py.
@@ -40,80 +44,80 @@ import geometry_config as config
 #
 ################################################################################
 FORMAT_DICT = {
-    "right_ascension"           : ("360", 2, 10, "%10.6f", "%10.5f", -999.),
-    "center_right_ascension"    : ("360", 2, 10, "%10.6f", "%10.5f", -999.),
-    "declination"               : ("DEG", 2, 10, "%10.6f", "%10.5f", -999.),
-    "center_declination"        : ("DEG", 2, 10, "%10.6f", "%10.5f", -999.),
+    "right_ascension"           : ("360", 2, 10, "%10.6f", "%10.5f", -999., 0, 360),
+    "center_right_ascension"    : ("360", 2, 10, "%10.6f", "%10.5f", -999., 0, 360),
+    "declination"               : ("DEG", 2, 10, "%10.6f", "%10.5f", -999., -90, 90),
+    "center_declination"        : ("DEG", 2, 10, "%10.6f", "%10.5f", -999., -90, 90),
 
-    "distance"                  : ("",    2, 12, "%12.3f", "%12.5e", -999.),
-    "center_distance"           : ("",    2, 12, "%12.3f", "%12.5e", -999.),
-    "center_coordinate"         : ("",    2, 12, "%12.3f", "%12.5e", -99999999.999),
-    "radius_in_pixels"          : ("",    2, 12, "%12.3f", "%12.5e", -999.),
+    "distance"                  : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
+    "center_distance"           : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
+    "center_coordinate"         : ("",    1, 12, "%12.3f", "%12.5e", -99999, 0, 0),
+    "radius_in_pixels"          : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
 
-    "ring_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999.),
-    "ansa_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999.),
+    "ring_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
+    "ansa_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
 
-    "altitude"                  : ("",    2, 12, "%12.3f", "%12.5e", -99999.),
-    "ansa_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999.),
+    "altitude"                  : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0),
+    "ansa_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0),
 
-    "resolution"                : ("",    2, 10, "%10.5f", "%10.4e", -999.),
-    "finest_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999.),
-    "coarsest_resolution"       : ("",    2, 10, "%10.5f", "%10.4e", -999.),
-    "ring_radial_resolution"    : ("",    2, 10, "%10.5f", "%10.4e", -999.),
+    "resolution"                : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
+    "finest_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
+    "coarsest_resolution"       : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
+    "ring_radial_resolution"    : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
 
-    "ansa_radial_resolution"    : ("",    2, 10, "%10.5f", "%10.4e", -999.),
-    "ansa_vertical_resolution"  : ("",    2, 10, "%10.5f", "%10.4e", -999.),
-    "center_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999.),
-    "body_diameter_in_pixels"   : ("",    2, 12, "%12.3f", "%12.5e", -999.),
+    "ansa_radial_resolution"    : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
+    "ansa_vertical_resolution"  : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
+    "center_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
+    "body_diameter_in_pixels"   : ("",    1, 12, "%12.3f", "%12.5e", -999., 0, 0),
 
-    "event_time"                : ("ISO", 2, 25, "%25s", "%25s", '"UNK"'),
+    "event_time"                : ("ISO", 2, 25, "%25s", "%25s", '"NA"', 0, 0),
 
-    "ring_angular_resolution"   : ("DEG", 2, 10, "%10.5f",  "%10.4e", -999.),
+    "ring_angular_resolution"   : ("DEG", 2, 10, "%10.5f",  "%10.4e", -999., 0, 0),
 
-    "longitude"                 : ("360", 2,  8, "%8.3f",  None,     -999.),
-    "ring_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999.),
-    "ring_azimuth"              : ("360", 2,  8, "%8.3f",  None,     -999.),
-    "ansa_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999.),
-    "sub_solar_longitude"       : ("360", 2,  8, "%8.3f",  None,     -999.),
-    "sub_observer_longitude"    : ("360", 2,  8, "%8.3f",  None,     -999.),
-    "ring_sub_solar_longitude"  : ("360", 2,  8, "%8.3f",  None,     -999.),
+    "longitude"                 : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "ring_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "ring_azimuth"              : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "ansa_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "sub_solar_longitude"       : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "sub_observer_longitude"    : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "ring_sub_solar_longitude"  : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
     "ring_sub_observer_longitude"
-                                : ("360", 2,  8, "%8.3f",  None,     -999.),
+                                : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
 
-    "latitude"                  : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "sub_solar_latitude"        : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "sub_observer_latitude"     : ("DEG", 2,  8, "%8.3f",  None,     -999.),
+    "latitude"                  : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
+    "sub_solar_latitude"        : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
+    "sub_observer_latitude"     : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
 
-    "limb_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999.),
-    "limb_clock_angle"          : ("360", 2,  8, "%8.3f",  None,     -999.),
+    "limb_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0),
+    "limb_clock_angle"          : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 360),
 
-    "pole_clock_angle"          : ("360", 2,  8, "%8.3f",  None,     -999.),
-    "pole_position_angle"       : ("DEG", 2,  8, "%8.3f",  None,     -999.),
+    "pole_clock_angle"          : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360),
+    "pole_position_angle"       : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360),
 
-    "phase_angle"               : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "center_phase_angle"        : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "incidence_angle"           : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "ring_incidence_angle"      : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "center_incidence_angle"    : ("DEG", 2,  8, "%8.3f",  None,     -999.),
+    "phase_angle"               : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
+    "center_phase_angle"        : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
+    "incidence_angle"           : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
+    "ring_incidence_angle"      : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
+    "center_incidence_angle"    : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
     "ring_center_incidence_angle"
-                                : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "emission_angle"            : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "ring_emission_angle"       : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "center_emission_angle"     : ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "ring_center_emission_angle": ("DEG", 2,  8, "%8.3f",  None,     -999.),
-    "ring_elevation"            : ("DEG", 2,  8, "%8.3f",  None,     -999.),
+                                : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
+    "emission_angle"            : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
+    "ring_emission_angle"       : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
+    "center_emission_angle"     : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
+    "ring_center_emission_angle": ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
+    "ring_elevation"            : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
 
-    "where_inside_shadow"       : ("",    2,  1, "%1d",    None,        0),
-    "where_in_front"            : ("",    2,  1, "%1d",    None,        0),
-    "where_in_back"             : ("",    2,  1, "%1d",    None,        0),
-    "where_antisunward"         : ("",    2,  1, "%1d",    None,        0)}
+    "where_inside_shadow"       : ("",    2,  1, "%1d",    None,        0, 0, 0),
+    "where_in_front"            : ("",    2,  1, "%1d",    None,        0, 0, 0),
+    "where_in_back"             : ("",    2,  1, "%1d",    None,        0, 0, 0),
+    "where_antisunward"         : ("",    2,  1, "%1d",    None,        0, 0, 0)}
 
 ALT_FORMAT_DICT = {
     ("ring_angular_resolution", "km")
-                                : ("KM",   2, 10, "%10.5f", "%10.4e", -999.),
-    ("longitude",      "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999.),
-    ("ring_longitude", "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999.),
-    ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999.)}
+                                : ("KM",   2, 10, "%10.5f", "%10.4e", -999., 0, 0),
+    ("longitude",      "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180),
+    ("ring_longitude", "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180),
+    ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180)}
 
 DEFAULT_BODIES_TABLE = \
     util.convert_default_bodies_table(config.DEFAULT_BODIES_TABLE, hconf.SCLK_BASES)
@@ -157,6 +161,7 @@ class Record(object):
                 'ring'   : col.RING_SUMMARY_DETAILED,
                 'body'   : col.BODY_SUMMARY_DETAILED
             }
+        from IPython import embed; print('+++++++++++++'); embed()
 
         # Set up planet-based geometry
         self.bodies = []
@@ -167,10 +172,15 @@ class Record(object):
             self.ring_tile_dict = col.RING_TILE_DICT[self.primary]
             self.body_tile_dict = col.BODY_TILE_DICT[self.primary]
 
-        # Determine target
-        self.target = config.target_name(observation.dict)
+        # Determine target and its parent
+        self.target = str(config.target_name(observation.dict))
         if self.target in defs.TRANSLATIONS.keys():
             self.target = defs.TRANSLATIONS[self.target]
+
+        if self.target in oops.Body.BODY_REGISTRY:
+            self.parent = oops.Body.BODY_REGISTRY[self.target].parent.name
+        else:
+            self.parent = 'None'
 
         # Create the record prefix
         filespec = observation.dict["FILE_SPECIFICATION_NAME"]
@@ -181,36 +191,68 @@ class Record(object):
         meshgrid = self._meshgrid(observation, meshgrids)
         self.backplane = oops.backplane.Backplane(observation, meshgrid)
 
-        # Build body list
-        body_names = col.BODIES.keys()
-        if self.target not in col.BODIES and oops.Body.exists(self.target):
-            body_names += [self.target]
+        # Select bodies for this record
+        self.bodies = Record._select_bodies(self,col.BODIES)
 
-        # Inventory the bodies in the FOV
-        if body_names:
-            body_names = self.observation.inventory(body_names,
-                                                    expand=config.EXPAND, cache=False)
+        # Define a blocker body, if any
+        if self.target in self.bodies:
+            blocker = self.observation.inventory([self.target],
+                                                expand=config.EXPAND, cache=False)
+            if blocker:
+                self.blocker = blocker[0]
 
-        # Add any secondaries to body_names
+        # Add a targeted irregular moon to the dictionaries if present
+        if self.target in self.bodies and self.target not in self.dicts['body'].keys():
+            self.dicts['body'][self.target] = \
+                util.replace(col.BODY_SUMMARY_COLUMNS,
+                                defs.BODYX, self.target)
+            self.body_tile_dict[self.target] = \
+                util.replace(col.BODY_TILES,
+                                col.BODYX, self.target)
+
+    #===============================================================================
+    def _select_bodies(self, bodies):
+        """Select all bodies to include in this record according to the following rules:
+        
+           1. The primary and secondary bodies are always included. 
+           2. Children of the primary are included if they intersect the FOV. 
+           3. The target is included if it intersects the FOV. 
+           4. If the target is a satellite and intersects the FOV, the parent is included.
+
+        Args:
+            bodies (list): All bodies.
+
+        Returns:
+            List of selected bodies.
+        """
+        # Add bodies
+        body_names = []
+
+        # Add primary body and FOV children
+        if self.primary:
+            body_names += [self.primary]
+            children = [child.name for child in col.BODIES[self.primary].children
+                            if child.name in bodies.keys()]
+            body_names += self.observation.inventory(children,
+                                                     expand=config.EXPAND, cache=False)
+
+        # Add any secondary bodies
         if self.secondaries:
             body_names += self.secondaries
-        self.bodies = body_names
 
-        if self.primary:
-            # Define a blocker body, if any
-            if self.target in self.bodies:
-                self.blocker = self.target
+        # Add target body and parent
+        if self.target and oops.Body.exists(self.target):
+            fov_target = self.observation.inventory([self.target],
+                                                     expand=config.EXPAND, cache=False)
+            if fov_target:
+                if self.parent and self.parent != 'SUN':
+                    body_names += [self.parent]
+                body_names += fov_target
 
-            # Add a targeted irregular moon to the dictionaries if present
-            targeted_irregular = self.target in self.bodies and \
-                                 self.target not in self.dicts['body'].keys()
-            if targeted_irregular:
-                self.dicts['body'][self.target] = \
-                    util.replace(col.BODY_SUMMARY_COLUMNS,
-                                 defs.BODYX, self.target)
-                self.body_tile_dict[self.target] = \
-                    util.replace(col.BODY_TILES,
-                                 col.BODYX, self.target)
+        # Cull duplicate bodies and verify all bodies are in the registry
+        body_names = list(dict.fromkeys(body_names))
+
+        return [body_name for body_name in body_names if oops.Body.exists(body_name)]
 
     #===============================================================================
     def _meshgrid(self, observation, meshgrids):
@@ -282,13 +324,14 @@ class Record(object):
             column_descs = column_descs[name]
 
         # Prepare the rows
-        rows = Record._prep_row(self.prefixes, self.backplane, self.blocker, column_descs,
+        rows, overrides = self._prep_row(self.prefixes, self.backplane, self.blocker, column_descs,
                                 primary=self.primary, target=target,
                                 tiles=tiles, tiling_min=tiling_min,
                                 ignore_shadows=ignore_shadows,
                                 start_index=start_index, allow_zero_rows=allow_zero_rows,
                                 no_mask=no_mask,
                                 no_body=no_body)
+#        self.overrides += overrides
 
         # Append the complete rows to the output
         lines = []
@@ -302,8 +345,7 @@ class Record(object):
         return lines
 
     #===============================================================================
-    @staticmethod
-    def _prep_row(prefixes, backplane, blocker, column_descs, *,
+    def _prep_row(self, prefixes, backplane, blocker, column_descs, *,
                   primary=None, target=None, name_length=defs.NAME_LENGTH,
                   tiles=[], tiling_min=100, ignore_shadows=False,
                   start_index=1, allow_zero_rows=False, no_mask=False,
@@ -367,15 +409,19 @@ class Record(object):
             no_body (bool, optional): True to suppress body prefixes.
 
         Returns:
-           list: String comprising the resulting rows.
+            NamedTuple (rows (list), overrides (list)):
+                rows      (list): Strings comprising the resulting rows.
+                overrides (list): Dicts of column entries to override in label. One dict for 
+                                  each column, not including prefix columns.
         """
 
         # Handle option for multiple tile sets
         if isinstance(tiles, tuple):
             rows = []
+            overrides = []
             local_index = start_index
             for tile in tiles:
-                new_rows = Record._prep_row(prefixes, backplane, blocker, column_descs,
+                new_rows = self._prep_row(prefixes, backplane, blocker, column_descs,
                                             primary, target, name_length,
                                             tile, tiling_min, ignore_shadows,
                                             local_index, allow_zero_rows=True)
@@ -383,9 +429,9 @@ class Record(object):
                 local_index += len(tile) - 1
 
             if rows or allow_zero_rows:
-                return rows
+                return (rows, overrides)
 
-            return Record._prep_row(prefixes, backplane, blocker, column_descs,
+            return self._prep_row(prefixes, backplane, blocker, column_descs,
                                     primary, target, name_length,
                                     [], tiling_min, ignore_shadows,
                                     start_index, allow_zero_rows=False)
@@ -406,6 +452,7 @@ class Record(object):
 
         # Initialize the list of rows
         rows = []
+        overrides = []
 
         # Create all the needed pixel masks
         excluded_mask_dict = {}
@@ -488,21 +535,29 @@ class Record(object):
 #+                print(column_desc)
                 data_columns.append(Record._formatted_column(values, format))
 
+            # Save label overrides for this row
+            (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
+            ovverride = {'NULL_VALUE': null_value,
+                         'VALID_MINIMUM': valid_minimum,
+                         'VALID_MAXIMUM': valid_maximum, 
+                         }
+
             # Save the row if it was completed
             if len(data_columns) < len(column_descs):
                 continue  # hopeless error
             if nothing_found and (indx > 0 or allow_zero_rows):
                 continue
             rows.append(prefix_columns + data_columns)
+            overrides.append(ovverride)
 
         # Return something if we can
         if rows or allow_zero_rows:
-            return rows
+            return (rows, overrides)
 
-        return Record._prep_row(prefixes, backplane, blocker, column_descs,
-                                primary, target, name_length,
-                                [], 0, ignore_shadows, start_index,
-                                allow_zero_rows=False)
+        return self._prep_row(prefixes, backplane, blocker, column_descs,
+                              primary, target, name_length,
+                              [], 0, ignore_shadows, start_index,
+                              allow_zero_rows=False)
 
     #===========================================================================
     @staticmethod
@@ -656,7 +711,8 @@ class Record(object):
 
         # Interpret the format
         (flag, number_of_values, column_width,
-         standard_format, overflow_format, null_value) = format
+         standard_format, overflow_format, 
+         null_value, valid_minimum, valid_maximum) = format
 
         # Convert from radians to degrees if necessary
         if flag in ("DEG", "360", "-180"):
@@ -686,13 +742,14 @@ class Record(object):
         if flag in ("ISO", "iso"):
             if not isinstance(results[0], str):
                 s = julian.iso_from_tai(results, digits=3)
-                results = ['"'+str(s[0])+'"', '"'+str(s[1])+'"']
+                results = [str(s[0]), str(s[1])]
 
         # Write the formatted value(s)
         strings = []
         for number in results:
             error_message = ""
 
+            # numeric values: flag common exceptions and use standard format
             if not isinstance(number, str):
                 if np.isnan(number):
                     warnings.warn("NaN encountered")
@@ -700,9 +757,15 @@ class Record(object):
                 if np.isinf(number):
                     warnings.warn("infinity encountered")
                     number = null_value
+                if valid_minimum != valid_maximum:
+                    if (number < valid_minimum) | (number > valid_maximum):
+                        number = null_value
+                string = standard_format % number
+            # string values: left justify and enclose in double quotes
+            else:
+                string = '"' + number.strip('"').ljust(column_width-2) + '"'
 
-            string = standard_format % number
-
+            # handle formatting overflow
             if len(string) > column_width:
                 string = overflow_format % number
 
@@ -719,6 +782,7 @@ class Record(object):
 
                     string = string[:column_width]
 
+            # add the formatted value
             strings.append(string)
 
             if error_message != "":
@@ -775,9 +839,7 @@ class SkyTable(com.Table):
             output_dir (str, Path, or FCPath):
                 Directory in which to write the geometry files.
         """
-        super().__init__(output_dir,
-                         qualifier='sky',
-                         use_global_template=True, **kwargs)
+        super().__init__(output_dir, qualifier='sky', **kwargs)
 
     #===============================================================================
     def add(self, record):
@@ -895,7 +957,8 @@ class BodyTable(com.Table):
         # Add other bodies
         for name in record.bodies:
             if name != record.primary:
-                self.rows += record.add(self.qualifier, name=name, target=name)
+                if record.primary == record.parent:
+                    self.rows += record.add(self.qualifier, name=name, target=name)
 
 
 ################################################################################
@@ -969,6 +1032,63 @@ class Suite(object):
 
         # Initialize meshgrids
         self.meshgrids = config.meshgrids(sampling)
+
+    #===========================================================================
+    @staticmethod
+    def get_override(record, qualifier, name=None):
+        """Buld a dicstionary of column overrides.
+
+        Args:
+            record (Record): Any Record.
+            qualifier: 'sky', 'sun', 'ring', or 'body'.
+            name (str, optional): Name identifying a specific column description.
+
+        Returns:
+            list: Dict containing override names and values for each column.
+        """
+
+        column_descs = record.dicts[qualifier]
+        if name:
+            column_descs = column_descs[name]
+
+        overrides = []
+        for column_desc in column_descs:
+            # Get format for this column
+            event_key = column_desc[0]
+            if len(column_desc) > 2:
+                format = ALT_FORMAT_DICT[(event_key[0], column_desc[2])]
+            else:
+                format = FORMAT_DICT[event_key[0]]
+
+            # Save label overrides for this column
+            (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
+            override = {'NULL_VALUE':    null_value,
+                        'VALID_MINIMUM': valid_minimum,
+                        'VALID_MAXIMUM': valid_maximum, 
+                       }
+            overrides.append(override)
+
+        return overrides
+
+    #===========================================================================
+    @staticmethod
+    def get_overrides(record):
+        """Buld a dicstionary of column overrides.
+
+        Args:
+            record (Record): Any Record.
+
+        Returns:
+            list: Dicts containing over names and values for each column.
+        """
+        overrides = {}
+
+        overrides['sky'] = Suite.get_override(record, 'sky')
+#        overrides['sun'] = Suite.get_override(record, 'sun')
+        overrides['ring'] = Suite.get_override(record, 'ring', name=record.primary)
+        overrides['body'] = Suite.get_override(record, 'body', name=record.primary)
+
+        return overrides
 
     #===========================================================================
     def add_tables(self, output_dir, level):
@@ -1057,8 +1177,7 @@ class Suite(object):
         count = 0
         if not labels_only:
             for i in range(nobs):
-#                if self.observations[i].basename != 'C0373036000R.LBL':
-#                    continue
+
                 # Abort if count exceeds a specified limit
                 if self.first and count >= self.first:
                     continue
@@ -1071,6 +1190,10 @@ class Suite(object):
                 try:
                     # Construct the record for this observation
                     records = self.make_records(i)
+
+                    # Build overrides dict
+                    if count == 0:
+                        overrides = Suite.get_overrides(records[0])
 
                     # Update the tables
                     self.add(records)

@@ -2,32 +2,7 @@ $NOTE
 ##############################################################################
 # Supplemental index file template for Galileo SSI.
 #
-#  This template controls the creation of supplemental index files. The
-#  procedure for generating index files for a host is as follows. Files
-#  referred to below should be copied into the top directory for the
-#  collection, e.g., GO_0xxx:
-#
-#  1. Copy and edit this template and the host_defs file from an existing
-#     host subdirectory.
-#  2. Copy and edit the <collection>_index.py script to reflect the 
-#     type of index and glob pattern for the data files.
-#  3. Copy and edit host_config.py to address any host-dependent processing.
-#
-#     In the host_defs files, replace all values describing the new host.
-#     In this template, quantities enclosed in dollar signs are automatically
-#     filled in and should not be edited.  Add a column for each quantity to
-#     be copied from the product label into the index.  For quantities that
-#     require processing beyond simply copying from the product label and
-#     reformatting, a key function should be provided in host_config.py,
-#     defined as :
-#
-#           key__<COLUMN NAME>(name, label),
-#
-#     and returning the value to place in the index.
-#
-#  5. Copy and edit host_init.py to import and initialize the host module.
-#  6. Run <collection>_index.py from the collection top directory.
-#
+#  This template controls the creation of supplemental index files and labels.
 #
 ##############################################################################
 $END_NOTE
@@ -104,7 +79,7 @@ E26/EUROPA/C0532836239R.LBL"
     NOT_APPLICABLE_CONSTANT     = -1
     DESCRIPTION                 = "Galileo SSI images can be edited so that
 only an image area or CUT OUT WINDOW is compressed using Integer Cosine
-Transform, BARC or Huffman compression and transmitted to Earth. The cut out -
+Transform, BARC, or Huffman compression and transmitted to Earth. The cut out -
 window element indicates the location and size of this image area as defined
 by four numbers: starting line, starting sample, number of lines, number of
 samples (the origin of the image coordinate system is at line, sample=1,1 for

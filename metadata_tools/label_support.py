@@ -62,6 +62,7 @@ def create(filepath, system=None,
     # Generate label
     T = PdsTemplate(template_path, crlf=True,
                     preprocess=preprocess,
+                    includes=[defs.GLOBAL_TEMPLATE_PATH],
                     kwargs={'formats':True, 'numbers':True, 'validate':False})
     T.write(fields, label_path=label_path, mode='repair')
 
