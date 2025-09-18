@@ -143,7 +143,9 @@ class Record(object):
 
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
-        self.primary, self.secondaries = \
+#        self.primary, self.secondaries = \
+#            util.get_primary(DEFAULT_BODIES_TABLE, sclk, hconf.SCLK_BASES)
+        self.primary, self.secondaries, self.selections = \
             util.get_primary(DEFAULT_BODIES_TABLE, sclk, hconf.SCLK_BASES)
         self.level = level
 
@@ -161,7 +163,6 @@ class Record(object):
                 'ring'   : col.RING_SUMMARY_DETAILED,
                 'body'   : col.BODY_SUMMARY_DETAILED
             }
-        from IPython import embed; print('+++++++++++++'); embed()
 
         # Set up planet-based geometry
         self.bodies = []
@@ -215,9 +216,10 @@ class Record(object):
         """Select all bodies to include in this record according to the following rules:
         
            1. The primary and secondary bodies are always included. 
-           2. Children of the primary are included if they intersect the FOV. 
-           3. The target is included if it intersects the FOV. 
-           4. If the target is a satellite and intersects the FOV, the parent is included.
+           2. Children of the primary are included only if they intersect the FOV. [[If 
+              there are selections, then only the selected children are considered.]]
+           3. The target is always included if it intersects the FOV. 
+           4. If the target is a satellite, the parent is included.
 
         Args:
             bodies (list): All bodies.
@@ -228,13 +230,15 @@ class Record(object):
         # Add bodies
         body_names = []
 
-        # Add primary body and FOV children
+        # Add primary body and FOV/selected children
         if self.primary:
             body_names += [self.primary]
             children = [child.name for child in col.BODIES[self.primary].children
                             if child.name in bodies.keys()]
-            body_names += self.observation.inventory(children,
+            children += self.observation.inventory(children,
                                                      expand=config.EXPAND, cache=False)
+            children = list(set(children) & set(self.selections))
+            body_names += children
 
         # Add any secondary bodies
         if self.secondaries:
@@ -242,12 +246,9 @@ class Record(object):
 
         # Add target body and parent
         if self.target and oops.Body.exists(self.target):
-            fov_target = self.observation.inventory([self.target],
-                                                     expand=config.EXPAND, cache=False)
-            if fov_target:
-                if self.parent and self.parent != 'SUN':
-                    body_names += [self.parent]
-                body_names += fov_target
+            if self.parent and self.parent != 'SUN':
+                body_names += [self.parent]
+            body_names += self.target
 
         # Cull duplicate bodies and verify all bodies are in the registry
         body_names = list(dict.fromkeys(body_names))
@@ -1056,6 +1057,7 @@ class Suite(object):
             # Get format for this column
             event_key = column_desc[0]
             if len(column_desc) > 2:
+#                from IPython import embed; print('+++++++++++++'); embed()
                 format = ALT_FORMAT_DICT[(event_key[0], column_desc[2])]
             else:
                 format = FORMAT_DICT[event_key[0]]
@@ -1192,8 +1194,8 @@ class Suite(object):
                     records = self.make_records(i)
 
                     # Build overrides dict
-                    if count == 0:
-                        overrides = Suite.get_overrides(records[0])
+#                    if count == 0:
+#                        overrides = Suite.get_overrides(records[0])
 
                     # Update the tables
                     self.add(records)

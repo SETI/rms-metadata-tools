@@ -23,13 +23,14 @@ exclude = ['GO_0999']
 ##########################################################################################
 # PRIMARY and SECONDARIES are always included in the body table regardless of whether they
 # intersect the FOV.
-#      SCLK_START range (inclusive)   PRIMARY   SECONDARIES
+#      SCLK_START range (inclusive)   PRIMARY   SECONDARIES   SELECTIONS
 DEFAULT_BODIES_TABLE = [
-    (('00180626.00', '00190641.00'), 'VENUS',   []),
-    (('00597197.00', '00623035.00'), 'EARTH',   []),
-#    (('01645330.00', '01663247.00'), 'EARTH',   []),
-    (('01643854.00', '01663247.00'), 'EARTH',   []),
-    (('01973272.00', '06475387.00'), 'JUPITER', [])]
+    (('00180626.00', '00190641.00'), 'VENUS',   [],  []),
+    (('00597197.00', '00623035.00'), 'EARTH',   [],  []),
+#    (('01645330.00', '01663247.00'), 'EARTH',   [],  []),
+    (('01643854.00', '01663247.00'), 'EARTH',   [],  []),
+#    (('01973272.00', '06475387.00'), 'JUPITER', [],  ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO']),
+    (('01973272.00', '06475387.00'), 'JUPITER', [],  ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO'])]
 
 
 BORDER = 25                  # in units of full-size SSI pixels

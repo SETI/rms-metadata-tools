@@ -501,7 +501,7 @@ def convert_default_bodies_table(table, bases):
         new_table.append(
             ((sclk_to_ticks(item[0][0], bases),
               sclk_to_ticks(item[0][1], bases)),
-              item[1], item[2]))
+              item[1], item[2], item[3]))
 
     return new_table
 
@@ -526,8 +526,8 @@ def get_primary(table, sclk, bases):
     for row in table:
         sclks = row[0]
         if sclk_ticks >= sclks[0] and sclk_ticks <= sclks[1]:
-            return (row[1], row[2])
-    return (None, None)
+            return (row[1], row[2], row[3])
+    return (None, None, None)
 
 #===============================================================================
 def range_of_n_angles(n, prob=0.1, tests=100000):
