@@ -30,8 +30,9 @@ DEFAULT_BODIES_TABLE = [
 #    (('01645330.00', '01663247.00'), 'EARTH',   [],  []),
     (('01643854.00', '01663247.00'), 'EARTH',   [],  []),
 #    (('01973272.00', '06475387.00'), 'JUPITER', [],  ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO']),
-    (('01973272.00', '06475387.00'), 'JUPITER', [],  ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO'])]
-
+    (('01973272.00', '06475387.00'), 'JUPITER', [],  [])]
+## SL9 -- jupiter primary, select gal sats
+## IDA -- no primary
 
 BORDER = 25                  # in units of full-size SSI pixels
 NAC_PIXEL = 6.0e-6           # approximate full-size SSI pixel in units of radians

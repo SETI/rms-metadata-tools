@@ -216,8 +216,8 @@ class Record(object):
         """Select all bodies to include in this record according to the following rules:
         
            1. The primary and secondary bodies are always included. 
-           2. Children of the primary are included only if they intersect the FOV. [[If 
-              there are selections, then only the selected children are considered.]]
+           2. Children of the primary are included only if they intersect the FOV. If 
+              there are selections, then only the selected children are considered.
            3. The target is always included if it intersects the FOV. 
            4. If the target is a satellite, the parent is included.
 
@@ -235,9 +235,10 @@ class Record(object):
             body_names += [self.primary]
             children = [child.name for child in col.BODIES[self.primary].children
                             if child.name in bodies.keys()]
-            children += self.observation.inventory(children,
+            children = self.observation.inventory(children,
                                                      expand=config.EXPAND, cache=False)
-            children = list(set(children) & set(self.selections))
+            if self.selections:
+                children = list(set(children) & set(self.selections))
             body_names += children
 
         # Add any secondary bodies
@@ -248,7 +249,7 @@ class Record(object):
         if self.target and oops.Body.exists(self.target):
             if self.parent and self.parent != 'SUN':
                 body_names += [self.parent]
-            body_names += self.target
+            body_names += [self.target]
 
         # Cull duplicate bodies and verify all bodies are in the registry
         body_names = list(dict.fromkeys(body_names))
@@ -1193,7 +1194,7 @@ class Suite(object):
                     # Construct the record for this observation
                     records = self.make_records(i)
 
-                    # Build overrides dict
+#                    # Build overrides dict
 #                    if count == 0:
 #                        overrides = Suite.get_overrides(records[0])
 
