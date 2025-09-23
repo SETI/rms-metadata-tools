@@ -19,21 +19,62 @@ exclude = ['GO_0999']
 
 
 ##########################################################################################
-# SCLK-dependent mission-specific data (required)
+# MISSION TABLE:
+#
+#  Only SCLK ranges for which arguments are required need to be included in the table.
+#  Observations whose SCLK ranges are not in the mission table appear in the body table
+#  only if they have a target, as per rules 4 and 5 below. Observations that match any
+#  EXCLUSION  are excluded from the SCLK range, i.e., the SCLK test is bypassed.
+#
+#  EXCLUSIONS may be either regular expressions, or functions declared below that take
+#  the OOPS observation as an argument and return True or False.
+#
+#  RULES:
+#   1. The primary and secondary bodies, if specified, are always included.
+#   2. Children of the primary are included if they intersect the FOV. If
+#      there are selections, then only the selected children are considered.
+#   3. If there is no primary, all selections that intersect the FOV are included.
+#   4. The target is always included.
+#   5. If the target is a satellite, the parent is included.
+#
 ##########################################################################################
-# PRIMARY and SECONDARIES are always included in the body table regardless of whether they
-# intersect the FOV.
-#      SCLK_START range (inclusive)   PRIMARY   SECONDARIES   SELECTIONS
-DEFAULT_BODIES_TABLE = [
-    (('00180626.00', '00190641.00'), 'VENUS',   [],  []),
-    (('00597197.00', '00623035.00'), 'EARTH',   [],  []),
-#    (('01645330.00', '01663247.00'), 'EARTH',   [],  []),
-    (('01643854.00', '01663247.00'), 'EARTH',   [],  []),
-#    (('01973272.00', '06475387.00'), 'JUPITER', [],  ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO']),
-    (('01973272.00', '06475387.00'), 'JUPITER', [],  [])]
-## SL9 -- jupiter primary, select gal sats
-## IDA -- no primary
+EXCLUSIONS = [r'.*XCAL',
+              r'.*LCAL',
+              r'.*_CALIB',
+              r'PHOCAL.*',
+              r'STRCAL.*',
+              r'.*CHECKOUT']
+MISSION_TABLE = [
+#     PHASE   |   SCLK_START range (inclusive) | EXCLUSIONS |  PRIMARY | SECONDARIES | SELECTIONS
+#-----------------------------------------------------------------------------------------
+    ('VENUS   ', ('00180626.00', '00190641.00'), EXCLUSIONS, 'VENUS',   [],  []),
+    ('EARTH I ', ('00609593.00', '00623035.00'), EXCLUSIONS, 'EARTH',   [],  []),
+    ('EARTH II', ('01645330.00', '01654708.45'), EXCLUSIONS, 'EARTH',   [],  []),
+    ('EMCONJ  ', ('01662361.00', '01663187.00'), EXCLUSIONS, '',        [],  ['EARTH', 'MOON']),
+    ('SL9     ', ('02488066.45', '02492218.00'), EXCLUSIONS, 'JUPITER', [],  ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO']),
+    ('JUPITER ', ('03464059.00', '06475387.00'), EXCLUSIONS, 'JUPITER', [],  [])]
 
+
+##########################################################################################
+# Exclusion functions
+##########################################################################################
+
+#=========================================================================================
+def exclude_test(observation):
+    """Mission table exclusion function template.
+
+    Args:
+        observation (oops.Observation): OOPS Observation object.
+
+    Returns:
+        str: True if the onservation should be excluded.
+    """
+    return False
+
+
+##########################################################################################
+# Mission-specific data (required)
+##########################################################################################
 BORDER = 25                  # in units of full-size SSI pixels
 NAC_PIXEL = 6.0e-6           # approximate full-size SSI pixel in units of radians
 EXPAND = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians

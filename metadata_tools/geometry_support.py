@@ -119,8 +119,8 @@ ALT_FORMAT_DICT = {
     ("ring_longitude", "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180),
     ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180)}
 
-DEFAULT_BODIES_TABLE = \
-    util.convert_default_bodies_table(config.DEFAULT_BODIES_TABLE, hconf.SCLK_BASES)
+MISSION_TABLE = \
+    util.convert_mission_table(config.MISSION_TABLE)
 
 ################################################################################
 # Record class
@@ -143,10 +143,8 @@ class Record(object):
 
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
-#        self.primary, self.secondaries = \
-#            util.get_primary(DEFAULT_BODIES_TABLE, sclk, hconf.SCLK_BASES)
         self.primary, self.secondaries, self.selections = \
-            util.get_primary(DEFAULT_BODIES_TABLE, sclk, hconf.SCLK_BASES)
+            util.get_primary(MISSION_TABLE, self.observation, sclk)
         self.level = level
 
         # Level-specific column dictionaries
@@ -216,10 +214,11 @@ class Record(object):
         """Select all bodies to include in this record according to the following rules:
         
            1. The primary and secondary bodies are always included. 
-           2. Children of the primary are included only if they intersect the FOV. If 
-              there are selections, then only the selected children are considered.
-           3. The target is always included if it intersects the FOV. 
-           4. If the target is a satellite, the parent is included.
+           2. Children of the primary are included if they intersect the FOV. If there are
+              selections, then only the selected children are considered.
+           3. If there is no primary, all selections that intersect the FOV are included.
+           4. The target is always included. 
+           5. If the target is a satellite, the parent is included.
 
         Args:
             bodies (list): All bodies.
@@ -240,6 +239,10 @@ class Record(object):
             if self.selections:
                 children = list(set(children) & set(self.selections))
             body_names += children
+        # Add all FOV selections if no primary
+        else:
+            body_names += self.observation.inventory(self.selections,
+                                                 expand=config.EXPAND, cache=False)
 
         # Add any secondary bodies
         if self.secondaries:
@@ -951,16 +954,8 @@ class BodyTable(com.Table):
             None.
         """
 
-        # Add primary body
-        if record.primary:
-            self.rows += record.add(self.qualifier,
-                                    name=record.primary, target=record.primary)
-
-        # Add other bodies
         for name in record.bodies:
-            if name != record.primary:
-                if record.primary == record.parent:
-                    self.rows += record.add(self.qualifier, name=name, target=name)
+            self.rows += record.add(self.qualifier, name=name, target=name)
 
 
 ################################################################################

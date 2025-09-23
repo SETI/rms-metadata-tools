@@ -4,10 +4,14 @@
 import os
 import re
 import numpy as np
+import cspyce
+import re
 
 from pathlib   import Path
 from filecache import FCPath
 
+import host_config as hconf
+import geometry_config as config
 import metadata_tools.defs as defs
 
 #===============================================================================
@@ -464,70 +468,94 @@ def sclk_format_count(fields, format):
     return count
 
 #===============================================================================
-def sclk_to_ticks(sclk, bases):
+def sclk_to_ticks(sclk):
     """Convert spacecraft clock count string to ticks.
 
     Args:
         sclk (list): Spacecraft clock count string.
-        bases (list): Base (int) to use for each decimal place.
 
     Returns:
         int: Spacecraft clock ticks.
     """
-
-    # Get fields
-    fields = sclk_split_count(sclk)
-
-    # Compute ticks
-    ticks = fields[-1]
-    for i in range(len(fields)-1):
-        ticks += fields[i]*bases[i+1]
-
-    return ticks
+    return cspyce.sctiks_alias(-77, sclk)
 
 #===============================================================================
-def convert_default_bodies_table(table, bases):
+def convert_mission_table(table):
     """Convert default bodies tables SCLK count string to ticks.
 
     Args:
         table (list): Systems table.
-        bases (list): Base (int) to use for each decimal place.
 
     Returns:
-        list: Converted Systems table containing ticks instead of strings.
+        list: Converted mission table containing ticks instead of strings.
     """
     new_table = []
     for item in table:
         new_table.append(
-            ((sclk_to_ticks(item[0][0], bases),
-              sclk_to_ticks(item[0][1], bases)),
-              item[1], item[2], item[3]))
+            ((sclk_to_ticks(item[1][0]),
+              sclk_to_ticks(item[1][1])),
+              item[2], item[3], item[4], item[5]))
 
     return new_table
 
 #===============================================================================
-def get_primary(table, sclk, bases):
+def obs_excluded(observation, exclusions):
+    """Use converted default bodies table to determine the primary for a given
+       spacecraft clock count.
+
+    Args:
+        observation (oops.Observation): OOPS Observation object.
+        exclusions (list): List of regular expressions to test against the observation ID.
+
+    Returns:
+        bool: True if the observation is exluded.
+    """
+    if not exclusions:
+        return False
+
+    id = hconf.get_observation_id(observation)
+    print(id)
+    for exclusion in exclusions:
+        # check for config function
+        if exclusion.isidentifier():
+            fn = getattr(config, exclusion)
+            return fn(observation)
+
+        # If no config function, treat as regex
+        if re.match(exclusion, id):
+            return True
+            
+    return False
+
+#===============================================================================
+def get_primary(table, observation, sclk):
     """Use converted default bodies table to determine the primary for a given
        spacecraft clock count.
 
     Args:
         table (list):
             Converted default bodies table containing sclk ticks instead of strings.
+        observation (oops.Observation): OOPS Observation object.
         sclk (str): Spacecraft clock string corresponding to the observation time.
-        bases (list): Base (int) to use for each decimal place.
 
     Returns:
-        NamedTuple (primary (str), secondaries (list)):
+        NamedTuple (primary (str), secondaries (list), selections (list)):
             primary: Name of the primary corresponding to the given SCLK value.
             secondaries:
                 Names of any secondaries.
+            selections:
+                Names of any selected bodies.
     """
-    sclk_ticks = sclk_to_ticks(sclk, bases)
+    fail = ('', [], [])
+    sclk_ticks = sclk_to_ticks(sclk)
     for row in table:
+        if obs_excluded(observation, row[1]):
+            print('xxxxxxxxxxxxxxxxx')
+            return fail
         sclks = row[0]
         if sclk_ticks >= sclks[0] and sclk_ticks <= sclks[1]:
-            return (row[1], row[2], row[3])
-    return (None, None, None)
+            return (row[2], row[3], row[4])
+    return fail
 
 #===============================================================================
 def range_of_n_angles(n, prob=0.1, tests=100000):
