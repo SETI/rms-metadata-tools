@@ -10,8 +10,7 @@ import re
 from pathlib   import Path
 from filecache import FCPath
 
-import host_config as hconf
-import geometry_config as config
+import metadata_tools.common as com
 import metadata_tools.defs as defs
 
 #===============================================================================
@@ -480,6 +479,18 @@ def sclk_to_ticks(sclk):
     return cspyce.sctiks_alias(-77, sclk)
 
 #===============================================================================
+def get_observation_id(observation):
+    """Utility function to determine the observation ID for an observation.
+
+    Args:
+        observation_id (str): Observation ID.
+
+    Returns:
+        None.
+    """
+    return str(observation.subfields['dict']['OBSERVATION_ID'])
+
+#===============================================================================
 def convert_mission_table(table):
     """Convert default bodies tables SCLK count string to ticks.
 
@@ -499,30 +510,29 @@ def convert_mission_table(table):
     return new_table
 
 #===============================================================================
-def obs_excluded(observation, exclusions):
+def obs_excluded(observation, exceptions):
     """Use converted default bodies table to determine the primary for a given
        spacecraft clock count.
 
     Args:
         observation (oops.Observation): OOPS Observation object.
-        exclusions (list): List of regular expressions to test against the observation ID.
+        exceptions (list): List of regular expressions to test against the observation ID.
 
     Returns:
         bool: True if the observation is exluded.
     """
-    if not exclusions:
+    if not exceptions:
         return False
 
-    id = hconf.get_observation_id(observation)
-    print(id)
-    for exclusion in exclusions:
+    id = get_observation_id(observation)
+    for exception in exceptions:
         # check for config function
-        if exclusion.isidentifier():
-            fn = getattr(config, exclusion)
+        if exception.isidentifier():
+            fn = getattr(config, exception)
             return fn(observation)
 
         # If no config function, treat as regex
-        if re.match(exclusion, id):
+        if re.match(exception, id):
             return True
             
     return False
@@ -550,7 +560,6 @@ def get_primary(table, observation, sclk):
     sclk_ticks = sclk_to_ticks(sclk)
     for row in table:
         if obs_excluded(observation, row[1]):
-            print('xxxxxxxxxxxxxxxxx')
             return fail
         sclks = row[0]
         if sclk_ticks >= sclks[0] and sclk_ticks <= sclks[1]:

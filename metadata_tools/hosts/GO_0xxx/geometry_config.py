@@ -24,9 +24,9 @@ exclude = ['GO_0999']
 #  Only SCLK ranges for which arguments are required need to be included in the table.
 #  Observations whose SCLK ranges are not in the mission table appear in the body table
 #  only if they have a target, as per rules 4 and 5 below. Observations that match any
-#  EXCLUSION  are excluded from the SCLK range, i.e., the SCLK test is bypassed.
+#  EXCEPTION are excluded from the SCLK range, i.e., the SCLK test is bypassed.
 #
-#  EXCLUSIONS may be either regular expressions, or functions declared below that take
+#  EXCEPTIONS may be either regular expressions or functions declared below that take
 #  the OOPS observation as an argument and return True or False.
 #
 #  RULES:
@@ -38,36 +38,40 @@ exclude = ['GO_0999']
 #   5. If the target is a satellite, the parent is included.
 #
 ##########################################################################################
-EXCLUSIONS = [r'.*XCAL',
+EXCEPTIONS = [r'.*XCAL',
               r'.*LCAL',
+              r'.*GOPX',
               r'.*_CALIB',
+              r'.*____HTMC',
+              r'.*OPNAV.*',
               r'PHOCAL.*',
               r'STRCAL.*',
               r'.*CHECKOUT']
 MISSION_TABLE = [
-#     PHASE   |   SCLK_START range (inclusive) | EXCLUSIONS |  PRIMARY | SECONDARIES | SELECTIONS
+#     PHASE   |   SCLK_START range (inclusive) | EXCEPTIONS |  PRIMARY | SECONDARIES | SELECTIONS
 #-----------------------------------------------------------------------------------------
-    ('VENUS   ', ('00180626.00', '00190641.00'), EXCLUSIONS, 'VENUS',   [],  []),
-    ('EARTH I ', ('00609593.00', '00623035.00'), EXCLUSIONS, 'EARTH',   [],  []),
-    ('EARTH II', ('01645330.00', '01654708.45'), EXCLUSIONS, 'EARTH',   [],  []),
-    ('EMCONJ  ', ('01662361.00', '01663187.00'), EXCLUSIONS, '',        [],  ['EARTH', 'MOON']),
-    ('SL9     ', ('02488066.45', '02492218.00'), EXCLUSIONS, 'JUPITER', [],  ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO']),
-    ('JUPITER ', ('03464059.00', '06475387.00'), EXCLUSIONS, 'JUPITER', [],  [])]
+    ('VENUS   ', ('00180626.00', '00190641.00'), EXCEPTIONS, 'VENUS',   [],            []),
+    ('EARTH I ', ('00609593.00', '00623035.00'), EXCEPTIONS, 'EARTH',   [],            []),
+    ('EARTH II', ('01645330.00', '01654708.45'), EXCEPTIONS, 'EARTH',   [],            []),
+    ('EMCONJ  ', ('01662361.00', '01663187.00'), EXCEPTIONS, '',        [],            ['EARTH', 'MOON']),
+    ('SL9     ', ('02488066.45', '02492218.00'), EXCEPTIONS, 'JUPITER', ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO'],
+                                                                                       ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO']),
+    ('JUPITER ', ('03464059.00', '06475387.00'), EXCEPTIONS, 'JUPITER', [],            [])]
 
 
 ##########################################################################################
-# Exclusion functions
+# Exception functions
 ##########################################################################################
 
 #=========================================================================================
-def exclude_test(observation):
-    """Mission table exclusion function template.
+def except_test(observation):
+    """Mission table exception function template.
 
     Args:
         observation (oops.Observation): OOPS Observation object.
 
     Returns:
-        str: True if the onservation should be excluded.
+        str: True if the observation should be an exception.
     """
     return False
 

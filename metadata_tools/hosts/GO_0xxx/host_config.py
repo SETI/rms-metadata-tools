@@ -33,14 +33,3 @@ def get_volume_id(label_path):
     top = 'GO_0xxx'
     return util.splitpath(label_path, top)[1].parts[0]
 
-#===============================================================================
-def get_observation_id(observation):
-    """Utility function to determine the observation ID for an observation.
-
-    Args:
-        observation_id (str): Observation ID.
-
-    Returns:
-        None.
-    """
-    return str(observation.subfields['dict']['OBSERVATION_ID'])

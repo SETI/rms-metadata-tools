@@ -953,7 +953,6 @@ class BodyTable(com.Table):
         Returns:
             None.
         """
-
         for name in record.bodies:
             self.rows += record.add(self.qualifier, name=name, target=name)
 
