@@ -505,7 +505,7 @@ def convert_mission_table(table):
         new_table.append(
             ((sclk_to_ticks(item[1][0]),
               sclk_to_ticks(item[1][1])),
-              item[2], item[3], item[4], item[5]))
+              item[2], item[3], item[4], item[5], item[6]))
 
     return new_table
 
@@ -556,14 +556,14 @@ def get_primary(table, observation, sclk):
             selections:
                 Names of any selected bodies.
     """
-    fail = ('', [], [])
+    fail = ('', [], [], [])
     sclk_ticks = sclk_to_ticks(sclk)
     for row in table:
         if obs_excluded(observation, row[1]):
             return fail
         sclks = row[0]
         if sclk_ticks >= sclks[0] and sclk_ticks <= sclks[1]:
-            return (row[2], row[3], row[4])
+            return (row[2], row[3], row[4], row[5])
     return fail
 
 #===============================================================================

@@ -143,7 +143,7 @@ class Record(object):
 
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
-        self.primary, self.secondaries, self.selections = \
+        self.primary, self.secondaries, self.selections, self.additions = \
             util.get_primary(MISSION_TABLE, self.observation, sclk)
         self.level = level
 
@@ -171,15 +171,10 @@ class Record(object):
             self.ring_tile_dict = col.RING_TILE_DICT[self.primary]
             self.body_tile_dict = col.BODY_TILE_DICT[self.primary]
 
-        # Determine target and its parent
+        # Determine target
         self.target = str(config.target_name(observation.dict))
         if self.target in defs.TRANSLATIONS.keys():
             self.target = defs.TRANSLATIONS[self.target]
-
-        if self.target in oops.Body.BODY_REGISTRY:
-            self.parent = oops.Body.BODY_REGISTRY[self.target].parent.name
-        else:
-            self.parent = 'None'
 
         # Create the record prefix
         filespec = observation.dict["FILE_SPECIFICATION_NAME"]
@@ -219,6 +214,8 @@ class Record(object):
            3. If there is no primary, all selections that intersect the FOV are included.
            4. The target is always included. 
            5. If the target is a satellite, the parent is included.
+           6. Additions are included whenever they intersect the FOV, regardless of the 
+              primary.
 
         Args:
             bodies (list): All bodies.
@@ -248,10 +245,16 @@ class Record(object):
         if self.secondaries:
             body_names += self.secondaries
 
+        # Add any additions in the FOV
+        if self.additions:
+            body_names += self.observation.inventory(self.additions,
+                                                 expand=config.EXPAND, cache=False)
+
+#        if 'C0059886400R' in self.observation.filespec:
+#            from IPython import embed; print('+++++++++++++'); embed()
         # Add target body and parent
         if self.target and oops.Body.exists(self.target):
-            if self.parent and self.parent != 'SUN':
-                body_names += [self.parent]
+            body_names += [self._get_system(self.target)]
             body_names += [self.target]
 
         # Cull duplicate bodies and verify all bodies are in the registry
@@ -271,6 +274,25 @@ class Record(object):
             oops.Meshgrid: Meshgrid for the given observation.
         """
         return config.meshgrid(meshgrids, observation)
+
+    #===============================================================================
+    def _get_system(self, body):
+        """Looks up the meshgrid for an observation.
+
+        Args:
+            body (str): Body for which to determine the system.  For a satellite, the
+                        system is the parent.  For planet, the system is itself.
+
+        Returns:
+            str: Name of system, body.
+        """
+        if body in oops.Body.BODY_REGISTRY:
+            parent = oops.Body.BODY_REGISTRY[body].parent.name
+        else:
+            return []
+        if parent != 'SUN':
+            return parent
+        return body
 
     #===============================================================================
     def add(self, qualifier, *,
@@ -493,11 +515,19 @@ class Record(object):
             # Initialize the list of columns
             prefix_columns = list(prefixes)  # make a copy
 
-            # Append the target and primary name as needed
+            # Append the target and system name as needed
             if not no_body:
-                Record._append_body_prefix(prefix_columns, primary, name_length)
                 if target is not None:
+                    Record._append_body_prefix(prefix_columns, self._get_system(target), name_length)
                     Record._append_body_prefix(prefix_columns, target, name_length)
+                else:
+                    Record._append_body_prefix(prefix_columns, primary, name_length)
+
+
+#            if not no_body:
+#                Record._append_body_prefix(prefix_columns, primary, name_length)
+#                if target is not None:
+#                    Record._append_body_prefix(prefix_columns, target, name_length)
 
             # Insert the subregion index
             if subregion_masks:
@@ -531,7 +561,7 @@ class Record(object):
                 if not np.all(values.mask):
                     nothing_found = False
 
-                # Write the column using the specified format
+                # Save the column using the specified format
                 if len(column_desc) > 2:
                     format = ALT_FORMAT_DICT[(event_key[0], column_desc[2])]
                 else:

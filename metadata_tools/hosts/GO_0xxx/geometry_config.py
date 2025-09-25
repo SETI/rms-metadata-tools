@@ -26,8 +26,9 @@ exclude = ['GO_0999']
 #  only if they have a target, as per rules 4 and 5 below. Observations that match any
 #  EXCEPTION are excluded from the SCLK range, i.e., the SCLK test is bypassed.
 #
-#  EXCEPTIONS may be either regular expressions or functions declared below that take
-#  the OOPS observation as an argument and return True or False.
+#  EXCEPTIONS may be either regular expressions to be matched against the OBSERVATION_ID
+#  or functions declared below that take the OOPS observation as an argument and return
+#  True or False.
 #
 #  RULES:
 #   1. The primary and secondary bodies, if specified, are always included.
@@ -36,6 +37,7 @@ exclude = ['GO_0999']
 #   3. If there is no primary, all selections that intersect the FOV are included.
 #   4. The target is always included.
 #   5. If the target is a satellite, the parent is included.
+#   6. Additions are included whenever they intersect the FOV, regardless of the primary.
 #
 ##########################################################################################
 EXCEPTIONS = [r'.*XCAL',
@@ -43,20 +45,22 @@ EXCEPTIONS = [r'.*XCAL',
               r'.*GOPX',
               r'.*_CALIB',
               r'.*____HTMC',
-              r'.*OPNAV.*',
               r'PHOCAL.*',
               r'STRCAL.*',
               r'.*CHECKOUT']
 MISSION_TABLE = [
-#     PHASE   |   SCLK_START range (inclusive) | EXCEPTIONS |  PRIMARY | SECONDARIES | SELECTIONS
-#-----------------------------------------------------------------------------------------
-    ('VENUS   ', ('00180626.00', '00190641.00'), EXCEPTIONS, 'VENUS',   [],            []),
-    ('EARTH I ', ('00609593.00', '00623035.00'), EXCEPTIONS, 'EARTH',   [],            []),
-    ('EARTH II', ('01645330.00', '01654708.45'), EXCEPTIONS, 'EARTH',   [],            []),
-    ('EMCONJ  ', ('01662361.00', '01663187.00'), EXCEPTIONS, '',        [],            ['EARTH', 'MOON']),
+#     PHASE   |   SCLK_START range (inclusive) | EXCEPTIONS |  PRIMARY | SECONDARIES  |  SELECTIONS   |  ADDITIONS
+#--------------------------------------------------------------------------------------------------------------
+    ('VENUS   ', ('00180626.00', '00190641.00'), EXCEPTIONS, 'VENUS',   [],            [],                []),
+    ('EARTH I ', ('00609593.00', '00623035.00'), EXCEPTIONS, 'EARTH',   [],            ['EARTH', 'MOON'], []),
+    ('EARTH II', ('01645330.00', '01654708.45'), EXCEPTIONS, 'EARTH',   [],            ['EARTH', 'MOON'], []),
+    ('EMCONJ  ', ('01662361.00', '01663187.00'), EXCEPTIONS, '',        ['EARTH', 'MOON'],
+                                                                                       ['EARTH', 'MOON'], []),
     ('SL9     ', ('02488066.45', '02492218.00'), EXCEPTIONS, 'JUPITER', ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO'],
-                                                                                       ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO']),
-    ('JUPITER ', ('03464059.00', '06475387.00'), EXCEPTIONS, 'JUPITER', [],            [])]
+                                                                                       ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO'],
+                                                                                                          []),
+    ('JUPITER ', ('03464059.00', '06475387.00'), EXCEPTIONS, 'JUPITER', [],            ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO', 'METIS', 'ADRASTEA', 'AMALTHEA', 'THEBE'],
+                                                                                                          ['EARTH', 'SATURN', 'URANUS', 'NEPTUNE', 'PLUTO'])]
 
 
 ##########################################################################################
