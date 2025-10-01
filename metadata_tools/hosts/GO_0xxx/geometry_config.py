@@ -49,19 +49,41 @@ EXCEPTIONS = [r'.*XCAL',
               r'STRCAL.*',
               r'.*CHECKOUT']
 MISSION_TABLE = [
-#     PHASE   |   SCLK_START range (inclusive) | EXCEPTIONS |  PRIMARY | SECONDARIES  |  SELECTIONS   |  ADDITIONS
+#   PHASE   |   SCLK_STARTs  |  EXCEPTIONS | PRIMARY | SECONDARIES | SELECTIONS | ADDITIONS
 #--------------------------------------------------------------------------------------------------------------
-    ('VENUS   ', ('00180626.00', '00190641.00'), EXCEPTIONS, 'VENUS',   [],            [],                []),
-    ('EARTH I ', ('00609593.00', '00623035.00'), EXCEPTIONS, 'EARTH',   [],            ['EARTH', 'MOON'], []),
-    ('EARTH II', ('01645330.00', '01654708.45'), EXCEPTIONS, 'EARTH',   [],            ['EARTH', 'MOON'], []),
-    ('EMCONJ  ', ('01662361.00', '01663187.00'), EXCEPTIONS, '',        ['EARTH', 'MOON'],
-                                                                                       ['EARTH', 'MOON'], []),
-    ('SL9     ', ('02488066.45', '02492218.00'), EXCEPTIONS, 'JUPITER', ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO'],
-                                                                                       ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO'],
-                                                                                                          []),
-    ('JUPITER ', ('03464059.00', '06475387.00'), EXCEPTIONS, 'JUPITER', [],            ['IO', 'EUROPA', 'GANYMEDE', 'CALLISTO', 'METIS', 'ADRASTEA', 'AMALTHEA', 'THEBE'],
-                                                                                                          ['EARTH', 'SATURN', 'URANUS', 'NEPTUNE', 'PLUTO'])]
-
+  ('VENUS   ', ('00180626.00',
+                '00190641.00'), EXCEPTIONS, 'VENUS',   [],           [],           []),
+  ('EARTH I ', ('00609593.00',
+                '00623035.00'), EXCEPTIONS, 'EARTH',   [],           ['EARTH',
+                                                                      'MOON'],     []),
+  ('EARTH II', ('01645330.00',
+                '01654708.45'), EXCEPTIONS, 'EARTH',   [],           ['EARTH',
+                                                                      'MOON'],     []),
+  ('EMCONJ  ', ('01662361.00',
+                '01663187.00'), EXCEPTIONS, '',        ['EARTH',
+                                                        'MOON'],
+                                                                     ['EARTH',
+                                                                      'MOON'],     []),
+  ('SL9     ', ('02488066.45',
+                '02492218.00'), EXCEPTIONS, 'JUPITER', ['IO',
+                                                        'EUROPA',
+                                                        'GANYMEDE',
+                                                        'CALLISTO'],
+                                                                     ['IO',
+                                                                      'EUROPA',
+                                                                      'GANYMEDE',
+                                                                      'CALLISTO'],
+                                                                                   []),
+  ('JUPITER ', ('03464059.00',
+                '06475387.00'), EXCEPTIONS, 'JUPITER', [],           ['IO',
+                                                                      'EUROPA',
+                                                                      'GANYMEDE',
+                                                                      'CALLISTO',
+                                                                      'METIS',
+                                                                      'ADRASTEA',
+                                                                      'AMALTHEA',
+                                                                      'THEBE'],
+                                                                                   ['SATURN'])]
 
 ##########################################################################################
 # Exception functions

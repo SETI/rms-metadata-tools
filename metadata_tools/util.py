@@ -75,6 +75,19 @@ def parse_template_name(template_name):
     return (host, index_type)
 
 #===============================================================================
+def pm(x):               ### move to utilities, why is this not in numpy?
+    """Return plus/minus the input.
+
+    Args:
+        x (numpy scalar): Data to smooth.
+
+    Returns:
+        numpy.ndarray: Plus and minus values.
+    """
+    
+    return np.array([x,-x])
+
+#===============================================================================
 def smooth(data, width):               ### move to utilities, why is this not in numpy?
     """Smooth a curve using a moving box.
 
@@ -83,7 +96,7 @@ def smooth(data, width):               ### move to utilities, why is this not in
         width (int): Width of smoothing box.
 
     Returns:
-        numpy.ndarray: Smoothed dataS
+        numpy.ndarray: Smoothed data.
     """
     kernel = np.ones(width)/width
     return np.convolve(data, kernel, mode='same')
@@ -726,7 +739,7 @@ def _ninety_percent_gap_degrees(n, scale=1.):
     return (1808. * n**(-0.912)) * scale
 
 #===============================================================================
-def _get_range_mod360(values, alt_format=None):
+def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
     """Determines the minimum and maximum values in the array, allowing for the
     possibility that the numeric range wraps around from 360 to 0.
 
@@ -735,7 +748,10 @@ def _get_range_mod360(values, alt_format=None):
         alt_format (str, optional):
             "-180" to return values in the range (-180,180) rather
             than (0,360).
-
+        width (int): If given, smoothing width for diffs.
+        diffmin (float): Minimum diff to consider.  If the maximum diff is below this value,
+                         then full coverage is assumed, unless the span of the given angles
+                         is smaller.
     Returns:
         list: Minimum and maximum values in the cyclic array.
     """
@@ -746,7 +762,7 @@ def _get_range_mod360(values, alt_format=None):
     complete_coverage = [-180., 180.] if use_minus_180 else [0., 360.]
 
     # Flatten the set of values
-    values = np.asarray(values.flatten().vals)
+    values = np.asarray(values).flatten()
 
     # With only one value, we know nothing
     if values.size <= 1:
@@ -757,15 +773,17 @@ def _get_range_mod360(values, alt_format=None):
     diffs = np.empty(values.size)
     diffs[:-1] = values[1:] - values[:-1]
     diffs[-1] = values[0] + 360. - values[-1]
+    span = 360 - diffs[-1]
 
-    # Smooth the diffs to remove noise from subsampling.  This box size should probably be
-    # realted to the subsamping width
-    diffs = smooth(diffs, 5)
+    # Smooth the diffs to remove noise from subsamping.  
+    wdiffs = diffs
+    if width > 1:
+        wdiffs = smooth(diffs, width)
 
     # Locate the largest gap and use it to define the range
     gap_index = np.argmax(diffs)
-    diff_max = diffs[gap_index]
     range_mod360 = [values[(gap_index + 1) % values.size], values[gap_index]]
+    diff_max = wdiffs[gap_index]
 
     # Convert to range -180 to 180 if necessary
     if use_minus_180:
@@ -774,11 +792,19 @@ def _get_range_mod360(values, alt_format=None):
         upper = (upper + 180.) % 360. - 180.
         range_mod360 = [lower, upper]
 
-    # We want 90% confidence that the coverage is not complete. Otherwise,
-    # return the complete range
-    # NOTE the scale correction is empirical and needs further checking.
-#+    from IPython import embed; print('+++++++++++++'); embed()
-    if diff_max >= _ninety_percent_gap_degrees(values.size, scale=2):
-        return range_mod360
-    else:
+#    print(range_mod360)
+#    print(complete_coverage)
+#    print(diff_max, diffmin)
+#    from IPython import embed; print('+++++++******++++++'); embed()
+##    import matplotlib.pyplot as mplt; mplt.plot(values); mplt.show()
+
+    # Return full coverage if max diff is below specified threshold. 
+    if span > diffmin and diff_max <= diffmin:
         return complete_coverage
+
+    # Otherwise check 90% confidence that the coverage is not complete. 
+    if diff_max >= _ninety_percent_gap_degrees(values.size):
+        return range_mod360
+
+    # Otherwise, return the complete range   
+    return complete_coverage

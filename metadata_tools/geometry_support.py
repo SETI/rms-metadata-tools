@@ -7,6 +7,7 @@ import numpy as np
 import traceback
 import warnings
 import fnmatch
+import polymath
 
 import metadata_tools.common as com
 import metadata_tools.util as util
@@ -89,7 +90,8 @@ FORMAT_DICT = {
     "sub_observer_latitude"     : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
 
     "limb_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0),
-    "limb_clock_angle"          : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 360),
+#    "limb_clock_angle"          : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "limb_clock_angle"          : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
 
     "pole_clock_angle"          : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360),
     "pole_position_angle"       : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360),
@@ -130,13 +132,14 @@ class Record(object):
     """
 
     #===========================================================================
-    def __init__(self, observation, volume_id, meshgrids, level):
+    def __init__(self, observation, volume_id, meshgrids, sampling, level):
         """Constructor for a geometry record.
 
         Args:
             observation (oops.Observation): OOPS Observation object.
             volume_id (str): Volume ID.
             meshgrids (dict): All meshgrids associated with this host.
+            sampling (int): Pixel sampling density.
             level (str, optional): Processing level: 'summary' or 'detailed'.
         """
         self.observation = observation
@@ -146,6 +149,7 @@ class Record(object):
         self.primary, self.secondaries, self.selections, self.additions = \
             util.get_primary(MISSION_TABLE, self.observation, sclk)
         self.level = level
+        self.sampling = sampling
 
         # Level-specific column dictionaries
         self.dicts = {'sky' : col.SKY_COLUMNS}
@@ -250,8 +254,6 @@ class Record(object):
             body_names += self.observation.inventory(self.additions,
                                                  expand=config.EXPAND, cache=False)
 
-#        if 'C0059886400R' in self.observation.filespec:
-#            from IPython import embed; print('+++++++++++++'); embed()
         # Add target body and parent
         if self.target and oops.Body.exists(self.target):
             body_names += [self._get_system(self.target)]
@@ -497,6 +499,7 @@ class Record(object):
                     Record._construct_excluded_mask(
                                 backplane, mask_target, primary, mask_desc,
                                 blocker=blocker, ignore_shadows=ignore_shadows)
+
         # Initialize the list of rows
 
         # Interpret the subregion list
@@ -522,7 +525,6 @@ class Record(object):
                     Record._append_body_prefix(prefix_columns, target, name_length)
                 else:
                     Record._append_body_prefix(prefix_columns, primary, name_length)
-
 
 #            if not no_body:
 #                Record._append_body_prefix(prefix_columns, primary, name_length)
@@ -567,15 +569,14 @@ class Record(object):
                 else:
                     format = FORMAT_DICT[event_key[0]]
 
-#+                print(column_desc)
-                data_columns.append(Record._formatted_column(values, format))
+                data_columns.append(self._formatted_column(values, format))
 
             # Save label overrides for this row
             (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
-            ovverride = {'NULL_VALUE': null_value,
-                         'VALID_MINIMUM': valid_minimum,
-                         'VALID_MAXIMUM': valid_maximum, 
-                         }
+            override = {'NULL_VALUE': null_value,
+                        'VALID_MINIMUM': valid_minimum,
+                        'VALID_MAXIMUM': valid_maximum, 
+                        }
 
             # Save the row if it was completed
             if len(data_columns) < len(column_descs):
@@ -583,7 +584,7 @@ class Record(object):
             if nothing_found and (indx > 0 or allow_zero_rows):
                 continue
             rows.append(prefix_columns + data_columns)
-            overrides.append(ovverride)
+            overrides.append(override)
 
         # Return something if we can
         if rows or allow_zero_rows:
@@ -718,28 +719,33 @@ class Record(object):
         return False
 
     #===========================================================================
-    @staticmethod
-    def _formatted_column(values, format):
+    def _circle_coverage(self, angles, flag=None):
+        """Returns inferred angular coverage, accounting for the mask.
+
+        Args:
+            angles (list, np.array, or Scalar): Angles in deg.
+            flag (str, optional):
+                "-180" to return values in the range (-180,180) rather than (0,360).
+
+        Returns:
+            list: Minimum and maximum values in the cyclic array.
+        """
+        if isinstance(angles, polymath.Scalar):
+            if  angles.mask is not False:
+                angles = angles.values[angles.antimask]
+            else:
+                angles = angles.values
+
+        return util._get_range_mod360(angles, 
+                                      width=self.sampling+1, diffmin=1, alt_format=flag)
+
+    #===========================================================================
+    def _formatted_column(self, values, format):
         """Returns one formatted column (or a pair of columns) as a string.
 
         Args:
             values (oops.Scalar): A Scalar of values with its applied mask.
-            format (tuple):
-                A tuple (flag, number_of_values, column_width,standard_format,
-                overflow_format, null_value),describing the format to use.
-                Here...
-                    flag: "DEG" implies that the values should be converted
-                        from radians to degrees; "360" implies that the
-                        values should be converted to a range of degrees,
-                        allowing for ranges that cross from 360 to 0.
-                        number_of_values  1 yields the mean value
-                        2 yields the minimum and maximum values.
-                    column_width: Total width of the formatted string.
-                    standard_format: Desired format code for the field.
-                    overflow_format: Format code if field overflows the
-                        standard_format length.
-                    null_value: Value to indicate NULL.
-
+         
         Returns:
             str: Formatted column.
         """
@@ -765,10 +771,10 @@ class Record(object):
             results = [null_value, null_value]
 
         elif flag == "360":
-            results = util._get_range_mod360(values)
+            results = self._circle_coverage(values)
 
         elif flag == "-180":
-            results = util._get_range_mod360(values, alt_format=flag)
+            results = self._circle_coverage(values, flag=flag)
 
         else:
             results = [values.min().as_builtin(), values.max().as_builtin()]
@@ -1019,6 +1025,7 @@ class Suite(object):
         self.output_dir = FCPath(output_dir)
         self.glob = glob
         self.first = first
+        self.sampling = sampling
 
         # Determine processing levels
         self.levels = []
@@ -1082,7 +1089,6 @@ class Suite(object):
             # Get format for this column
             event_key = column_desc[0]
             if len(column_desc) > 2:
-#                from IPython import embed; print('+++++++++++++'); embed()
                 format = ALT_FORMAT_DICT[(event_key[0], column_desc[2])]
             else:
                 format = FORMAT_DICT[event_key[0]]
@@ -1150,7 +1156,11 @@ class Suite(object):
         records = []
         for level in self.levels:
             records.append(
-                Record(self.observations[index], self.volume_id, self.meshgrids, level))
+                Record(self.observations[index], 
+                       self.volume_id, 
+                       self.meshgrids, 
+                       self.sampling, 
+                       level))
         return records
 
     #===========================================================================
@@ -1184,12 +1194,13 @@ class Suite(object):
             table.write(labels_only=labels_only)
 
     #===========================================================================
-    def create(self, labels_only=False):
+    def create(self, labels_only=False, pattern=None):
         """Process the volume and write a suite of geometry files.
 
         Args:
             labels_only (bool):
                 If True, labels are generated for any existing geometry tables.
+            pattern (str): Glob pattern for sub-selecting files to process.
 
         Returns:
             None
@@ -1204,6 +1215,10 @@ class Suite(object):
         count = 0
         if not labels_only:
             for i in range(nobs):
+
+                # make any sub selection
+                if pattern and fnmatch.filter([self.observations[i].filespec], pattern) == []:
+                    continue
 
                 # Abort if count exceeds a specified limit
                 if self.first and count >= self.first:
@@ -1378,7 +1393,7 @@ def process_tables(template_name,
                     continue
 
                 # Check whether this volume has already been processed
-                if new_only & (list(outdir.glob('*_inventory.csv')) != []):
+                if new_only and (list(outdir.glob('*_inventory.csv')) != []):
                     continue
 
                 # Update the task file...
@@ -1389,7 +1404,7 @@ def process_tables(template_name,
                     suite = Suite(indir, outdir,
                                    selection=args.selection, glob=glob, first=args.first,
                                    sampling=args.sampling)
-                    suite.create(labels_only=labels_only)
+                    suite.create(labels_only=labels_only, pattern=args.pattern)
 
     # Write the task file
     if task_list_only:

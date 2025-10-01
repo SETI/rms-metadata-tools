@@ -119,6 +119,8 @@ def get_common_args(host=None):
     gr.add_argument('--index_tree', '-i', type=str, metavar='index_tree',
                     help='''File path to the top to tree containing the
                             index files.''', action=PathAction)
+    gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
+                    help='''Glob pattern to select files.''', action=PathAction)
 
     # Return parser
     return parser

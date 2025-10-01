@@ -108,12 +108,13 @@ class IndexTable(com.Table):
         self.column_stubs = IndexTable._get_column_values(pds3_table)
 
     #===========================================================================
-    def create(self, labels_only=False):
+    def create(self, labels_only=False, pattern=None):
         """Create the index file for a single volume.
 
         Args:
             labels_only (bool):
                 If True, labels are generated for any existing geometry tables.
+            pattern (str): Glob pattern for sub-selecting files to process.
 
         Returns:
             None.
@@ -136,6 +137,10 @@ class IndexTable(com.Table):
                 file = self.files[i]
                 name = file.name
                 root = file.parent
+
+                # make any sub selection
+                if pattern and fnmatch.filter([name], pattern) == []:
+                    continue
 
                 # Match the glob pattern
                 file = fnmatch.filter([name], self.glob)[0]
@@ -489,6 +494,7 @@ def _create_index(input_tree, output_tree, index_tree=None,
                   labels_only=False,
                   qualifier=None,
                   glob=None,
+                  pattern=None,
                   task_file=None,
                   task_list_only=False):
     """Creates index files for a collection of volumes.
@@ -508,6 +514,7 @@ def _create_index(input_tree, output_tree, index_tree=None,
             Qualifying string identifying the type of index file to create, e.g.,
             'supplemental'.
         glob (str, optional): Glob pattern for index files.
+        pattern (str): Glob pattern for sub-selecting files to process.
         task_file (str, optional): Name of tasks file.
         task_list_only (bool, optional):
             If True, a tasks file is created and no processing is performed.
@@ -563,7 +570,7 @@ def _create_index(input_tree, output_tree, index_tree=None,
                     index = IndexTable(indir, outdir, index_dir=index_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
 
-                    index.create(labels_only=labels_only)
+                    index.create(labels_only=labels_only, pattern=pattern)
                     unused = index.unused if not unused else unused & index.unused
 
         # Write the task file
@@ -616,6 +623,7 @@ def process_index(template_name,
                   labels_only=args.labels is not False,
                   qualifier=args.type,
                   glob=glob,
+                  pattern=args.pattern,
                   task_file=task_file,
                   task_list_only=task_list_only)
 
