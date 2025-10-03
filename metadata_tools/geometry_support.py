@@ -526,11 +526,6 @@ class Record(object):
                 else:
                     Record._append_body_prefix(prefix_columns, primary, name_length)
 
-#            if not no_body:
-#                Record._append_body_prefix(prefix_columns, primary, name_length)
-#                if target is not None:
-#                    Record._append_body_prefix(prefix_columns, target, name_length)
-
             # Insert the subregion index
             if subregion_masks:
                 prefix_columns.append('%2d' % (indx + start_index - 1))
@@ -719,7 +714,7 @@ class Record(object):
         return False
 
     #===========================================================================
-    def _circle_coverage(self, angles, flag=None):
+    def _circle_coverage(self, angles, null_value, flag=None):
         """Returns inferred angular coverage, accounting for the mask.
 
         Args:
@@ -730,12 +725,22 @@ class Record(object):
         Returns:
             list: Minimum and maximum values in the cyclic array.
         """
+
+        # Apply mask
         if isinstance(angles, polymath.Scalar):
-            if  angles.mask is not False:
-                angles = angles.values[angles.antimask]
-            else:
+            # Return null if fully masked
+            if angles.mask is True:
+                return [null_value, null_value]
+            
+            # Use full array if not masked
+            if angles.mask is False:
                 angles = angles.values
 
+            # Apply mask if full mask present
+            else:
+                angles = angles.values[angles.antimask]
+
+        
         return util._get_range_mod360(angles, 
                                       width=self.sampling+1, diffmin=1, alt_format=flag)
 
@@ -771,10 +776,10 @@ class Record(object):
             results = [null_value, null_value]
 
         elif flag == "360":
-            results = self._circle_coverage(values)
+            results = self._circle_coverage(values, null_value)
 
         elif flag == "-180":
-            results = self._circle_coverage(values, flag=flag)
+            results = self._circle_coverage(values, null_value, flag=flag)
 
         else:
             results = [values.min().as_builtin(), values.max().as_builtin()]

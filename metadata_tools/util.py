@@ -792,12 +792,6 @@ def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
         upper = (upper + 180.) % 360. - 180.
         range_mod360 = [lower, upper]
 
-#    print(range_mod360)
-#    print(complete_coverage)
-#    print(diff_max, diffmin)
-#    from IPython import embed; print('+++++++******++++++'); embed()
-##    import matplotlib.pyplot as mplt; mplt.plot(values); mplt.show()
-
     # Return full coverage if max diff is below specified threshold. 
     if span > diffmin and diff_max <= diffmin:
         return complete_coverage
