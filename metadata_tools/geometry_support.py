@@ -740,7 +740,6 @@ class Record(object):
             else:
                 angles = angles.values[angles.antimask]
 
-        
         return util._get_range_mod360(angles, 
                                       width=self.sampling+1, diffmin=1, alt_format=flag)
 
