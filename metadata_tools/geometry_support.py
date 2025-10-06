@@ -262,6 +262,9 @@ class Record(object):
         # Cull duplicate bodies and verify all bodies are in the registry
         body_names = list(dict.fromkeys(body_names))
 
+        # Sort bodies based on occurence in BODIES list
+        body_names.sort(key=lambda name : list(col.BODIES.keys()).index(name))
+
         return [body_name for body_name in body_names if oops.Body.exists(body_name)]
 
     #===============================================================================

@@ -4,7 +4,7 @@ flake8
 pytest
 numpy
 rms-oops
-rms-filecache>=2.3.0
+rms-filecache>=3.0.0
 rms-pdslogger>=3.0.0
 rms-julian
 rms-pdsparser
