@@ -613,6 +613,9 @@ def process_index(template_name,
         parser = get_args(host=host, index_type=index_type)
         args = parser.parse_args()
 
+#    print('testing', args.volumes)
+#    return
+
     if volumes is None:
         volumes = args.volumes
 

@@ -29,6 +29,10 @@ pfx=${parts[0]}
 cur=$RMS_METADATA_STAGE/$col/current
 prev=$RMS_METADATA_STAGE/$col/previous
 
+# Back up previous dir
+dir=$RMS_METADATA_STAGE/$col/previous_`date +"%Y-%m-%d-%H.%M.%S"`
+cp -r $prev $dir
+
 # Move current files to previous
 rm -rf $prev
 if [ -d $cur ]; then
@@ -42,6 +46,7 @@ do
     mkdir $cur/"$dir"
     cp $dir/GO*.lbl $cur/"$dir"
     cp $dir/GO*.tab $cur/"$dir"
+    cp $dir/GO*.csv $cur/"$dir"
 done
 
 

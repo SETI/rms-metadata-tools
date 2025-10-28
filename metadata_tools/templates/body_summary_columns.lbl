@@ -513,9 +513,9 @@ $ONCE(night_override = False)
     NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
     NULL_CONSTANT               = "NA"
-    DESCRIPTION                 = "Surface intercept time is the time when the
-      received photon left a point on the body's surface. It is given in ISO
-      format: YYYY-MM-DDTHH:mm:ss.sss.
+    DESCRIPTION                 = "Surface intercept time is the International
+      Atomic Time (TAI) when the received photon left a point on the body's
+      surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss.
 
       This column tabulates the earliest time among the pixels whose lines of
       sight intercept the body's surface.
@@ -527,9 +527,9 @@ $ONCE(night_override = False)
     NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
     NULL_CONSTANT               = "NA"
-    DESCRIPTION                 = "Surface intercept time is the time when the
-      received photon left a point on the body's surface. It is given in ISO
-      format: YYYY-MM-DDTHH:mm:ss.sss.
+    DESCRIPTION                 = "Surface intercept time is the International
+      Atomic Time (TAI) when the received photon left a point on the body's
+      surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss.
 
       This column tabulates the latest time among the pixels whose lines of
       sight intercept the body's surface.
@@ -902,7 +902,7 @@ $ONCE(night_override = False)
     VALID_MAXIMUM               =  10000.
     DESCRIPTION                 = "Center X coordinate is the predicted
       horizontal coordinate of the center of the body within this data
-      product.
+      product. A fractional value of 0.5 indicates the center of the pixel.
 
       This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN
@@ -916,7 +916,7 @@ $ONCE(night_override = False)
     VALID_MAXIMUM               =  10000.
     DESCRIPTION                 = "Center Y coordinate is the predicted
       vertical coordinate of the center of the body within this data
-      product.
+      product. A fractional value of 0.5 indicates the center of the pixel.
 
       This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN

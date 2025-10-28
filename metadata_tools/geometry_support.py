@@ -52,7 +52,7 @@ FORMAT_DICT = {
 
     "distance"                  : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
     "center_distance"           : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
-    "center_coordinate"         : ("",    1, 12, "%12.3f", "%12.5e", -99999, 0, 0),
+    "center_coordinate"         : ("",    1, 12, "%12.3f", "%12.5e", -99999, -10000, 10000),
     "radius_in_pixels"          : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
 
     "ring_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
@@ -102,7 +102,7 @@ FORMAT_DICT = {
     "ring_incidence_angle"      : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
     "center_incidence_angle"    : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
     "ring_center_incidence_angle"
-                                : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
+                                : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
     "emission_angle"            : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
     "ring_emission_angle"       : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
     "center_emission_angle"     : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
@@ -1020,7 +1020,7 @@ class Suite(object):
                 A string containing...
                 "S" to generate summary files;
                 "D" to generate detailed files.
-            glob (str, optional): Glob pattern for index files.
+            glob (str, optional): Glob pattern for geometry files.
             first (bool, optional):
                 If given, at most this many files are processed in each volume.
             sampling (int, optional): Pixel sampling density.
@@ -1335,10 +1335,10 @@ def process_tables(template_name,
             "D" to generate detailed files.
         exclude (list, optional): List of volumes to exclude.
         sampling (int, optional): Pixel sampling density.
-        glob (str, optional): Glob pattern for index files.
+        glob (str, optional): Glob pattern for geometry files.
         args (argparse.Namespace): Parsed arguments.
         task_file (str, optional): 
-            Name of tasks file.  This file is overwritten. If not given, tasks are provided 
+            Name of tasks file. This file is overwritten. If not given, tasks are provided 
             via the task_source generator.
         task_list_only (bool, optional):
             If True, a task list is created and no processing is performed. If task_file is

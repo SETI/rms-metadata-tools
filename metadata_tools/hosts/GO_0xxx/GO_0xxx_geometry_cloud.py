@@ -6,7 +6,8 @@
 # For local runs, the basic usage is identical to GO_0xxx_geometry.py. In addition, all
 # cloud_tasks arguments are accepted. For example:
 #
-#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA/GO_0xxx/ --num-simultaneous-tasks 12
+#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA/GO_0xxx/ \
+#                                       --num-simultaneous-tasks 12 --max-runtime 10000
 #
 #
 #
