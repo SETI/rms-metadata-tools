@@ -26,7 +26,8 @@
 ##########################################################################################
 import host_init
 import metadata_tools.index_support as idx
+import host_config as hconf
 
 idx.process_index('GO_0xxx_supplemental_index',
-                  glob='C0*')
+                  glob=hconf.glob)
 ##########################################################################################

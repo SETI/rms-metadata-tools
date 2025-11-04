@@ -87,49 +87,7 @@ $END_NOTE
       directory of the PDS volume."
   END_OBJECT                    = COLUMN
 
-  OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RIGHT_ASCENSION"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "This is the minimum value for J2000 right
-      ascension within the field of view sampled by this observation. For
-      fields of view that cross 360 degrees, the tabulated minimum value
-      will be greater than the maximum."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_RIGHT_ASCENSION"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "This is the maximum value for J2000 right
-      ascension within the field of view sampled by this observation. For
-      fields of view that cross 360 degrees, the tabulated minimum value
-      will be greater than the maximum."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_DECLINATION"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "This is the minimum value for J2000
-      declination within the field of view sampled by the observation."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = "MAXIMUM_DECLINATION"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "This is the maximum value for J2000
-      declination within the field of view sampled by the observation."
-  END_OBJECT                    = COLUMN
+$INCLUDE('sky_summary_columns.lbl')
 
 END_OBJECT                      = SKY_SUMMARY_TABLE
 END

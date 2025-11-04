@@ -1422,7 +1422,6 @@ $END_NOTE
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The ring pole clock angle is the projected
       direction of the ring system's pole (angular momentum) vector on the
       sky, measured as an angle clockwise from celestial north (i.e., toward
@@ -1439,7 +1438,6 @@ $END_NOTE
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The ring pole position angle is the
       projected direction of the ring system's pole (angular momentum) vector
       on the sky, measured as an angle counterclockwise from celestial north

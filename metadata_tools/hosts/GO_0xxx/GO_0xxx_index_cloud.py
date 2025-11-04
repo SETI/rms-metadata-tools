@@ -8,6 +8,7 @@
 # cloud_tasks arguments are accepted. For example:
 #
 #   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ --num-simultaneous-tasks 12
+#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ GO_0017 --num-simultaneous-tasks 12
 #
 # For GCP runs, use:
 #
@@ -44,7 +45,7 @@ def process_task(task_id: str,
 
     # process the volume
     process_index(hconf.template_name,
-                  glob=config.glob,
+                  glob=hconf.glob,
                   args=worker_data.args,
                   volumes=[task_data['volume_id']])
 
@@ -68,7 +69,7 @@ async def main():
 
     # set up the task file containing one entry per volume
     process_index(hconf.template_name,
-                  glob=config.glob,
+                  glob=hconf.glob,
                   args=worker._data.args,
                   task_list_only=True,
                   task_file=worker._data.args.task_file)

@@ -29,7 +29,8 @@ def process_task(task_id: str,
 
     # process the volume
     process_tables(hconf.template_name,
-                   glob=config.glob,
+                   glob=hconf.glob,
+                   index_glob=config.index_glob,
                    selection=config.selection,
                    exclude=config.exclude,
                    args=worker_data.args,
@@ -57,7 +58,8 @@ async def main():
 
     # set up the task file containing one entry per volume
     process_tables(hconf.template_name,
-                   glob=config.glob,
+                   glob=hconf.glob,
+                   index_glob=config.index_glob,
                    selection=config.selection,
                    exclude=config.exclude,
                    args=worker._data.args,

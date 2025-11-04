@@ -150,6 +150,7 @@ class Record(object):
             util.get_primary(MISSION_TABLE, self.observation, sclk)
         self.level = level
         self.sampling = sampling
+        self.pointing_available = True
 
         # Level-specific column dictionaries
         self.dicts = {'sky' : col.SKY_COLUMNS}
@@ -209,6 +210,44 @@ class Record(object):
                                 col.BODYX, self.target)
 
     #===============================================================================
+    def _inventory(self, bodies):
+        """Obtain image inventory if possible.
+
+        Args:
+            bodies (list): Bodies to test.
+
+        Returns:
+            List of inventory bodies.
+        """
+        logger = com.get_logger()
+
+        # Attempt to obtain inventory
+        try:
+            inventory = self.observation.inventory(bodies, expand=config.EXPAND, cache=False)
+            return inventory
+
+        # A RuntimeError is probably caused by missing spice data. There is
+        # probably nothing we can do.
+        except RuntimeError as e:
+            error = str(e)
+
+            # A frame error means no C-kernel data for this observation. Proceed with a warning
+            # and set the pointing_available flag.
+            if 'SPICE(NOFRAMECONNECT)' in error:
+                logger.warn(str(e))
+                self.pointing_available = False
+            # Other kinds of errors are genuine bugs.
+            else:
+                logger.error(traceback.format_exc())
+            return []
+
+        # Other kinds of errors are genuine bugs.
+        except (AssertionError, AttributeError, IndexError, KeyError,
+                LookupError, TypeError, ValueError):
+            logger.error(traceback.format_exc())
+            return []
+
+    #===============================================================================
     def _select_bodies(self, bodies):
         """Select all bodies to include in this record according to the following rules:
         
@@ -227,6 +266,7 @@ class Record(object):
         Returns:
             List of selected bodies.
         """
+
         # Add bodies
         body_names = []
 
@@ -235,15 +275,13 @@ class Record(object):
             body_names += [self.primary]
             children = [child.name for child in col.BODIES[self.primary].children
                             if child.name in bodies.keys()]
-            children = self.observation.inventory(children,
-                                                     expand=config.EXPAND, cache=False)
+            children = self._inventory(children)
             if self.selections:
                 children = list(set(children) & set(self.selections))
             body_names += children
         # Add all FOV selections if no primary
         else:
-            body_names += self.observation.inventory(self.selections,
-                                                 expand=config.EXPAND, cache=False)
+            body_names += self._inventory(self.selections)
 
         # Add any secondary bodies
         if self.secondaries:
@@ -251,8 +289,7 @@ class Record(object):
 
         # Add any additions in the FOV
         if self.additions:
-            body_names += self.observation.inventory(self.additions,
-                                                 expand=config.EXPAND, cache=False)
+            body_names += self._inventory(self.additions)
 
         # Add target body and parent
         if self.target and oops.Body.exists(self.target):
@@ -302,7 +339,7 @@ class Record(object):
     #===============================================================================
     def add(self, qualifier, *,
                   name=None, target=None, tiles=[], tiling_min=100,
-                  ignore_shadows=False, start_index=1, allow_zero_rows=False,
+                  ignore_shadows=False, start_index=1, allow_zero_rows=True,
                   no_mask=False, no_body=False):
         """Generates the geometry for one row, given a list of column descriptions.
 
@@ -380,7 +417,7 @@ class Record(object):
     def _prep_row(self, prefixes, backplane, blocker, column_descs, *,
                   primary=None, target=None, name_length=defs.NAME_LENGTH,
                   tiles=[], tiling_min=100, ignore_shadows=False,
-                  start_index=1, allow_zero_rows=False, no_mask=False,
+                  start_index=1, allow_zero_rows=True, no_mask=False,
                   no_body=False):
         """Generates the geometry and returns a list of lists of strings. The inner
         list contains string representations for each column in one row of the
@@ -541,12 +578,17 @@ class Record(object):
             for column_desc in column_descs:
                 event_key = column_desc[0]
                 mask_desc = column_desc[1]
+                null = False
 
                 # Fill in the backplane array
                 if event_key[1] == defs.NULL:
                     values = oops.Scalar(0., True)
                 else:
-                    values = backplane.evaluate(event_key)
+                    if self.pointing_available:
+                        values = backplane.evaluate(event_key)
+                    else:
+                        values = oops.Scalar(0., True)
+                        null = True
 
                 # Make a shallow copy and apply the new masks
                 if excluded_mask_dict != {}:
@@ -567,15 +609,18 @@ class Record(object):
                 else:
                     format = FORMAT_DICT[event_key[0]]
 
+                (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
+                if null:
+                    values = oops.Scalar(null_value, False)
                 data_columns.append(self._formatted_column(values, format))
 
             # Save label overrides for this row
-            (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
             override = {'NULL_VALUE': null_value,
                         'VALID_MINIMUM': valid_minimum,
                         'VALID_MAXIMUM': valid_maximum, 
                         }
 
+#            from IPython import embed; print('+++++++++++++'); embed()
             # Save the row if it was completed
             if len(data_columns) < len(column_descs):
                 continue  # hopeless error
@@ -1009,7 +1054,7 @@ class Suite(object):
 
     #===========================================================================
     def __init__(self, input_dir, output_dir,
-                       selection='', glob=None, first=None, sampling=8):
+                       selection='', glob=None, index_glob=None, first=None, sampling=8):
         """Constructor for a geometry Suite object.
 
         Args:
@@ -1020,7 +1065,8 @@ class Suite(object):
                 A string containing...
                 "S" to generate summary files;
                 "D" to generate detailed files.
-            glob (str, optional): Glob pattern for geometry files.
+            glob (str, optional): Glob pattern for data files.
+            index_glob (str, optional): Glob pattern for index files.
             first (bool, optional):
                 If given, at most this many files are processed in each volume.
             sampling (int, optional): Pixel sampling density.
@@ -1031,6 +1077,7 @@ class Suite(object):
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
         self.glob = glob
+        self.index_glob = index_glob
         self.first = first
         self.sampling = sampling
 
@@ -1043,7 +1090,7 @@ class Suite(object):
                 self.levels += ['detailed']
 
         # Check for supplemental index
-        index_filenames = list(self.input_dir.glob(self.glob))
+        index_filenames = list(self.input_dir.glob(self.index_glob))
         if len(index_filenames) == 0:
             return
         if len(index_filenames) > 1:
@@ -1223,8 +1270,13 @@ class Suite(object):
         if not labels_only:
             for i in range(nobs):
 
-                # make any sub selection
+                # Make any sub selection
                 if pattern and fnmatch.filter([self.observations[i].filespec], pattern) == []:
+                    continue
+
+                # Match the glob pattern
+                file = fnmatch.filter([self.observations[i].basename], self.glob)[0]
+                if file == []:
                     continue
 
                 # Abort if count exceeds a specified limit
@@ -1232,32 +1284,45 @@ class Suite(object):
                     continue
 
                 # Print a log of progress
-                logger.info("%s  %s %4d/%4d" %
-                            (self.volume_id, self.observations[i].basename, i+1, nobs))
+                logger.info("%s  %s %4d/%4d" % (self.volume_id, file, i+1, nobs))
 
-                # Continue processing even if cspice throws a runtime error
-                try:
-                    # Construct the record for this observation
-                    records = self.make_records(i)
 
-#                    # Build overrides dict
-#                    if count == 0:
-#                        overrides = Suite.get_overrides(records[0])
 
-                    # Update the tables
-                    self.add(records)
-                    count += 1
+                # Construct the record for this observation
+                records = self.make_records(i)
+#                   # Build overrides dict
+#                   if count == 0:
+#                       overrides = Suite.get_overrides(records[0])
+                # Update the tables
+                self.add(records)
+                count += 1
 
-                # A RuntimeError is probably caused by missing spice data. There is
-                # probably nothing we can do.
-                except RuntimeError as e:
-                    logger.warn(str(e))
 
-                # Other kinds of errors are genuine bugs. For now, we just log the
-                # problem, and jump over the image; we can deal with it later.
-                except (AssertionError, AttributeError, IndexError, KeyError,
-                        LookupError, TypeError, ValueError):
-                    logger.error(traceback.format_exc())
+
+#                # Continue processing even if cspice throws a runtime error
+#                try:
+#                    # Construct the record for this observation
+#                    records = self.make_records(i)
+#
+##                    # Build overrides dict
+##                    if count == 0:
+##                        overrides = Suite.get_overrides(records[0])
+#
+#                    # Update the tables
+#                    self.add(records)
+#                    count += 1
+#
+#                # A RuntimeError is probably caused by missing spice data. There is
+#                # probably nothing we can do.
+#                except RuntimeError as e:
+##                    logger.warn(str(e))
+#                    pass
+#
+#                # Other kinds of errors are genuine bugs. For now, we just log the
+#                # problem, and jump over the image; we can deal with it later.
+#                except (AssertionError, AttributeError, IndexError, KeyError,
+#                        LookupError, TypeError, ValueError):
+#                    logger.error(traceback.format_exc())
 
         #  Write tables and make labels
         self.write(labels_only=labels_only)
@@ -1321,6 +1386,7 @@ def process_tables(template_name,
                    exclude=None,
                    sampling=8,
                    glob=None,
+                   index_glob=None,
                    args=None,
                    task_file=None, 
                    task_list_only=False):
@@ -1335,7 +1401,8 @@ def process_tables(template_name,
             "D" to generate detailed files.
         exclude (list, optional): List of volumes to exclude.
         sampling (int, optional): Pixel sampling density.
-        glob (str, optional): Glob pattern for geometry files.
+        glob (str, optional): Glob pattern for data files.
+        index_glob (str, optional): Glob pattern for index files.
         args (argparse.Namespace): Parsed arguments.
         task_file (str, optional): 
             Name of tasks file. This file is overwritten. If not given, tasks are provided 
@@ -1409,8 +1476,8 @@ def process_tables(template_name,
                 # ... or process this volume
                 else:
                     suite = Suite(indir, outdir,
-                                   selection=args.selection, glob=glob, first=args.first,
-                                   sampling=args.sampling)
+                                  selection=args.selection, glob=glob, index_glob=index_glob, 
+                                  first=args.first, sampling=args.sampling)
                     suite.create(labels_only=labels_only, pattern=args.pattern)
 
     # Write the task file

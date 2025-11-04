@@ -40,7 +40,7 @@ class IndexTable(com.Table):
             qualifier (str, optional):
                 Qualifying string identifying the type of index file to create,
                 e.g., 'supplemental'.
-            glob (str, optional): Glob pattern for index files.
+            glob (str, optional): Glob pattern for data files.
         """
 
         # Initialize table, return if specific paths not given
@@ -138,7 +138,7 @@ class IndexTable(com.Table):
                 name = file.name
                 root = file.parent
 
-                # make any sub selection
+                # Make any sub selection
                 if pattern and fnmatch.filter([name], pattern) == []:
                     continue
 
@@ -513,7 +513,7 @@ def _create_index(input_tree, output_tree, index_tree=None,
         qualifier (str, optional):
             Qualifying string identifying the type of index file to create, e.g.,
             'supplemental'.
-        glob (str, optional): Glob pattern for index files.
+        glob (str, optional): Glob pattern for data files.
         pattern (str): Glob pattern for sub-selecting files to process.
         task_file (str, optional): Name of tasks file.
         task_list_only (bool, optional):
@@ -592,7 +592,7 @@ def process_index(template_name,
 
     Args:
         template_name (str): Name of input template.
-        glob (str, optional): Glob pattern for index files.
+        glob (str, optional): Glob pattern for data files.
         volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
         args (argparse.Namespace): Parsed arguments.
         task_file (str, optional): 
@@ -613,8 +613,9 @@ def process_index(template_name,
         parser = get_args(host=host, index_type=index_type)
         args = parser.parse_args()
 
-#    print('testing', args.volumes)
-#    return
+#    if not task_list_only:
+#        print('testing', args.volumes)
+#        return
 
     if volumes is None:
         volumes = args.volumes

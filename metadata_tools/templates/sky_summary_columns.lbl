@@ -4,6 +4,7 @@
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The minimum value for J2000 right
       ascension within the field of view sampled by this observation.
 
@@ -19,6 +20,7 @@
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The maximum value for J2000 right
       ascension within the field of view sampled by this observation.
 
@@ -34,6 +36,7 @@
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               =  90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The minimum value for J2000 declination
       within the field of view sampled by the observation."
   END_OBJECT                    = COLUMN
@@ -44,6 +47,7 @@
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               =  90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The maximum value for J2000 declination
       within the field of view sampled by the observation."
   END_OBJECT                    = COLUMN

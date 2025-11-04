@@ -26,18 +26,18 @@ col=${parts[-1]}
 parts=($(echo $col | tr "_" " "))
 pfx=${parts[0]}
 
-cur=$RMS_METADATA_STAGE/$col/current
-prev=$RMS_METADATA_STAGE/$col/previous
+###cur=$RMS_METADATA_STAGE/$col/current
+##prev=$RMS_METADATA_STAGE/$col/previous
 
 # Back up previous dir
-dir=$RMS_METADATA_STAGE/$col/previous_`date +"%Y-%m-%d-%H.%M.%S"`
-cp -r $prev $dir
+cur=$RMS_METADATA_STAGE/$col/`date +"%Y-%m-%d-%H.%M.%S"`
+###cp -r $prev $dir
 
-# Move current files to previous
-rm -rf $prev
-if [ -d $cur ]; then
-  mv -f $cur $prev
-fi
+### Move current files to previous
+##rm -rf $prev
+##if [ -d $cur ]; then
+##  mv -f $cur $prev
+##fi
 
 # Copy new files to current
 mkdir -p $cur
@@ -49,6 +49,8 @@ do
     cp $dir/GO*.csv $cur/"$dir"
 done
 
+# make link to current/
+ln -s $cur $RMS_METADATA_STAGE/$col/current
 
 
 
