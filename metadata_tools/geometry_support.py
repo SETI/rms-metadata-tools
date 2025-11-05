@@ -73,7 +73,7 @@ FORMAT_DICT = {
 
     "event_time"                : ("ISO", 2, 25, "%25s", "%25s", '"NA"', 0, 0),
 
-    "ring_angular_resolution"   : ("DEG", 2, 10, "%10.5f",  "%10.4e", -999., 0, 0),
+    "ring_angular_resolution"   : ("DEG", 2, 10, "%10.5f",  "%6.3e", -999., 0, 0),
 
     "longitude"                 : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
     "ring_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
@@ -195,8 +195,9 @@ class Record(object):
 
         # Define a blocker body, if any
         if self.target in self.bodies:
-            blocker = self.observation.inventory([self.target],
-                                                expand=config.EXPAND, cache=False)
+            blocker = self._inventory([self.target])
+#            blocker = self.observation.inventory([self.target],
+#                                                expand=config.EXPAND, cache=False)
             if blocker:
                 self.blocker = blocker[0]
 
@@ -525,7 +526,7 @@ class Record(object):
 
         # Create all the needed pixel masks
         excluded_mask_dict = {}
-        if not no_mask:
+        if self.pointing_available and not no_mask:
             for column_desc in column_descs:
                 event_key = column_desc[0]
                 mask_desc = column_desc[1]
@@ -534,13 +535,11 @@ class Record(object):
                 key = (mask_target,) + mask_desc
                 if key in excluded_mask_dict:
                     continue
-
+                
                 excluded_mask_dict[key] = \
                     Record._construct_excluded_mask(
                                 backplane, mask_target, primary, mask_desc,
                                 blocker=blocker, ignore_shadows=ignore_shadows)
-
-        # Initialize the list of rows
 
         # Interpret the subregion list
         if tiles:
@@ -573,12 +572,13 @@ class Record(object):
             # Append the backplane columns
             data_columns = []
             nothing_found = True
+            null_flags = []
 
             # For each column...
             for column_desc in column_descs:
                 event_key = column_desc[0]
                 mask_desc = column_desc[1]
-                null = False
+                null_flag = False
 
                 # Fill in the backplane array
                 if event_key[1] == defs.NULL:
@@ -588,7 +588,7 @@ class Record(object):
                         values = backplane.evaluate(event_key)
                     else:
                         values = oops.Scalar(0., True)
-                        null = True
+                        null_flag = True
 
                 # Make a shallow copy and apply the new masks
                 if excluded_mask_dict != {}:
@@ -610,9 +610,15 @@ class Record(object):
                     format = FORMAT_DICT[event_key[0]]
 
                 (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
-                if null:
-                    values = oops.Scalar(null_value, False)
+                if null_flag:
+#                    values = oops.Scalar(null_value, False)
+##                    values = oops.Scalar(0, False)
+                    if isinstance(null_value, str):
+                        values = null_value
+                    else:
+                        values = oops.Scalar(null_value, False)
                 data_columns.append(self._formatted_column(values, format))
+                null_flags.append(null_flag)
 
             # Save label overrides for this row
             override = {'NULL_VALUE': null_value,
@@ -620,7 +626,6 @@ class Record(object):
                         'VALID_MAXIMUM': valid_maximum, 
                         }
 
-#            from IPython import embed; print('+++++++++++++'); embed()
             # Save the row if it was completed
             if len(data_columns) < len(column_descs):
                 continue  # hopeless error
@@ -812,24 +817,27 @@ class Record(object):
             values = values * oops.DPR
 
         # Create a list of the numeric values for this column
-        if number_of_values == 1:
-            meanval = values.mean().as_builtin()
-            if isinstance(meanval, oops.Scalar) and meanval.mask:
-                results = [null_value]
+        if not isinstance(values, str):
+            if number_of_values == 1:
+                meanval = values.mean().as_builtin()
+                if isinstance(meanval, oops.Scalar) and meanval.mask:
+                    results = [null_value]
+                else:
+                    results = [meanval]
+    
+            elif np.all(values.mask):
+                results = [null_value, null_value]
+    
+            elif flag == "360":
+                results = self._circle_coverage(values, null_value)
+    
+            elif flag == "-180":
+                results = self._circle_coverage(values, null_value, flag=flag)
+    
             else:
-                results = [meanval]
-
-        elif np.all(values.mask):
-            results = [null_value, null_value]
-
-        elif flag == "360":
-            results = self._circle_coverage(values, null_value)
-
-        elif flag == "-180":
-            results = self._circle_coverage(values, null_value, flag=flag)
-
+                results = [values.min().as_builtin(), values.max().as_builtin()]
         else:
-            results = [values.min().as_builtin(), values.max().as_builtin()]
+            results = values
 
         # Convert results to ISO
         if flag in ("ISO", "iso"):

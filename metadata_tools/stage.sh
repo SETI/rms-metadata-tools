@@ -26,21 +26,10 @@ col=${parts[-1]}
 parts=($(echo $col | tr "_" " "))
 pfx=${parts[0]}
 
-###cur=$RMS_METADATA_STAGE/$col/current
-##prev=$RMS_METADATA_STAGE/$col/previous
-
-# Back up previous dir
-cur=$RMS_METADATA_STAGE/$col/`date +"%Y-%m-%d-%H.%M.%S"`
-###cp -r $prev $dir
-
-### Move current files to previous
-##rm -rf $prev
-##if [ -d $cur ]; then
-##  mv -f $cur $prev
-##fi
-
 # Copy new files to current
+cur=$RMS_METADATA_STAGE/$col/`date +"%Y-%m-%d-%H.%M.%S"`
 mkdir -p $cur
+
 for dir in $pfx*
 do
     mkdir $cur/"$dir"
