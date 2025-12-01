@@ -59,7 +59,7 @@ FORMAT_DICT = {
     "ansa_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
 
     "altitude"                  : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0),
-    "ansa_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0),
+    "ansa_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -9.99e+09, 0, 0),
 
     "resolution"                : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
     "finest_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
@@ -190,14 +190,15 @@ class Record(object):
         meshgrid = self._meshgrid(observation, meshgrids)
         self.backplane = oops.backplane.Backplane(observation, meshgrid)
 
+        # Get inventory for this record
+        self.inventory = self._inventory(col.BODIES)
+
         # Select bodies for this record
-        self.bodies = Record._select_bodies(self,col.BODIES)
+        self.bodies = Record._select_bodies(self, col.BODIES)
 
         # Define a blocker body, if any
         if self.target in self.bodies:
             blocker = self._inventory([self.target])
-#            blocker = self.observation.inventory([self.target],
-#                                                expand=config.EXPAND, cache=False)
             if blocker:
                 self.blocker = blocker[0]
 
@@ -229,12 +230,12 @@ class Record(object):
 
         # A RuntimeError is probably caused by missing spice data. There is
         # probably nothing we can do.
-        except RuntimeError as e:
+        except (OSError, RuntimeError) as e:
             error = str(e)
 
-            # A frame error means no C-kernel data for this observation. Proceed with a warning
-            # and set the pointing_available flag.
-            if 'SPICE(NOFRAMECONNECT)' in error:
+            # If no C-kernel data for this observation, proceed with a warning and set the 
+            # pointing_available flag.
+            if 'SPICE(NOFRAMECONNECT)' in error or 'SPICE(CKINSUFFDATA)' in error:
                 logger.warn(str(e))
                 self.pointing_available = False
             # Other kinds of errors are genuine bugs.
@@ -572,7 +573,6 @@ class Record(object):
             # Append the backplane columns
             data_columns = []
             nothing_found = True
-            null_flags = []
 
             # For each column...
             for column_desc in column_descs:
@@ -611,14 +611,11 @@ class Record(object):
 
                 (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
                 if null_flag:
-#                    values = oops.Scalar(null_value, False)
-##                    values = oops.Scalar(0, False)
                     if isinstance(null_value, str):
                         values = null_value
                     else:
                         values = oops.Scalar(null_value, False)
                 data_columns.append(self._formatted_column(values, format))
-                null_flags.append(null_flag)
 
             # Save label overrides for this row
             override = {'NULL_VALUE': null_value,
@@ -922,7 +919,7 @@ class InventoryTable(com.Table):
         Returns:
             None.
         """
-        line = ",".join(record.prefixes) + ',"' + ",".join(record.bodies) + '"'
+        line = ",".join(record.prefixes) + ',"' + ",".join(record.inventory) + '"'
         self.rows += [line]
 
 
@@ -1079,8 +1076,6 @@ class Suite(object):
                 If given, at most this many files are processed in each volume.
             sampling (int, optional): Pixel sampling density.
         """
-        logger = com.get_logger()
-
         # Save inputs
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
@@ -1111,6 +1106,10 @@ class Suite(object):
                                                       self.volume_id, 'supplemental')
         supplemental_index_filename = \
             self.input_dir.joinpath(supplemental_index_name+ext)
+
+        # Initialize the logger
+        com.init_logger(input_dir, 'geometry')
+        logger = com.get_logger()
 
         logger.info('New geometry index for %s.' % self.volume_id)
 
@@ -1277,15 +1276,19 @@ class Suite(object):
         count = 0
         if not labels_only:
             for i in range(nobs):
+                name = self.observations[i].basename
 
                 # Make any sub selection
                 if pattern and fnmatch.filter([self.observations[i].filespec], pattern) == []:
+                    logger.warning("Skipping %s; pattern mismatch.", name)
                     continue
 
-                # Match the glob pattern
-                file = fnmatch.filter([self.observations[i].basename], self.glob)[0]
-                if file == []:
+                # Match the glob patternname
+                match = fnmatch.filter([name], self.glob)
+                if match == []:
+                    logger.warning("Skipping %s; glob mismatch.", name)
                     continue
+                file = match[0]
 
                 # Abort if count exceeds a specified limit
                 if self.first and count >= self.first:
@@ -1293,8 +1296,6 @@ class Suite(object):
 
                 # Print a log of progress
                 logger.info("%s  %s %4d/%4d" % (self.volume_id, file, i+1, nobs))
-
-
 
                 # Construct the record for this observation
                 records = self.make_records(i)
@@ -1304,39 +1305,12 @@ class Suite(object):
                 # Update the tables
                 self.add(records)
                 count += 1
-
-
-
-#                # Continue processing even if cspice throws a runtime error
-#                try:
-#                    # Construct the record for this observation
-#                    records = self.make_records(i)
-#
-##                    # Build overrides dict
-##                    if count == 0:
-##                        overrides = Suite.get_overrides(records[0])
-#
-#                    # Update the tables
-#                    self.add(records)
-#                    count += 1
-#
-#                # A RuntimeError is probably caused by missing spice data. There is
-#                # probably nothing we can do.
-#                except RuntimeError as e:
-##                    logger.warn(str(e))
-#                    pass
-#
-#                # Other kinds of errors are genuine bugs. For now, we just log the
-#                # problem, and jump over the image; we can deal with it later.
-#                except (AssertionError, AttributeError, IndexError, KeyError,
-#                        LookupError, TypeError, ValueError):
-#                    logger.error(traceback.format_exc())
-
         #  Write tables and make labels
         self.write(labels_only=labels_only)
 
         # Clean up
         config.cleanup()
+        logger.close()
 
 
 ################################################################################

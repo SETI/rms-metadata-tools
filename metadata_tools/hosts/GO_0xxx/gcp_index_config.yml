@@ -3,10 +3,11 @@ gcp:
   job_id:                   metadata-index-job
   project_id:               rms-node-419806
   startup_script_file:      gcp_index_startup.sh
-#  max-runtime:              10000
+  service_account:          jspitale@rms-node-419806.iam.gserviceaccount.com
+  max_runtime:              10000
   region:                   us-central1
-#  max-instances:            5
-#  max-cpu:                  8
-#  min-memory-per-cpu:       4                       # GB
-#  max-total-price-per-hour: 1.00                    # USD/hour
-#  instance-types:           "n2-"
+  max_instances:            5
+#  max_cpu:                  8
+#  min_memory_per_cpu:       4                       # GB
+#  max_total_price_per_hour: 1.00                    # USD/hour
+#  instance_types:           "n2-"

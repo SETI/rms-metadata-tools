@@ -6,7 +6,7 @@ import argparse
 import json
 
 from filecache import FCPath
-from pdslogger import PdsLogger
+import pdslogger
 
 import metadata_tools.util as util
 import metadata_tools.label_support as lab
@@ -16,12 +16,28 @@ import metadata_tools.label_support as lab
 ##########################################################################################
 
 # Define the global logger with streamlined output, no handlers so printing to stdout
-_LOGGER = PdsLogger.get_logger('metadata', timestamps=False, digits=0, lognames=False,
+_LOGGER = pdslogger.PdsLogger.get_logger('metadata', digits=0, lognames=False,
                                pid=False, indent=True, blanklines=False, level='info')
-
 SYSTEM_NULL = "NONE"
 
 #=========================================================================================
+def init_logger(dir, type):
+    """Initialize logger.
+    Args:
+        dir (FCPath): Directory to log.
+        type (str): Type of log to create.
+    Returns:
+        None
+    """
+    name = '%s_%s-log.txt' % (dir.name, type)
+    path = dir / name
+    FCPath.unlink(path, missing_ok=True)
+    _LOGGER.add_handler(pdslogger.file_handler(path, level='warning'))
+
+    _LOGGER.add_handler(pdslogger.STDOUT_HANDLER)
+
+#=========================================================================================
+
 def get_logger():
     """The global PdsLogger for the metadata tools."""
     return _LOGGER

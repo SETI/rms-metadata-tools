@@ -75,6 +75,24 @@ def parse_template_name(template_name):
     return (host, index_type)
 
 #===============================================================================
+def sets_as_lists(dict):               ### perhaps should be a method in pdsparser
+    """Convert all set fields in a dict to lists.
+
+    Args:
+        dict (dict): dict containing fields to convert.
+
+    Returns:
+        dict: dict with sets cnverted to lists.
+    """
+
+    new_dict = dict
+    for field in dict:
+        if isinstance(dict[field], set):
+            new_dict[field] = dict[field+'_list']
+
+    return new_dict
+
+#===============================================================================
 def pm(x):               ### move to utilities, why is this not in numpy?
     """Return plus/minus the input.
 

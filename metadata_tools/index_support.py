@@ -5,7 +5,6 @@ import fortranformat as ff
 import fnmatch
 import warnings
 import json
-import hosts.pds3 as pds3
 
 import metadata_tools.common as com
 import metadata_tools.util as util
@@ -59,15 +58,19 @@ class IndexTable(com.Table):
         # Get volume id
         self.volume_id = hconf.get_volume_id(self.input_dir)
 
-        logger = com.get_logger()
-        s = ' '+qualifier if qualifier else ' primary'
-        logger.info('New%s index for %s.' % (s, self.volume_id))
 
         # Get relevant filenames and paths
         primary_index_name = util.get_index_name(self.input_dir, self.volume_id, None)
         index_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
         template_name = util.get_template_name(index_name, self.volume_id)
         self.index_path = self.index_dir/(index_name + '.tab')
+
+        # Initialize the logger
+        com.init_logger(self.index_dir, 'index')
+        logger = com.get_logger()
+
+        s = ' '+qualifier if qualifier else ' primary'
+        logger.info('New%s index for %s.' % (s, self.volume_id))
 
         # If the index name is the same as the primary inxex name,
         # then this is the primary index.
@@ -143,9 +146,10 @@ class IndexTable(com.Table):
                     continue
 
                 # Match the glob pattern
-                file = fnmatch.filter([name], self.glob)[0]
+                file = fnmatch.filter([name], self.glob)
                 if file == []:
                     continue
+                file = file[0]
 
                 # Log volume ID and subpath
                 subdir = util.get_volume_subdir(root, hconf.get_volume_id(root))
@@ -177,8 +181,7 @@ class IndexTable(com.Table):
         # Read the PDS3 label
         path = root/name
 
-        label = pds3.get_label(path)
-#        label = Pds3Label(path)  # see issue SETI/rms-pdsparser#14
+        label_dict = util.sets_as_lists(Pds3Label(path).dict)  # see issue SETI/rms-pdsparser#14
 
         # Write columns
         first = True
@@ -193,10 +196,7 @@ class IndexTable(com.Table):
                 self.usage[column_name] = False
 
             # Get the value
-#            if name == 'C0349542165R.LBL':
-#                if column_name == 'CUT_OUT_WINDOW':
-#                    from IPython import embed; print('+++++++++++++'); embed()
-            value = self._index_one_value(column_stub, path, label)
+            value = self._index_one_value(column_stub, path, label_dict)
 
             # Write the value into the index
             if not first:
@@ -580,6 +580,7 @@ def _create_index(input_tree, output_tree, index_tree=None,
         # Log a warning for any columns that never had non-null values
         if unused:
             logger.warn('Unused columns: %s', unused)
+        logger.close(force=True)
 
 #===============================================================================
 def process_index(template_name,

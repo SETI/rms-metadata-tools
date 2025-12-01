@@ -119,6 +119,7 @@ from_index = ssi.from_index
 def meshgrids(sampling):
 
     MODE_SIZES  = {"FULL": 1,
+                   "NONE":  1,
                    "HMA":  1,
                    "HIM":  1,
                    "IM8":  1,
