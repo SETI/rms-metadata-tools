@@ -45,7 +45,7 @@ def process_task(task_id: str,
 
     # process the volume
     process_index(hconf.template_name,
-                  glob=hconf.glob,
+                  glob=config.glob,
                   args=worker_data.args,
                   volumes=[task_data['volume_id']])
 
@@ -58,7 +58,7 @@ async def main():
     # and most useful when running the worker locally.
 
     # parse metadata arguments
-    host, index_type = util.parse_template_name(hconf.template_name)
+    host, index_type, template_dir = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host, index_type=index_type)
 
     # initialize the worker
@@ -69,7 +69,7 @@ async def main():
 
     # set up the task file containing one entry per volume
     process_index(hconf.template_name,
-                  glob=hconf.glob,
+                  glob=config.glob,
                   args=worker._data.args,
                   task_list_only=True,
                   task_file=worker._data.args.task_file)

@@ -44,11 +44,10 @@
 ##########################################################################################
 import host_init
 import metadata_tools.geometry_support as geom
-import host_config as hconf
 import geometry_config as config
 
 geom.process_tables('GO_0xxx_supplemental_index',
-                    glob=hconf.glob,
+                    glob=config.glob,
                     index_glob=config.index_glob,
                     selection="S",
                     exclude=['GO_0999'])

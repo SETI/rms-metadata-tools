@@ -2,14 +2,18 @@
 # defs.py: Definitions
 ##########################################################################################
 import sys
-from pathlib import Path
+import inspect
+
+from filecache import FCPath
 
 #####################
 # Define constants
 #####################
 _metadata = sys.modules[__name__]
-COLUMN_DIR = Path(_metadata.__file__).parent / 'column'
-GLOBAL_TEMPLATE_PATH = Path(_metadata.__file__).parent / 'templates'
+PARENT_DIR = FCPath(_metadata.__file__).parent
+COLUMN_DIR = PARENT_DIR / 'column'
+GLOBAL_TEMPLATE_PATH = PARENT_DIR / 'templates'
+
 NULL = "null"
 BODYX = "bodyx"     # Placeholder for an arbitrary body to be filled in by
                     # replacement_dict()

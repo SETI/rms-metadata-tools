@@ -13,7 +13,7 @@ $IF(index_type != 'CUMULATIVE')
 VOLUME_ID                       = "$VOLUME_ID$"
 $END_IF
 
-$INCLUDE("./templates/host_defs.lbl")
+$INCLUDE("host_defs.lbl")
 
 ^INVENTORY_SPREADSHEET          = "$BASENAME(csv_file)$"
 OBJECT                          = INVENTORY_SPREADSHEET

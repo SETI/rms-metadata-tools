@@ -896,14 +896,15 @@ class Record(object):
 """
 class InventoryTable(com.Table):
     #===========================================================================
-    def __init__(self, output_dir=None, **kwargs):
+    def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for an InventoryTable object.
 
         Args:
             output_dir (str, Path, or FCPath):
                 Directory in which to write the geometry files.
+            template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir,
+        super().__init__(output_dir=output_dir, template_path=template_path,
                          qualifier='inventory',
                          suffix="_inventory.csv",
                          use_global_template=True,
@@ -930,14 +931,15 @@ class InventoryTable(com.Table):
 """
 class SkyTable(com.Table):
     #===========================================================================
-    def __init__(self, output_dir=None, **kwargs):
+    def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for a SkyTable object.
 
         Args:
             output_dir (str, Path, or FCPath):
                 Directory in which to write the geometry files.
+            template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir, qualifier='sky', **kwargs)
+        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sky', **kwargs)
 
     #===============================================================================
     def add(self, record):
@@ -959,14 +961,15 @@ class SkyTable(com.Table):
 """
 class SunTable(com.Table):
     #===========================================================================
-    def __init__(self, output_dir=None, **kwargs):
+    def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for a SunTable object.
 
         Args:
             output_dir (str, Path, or FCPath):
                 Directory in which to write the geometry files.
+            template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir, qualifier='sun', **kwargs)
+        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sun', **kwargs)
 
     #===========================================================================
     def add(self, record):
@@ -988,14 +991,15 @@ class SunTable(com.Table):
 """
 class RingTable(com.Table):
     #===========================================================================
-    def __init__(self, output_dir=None, **kwargs):
+    def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for a RingTable object.
 
         Args:
             output_dir (str, Path, or FCPath):
                 Directory in which to write the geometry files.
+            template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir, qualifier='ring', **kwargs)
+        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='ring', **kwargs)
 
     #===========================================================================
     def add(self, record):
@@ -1027,14 +1031,15 @@ class RingTable(com.Table):
 """
 class BodyTable(com.Table):
     #===========================================================================
-    def __init__(self, output_dir=None, **kwargs):
+    def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for a BodyTable object.
 
         Args:
             output_dir (str, Path, or FCPath):
                 Directory in which to write the geometry files.
+            template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir, qualifier='body', **kwargs)
+        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='body', **kwargs)
 
     #===========================================================================
     def add(self, record):
@@ -1058,7 +1063,7 @@ class Suite(object):
     """
 
     #===========================================================================
-    def __init__(self, input_dir, output_dir,
+    def __init__(self, input_dir, output_dir, template_path,
                        selection='', glob=None, index_glob=None, first=None, sampling=8):
         """Constructor for a geometry Suite object.
 
@@ -1066,6 +1071,7 @@ class Suite(object):
             input_dir (str, Path, or FCPath): Directory containing the volume.
             output_dir (str, Path, or FCPath):
                 Directory in which to write the geometry files.
+            template_path (str, Path, or FCPath): Path to the host template.
             selection (str, optional):
                 A string containing...
                 "S" to generate summary files;
@@ -1079,6 +1085,7 @@ class Suite(object):
         # Save inputs
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
+        self.template_path = FCPath(template_path)
         self.glob = glob
         self.index_glob = index_glob
         self.first = first
@@ -1197,11 +1204,11 @@ class Suite(object):
             None.
         """
         self.tables = [
-            InventoryTable(output_dir, volume_id=self.volume_id),
-            SkyTable(output_dir, volume_id=self.volume_id, level=level),
-#            SunTable(output_dir, volume_id=self.volume_id, level=level),
-            RingTable(output_dir, volume_id=self.volume_id, level=level),
-            BodyTable(output_dir, volume_id=self.volume_id, level=level)
+            InventoryTable(output_dir, self.template_path, volume_id=self.volume_id),
+            SkyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
+#            SunTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
+            RingTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
+            BodyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level)
             ]
 
     #===========================================================================
@@ -1396,8 +1403,9 @@ def process_tables(template_name,
     """
 
     # Parse arguments
+    host, index_type, template_dir = util.parse_template_name(template_name)
+    template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
     if args is None:
-        host, index_type = util.parse_template_name(template_name)
         parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
         args = parser.parse_args()
 
@@ -1457,7 +1465,7 @@ def process_tables(template_name,
                     com.add_task(vol, 'geometry')
                 # ... or process this volume
                 else:
-                    suite = Suite(indir, outdir,
+                    suite = Suite(indir, outdir, template_path,
                                   selection=args.selection, glob=glob, index_glob=index_glob, 
                                   first=args.first, sampling=args.sampling)
                     suite.create(labels_only=labels_only, pattern=args.pattern)

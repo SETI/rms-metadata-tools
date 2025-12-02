@@ -149,7 +149,7 @@ class Table(object):
     """
 
     #=====================================================================================
-    def __init__(self, output_dir=None,
+    def __init__(self, output_dir=None, template_path=None,
                  volume_id=None, level=None, qualifier=None, prefix=None,
                  suffix=None, use_global_template=False):
         """Constructor for a table object.
@@ -157,6 +157,7 @@ class Table(object):
         Args:
             output_dir (str, Path, or FCPath):
                 Directory in which to write the index files.
+            template_path (str, Path, or FCPath): Path to the host template.
             volume_id (str): Volume ID.
             level (str, optional):
                 Processing level: "summary", "detailed", or "index".
@@ -169,6 +170,8 @@ class Table(object):
                 template directory.
 
         """
+        if template_path:
+            self.template_path = FCPath(template_path)
         self.volume_id = volume_id
         self.level = level
         self.qualifier = qualifier
@@ -210,7 +213,7 @@ class Table(object):
         table_type = self.qualifier
         if self.level:
             table_type += '_' + self.level
-        lab.create(self.filename,
+        lab.create(self.filename, self.template_path,
                    table_type=table_type, use_global_template=self.use_global_template)
 
 ##########################################################################################

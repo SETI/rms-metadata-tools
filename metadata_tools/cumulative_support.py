@@ -13,7 +13,7 @@ import metadata_tools.index_support as idx
 from filecache import FCPath
 
 #===============================================================================
-def _cat_rows(volume_tree, cumulative_dir, volume_glob, table, *,
+def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
               exclude=None, volumes=None):
     """Creates the cumulative files for a collection of volumes.
 
@@ -21,6 +21,7 @@ def _cat_rows(volume_tree, cumulative_dir, volume_glob, table, *,
         volume_tree (str, Path, or FCPath): Root of the tree containing the volumes.
         cumulative_dir (str, Path, or FCPath):
             Directory in which the cumulative files will reside.
+        template_path (str, Path, or FCPath): Path to the host template.
         volume_glob (str): Glob pattern for volume identification.
         table (geom.Table or idx.Index): Table object.
         exclude (list, optional): List of volumes to exclude.
@@ -87,7 +88,7 @@ def _cat_rows(volume_tree, cumulative_dir, volume_glob, table, *,
         util.write_txt_file(cumulative_file, content)
 
         logger.info('Writing cumulative label.')
-        lab.create(cumulative_file,
+        lab.create(cumulative_file, template_path,
                    table_type=table_type.upper(),
                    use_global_template=table.use_global_template)
 
@@ -125,9 +126,10 @@ def create_cumulative_indexes(template_name, exclude=None):
         exclude (list, optional): List of volumes to exclude.
     """
     # Parse arguments
-    host, index_type = util.parse_template_name(template_name)
+    host, index_type, template_dir = util.parse_template_name(template_name)
     parser = get_args(host=host, exclude=exclude)
     args = parser.parse_args()
+    template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
 
     volume_tree = FCPath(args.input_tree)
     cumulative_dir = FCPath(args.output_tree)
@@ -141,28 +143,28 @@ def create_cumulative_indexes(template_name, exclude=None):
     volume_glob = util.get_volume_glob(volume_tree.name)
 
     # Build the cumulative tables
-    _cat_rows(volume_tree, cumulative_dir, volume_glob,
+    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
               geom.SkyTable(level='summary'),
               exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, volume_glob,
+    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
               geom.SkyTable(level='detailed'),
               exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, volume_glob,
+    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
               geom.BodyTable(level='summary'),
               exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, volume_glob,
+    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
               geom.BodyTable(level='detailed'),
               exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, volume_glob,
+    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
               geom.RingTable(level='summary'),
               exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, volume_glob,
+    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
               geom.RingTable(level='detailed'),
               exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, volume_glob,
+    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
               geom.InventoryTable(),
               exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, volume_glob,
+    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
               idx.IndexTable(qualifier='supplemental'),
               exclude=exclude, volumes=volumes)
 

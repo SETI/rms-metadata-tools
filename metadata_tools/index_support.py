@@ -8,9 +8,10 @@ import json
 
 import metadata_tools.common as com
 import metadata_tools.util as util
+import metadata_tools.defs as defs
 import pdstable
 
-from pdsparser import Pds3Label
+from pdsparser import PdsLabel
 from filecache import FCPath
 from pdstemplate.pds3table import Pds3Table
 
@@ -25,7 +26,7 @@ class IndexTable(com.Table):
     """
 
     #===========================================================================
-    def __init__(self, input_dir=None, output_dir=None, index_dir=None,
+    def __init__(self, input_dir=None, output_dir=None, template_path=None, index_dir=None,
                        qualifier='', glob=None, **kwargs):
         """Constructor for an IndexTable object.
 
@@ -34,6 +35,7 @@ class IndexTable(com.Table):
                 Directory containing the volume, specifically the data labels.
             output_dir (str, Path, or FCPath):
                 Directory in which to write the new index files.
+            template_path (str, Path, or FCPath): Path to the host template.
             index_dir (str, Path, or FCPath):
                 Directory in which to find the "updated" index file (e.g., <volume>_index.tab).
             qualifier (str, optional):
@@ -43,7 +45,7 @@ class IndexTable(com.Table):
         """
 
         # Initialize table, return if specific paths not given
-        super().__init__(output_dir, level="index", qualifier=qualifier, **kwargs)
+        super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
             return
 
@@ -62,7 +64,6 @@ class IndexTable(com.Table):
         # Get relevant filenames and paths
         primary_index_name = util.get_index_name(self.input_dir, self.volume_id, None)
         index_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
-        template_name = util.get_template_name(index_name, self.volume_id)
         self.index_path = self.index_dir/(index_name + '.tab')
 
         # Initialize the logger
@@ -101,7 +102,6 @@ class IndexTable(com.Table):
             self.files = [f for f in input_dir.rglob('*.LBL')]
 
         # Extract relevent fields from the template
-        template_path = FCPath('./templates/')/(template_name + '.lbl')
         label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
         label_path = self.output_dir / FCPath(label_name + '.lbl')
 
@@ -181,7 +181,7 @@ class IndexTable(com.Table):
         # Read the PDS3 label
         path = root/name
 
-        label_dict = util.sets_as_lists(Pds3Label(path).dict)  # see issue SETI/rms-pdsparser#14
+        label_dict = PdsLabel.from_file(path).as_dict()
 
         # Write columns
         first = True
@@ -489,7 +489,7 @@ def get_args(host=None, index_type=None):
     return parser
 
 #===============================================================================
-def _create_index(input_tree, output_tree, index_tree=None,
+def _create_index(input_tree, output_tree, template_path, index_tree=None,
                   volumes=None,
                   labels_only=False,
                   qualifier=None,
@@ -506,6 +506,7 @@ def _create_index(input_tree, output_tree, index_tree=None,
             Top of the directory tree in which to to write the new index files. "Updated" 
             index files (e.g., <volume>_index.tab) are assumed to reside here unless
             index_tree is given.
+        template_path (str, Path, or FCPath): Path to the host template.
         index_tree (str, Path, or FCPath, optional):
             Top of the directory tree in which to find the "updated" index file (e.g.,
             <volume>_index.tab).
@@ -567,7 +568,7 @@ def _create_index(input_tree, output_tree, index_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
-                    index = IndexTable(indir, outdir, index_dir=index_dir,
+                    index = IndexTable(indir, outdir, template_path, index_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
 
                     index.create(labels_only=labels_only, pattern=pattern)
@@ -609,8 +610,9 @@ def process_index(template_name,
     """
 
     # Parse arguments
+    host, index_type, template_dir = util.parse_template_name(template_name)
+    template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
     if args is None:
-        host, index_type = util.parse_template_name(template_name)
         parser = get_args(host=host, index_type=index_type)
         args = parser.parse_args()
 
@@ -622,7 +624,7 @@ def process_index(template_name,
         volumes = args.volumes
 
     # Create the index
-    _create_index(FCPath(args.input_tree), FCPath(args.output_tree),
+    _create_index(FCPath(args.input_tree), FCPath(args.output_tree), template_path,
                   index_tree=args.index_tree,
                   volumes=volumes,
                   labels_only=args.labels is not False,

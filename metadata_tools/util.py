@@ -39,7 +39,7 @@ def get_index_name(dir, vol_id, type):
     return name
 
 #===============================================================================
-def get_template_name(filename, volume_id):
+def get_template_name(filename, volume_id, code_dir):
     """Determine the name of the label template.
 
     Args:
@@ -48,8 +48,7 @@ def get_template_name(filename, volume_id):
     Returns:
         str: Index name.
     """
-    dir = Path.cwd()
-    collection = dir.name
+    collection = code_dir.name
     return filename.replace(volume_id, collection).split('.')[0]
 
 #===============================================================================
@@ -71,26 +70,9 @@ def parse_template_name(template_name):
     parts = base.split('_')
     index_type = parts[-1]
     host = '_'.join(parts[0:-1])
+    template_dir = defs.PARENT_DIR / FCPath('hosts') / FCPath(host) / FCPath('templates')
 
-    return (host, index_type)
-
-#===============================================================================
-def sets_as_lists(dict):               ### perhaps should be a method in pdsparser
-    """Convert all set fields in a dict to lists.
-
-    Args:
-        dict (dict): dict containing fields to convert.
-
-    Returns:
-        dict: dict with sets cnverted to lists.
-    """
-
-    new_dict = dict
-    for field in dict:
-        if isinstance(dict[field], set):
-            new_dict[field] = dict[field+'_list']
-
-    return new_dict
+    return (host, index_type, template_dir)
 
 #===============================================================================
 def pm(x):               ### move to utilities, why is this not in numpy?

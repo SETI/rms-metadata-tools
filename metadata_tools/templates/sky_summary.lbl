@@ -36,7 +36,7 @@ VOLUME_ID                       = "$volume_id$"
 $END_IF
 PRODUCT_CREATION_TIME           = $FILE_TIME(index_path)$
 
-$INCLUDE("./templates/host_defs.lbl")
+$INCLUDE("host_defs.lbl")
 
 OBJECT                          = SKY_SUMMARY_TABLE
   INTERCHANGE_FORMAT            = ASCII

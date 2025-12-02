@@ -16,6 +16,7 @@ import metadata_tools.hosts.GO_0xxx.host_init
 index_glob = 'GO_????_index.lbl'
 selection = "S"
 exclude = ['GO_0999']
+glob = 'C0*[!G].LBL'
 
 
 ##########################################################################################
