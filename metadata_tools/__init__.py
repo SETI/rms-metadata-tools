@@ -83,11 +83,6 @@ To add a new geometry column:
 
 """
 ##########################################################################################
-#from metadata_tools.index_support import process_index
-#from metadata_tools.geometry_support import process_tables
-#from metadata_tools.cumulative_support import create_cumulative_indexes
-#__all__ = ['process_index', 'process_tables', 'create_cumulative_indexes']
-
 try:
     from ._version import __version__
 except ImportError:  # pragma: no cover

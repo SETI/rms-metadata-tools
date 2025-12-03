@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 ##########################################################################################
-# GO_0xxx_geometry.py: Generates all geometry tables and labels for Galileo SSI. Run this
-# script from the host subdirectory.
+# GO_0xxx_geometry.py: Generates all geometry tables and labels for Galileo SSI.
 #
 # Usage:
 #    python GO_0xxx_geometry.py [-h] [--labels [labels ...]]

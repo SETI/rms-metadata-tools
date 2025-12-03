@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 ##########################################################################################
-# GO_0xxx_index.py: Generate supplemental index tables and labels for Galileo SSI. Run
-# this script from the host subdirectory.
+# GO_0xxx_index.py: Generate supplemental index tables and labels for Galileo SSI.
 #
 # Usage:
 #    python GO_0xxx_index.py [-h] [--labels [labels ...]] [--type type]

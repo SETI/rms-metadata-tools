@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 ##########################################################################################
-# GO_0xxx_cumulative.py: Generate cumulative files and labels for Galileo SSI. Run this
-# script from the host subdirectory.
+# GO_0xxx_cumulative.py: Generate cumulative files and labels for Galileo SSI.
 #
 # Usage:
 #    GO_0xxx_cumulative.py [-h] [--labels [labels ...]]
