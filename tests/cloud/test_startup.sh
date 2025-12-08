@@ -1,7 +1,8 @@
 apt-get update -y
 apt-get install -y python3 python3-pip python3-venv git
 cd
-git clone https://github.com/SETI/rms-metadata-tools.git
+#git clone https://github.com/SETI/rms-metadata-tools.git
+git clone -b jns--updates --single-branch https://github.com/SETI/rms-metadata-tools.git
 cd rms-metadata-tools
 python3 -m venv venv
 source venv/bin/activate
