@@ -1,0 +1,11 @@
+numpy
+rms-oops
+rms-filecache>=3.0.0
+rms-pdslogger>=3.0.0
+rms-julian
+rms-pdsparser
+rms-cloud-tasks>=0.1.0
+json_stream
+rms-pdstable
+rms-vicar
+fortranformat

@@ -1,0 +1,20 @@
+# gcloud auth application-default login       # if necessary
+
+# cloud_tasks load_queue --config config.yaml --task-file test_tasks.json -vv
+# cloud_tasks manage_pool --config config.yaml -vv
+
+# cloud_tasks monitor_event_queue --config config.yaml --output-file config.log
+
+# cloud_tasks purge_queue --config config.yaml
+# cloud_tasks delete_queue --config config.yaml
+
+# gsutil ls
+
+provider: gcp
+gcp:
+  job_id: my-processing-job
+  project_id: rms-node-419806
+  startup_script_file:      test_startup.sh
+  service_account:          jspitale@rms-node-419806.iam.gserviceaccount.com
+  region: us-central1
+

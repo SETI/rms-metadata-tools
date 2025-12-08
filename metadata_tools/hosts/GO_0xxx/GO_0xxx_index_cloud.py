@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #########################################################################################
-# GO_0xxx_index.py:
+# GO_0xxx_index_cloud.py:
 #   Generate supplemental index tables and labels for Galileo SSI using the cloud_tasks
 #   module.
 #
