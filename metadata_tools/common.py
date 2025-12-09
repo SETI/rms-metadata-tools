@@ -108,6 +108,8 @@ def get_common_args(host=None):
     # Action method for path arguments
     class PathAction(argparse.Action):
         def __call__(self, parser, namespace, values, option_string=None):
+            if isinstance(values, list):
+                values = values[0]
             vals = re.sub('://', '<<token>>', values)
             vals = re.sub('//*', '/', vals)
             vals = re.sub('<<token>>', '://', vals)
@@ -121,22 +123,23 @@ def get_common_args(host=None):
 
     # Generate parser
     gr = parser.add_argument_group('Common Arguments')
-    gr.add_argument('input_tree', type=str, metavar='input_tree',
-                    help='''File path to the top to tree containing the
+    gr.add_argument('volume_tree', type=str, metavar='volume_tree',
+                    help='''File path to the top of the tree containing the
                             volume files.''', action=PathAction)
+    gr.add_argument('metadata_tree', type=str, metavar='metadata_tree',
+                    help='''File path to the top of the tree containing the
+                            metadata files.''', action=PathAction)
     gr.add_argument('output_tree', type=str, metavar='output_tree',
-                    help='''File path to the top to tree in which to place the
-                            volume files.''')
+                    help='''File path to the top of the tree in which to place the
+                            new files.''')
     gr.add_argument('volumes', type=str, nargs='*', metavar='volumes',
                     help='''If given, only these volumes are processed.''')
-    gr.add_argument('--labels', '-l', nargs='*', type=str, metavar='labels',
+
+    gr.add_argument('--labels', '-l', type=str, metavar='labels',
                     default=False,
                     help='''If given, labels are generated for existing files.''')
-    gr.add_argument('--index_tree', '-i', type=str, metavar='index_tree',
-                    help='''File path to the top to tree containing the
-                            index files.''', action=PathAction)
     gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
-                    help='''Glob pattern to select files.''', action=PathAction)
+                    help='''Glob pattern to select files.''')
 
     # Return parser
     return parser

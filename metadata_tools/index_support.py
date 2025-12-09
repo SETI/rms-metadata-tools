@@ -26,7 +26,7 @@ class IndexTable(com.Table):
     """
 
     #===========================================================================
-    def __init__(self, input_dir=None, output_dir=None, template_path=None, index_dir=None,
+    def __init__(self, input_dir=None, output_dir=None, template_path=None, metadata_dir=None,
                        qualifier='', glob=None, **kwargs):
         """Constructor for an IndexTable object.
 
@@ -36,7 +36,7 @@ class IndexTable(com.Table):
             output_dir (str, Path, or FCPath):
                 Directory in which to write the new index files.
             template_path (str, Path, or FCPath): Path to the host template.
-            index_dir (str, Path, or FCPath):
+            metadata_dir (str, Path, or FCPath):
                 Directory in which to find the "updated" index file (e.g., <volume>_index.tab).
             qualifier (str, optional):
                 Qualifying string identifying the type of index file to create,
@@ -52,7 +52,7 @@ class IndexTable(com.Table):
         # Save inputs
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
-        self.index_dir = FCPath(index_dir)
+        self.metadata_dir = FCPath(metadata_dir)
         self.glob = glob
         self.usage = {}
         self.unused = set()
@@ -60,14 +60,13 @@ class IndexTable(com.Table):
         # Get volume id
         self.volume_id = hconf.get_volume_id(self.input_dir)
 
-
         # Get relevant filenames and paths
         primary_index_name = util.get_index_name(self.input_dir, self.volume_id, None)
         index_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
-        self.index_path = self.index_dir/(index_name + '.tab')
+        self.index_path = self.metadata_dir/(index_name + '.tab')
 
         # Initialize the logger
-        com.init_logger(self.index_dir, 'index')
+        com.init_logger(self.metadata_dir, 'index')
         logger = com.get_logger()
 
         s = ' '+qualifier if qualifier else ' primary'
@@ -79,8 +78,8 @@ class IndexTable(com.Table):
 
         # If there is a primary file, read it and build the file list
         if not create_primary:
-            self.primary_index_label_path = self.output_dir/(primary_index_name + '.lbl')
-            self.primary_index_path = self.output_dir/(primary_index_name + '.tab')
+            self.primary_index_label_path = self.metadata_dir/(primary_index_name + '.lbl')
+            self.primary_index_path = self.metadata_dir/(primary_index_name + '.tab')
 
             try:
                 local_label_path = self.primary_index_label_path.retrieve()
@@ -126,12 +125,6 @@ class IndexTable(com.Table):
             return
 
         logger = com.get_logger()
-
-        # Open the output file; create dir if necessary
-        try:
-            self.output_dir.mkdir(exist_ok=True)
-        except NotImplementedError:
-            pass        ### need to check for existence.
 
         # Build the index
         n = len(self.files)
@@ -489,7 +482,7 @@ def get_args(host=None, index_type=None):
     return parser
 
 #===============================================================================
-def _create_index(input_tree, output_tree, template_path, index_tree=None,
+def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                   volumes=None,
                   labels_only=False,
                   qualifier=None,
@@ -500,14 +493,14 @@ def _create_index(input_tree, output_tree, template_path, index_tree=None,
     """Creates index files for a collection of volumes.
 
     Args:
-        input_tree (str, Path, or FCPath):
+        volume_tree (str, Path, or FCPath):
             Top of the directory tree containing the volume, specifically the data labels.
         output_tree (str, Path, or FCPath):
             Top of the directory tree in which to to write the new index files. "Updated" 
             index files (e.g., <volume>_index.tab) are assumed to reside here unless
-            index_tree is given.
+            metadata_tree is given.
         template_path (str, Path, or FCPath): Path to the host template.
-        index_tree (str, Path, or FCPath, optional):
+        metadata_tree (str, Path, or FCPath, optional):
             Top of the directory tree in which to find the "updated" index file (e.g.,
             <volume>_index.tab).
         volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
@@ -525,16 +518,16 @@ def _create_index(input_tree, output_tree, template_path, index_tree=None,
     """
     logger = com.get_logger()
 
-    if index_tree is not None:
-        index_tree = FCPath(index_tree)
+    if metadata_tree is not None:
+        metadata_tree = FCPath(metadata_tree)
     else:
-        index_tree = output_tree
+        metadata_tree = output_tree
 
     # Build volume glob
-    vol_glob = util.get_volume_glob(input_tree.name)
+    vol_glob = util.get_volume_glob(volume_tree.name)
 
     # Walk the input tree, making indexes for each found volume
-    for root, dirs, files in input_tree.walk():
+    for root, dirs, files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue
@@ -552,23 +545,20 @@ def _create_index(input_tree, output_tree, template_path, index_tree=None,
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
+
+                # Set up input and output directories
                 indir = root
-
-                if output_tree.parts[-1] != col:
-                    outdir = output_tree/col
-                outdir = output_tree/vol
-
-                if index_tree.parts[-1] != col:
-                    index_tree = index_tree/col
-                index_dir = index_tree/vol
+                outdir = util.select_dir(output_tree, col, vol)
+                metadata_dir = util.select_dir(metadata_tree, col, vol)
 
                 # Update the task file...
                 if task_list_only:
                     com.add_task(vol, 'index')
+
                 # ... or process this volumne
                 else:
                     # Process this volumne
-                    index = IndexTable(indir, outdir, template_path, index_dir,
+                    index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
 
                     index.create(labels_only=labels_only, pattern=pattern)
@@ -624,8 +614,8 @@ def process_index(template_name,
         volumes = args.volumes
 
     # Create the index
-    _create_index(FCPath(args.input_tree), FCPath(args.output_tree), template_path,
-                  index_tree=args.index_tree,
+    _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
+                  metadata_tree=args.metadata_tree,
                   volumes=volumes,
                   labels_only=args.labels is not False,
                   qualifier=args.type,

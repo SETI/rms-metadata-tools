@@ -1063,7 +1063,7 @@ class Suite(object):
     """
 
     #===========================================================================
-    def __init__(self, input_dir, output_dir, template_path,
+    def __init__(self, input_dir, output_dir, template_path, metadata_dir=None,
                        selection='', glob=None, index_glob=None, first=None, sampling=8):
         """Constructor for a geometry Suite object.
 
@@ -1085,6 +1085,7 @@ class Suite(object):
         # Save inputs
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
+        self.metadata_dir = FCPath(metadata_dir)
         self.template_path = FCPath(template_path)
         self.glob = glob
         self.index_glob = index_glob
@@ -1100,7 +1101,7 @@ class Suite(object):
                 self.levels += ['detailed']
 
         # Check for supplemental index
-        index_filenames = list(self.input_dir.glob(self.index_glob))
+        index_filenames = list(self.metadata_dir.glob(self.index_glob))
         if len(index_filenames) == 0:
             return
         if len(index_filenames) > 1:
@@ -1409,7 +1410,8 @@ def process_tables(template_name,
         parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
         args = parser.parse_args()
 
-    input_tree = FCPath(args.input_tree)
+    volume_tree = FCPath(args.volume_tree)
+    metadata_tree = FCPath(args.metadata_tree)
     output_tree = FCPath(args.output_tree)
     new_only = args.new_only is not False
     labels_only = args.labels is not False
@@ -1421,10 +1423,10 @@ def process_tables(template_name,
         new_only = False
 
     # Build volume glob
-    vol_glob = util.get_volume_glob(input_tree.name)
+    vol_glob = util.get_volume_glob(volume_tree.name)
 
-    # Walk the input tree, making indexes for each found volume
-    for root, dirs, files in input_tree.walk():
+    # Walk the volume tree, making indexes for each found volume
+    for root, dirs, files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue
@@ -1441,11 +1443,11 @@ def process_tables(template_name,
         # Proceed only if this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
+
                 # Set up input and output directories
                 indir = root
-                if output_tree.parts[-1] != coll:
-                    outdir = output_tree.joinpath(coll)
-                outdir = output_tree.joinpath(vol)
+                outdir = util.select_dir(output_tree, coll, vol)
+                metadata_dir = util.select_dir(metadata_tree, coll, vol)
 
                 # Do not continue if this volume is excluded
                 skip = False
@@ -1463,9 +1465,10 @@ def process_tables(template_name,
                 # Update the task file...
                 if task_list_only:
                     com.add_task(vol, 'geometry')
+                    
                 # ... or process this volume
                 else:
-                    suite = Suite(indir, outdir, template_path,
+                    suite = Suite(indir, outdir, template_path, metadata_dir,
                                   selection=args.selection, glob=glob, index_glob=index_glob, 
                                   first=args.first, sampling=args.sampling)
                     suite.create(labels_only=labels_only, pattern=args.pattern)

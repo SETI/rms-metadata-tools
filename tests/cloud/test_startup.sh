@@ -6,8 +6,8 @@ git clone -b jns--updates --single-branch https://github.com/SETI/rms-metadata-t
 cd rms-metadata-tools
 python3 -m venv venv
 source venv/bin/activate
-#pip install -r requirements-cloud.txt
-pip install -r requirements.txt
+pip install -r requirements-cloud.txt
+#pip install -r requirements.txt
 
 cd tests/cloud
 python3 test_cloud.py

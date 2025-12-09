@@ -14,6 +14,22 @@ import metadata_tools.common as com
 import metadata_tools.defs as defs
 
 #===============================================================================
+def select_dir(tree, col, vol):
+    """Determine the name of the label template.
+
+    Args:
+        filename (str): Name of table or label file.
+
+    Returns:
+        str: Index name.
+    """
+    if tree.parts[-1] != col:
+        dir = tree/col
+    dir = tree/vol
+
+    return dir
+
+#===============================================================================
 def get_index_name(dir, vol_id, type):
     """Determine the name of the index file.
 
