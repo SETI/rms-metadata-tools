@@ -3,8 +3,23 @@
 
 # gsutil cat gs://rms-jspitale/test.txt
 
+#from filecache import FCPath
+#FCPath('gs://rms-jspitale/test.txt').write_text('Hello\nWorld\n', encoding='utf-8')
+#exit()
+
+
 from filecache import FCPath
-FCPath('gs://rms-jspitale/test.txt').write_text('Hello\nWorld\n', encoding='utf-8')
+
+filespec = FCPath('gs://rms-jspitale/test.txt')
+if filespec.exists():
+    content = filespec.read_text(encoding='utf-8')
+    filespec.write_text(content + '\nGoodbye\nWorld\n', encoding='utf-8')
+    exit()
+
+filespec.write_text('Hello\nWorld\n', encoding='utf-8')
+exit()
+
+
 
 
 # requirements-cloud.txt
@@ -14,5 +29,3 @@ FCPath('gs://rms-jspitale/test.txt').write_text('Hello\nWorld\n', encoding='utf-
 #  Bucket Details --> Grant access -->
 #     new principals: jspitale@rms-node-419806.iam.gserviceaccount.com
 #     assign role : Cloud Storage --> Storage Admin
-
-

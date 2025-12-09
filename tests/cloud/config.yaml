@@ -17,4 +17,5 @@ gcp:
   startup_script_file:      test_startup.sh
   service_account:          jspitale@rms-node-419806.iam.gserviceaccount.com
   region: us-central1
+  max_instances:            1
 

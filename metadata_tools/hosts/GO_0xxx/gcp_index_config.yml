@@ -6,7 +6,7 @@ gcp:
   service_account:          jspitale@rms-node-419806.iam.gserviceaccount.com
   max_runtime:              10000
   region:                   us-central1
-  max_instances:            5
+  max_instances:            10
 #  max_cpu:                  8
 #  min_memory_per_cpu:       4                       # GB
 #  max_total_price_per_hour: 1.00                    # USD/hour
