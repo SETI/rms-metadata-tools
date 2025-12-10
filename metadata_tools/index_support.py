@@ -66,7 +66,7 @@ class IndexTable(com.Table):
         self.index_path = self.metadata_dir/(index_name + '.tab')
 
         # Initialize the logger
-        com.init_logger(self.metadata_dir, 'index')
+        com.init_logger(self.output_dir, 'index')
         logger = com.get_logger()
 
         s = ' '+qualifier if qualifier else ' primary'
@@ -81,13 +81,7 @@ class IndexTable(com.Table):
             self.primary_index_label_path = self.metadata_dir/(primary_index_name + '.lbl')
             self.primary_index_path = self.metadata_dir/(primary_index_name + '.tab')
 
-            try:
-                local_label_path = self.primary_index_label_path.retrieve()
-                table = pdstable.PdsTable(local_label_path)
-            except FileNotFoundError:
-                warnings.warn('Primary index file not found: %s. '
-                              'Skipping' % self.primary_index_label_path)
-                return
+            table = util.PdsTable(self.primary_index_label_path)
 
             primary_row_dicts = table.dicts_by_row()
             self.files = [FCPath(primary_row_dict['FILE_SPECIFICATION_NAME'])

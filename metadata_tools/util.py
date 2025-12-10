@@ -7,11 +7,27 @@ import numpy as np
 import cspyce
 import re
 
+import pdstable
 from pathlib   import Path
 from filecache import FCPath
 
 import metadata_tools.common as com
 import metadata_tools.defs as defs
+
+#===============================================================================
+def PdsTable(label_path):
+    """read a pds3table form an FCPath object.  TO be replaced whenever pdstable is 
+       upgrade to use filecache.
+
+    Args:
+        label_path (str, Path, or FCPath): Path to the label file.
+
+    Returns:
+        pdstable.PdsTable: Table associated with the given label.
+    """
+    local_label_path = label_path.retrieve()
+    local_table_path = label_path.with_suffix('.tab').retrieve()
+    return pdstable.PdsTable(local_label_path)
 
 #===============================================================================
 def select_dir(tree, col, vol):
