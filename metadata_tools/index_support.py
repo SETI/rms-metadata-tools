@@ -12,7 +12,7 @@ import metadata_tools.defs as defs
 import pdstable
 
 from pdsparser import PdsLabel
-from filecache import FCPath
+from filecache import FileCache, FCPath
 from pdstemplate.pds3table import Pds3Table
 
 import host_config as hconf

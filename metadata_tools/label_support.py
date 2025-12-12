@@ -17,7 +17,7 @@ def create(filepath, host_template_path,
     """Creates a label for a given geometry table.
 
     Args:
-        filepath (str|Path|FCPath): Path to the local or remote geometry table.
+        filepath (str|Path|FCPath): Path to the local or remote table.
         host_template_path (str, Path, or FCPath): Path to the host template.
         system (str): Name of system, for rings and moons.
         use_global_template (bool):

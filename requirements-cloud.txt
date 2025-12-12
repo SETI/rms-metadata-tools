@@ -8,4 +8,5 @@ rms-cloud-tasks>=0.1.0
 json_stream
 rms-pdstable
 rms-vicar
+rms-pdstemplate
 fortranformat

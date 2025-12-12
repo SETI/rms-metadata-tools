@@ -10,7 +10,8 @@
 
 from filecache import FCPath
 
-filespec = FCPath('gs://rms-jspitale/test.txt')
+#filespec = FCPath('gs://rms-jspitale/test.txt')
+filespec = FCPath('gs://rms-jspitale/xxx/yyy/zzz/aaa/bbb/test.txt')
 if filespec.exists():
     content = filespec.read_text(encoding='utf-8')
     filespec.write_text(content + '\nGoodbye\nWorld\n', encoding='utf-8')
@@ -21,11 +22,3 @@ exit()
 
 
 
-
-# requirements-cloud.txt
-# push to githib
-
-# permission
-#  Bucket Details --> Grant access -->
-#     new principals: jspitale@rms-node-419806.iam.gserviceaccount.com
-#     assign role : Cloud Storage --> Storage Admin

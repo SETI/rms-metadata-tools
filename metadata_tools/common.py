@@ -131,7 +131,7 @@ def get_common_args(host=None):
                             metadata files.''', action=PathAction)
     gr.add_argument('output_tree', type=str, metavar='output_tree',
                     help='''File path to the top of the tree in which to place the
-                            new files.''')
+                            new files.''', action=PathAction)
     gr.add_argument('volumes', type=str, nargs='*', metavar='volumes',
                     help='''If given, only these volumes are processed.''')
 

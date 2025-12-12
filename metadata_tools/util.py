@@ -16,7 +16,7 @@ import metadata_tools.defs as defs
 
 #===============================================================================
 def PdsTable(label_path):
-    """read a pds3table form an FCPath object.  TO be replaced whenever pdstable is 
+    """read a pds3table form an FCPath object.  To be replaced whenever pdstable is 
        upgrade to use filecache.
 
     Args:
