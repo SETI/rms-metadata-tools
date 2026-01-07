@@ -3,16 +3,12 @@
 ################################################################################
 import fortranformat as ff
 import fnmatch
-import warnings
-import json
 
 import metadata_tools.common as com
 import metadata_tools.util as util
-import metadata_tools.defs as defs
-import pdstable
 
 from pdsparser import PdsLabel
-from filecache import FileCache, FCPath
+from filecache import FCPath
 from pdstemplate.pds3table import Pds3Table
 
 import host_config as hconf
@@ -395,17 +391,17 @@ class IndexTable(com.Table):
         try:
             result = IndexTable._format_value(value, format)
         except TypeError:
-            logger.warn("Invalid format: %s %s %s" % (name, value, format))
+            logger.warning("Invalid format: %s %s %s" % (name, value, format))
             result = width * "*"
 
         if len(result) > width:
-            logger.warn("No second format: %s %s %s %s" % (name, value, format, result))
+            logger.warning("No second format: %s %s %s %s" % (name, value, format, result))
 
         # Validate the formatted value
         try:
             _ = eval(result)
         except Exception:
-            logger.warn('Format error for %s: %s' % (name, value))
+            logger.warning('Format error for %s: %s' % (name, value))
 
         return result
 
@@ -564,7 +560,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 
         # Log a warning for any columns that never had non-null values
         if unused:
-            logger.warn('Unused columns: %s', unused)
+            logger.warning('Unused columns: %s', unused)
         logger.close(force=True)
 
 #===============================================================================

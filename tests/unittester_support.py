@@ -79,9 +79,6 @@ def bounds(test, file, table, key, min=0, max=360, minmax=True):
         nullval = nullvals.pop()
 
     val = table.column_values[key]
-#    print(nullval, key, val)
-#    if 'RIGHT_ASCENSION' in key:
-#        from IPython import embed; print('+++++++++++++'); embed()
 
     test.assertFalse(np.any(np.where(
         np.logical_and(

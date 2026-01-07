@@ -16,7 +16,6 @@ import metadata_tools.columns as col
 
 from filecache import FCPath
 
-import host_config as hconf
 import geometry_config as config
 
 ################################################################################
@@ -241,17 +240,17 @@ class Record(object):
             # If no C-kernel data for this observation, proceed with a warning and set the 
             # pointing_available flag.
             if 'SPICE(NOFRAMECONNECT)' in error or 'SPICE(CKINSUFFDATA)' in error:
-                logger.warn(str(e))
+                logger.warning(str(e))
                 self.pointing_available = False
             # Other kinds of errors are genuine bugs.
             else:
-                logger.error(traceback.format_exc())
+                logger.exception("Unexpected error during inventory")
             return []
 
         # Other kinds of errors are genuine bugs.
         except (AssertionError, AttributeError, IndexError, KeyError,
                 LookupError, TypeError, ValueError):
-            logger.error(traceback.format_exc())
+            logger.exception("Unexpected error during inventory")
             return []
 
     #===============================================================================
@@ -451,7 +450,7 @@ class Record(object):
 
     #===============================================================================
     def add(self, qualifier, *,
-                  name=None, target=None, tiles=[], tiling_min=100,
+                  name=None, target=None, tiles=None, tiling_min=100,
                   ignore_shadows=False, start_index=1, allow_zero_rows=True,
                   no_mask=False, no_body=False):
         """Generates the geometry for one row, given a list of column descriptions.
@@ -499,6 +498,8 @@ class Record(object):
             no_mask (bool, optional): True to suppress the use of a mask.
             no_body (bool, optional): True to suppress body prefixes.
         """
+        if tiles is None:
+            tiles = []
 
         # Get the column descriptions
         column_descs = self.dicts[qualifier]
@@ -526,7 +527,7 @@ class Record(object):
     #===============================================================================
     def _prep_row(self, prefixes, backplane, blocker, column_descs, *,
                   primary=None, target=None, name_length=defs.NAME_LENGTH,
-                  tiles=[], tiling_min=100, ignore_shadows=False,
+                  tiles=None, tiling_min=100, ignore_shadows=False,
                   start_index=1, allow_zero_rows=True, no_mask=False,
                   no_body=False):
         """Generates the geometry and returns a list of lists of strings. The inner
@@ -593,6 +594,8 @@ class Record(object):
                 overrides (list): Dicts of column entries to override in label. One dict for 
                                   each column, not including prefix columns.
         """
+        if tiles is None:
+            tiles = []
 
         # Handle option for multiple tile sets
         if isinstance(tiles, tuple):

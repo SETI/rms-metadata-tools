@@ -12,6 +12,7 @@ import metadata_tools.defs as defs
 #===============================================================================
 def create(filepath, host_template_path, 
                      system=None,
+                     *,
                      use_global_template=False,
                      table_type=''):
     """Creates a label for a given geometry table.

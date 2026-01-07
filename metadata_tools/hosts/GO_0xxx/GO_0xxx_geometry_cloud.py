@@ -13,7 +13,7 @@
 #
 #########################################################################################
 import asyncio
-import os, sys
+import sys
 from cloud_tasks.worker import Worker, WorkerData
 
 import metadata_tools.util as util
@@ -23,7 +23,7 @@ import geometry_config as config
 from metadata_tools.geometry_support import process_tables, get_args
 
 #========================================================================================
-def process_task(task_id: str,
+def process_task(_task_id: str,
                  task_data: dict[str, any],
                  worker_data: WorkerData) -> tuple[bool, any]:
 

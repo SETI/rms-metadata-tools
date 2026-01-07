@@ -2,6 +2,8 @@
 # COLUMNS_BODY.py: Column definitions for body geometry tables
 ################################################################################
 import oops
+import metadata_tools.defs as defs
+import metadata_tools.util as util
 
 ################################################################################
 # *COLUMN description tuples are

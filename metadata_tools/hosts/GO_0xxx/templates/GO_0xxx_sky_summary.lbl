@@ -35,7 +35,7 @@ OBJECT                          = SKY_SUMMARY_TABLE
     per image, indicating the ranges of J2000 right ascension and declination
     sampled by the field of view.
 
-$IF(TABLE_TYPE == 'CUMULATIVE')
+$IF(index_type == 'CUMULATIVE')
     This is the cumulative index, describing all the images in the collection.
 $ELSE
     This index describes the images found on volume $volume_id$.
@@ -55,7 +55,7 @@ $END_IF
   OBJECT                        = COLUMN
     NAME                        = "FILE_SPECIFICATION_NAME"
     FORMAT                      = A32
-    DESCRIPTION                 = "The full directory path to the data file's,
+    DESCRIPTION                 = "The full directory path to the data file's
       label, relative to the root directory of the PDS volume."
   END_OBJECT                    = COLUMN
 

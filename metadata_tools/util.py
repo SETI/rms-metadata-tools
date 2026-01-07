@@ -5,19 +5,18 @@ import os
 import re
 import numpy as np
 import cspyce
-import re
 
 import pdstable
 from pathlib   import Path
 from filecache import FCPath
 
-import metadata_tools.common as com
 import metadata_tools.defs as defs
+import geometry_config as config
 
 #===============================================================================
 def PdsTable(label_path):
-    """read a pds3table form an FCPath object.  To be replaced whenever pdstable is 
-       upgrade to use filecache.
+    """read a pds3table from an FCPath object.  To be replaced whenever pdstable is 
+       upgraded to use filecache.
 
     Args:
         label_path (str, Path, or FCPath): Path to the label file.
@@ -26,7 +25,7 @@ def PdsTable(label_path):
         pdstable.PdsTable: Table associated with the given label.
     """
     local_label_path = label_path.retrieve()
-    local_table_path = label_path.with_suffix('.tab').retrieve()
+    local_table_path = label_path.with_suffix('.tab').retrieve() # Retrieve table as well
     return pdstable.PdsTable(local_label_path)
 
 #===============================================================================
@@ -39,9 +38,10 @@ def select_dir(tree, col, vol):
     Returns:
         str: Index name.
     """
+    dir = tree
     if tree.parts[-1] != col:
-        dir = tree/col
-    dir = tree/vol
+        dir = dir/col
+    dir = dir/vol
 
     return dir
 
@@ -420,8 +420,7 @@ def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilit
 
     # Write file
     with open(Path(filespec.as_posix()), "a") as file:
-        for line in content:
-            file.write(line)
+        file.write(content)
 
 #===============================================================================
 def rebase(x, bases, ceil=False):    ### move to utilities
@@ -594,7 +593,8 @@ def get_primary(table, observation, sclk):
         sclk (str): Spacecraft clock string corresponding to the observation time.
 
     Returns:
-        NamedTuple (primary (str), secondaries (list), selections (list)):
+        NamedTuple (primary (str), secondaries (list), selections (list), 
+                    additions (list)):
             primary: Name of the primary corresponding to the given SCLK value.
             secondaries:
                 Names of any secondaries.

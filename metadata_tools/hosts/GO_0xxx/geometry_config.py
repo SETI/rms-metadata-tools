@@ -205,22 +205,23 @@ def target_name(dict):
 
     return dict["TARGET_NAME"]
 
-    target = dict["TARGET_NAME"]
-    if target != "SKY":
-        return target
-
-    id = dict["OBSERVATION_ID"]
-    abbrev = id[id.index("_"):][4:6]
-
-    if abbrev == "SK":
-        desc = dict["TARGET_DESC"]
-        if desc in defs.BODY_NAMES:
-            return desc
-
-    try:
-        return col.CIMS_TARGET_ABBREVIATIONS[abbrev]
-    except KeyError:
-        return target
+# Leaving this here for when we implemnt Cassini ISS metadata....
+#    target = dict["TARGET_NAME"]
+#    if target != "SKY":
+#        return target
+#
+#    id = dict["OBSERVATION_ID"]
+#    abbrev = id[id.index("_"):][4:6]
+#
+#    if abbrev == "SK":
+#        desc = dict["TARGET_DESC"]
+#        if desc in defs.BODY_NAMES:
+#            return desc
+#
+#    try:
+#        return col.CIMS_TARGET_ABBREVIATIONS[abbrev]
+#    except KeyError:
+#        return target
 
 #=========================================================================================
 def cleanup():
