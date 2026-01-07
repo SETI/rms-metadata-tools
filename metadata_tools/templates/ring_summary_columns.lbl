@@ -784,11 +784,7 @@ $END_NOTE
     UNIT                        = "km"
     NULL_CONSTANT               = -9.99e+09
     DESCRIPTION                 = "Edge-on ring altitude is the distance from
-      the ring plane to the edge-on ring intercept point. The value is
-      positive on the side of the ring plane defined by prograde
-      rotation; note that this is the north side of the ring plane for
-      Jupiter, Saturn and Neptune, but the IAU-defined south side for
-      Uranus.
+      the ring plane to the edge-on ring intercept point.
       $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the minimum value among the pixels whose lines of
@@ -803,11 +799,7 @@ $END_NOTE
     UNIT                        = "km"
     NULL_CONSTANT               = -9.99e+09
     DESCRIPTION                 = "Edge-on ring altitude is the distance from
-      the ring plane to the edge-on ring intercept point. The value is
-      positive on the side of the ring plane defined by prograde
-      rotation; note that this is the north side of the ring plane for
-      Jupiter, Saturn and Neptune, but the IAU-defined south side for
-      Uranus.
+      the ring plane to the edge-on ring intercept point.
       $INCLUDE('edge_on_definition.lbl')
 
       This column tabulates the maximum value among the pixels whose lines of
