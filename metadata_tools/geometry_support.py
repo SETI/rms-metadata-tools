@@ -23,13 +23,17 @@ import geometry_config as config
 # FORMAT_DICT tuples are:
 #
 #   (flag, number_of_values, column_width, standard_format, overflow_format,
-#    null_value, valid_minimum, valid_maximum)
+#    null_value, valid_minimum, valid_maximum, link_id, link)
 #
 # where...
 #
 #   flag = "RAD" = convert values from radians to degrees;
 #        = "360" = convert to degrees, with 360-deg periodicity;
 #        = ""    = do not modify value.
+#
+#   link_id is a positive integer id that can be used to link multiple columns via
+#   the specified link function. All columns with the same link function and 
+#   link id are linked together.
 #
 # Note null_value, valid_minimum, valid_maximum are tracked in the override dicts, but
 # not currently used to populate the label, which would remove the redundancy of 
@@ -45,81 +49,81 @@ import geometry_config as config
 #
 ################################################################################
 FORMAT_DICT = {
-    "right_ascension"           : ("360", 2, 10, "%10.6f", "%10.5f", -999., 0, 360),
-    "center_right_ascension"    : ("360", 2, 10, "%10.6f", "%10.5f", -999., 0, 360),
-    "declination"               : ("DEG", 2, 10, "%10.6f", "%10.5f", -999., -90, 90),
-    "center_declination"        : ("DEG", 2, 10, "%10.6f", "%10.5f", -999., -90, 90),
+    "right_ascension"           : ("360", 2, 10, "%10.6f", "%10.5f", -999., 0, 360, 0, ''),
+    "center_right_ascension"    : ("360", 2, 10, "%10.6f", "%10.5f", -999., 0, 360, 0, ''),
+    "declination"               : ("DEG", 2, 10, "%10.6f", "%10.5f", -999., -90, 90, 0, ''),
+    "center_declination"        : ("DEG", 2, 10, "%10.6f", "%10.5f", -999., -90, 90, 0, ''),
 
-    "distance"                  : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
-    "center_distance"           : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
-    "center_coordinate"         : ("",    1, 12, "%12.3f", "%12.5e", -99999, -10000, 10000),
-    "radius_in_pixels"          : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
+    "distance"                  : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0, 0, ''),
+    "center_distance"           : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0, 0, ''),
+    "center_coordinate"         : ("",    1, 12, "%12.3f", "%12.5e", -99999, -10000, 10000, 1, 'null'),
+    "radius_in_pixels"          : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0, 0, ''),
 
-    "ring_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
-    "ansa_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0),
+    "ring_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0, 0, ''),
+    "ansa_radius"               : ("",    2, 12, "%12.3f", "%12.5e", -999., 0, 0, 0, ''),
 
-    "altitude"                  : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0),
-    "ansa_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -9.99e+09, 0, 0),
+    "altitude"                  : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0, 0, ''),
+    "ansa_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -9.99e+09, 0, 0, 0, ''),
 
-    "resolution"                : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
-    "finest_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
-    "coarsest_resolution"       : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
-    "ring_radial_resolution"    : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
+    "resolution"                : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
+    "finest_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
+    "coarsest_resolution"       : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
+    "ring_radial_resolution"    : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
 
-    "ansa_radial_resolution"    : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
-    "ansa_vertical_resolution"  : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
-    "center_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0),
-    "body_diameter_in_pixels"   : ("",    1, 12, "%12.3f", "%12.5e", -999., 0, 0),
+    "ansa_radial_resolution"    : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
+    "ansa_vertical_resolution"  : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
+    "center_resolution"         : ("",    2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
+    "body_diameter_in_pixels"   : ("",    1, 12, "%12.3f", "%12.5e", -999., 0, 0, 0, ''),
 
-    "event_time"                : ("ISO", 2, 25, "%25s", "%25s", '"NA"', 0, 0),
+    "event_time"                : ("ISO", 2, 25, "%25s", "%25s", '"NA"', 0, 0, 0, ''),
 
-    "ring_angular_resolution"   : ("DEG", 2, 10, "%10.5f",  "%6.3e", -999., 0, 0),
+    "ring_angular_resolution"   : ("DEG", 2, 10, "%10.5f",  "%6.3e", -999., 0, 0, 0, ''),
 
-    "longitude"                 : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
-    "ring_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
-    "ring_azimuth"              : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
-    "ansa_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
-    "sub_solar_longitude"       : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
-    "sub_observer_longitude"    : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
-    "ring_sub_solar_longitude"  : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "longitude"                 : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
+    "ring_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
+    "ring_azimuth"              : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
+    "ansa_longitude"            : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
+    "sub_solar_longitude"       : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
+    "sub_observer_longitude"    : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
+    "ring_sub_solar_longitude"  : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
     "ring_sub_observer_longitude"
-                                : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+                                : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
 
-    "latitude"                  : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
-    "sub_solar_latitude"        : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
-    "sub_observer_latitude"     : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
+    "latitude"                  : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90, 0, ''),
+    "sub_solar_latitude"        : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90, 0, ''),
+    "sub_observer_latitude"     : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90, 0, ''),
 
-    "limb_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0),
-#    "limb_clock_angle"          : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 360),
-    "limb_clock_angle"          : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360),
+    "limb_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0, 0, ''),
+#    "limb_clock_angle"          : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
+    "limb_clock_angle"          : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
 
-    "pole_clock_angle"          : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360),
-    "pole_position_angle"       : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360),
+    "pole_clock_angle"          : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
+    "pole_position_angle"       : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
 
-    "phase_angle"               : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
-    "center_phase_angle"        : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
-    "incidence_angle"           : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
-    "ring_incidence_angle"      : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
-    "center_incidence_angle"    : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
+    "phase_angle"               : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
+    "center_phase_angle"        : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
+    "incidence_angle"           : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
+    "ring_incidence_angle"      : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
+    "center_incidence_angle"    : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90, 0, ''),
     "ring_center_incidence_angle"
-                                : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
-    "emission_angle"            : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
-    "ring_emission_angle"       : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
-    "center_emission_angle"     : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90),
-    "ring_center_emission_angle": ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180),
-    "ring_elevation"            : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90),
+                                : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
+    "emission_angle"            : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90, 0, ''),
+    "ring_emission_angle"       : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
+    "center_emission_angle"     : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90, 0, ''),
+    "ring_center_emission_angle": ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
+    "ring_elevation"            : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90, 0, ''),
 
-    "where_inside_shadow"       : ("",    2,  1, "%1d",    None,        0, 0, 0),
-    "where_in_front"            : ("",    2,  1, "%1d",    None,        0, 0, 0),
-    "where_in_back"             : ("",    2,  1, "%1d",    None,        0, 0, 0),
-    "where_antisunward"         : ("",    2,  1, "%1d",    None,        0, 0, 0)}
+    "where_inside_shadow"       : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
+    "where_in_front"            : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
+    "where_in_back"             : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
+    "where_antisunward"         : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, '')}
 
 ALT_FORMAT_DICT = {
     ("ring_angular_resolution", "km")
-                                : ("KM",   2, 10, "%10.5f", "%10.4e", -999., 0, 0),
-    ("longitude",      "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180),
-    ("ring_longitude", "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180),
-    ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180)}
+                                : ("KM",   2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
+    ("longitude",      "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, ''),
+    ("ring_longitude", "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, ''),
+    ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, '')}
 
 MISSION_TABLE = \
     util.convert_mission_table(config.MISSION_TABLE)
@@ -143,6 +147,7 @@ class Record(object):
             level (str, optional): Processing level: 'summary' or 'detailed'.
         """
         self.observation = observation
+        self.backplane_keys = {}
 
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
@@ -306,6 +311,112 @@ class Record(object):
 
         return [body_name for body_name in body_names if oops.Body.exists(body_name)]
 
+    #===========================================================================
+    @staticmethod
+    def get_backplane_key(column_desc):
+        """Extract the backplane key from the column description.
+
+        Args:
+            column_desc (dict or list): . 
+
+        Returns:
+            None
+        """
+
+        event_key = column_desc[0]
+        return event_key[0] if isinstance(event_key, tuple) else event_key
+
+    #===========================================================================
+    def get_key_map(self, columns, qualifier):
+        """Construct the mapping between backplane keys and column values.
+
+        Args:
+            columns (list): One str for each column. 
+            qualifier: 'sky', 'sun', 'ring', or 'body'.
+
+        Returns:
+            list: tuples of (backplane key, column value)
+        """
+
+        # Get all backplane keys
+        if qualifier in self.backplane_keys:
+            backplane_keys = self.backplane_keys[qualifier]
+        else:
+            column_descs = self.dicts[qualifier]
+            if isinstance(column_descs, dict):
+                column_descs = column_descs[list(column_descs.keys())[0]]
+
+            backplane_keys = []
+            for column_desc in column_descs:
+                backplane_keys.append(Record.get_backplane_key(column_desc))
+            self.backplane_keys[qualifier] = backplane_keys
+
+        # Get data columns
+        ndata = len(backplane_keys)
+        data_columns = columns[-ndata:]
+
+        # Create key map
+        return (backplane_keys, data_columns)
+
+    #===========================================================================
+    def postprocess(self, columns, qualifier):
+        """Process the completed record.
+
+        Args:
+            columns (list): One str for each column. 
+            qualifier (str): 'sky', 'sun', 'ring', or 'body'.
+
+        Returns:
+            None
+        """
+
+        def link_null(link, backplane_keys, data_columns):
+            """Enter null value for all linked columns if any of them are null.
+
+            Args:
+                link (dict): Defines the link:
+                                 backplane_key : Linked backplane key.
+                                 null_value    : Null value for this key.
+                backplane_keys (list): All backplane keys.
+                data_columns (list): Column values for each backplane key.
+
+            Returns:
+                Update data columns
+            """
+            # Locate the linked columns
+            ii = [i for i, key in enumerate(backplane_keys) if key==link['backplane_key']]
+
+            for i in range(len(ii)):
+                val = data_columns[ii[i]]
+                if float(val) == link['null_value']:
+                    for i in range(len(ii)):
+                        data_columns[ii[i]] = val
+
+            return data_columns
+
+        # Get the backplane key mapping
+        backplane_keys, data_columns = self.get_key_map(columns, qualifier)
+
+        # Build link dictionary
+        links = {}
+        for key in backplane_keys:
+            format = FORMAT_DICT[key]
+            (_,_,_,_,_, null_value, _, _, link_id, link) = format
+            if link_id:
+                links[link] = {'backplane_key' : key, 
+                               'null_value'    : null_value}
+
+        # Call link functions
+        for link in links:
+            link_fn = locals()['link_' + link]
+            data_columns = link_fn(links[link], backplane_keys, data_columns)
+
+        # Substitute new data columns
+        ndata = len(backplane_keys)
+        columns[-ndata:] = data_columns
+
+        return columns
+
     #===============================================================================
     def _meshgrid(self, observation, meshgrids):
         """Looks up the meshgrid for an observation.
@@ -389,7 +500,7 @@ class Record(object):
             no_body (bool, optional): True to suppress body prefixes.
         """
 
-        # Get the column decsriptions
+        # Get the column descriptions
         column_descs = self.dicts[qualifier]
         if name:
             column_descs = column_descs[name]
@@ -404,14 +515,11 @@ class Record(object):
                                 no_body=no_body)
 #        self.overrides += overrides
 
-        # Append the complete rows to the output
+        # Postprocess the rows and append to the output
         lines = []
-        for row in rows:
-            line = row[0]
-            for column in row[1:]:
-                line += ','
-                line += column
-            lines.append(line)
+        for columns in rows:
+            row = self.postprocess(columns, qualifier)
+            lines.append(','.join(row))
 
         return lines
 
@@ -609,7 +717,7 @@ class Record(object):
                 else:
                     format = FORMAT_DICT[event_key[0]]
 
-                (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
+                (_,_,_,_,_, null_value, valid_minimum, valid_maximum, _, _) = format
                 if null_flag:
                     if isinstance(null_value, str):
                         values = null_value
@@ -807,7 +915,7 @@ class Record(object):
         # Interpret the format
         (flag, number_of_values, column_width,
          standard_format, overflow_format, 
-         null_value, valid_minimum, valid_maximum) = format
+         null_value, valid_minimum, valid_maximum, _, _) = format
 
         # Convert from radians to degrees if necessary
         if flag in ("DEG", "360", "-180"):
@@ -1313,7 +1421,11 @@ class Suite(object):
                 # Update the tables
                 self.add(records)
                 count += 1
-        #  Write tables and make labels
+
+        # Run post-processor
+#        self.post()
+
+        # Write tables and make labels
         self.write(labels_only=labels_only)
 
         # Clean up

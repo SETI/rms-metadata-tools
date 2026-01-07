@@ -106,7 +106,7 @@ def get_args(host=None, exclude=None):
     """
 
     # Get parser with common args
-    parser = com.get_common_args(host=host)
+    parser = com.get_common_args(host=host, no_metadata=True)
 
     # Add parser for index args
     gr = parser.add_argument_group('Cumulative Arguments')
@@ -131,7 +131,7 @@ def create_cumulative_indexes(template_name, exclude=None):
     args = parser.parse_args()
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
 
-    volume_tree = FCPath(args.input_tree)
+    volume_tree = FCPath(args.volume_tree)
     cumulative_dir = FCPath(args.output_tree)
     volumes = args.volumes
 

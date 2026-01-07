@@ -95,11 +95,12 @@ def write_task_file(task_file):
 ##########################################################################################
 
 #=========================================================================================
-def get_common_args(host=None):
+def get_common_args(host=None, no_metadata=False):
     """Common argument parser for metadata tools.
 
         Args:
             host (str): Host name e.g. 'GO_0xxx'.
+            no_metadata (bool): If True, metadata_tree is not is not needed.
 
          Returns:
             argparser.ArgumentParser :
@@ -126,9 +127,10 @@ def get_common_args(host=None):
     gr.add_argument('volume_tree', type=str, metavar='volume_tree',
                     help='''File path to the top of the tree containing the
                             volume files.''', action=PathAction)
-    gr.add_argument('metadata_tree', type=str, metavar='metadata_tree',
-                    help='''File path to the top of the tree containing the
-                            metadata files.''', action=PathAction)
+    if not no_metadata:
+        gr.add_argument('metadata_tree', type=str, metavar='metadata_tree',
+                        help='''File path to the top of the tree containing the
+                                metadata files.''', action=PathAction)
     gr.add_argument('output_tree', type=str, metavar='output_tree',
                     help='''File path to the top of the tree in which to place the
                             new files.''', action=PathAction)

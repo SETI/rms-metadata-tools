@@ -23,9 +23,9 @@
 #   cloud_tasks purge_queue --config gcp_index_config.yml
 #   cloud_tasks delete_queue --config gcp_index_config.yml
 #
-#   cloud_tasks show_queue --project-id rms-node-419806 --job-id metadata-index-job --provider gcp --detail
-#   cloud_tasks status --project-id rms-node-419806 --job-id metadata-index-job --provider gcp
-#   cloud_tasks list_running_instances --project-id rms-node-419806 --job-id metadata-index-job --provider gcp
+#   cloud_tasks show_queue --project-id rms-metadata --job-id metadata-index-job --provider gcp --detail
+#   cloud_tasks status --project-id rms-metadata --job-id metadata-index-job --provider gcp
+#   cloud_tasks list_running_instances --project-id rms-metadata --job-id metadata-index-job --provider gcp
 #
 #########################################################################################
 import asyncio

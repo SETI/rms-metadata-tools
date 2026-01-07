@@ -1,9 +1,9 @@
 provider: gcp
 gcp:
   job_id:                   metadata-index-job
-  project_id:               rms-node-419806
+  project_id:               rms-metadata
   startup_script_file:      gcp_index_startup.sh
-  service_account:          jspitale@rms-node-419806.iam.gserviceaccount.com
+  service_account:          rms-metadata-tools@rms-metadata.iam.gserviceaccount.com
   max_runtime:              10000
   region:                   us-central1
   max_instances:            10

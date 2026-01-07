@@ -164,7 +164,7 @@ def get_volume_subdir(path, volume_id):
         str: Final directory in tree.
     """
     return splitpath(path, volume_id)[-1]
-#    return path.split(volume_id)[-1]
+#    return path.split(volume_id)[-1]  ## not currently supprted by filecache
 
 #===============================================================================
 def replace(tree, placeholder, name):
