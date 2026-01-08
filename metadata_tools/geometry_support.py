@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support.py - Tools for generating geometry tables.
 ################################################################################
+import re
 import oops
 import julian
 import numpy as np
@@ -151,7 +152,7 @@ class Record(object):
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
         self.primary, self.secondaries, self.selections, self.additions = \
-            util.get_primary(MISSION_TABLE, self.observation, sclk)
+            self._get_primary(MISSION_TABLE, sclk)
         self.level = level
         self.sampling = sampling
         self.pointing_available = True
@@ -514,7 +515,7 @@ class Record(object):
                                 start_index=start_index, allow_zero_rows=allow_zero_rows,
                                 no_mask=no_mask,
                                 no_body=no_body)
-#        self.overrides += overrides
+#        self.overrides += overrides  ## this is for future development
 
         # Postprocess the rows and append to the output
         lines = []
@@ -999,6 +1000,62 @@ class Record(object):
 
         return ",".join(strings)
 
+    #===============================================================================
+    def _obs_excluded(self, exceptions):
+        """Use converted default bodies table to determine the primary for a given
+           spacecraft clock count.
+
+        Args:
+            exceptions (list): List of regular expressions to test against the observation ID.
+
+        Returns:
+            bool: True if the observation is exluded.
+        """
+        if not exceptions:
+            return False
+
+        id = util.get_observation_id(self.observation)
+        for exception in exceptions:
+            # check for config function
+            if exception.isidentifier():
+                fn = getattr(config, exception)
+                return fn(self.observation)
+
+            # If no config function, treat as regex
+            if re.match(exception, id):
+                return True
+
+        return False
+
+    #===============================================================================
+    def _get_primary(self, table, sclk):
+        """Use converted default bodies table to determine the primary for a given
+           spacecraft clock count.
+
+        Args:
+            table (list):
+                Converted default bodies table containing sclk ticks instead of strings.
+            sclk (str): Spacecraft clock string corresponding to the observation time.
+
+        Returns:
+            NamedTuple (primary (str), secondaries (list), selections (list), 
+                        additions (list)):
+                primary: Name of the primary corresponding to the given SCLK value.
+                secondaries:
+                    Names of any secondaries.
+                selections:
+                    Names of any selected bodies.
+        """
+        fail = ('', [], [], [])
+        sclk_ticks = util.sclk_to_ticks(sclk)
+        for row in table:
+            if self._obs_excluded(row[1]):
+                return fail
+            sclks = row[0]
+            if sclk_ticks >= sclks[0] and sclk_ticks <= sclks[1]:
+                return (row[2], row[3], row[4], row[5])
+        return fail
+
 
 ################################################################################
 # InventoryTable class
@@ -1274,7 +1331,7 @@ class Suite(object):
                 format = FORMAT_DICT[event_key[0]]
 
             # Save label overrides for this column
-            (_,_,_,_,_, null_value, valid_minimum, valid_maximum) = format
+            (_,_,_,_,_, null_value, valid_minimum, valid_maximum, _, _) = format
             override = {'NULL_VALUE':    null_value,
                         'VALID_MINIMUM': valid_minimum,
                         'VALID_MAXIMUM': valid_maximum, 
@@ -1541,7 +1598,7 @@ def process_tables(template_name,
     vol_glob = util.get_volume_glob(volume_tree.name)
 
     # Walk the volume tree, making indexes for each found volume
-    for root, dirs, files in volume_tree.walk():
+    for root, dirs, _files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue

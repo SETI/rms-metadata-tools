@@ -517,7 +517,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     vol_glob = util.get_volume_glob(volume_tree.name)
 
     # Walk the input tree, making indexes for each found volume
-    for root, dirs, files in volume_tree.walk():
+    for root, dirs, _files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue

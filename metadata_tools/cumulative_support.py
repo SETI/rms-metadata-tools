@@ -126,7 +126,7 @@ def create_cumulative_indexes(template_name, exclude=None):
         exclude (list, optional): List of volumes to exclude.
     """
     # Parse arguments
-    host, index_type, template_dir = util.parse_template_name(template_name)
+    host, _index_type, template_dir = util.parse_template_name(template_name)
     parser = get_args(host=host, exclude=exclude)
     args = parser.parse_args()
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')

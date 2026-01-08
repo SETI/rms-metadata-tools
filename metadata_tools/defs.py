@@ -2,7 +2,6 @@
 # defs.py: Definitions
 ##########################################################################################
 import sys
-import inspect
 
 from filecache import FCPath
 

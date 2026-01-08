@@ -18,7 +18,6 @@ def get_bodies(body_names):
         bodies += bod.select_children("REGULAR")
     return {body.name: body for body in bodies}
 
-
 BODIES = get_bodies(defs.BODY_NAMES)
 
 #############################################

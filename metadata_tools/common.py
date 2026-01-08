@@ -87,7 +87,7 @@ def write_task_file(task_file):
         return
     with open(task_file, "w") as file:
         json.dump(task_list, file, indent=2)
-    file.close()
+#    file.close()
 
 
 ##########################################################################################
@@ -137,7 +137,7 @@ def get_common_args(host=None, no_metadata=False):
     gr.add_argument('volumes', type=str, nargs='*', metavar='volumes',
                     help='''If given, only these volumes are processed.''')
 
-    gr.add_argument('--labels', '-l', type=str, metavar='labels',
+    gr.add_argument('--labels', '-l', type=bool, metavar='labels',
                     default=False,
                     help='''If given, labels are generated for existing files.''')
     gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
@@ -181,6 +181,7 @@ class Table(object):
         self.level = level
         self.qualifier = qualifier
         self.use_global_template = use_global_template
+        self.rows = []
 
         if not output_dir:
             return
@@ -190,7 +191,6 @@ class Table(object):
         prefix = output_dir.joinpath(self.volume_id).as_posix()
         self.filename = FCPath(prefix + suffix)
 
-        self.rows = []
 
     #=====================================================================================
     def write(self, labels_only=False):

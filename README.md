@@ -92,7 +92,9 @@ each column object in the label specifies the name of a PDS label field to add t
 along with its desired formatting. This behavior may be overridden by adding a key function
 to index_config.py of the form:
 
-    key__<NAME>(label_path, label_dict)
+```python
+key__<NAME>(label_path, label_dict)
+```
 
 where label_path is the path to the PDS label, and label_dict is a dictionary containing the
 PDS label fields. The returned value is placed in the table.

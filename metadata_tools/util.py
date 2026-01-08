@@ -11,7 +11,6 @@ from pathlib   import Path
 from filecache import FCPath
 
 import metadata_tools.defs as defs
-import geometry_config as config
 
 #===============================================================================
 def PdsTable(label_path):
@@ -30,20 +29,19 @@ def PdsTable(label_path):
 
 #===============================================================================
 def select_dir(tree, col, vol):
-    """Determine the name of the label template.
+    """Determine the template directory for a given collection and volume.
 
     Args:
-        filename (str): Name of table or label file.
+        tree (FCPath): Base tree path.
+        col (str): Collection name.
+        vol (str): Volume name.
 
     Returns:
-        str: Index name.
+        FCPath: Directory path.
     """
-    dir = tree
     if tree.parts[-1] != col:
-        dir = dir/col
-    dir = dir/vol
-
-    return dir
+        return tree / col / vol
+    return tree / vol
 
 #===============================================================================
 def get_index_name(dir, vol_id, type):
@@ -296,8 +294,9 @@ def expandvars(filespec):           ### add to FCPath?
         str, Path, or FCPath: Expanded path.
 
     """
-    if not isinstance(filespec, str):
-        result = filespec.as_posix()
+    result = filespec
+    if not isinstance(result, str):
+        result = result.as_posix()
 
     result = re.sub('://', '<<token>>', result)
     result = os.path.expandvars(result)
@@ -552,64 +551,6 @@ def convert_mission_table(table):
               item[2], item[3], item[4], item[5], item[6]))
 
     return new_table
-
-#===============================================================================
-def obs_excluded(observation, exceptions):
-    """Use converted default bodies table to determine the primary for a given
-       spacecraft clock count.
-
-    Args:
-        observation (oops.Observation): OOPS Observation object.
-        exceptions (list): List of regular expressions to test against the observation ID.
-
-    Returns:
-        bool: True if the observation is exluded.
-    """
-    if not exceptions:
-        return False
-
-    id = get_observation_id(observation)
-    for exception in exceptions:
-        # check for config function
-        if exception.isidentifier():
-            fn = getattr(config, exception)
-            return fn(observation)
-
-        # If no config function, treat as regex
-        if re.match(exception, id):
-            return True
-            
-    return False
-
-#===============================================================================
-def get_primary(table, observation, sclk):
-    """Use converted default bodies table to determine the primary for a given
-       spacecraft clock count.
-
-    Args:
-        table (list):
-            Converted default bodies table containing sclk ticks instead of strings.
-        observation (oops.Observation): OOPS Observation object.
-        sclk (str): Spacecraft clock string corresponding to the observation time.
-
-    Returns:
-        NamedTuple (primary (str), secondaries (list), selections (list), 
-                    additions (list)):
-            primary: Name of the primary corresponding to the given SCLK value.
-            secondaries:
-                Names of any secondaries.
-            selections:
-                Names of any selected bodies.
-    """
-    fail = ('', [], [], [])
-    sclk_ticks = sclk_to_ticks(sclk)
-    for row in table:
-        if obs_excluded(observation, row[1]):
-            return fail
-        sclks = row[0]
-        if sclk_ticks >= sclks[0] and sclk_ticks <= sclks[1]:
-            return (row[2], row[3], row[4], row[5])
-    return fail
 
 #===============================================================================
 def range_of_n_angles(n, prob=0.1, tests=100000):

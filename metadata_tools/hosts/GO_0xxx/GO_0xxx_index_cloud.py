@@ -58,7 +58,7 @@ async def main():
     # and most useful when running the worker locally.
 
     # parse metadata arguments
-    host, index_type, template_dir = util.parse_template_name(hconf.template_name)
+    host, index_type, _template_dir = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host, index_type=index_type)
 
     # initialize the worker

@@ -1,5 +1,5 @@
 ##########################################################################################
-# host_config.py for GLL SSI
+# geometry_config.py for GLL SSI
 #
 #  Host-specific definitions and utilites for geometry file generation.
 #
