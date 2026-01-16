@@ -55,8 +55,6 @@ BODY_COLUMNS = [
     (("emission_angle",         defs.BODYX),                    ("RM", "",   "")),
     (("limb_altitude",          defs.BODYX, -0.01, 3, True),    ("",   "",  "")),
     (("limb_clock_angle",       ("limb_altitude", defs.BODYX, -0.01, 3, True)), ("",   "",  "")),
-###    (("limb_altitude",          defs.BODYX, -0.01, None, True), ("",   "",  "")),
-###    (("limb_clock_angle",       defs.BODYX, -0.01, None, True), ("",   "",  "")),
     (("event_time",             defs.BODYX),                    ("RM", "", ""))]
 
 BODY_GRIDLESS_COLUMNS = [

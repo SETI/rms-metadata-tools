@@ -300,7 +300,9 @@ class Record(object):
 
         # Add target body and parent
         if self.target and oops.Body.exists(self.target):
-            body_names += [self._get_system(self.target)]
+            system = self._get_system(self.target)
+            if system: 
+                body_names += [system]
             body_names += [self.target]
 
         # Cull duplicate bodies and verify all bodies are in the registry
@@ -344,7 +346,7 @@ class Record(object):
         else:
             column_descs = self.dicts[qualifier]
             if isinstance(column_descs, dict):
-                column_descs = column_descs[list(column_descs.keys())[0]]
+                column_descs = column_descs[next(iter(column_descs.keys()))]
 
             backplane_keys = []
             for column_desc in column_descs:
@@ -444,7 +446,7 @@ class Record(object):
         if body in oops.Body.BODY_REGISTRY:
             parent = oops.Body.BODY_REGISTRY[body].parent.name
         else:
-            return []
+            return None
         if parent != 'SUN':
             return parent
         return body
@@ -604,11 +606,12 @@ class Record(object):
             overrides = []
             local_index = start_index
             for tile in tiles:
-                new_rows = self._prep_row(prefixes, backplane, blocker, column_descs,
+                new_rows, new_overrides = self._prep_row(prefixes, backplane, blocker, column_descs,
                                             primary, target, name_length,
                                             tile, tiling_min, ignore_shadows,
                                             local_index, allow_zero_rows=True)
                 rows += new_rows
+                overrides += new_overrides
                 local_index += len(tile) - 1
 
             if rows or allow_zero_rows:

@@ -14,6 +14,7 @@
 #########################################################################################
 import asyncio
 import sys
+from typing import Any
 from cloud_tasks.worker import Worker, WorkerData
 
 import metadata_tools.util as util

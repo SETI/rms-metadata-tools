@@ -520,8 +520,7 @@ def sclk_to_ticks(sclk, sc):
     Returns:
         int: Spacecraft clock ticks.
     """
-    return cspyce.    from IPython import embed; print('+++++++++++++'); embed()
-(sc, sclk)
+    return cspyce.sctiks_alias(sc, sclk)
 
 #===============================================================================
 def get_observation_id(observation):
