@@ -31,7 +31,7 @@ def init_logger(dir, type):
     """
     name = '%s_%s-log.txt' % (dir.name, type)
     path = dir / name
-    FCPath.unlink(path, missing_ok=True)
+    path.unlink(path, missing_ok=True)
     _LOGGER.add_handler(pdslogger.file_handler(path, level='warning'))
 
     _LOGGER.add_handler(pdslogger.STDOUT_HANDLER)
@@ -56,14 +56,13 @@ def task_source():
     Returns:
         None
     """
-    for task in task_list:
-        yield task
+    yield from task_list
 
 #==========================================================================
 def add_task(volume_id, index_type):
     """Add a task to the task file.
     Args:
-        volume_id (str): ID of volune to add.
+        volume_id (str): ID of volume to add.
     Returns:
         None
     """
@@ -87,7 +86,6 @@ def write_task_file(task_file):
         return
     with open(task_file, "w") as file:
         json.dump(task_list, file, indent=2)
-#    file.close()
 
 
 ##########################################################################################
@@ -149,7 +147,7 @@ def get_common_args(host=None, no_metadata=False):
 ##########################################################################################
 # Table class
 ##########################################################################################
-class Table(object):
+class Table():
     """Class describing a single table for a single volume.
     """
 
@@ -175,6 +173,7 @@ class Table(object):
                 template directory.
 
         """
+        self.template_path = None
         if template_path:
             self.template_path = FCPath(template_path)
         self.volume_id = volume_id
@@ -207,7 +206,7 @@ class Table(object):
         logger = get_logger()
 
         if not labels_only:
-            if self.rows == []:
+            if not self.rows:
                 return
 
             # Write table

@@ -40,8 +40,8 @@ from metadata_tools.index_support import process_index, get_args
 
 #========================================================================================
 def process_task(_task_id: str,
-                 task_data: dict[str, any],
-                 worker_data: WorkerData) -> tuple[bool, any]:
+                 task_data: dict[str, Any],
+                 worker_data: WorkerData) -> tuple[bool, Any]:
 
     # process the volume
     process_index(hconf.template_name,

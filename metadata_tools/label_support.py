@@ -40,7 +40,7 @@ def create(filepath, host_template_path,
     dir = filepath.parent
     body = filepath.stem
     label_path = dir / (body + '.lbl')
-    template_dir = host_template_path.parent
+    host_template_dir = host_template_path.parent
 
     # Get the volume id
     underscore = filename.index('_')
@@ -51,8 +51,8 @@ def create(filepath, host_template_path,
     if use_global_template:
         template_path = FCPath(defs.GLOBAL_TEMPLATE_PATH) / FCPath('%s.lbl' % body[underscore+6+offset:])
     else:
-        template_name = util.get_template_name(filename, volume_id, template_dir.parent)
-        template_path = template_dir / (template_name + '.lbl')
+        template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
+        template_path = host_template_dir / (template_name + '.lbl')
 
     # Default preprocessor
     preprocess = pds3_table_preprocessor
@@ -66,7 +66,7 @@ def create(filepath, host_template_path,
     # Generate label
     T = PdsTemplate(template_path, crlf=True,
                     preprocess=preprocess,
-                    includes=[defs.GLOBAL_TEMPLATE_PATH, template_dir],
+                    includes=[defs.GLOBAL_TEMPLATE_PATH, host_template_dir],
                     kwargs={'formats':True, 'numbers':True, 'validate':False})
     T.write(fields, label_path=label_path, mode='repair')
 

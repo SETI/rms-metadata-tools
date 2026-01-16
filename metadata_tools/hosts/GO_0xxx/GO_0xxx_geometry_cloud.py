@@ -24,8 +24,8 @@ from metadata_tools.geometry_support import process_tables, get_args
 
 #========================================================================================
 def process_task(_task_id: str,
-                 task_data: dict[str, any],
-                 worker_data: WorkerData) -> tuple[bool, any]:
+                 task_data: dict[str, Any],
+                 worker_data: WorkerData) -> tuple[bool, Any]:
 
     # process the volume
     process_tables(hconf.template_name,
@@ -45,7 +45,7 @@ async def main():
     # and most useful when running the worker locally.
 
     # parse metadata arguments
-    host, index_type, template_dir = util.parse_template_name(hconf.template_name)
+    host, _index_type, _template_dir = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host,
                       selection=config.selection,
                       exclude=config.exclude)

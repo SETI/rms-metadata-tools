@@ -3,6 +3,7 @@
 ################################################################################
 import fortranformat as ff
 import fnmatch
+import ast
 
 import metadata_tools.common as com
 import metadata_tools.util as util
@@ -399,8 +400,8 @@ class IndexTable(com.Table):
 
         # Validate the formatted value
         try:
-            _ = eval(result)
-        except Exception:
+            _ = ast.literal_eval(result)
+        except (ValueError, SyntaxError):
             logger.warning('Format error for %s: %s' % (name, value))
 
         return result

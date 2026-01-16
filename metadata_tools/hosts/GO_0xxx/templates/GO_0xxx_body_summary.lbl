@@ -37,7 +37,7 @@ OBJECT                          = BODY_SUMMARY_TABLE
     identified by the SYSTEM_NAME keyword (EARTH, VENUS, or JUPITER) whether
     or not it appears.
 
-$IF(TABLE_TYPE == 'CUMULATIVE')
+$IF(index_type == 'CUMULATIVE')
     This is the cumulative index, describing all the images in the collection.
 $ELSE
     This index describes the images found on volume $volume_id$.

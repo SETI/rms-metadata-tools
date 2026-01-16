@@ -126,7 +126,7 @@ ALT_FORMAT_DICT = {
     ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, '')}
 
 MISSION_TABLE = \
-    util.convert_mission_table(config.MISSION_TABLE)
+    util.convert_mission_table(config.MISSION_TABLE, config.SC)
 
 ################################################################################
 # Record class
@@ -962,10 +962,10 @@ class Record(object):
             # numeric values: flag common exceptions and use standard format
             if not isinstance(number, str):
                 if np.isnan(number):
-                    warnings.warn("NaN encountered")
+                    warnings.warn("NaN encountered", stacklevel=2)
                     number = null_value
                 if np.isinf(number):
-                    warnings.warn("infinity encountered")
+                    warnings.warn("infinity encountered", stacklevel=2)
                     number = null_value
                 if valid_minimum != valid_maximum:
                     if (number < valid_minimum) | (number > valid_maximum):
@@ -1047,7 +1047,7 @@ class Record(object):
                     Names of any selected bodies.
         """
         fail = ('', [], [], [])
-        sclk_ticks = util.sclk_to_ticks(sclk)
+        sclk_ticks = util.sclk_to_ticks(sclk, config.SC)
         for row in table:
             if self._obs_excluded(row[1]):
                 return fail
@@ -1576,7 +1576,7 @@ def process_tables(template_name,
     """
 
     # Parse arguments
-    host, index_type, template_dir = util.parse_template_name(template_name)
+    host, _index_type, template_dir = util.parse_template_name(template_name)
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
     if args is None:
         parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)

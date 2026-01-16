@@ -25,4 +25,6 @@ BODIES = get_bodies(defs.BODY_NAMES)
 #############################################
 column_files = list(defs.COLUMN_DIR.glob('COLUMNS_*.py'))
 for file in column_files:
-    exec(open(file.as_posix()).read())
+#    exec(open(file.as_posix()).read())
+    with open(file.as_posix()) as f:
+        exec(f.read())

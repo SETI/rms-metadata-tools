@@ -24,7 +24,7 @@ def PdsTable(label_path):
         pdstable.PdsTable: Table associated with the given label.
     """
     local_label_path = label_path.retrieve()
-    local_table_path = label_path.with_suffix('.tab').retrieve() # Retrieve table as well
+    _local_table_path = label_path.with_suffix('.tab').retrieve() # Retrieve table as well
     return pdstable.PdsTable(local_label_path)
 
 #===============================================================================
@@ -510,16 +510,18 @@ def sclk_format_count(fields, format):
     return count
 
 #===============================================================================
-def sclk_to_ticks(sclk):
+def sclk_to_ticks(sclk, sc):
     """Convert spacecraft clock count string to ticks.
 
     Args:
         sclk (list): Spacecraft clock count string.
+        sc (int): NAIF spacecraft identifier.
 
     Returns:
         int: Spacecraft clock ticks.
     """
-    return cspyce.sctiks_alias(-77, sclk)
+    return cspyce.    from IPython import embed; print('+++++++++++++'); embed()
+(sc, sclk)
 
 #===============================================================================
 def get_observation_id(observation):
@@ -534,11 +536,12 @@ def get_observation_id(observation):
     return str(observation.subfields['dict']['OBSERVATION_ID'])
 
 #===============================================================================
-def convert_mission_table(table):
+def convert_mission_table(table, sc):
     """Convert default bodies tables SCLK count string to ticks.
 
     Args:
         table (list): Systems table.
+        sc (int): NAIF spacecraft identifier.
 
     Returns:
         list: Converted mission table containing ticks instead of strings.
@@ -546,8 +549,8 @@ def convert_mission_table(table):
     new_table = []
     for item in table:
         new_table.append(
-            ((sclk_to_ticks(item[1][0]),
-              sclk_to_ticks(item[1][1])),
+            ((sclk_to_ticks(item[1][0], sc),
+              sclk_to_ticks(item[1][1], sc)),
               item[2], item[3], item[4], item[5], item[6]))
 
     return new_table

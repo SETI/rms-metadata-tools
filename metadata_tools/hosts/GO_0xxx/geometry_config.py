@@ -13,6 +13,7 @@ import metadata_tools.hosts.GO_0xxx.host_init
 ##########################################################################################
 # GO_0xxx arguments
 ##########################################################################################
+SC = -77
 index_glob = 'GO_????_index.lbl'
 selection = "S"
 exclude = ['GO_0999']
@@ -99,7 +100,7 @@ def except_test(observation):
         observation (oops.Observation): OOPS Observation object.
 
     Returns:
-        str: True if the observation should be an exception.
+        bool: True if the observation should be an exception.
     """
     return False
 
