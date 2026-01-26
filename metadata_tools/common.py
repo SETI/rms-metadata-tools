@@ -63,6 +63,8 @@ def add_task(volume_id, index_type):
     """Add a task to the task file.
     Args:
         volume_id (str): ID of volume to add.
+        index_type (str): 'index or 'geometry'.
+
     Returns:
         None
     """

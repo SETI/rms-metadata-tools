@@ -527,7 +527,7 @@ def get_observation_id(observation):
     """Utility function to determine the observation ID for an observation.
 
     Args:
-        observation (str): Observation object.
+        observation (oops.Observation): Observation object.
 
     Returns:
         str: Observation ID.
@@ -536,7 +536,7 @@ def get_observation_id(observation):
 
 #===============================================================================
 def convert_mission_table(table, sc):
-    """Convert default bodies tables SCLK count string to ticks.
+    """Convert mission table SCLK count string to ticks using sclk_to_ticks().
 
     Args:
         table (list): Systems table.
