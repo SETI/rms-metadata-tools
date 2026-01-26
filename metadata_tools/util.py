@@ -303,7 +303,7 @@ def expandvars(filespec):           ### add to FCPath?
     result = re.sub('<<token>>', '://', result)
 
     if isinstance(filespec, str):
-        return result.as_posix()
+        return result
     if isinstance(filespec, FCPath):
         return FCPath(result)
     return Path(result)
@@ -527,10 +527,10 @@ def get_observation_id(observation):
     """Utility function to determine the observation ID for an observation.
 
     Args:
-        observation_id (str): Observation ID.
+        observation (str): Observation object.
 
     Returns:
-        None.
+        str: Observation ID.
     """
     return str(observation.subfields['dict']['OBSERVATION_ID'])
 

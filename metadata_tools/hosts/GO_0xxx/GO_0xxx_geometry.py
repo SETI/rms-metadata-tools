@@ -7,13 +7,15 @@
 #                               [--selection selection] [--exclude [exclude ...]]
 #                               [--new_only [new_only ...]] [--first first]
 #                               [--sampling sampling]
-#                               input_tree output_tree [volume]
+#                               volume_tree metadata_tree output_tree [volume]
 #
 #    options:
 #      -h, --help            show this help message and exit
 #
 #    Common Arguments:
-#      input_tree            File path to the top to tree containing the volume
+#      volume_tree           File path to the top to tree containing the volume
+#                            files.
+#      metadata_tree         File path to the top to tree containing the metadata
 #                            files.
 #      output_tree           File path to the top to tree in which to place the
 #                            volume files.

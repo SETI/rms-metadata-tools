@@ -135,8 +135,7 @@ def get_common_args(host=None, no_metadata=False):
     gr.add_argument('volumes', type=str, nargs='*', metavar='volumes',
                     help='''If given, only these volumes are processed.''')
 
-    gr.add_argument('--labels', '-l', type=bool, metavar='labels',
-                    default=False,
+    gr.add_argument('--labels', '-l', action='store_true',
                     help='''If given, labels are generated for existing files.''')
     gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
                     help='''Glob pattern to select files.''')
@@ -147,7 +146,7 @@ def get_common_args(host=None, no_metadata=False):
 ##########################################################################################
 # Table class
 ##########################################################################################
-class Table():
+class Table:
     """Class describing a single table for a single volume.
     """
 
