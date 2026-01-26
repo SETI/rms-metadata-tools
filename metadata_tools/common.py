@@ -211,7 +211,7 @@ class Table:
                 return
 
             # Write table
-            logger.info("Writing:", self.filename)
+            logger.info("Writing: %s", self.filename)
             util.write_txt_file(self.filename, self.rows)
 
         # Write label

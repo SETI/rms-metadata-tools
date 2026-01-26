@@ -5,7 +5,7 @@ cd || exit 1
 git clone https://github.com/SETI/rms-metadata-tools.git || exit 1
 cd rms-metadata-tools || exit 1
 python3 -m venv venv
-source venv/bin/activate || echo 'No virtual environment' ; exit 1
+source venv/bin/activate || { echo 'No virtual environment' ; exit 1; }
 pip install -r requirements.txt
 cd metadata_tools/hosts/GO_0xxx || exit 1
 python3 GO_0xxx_geometry_cloud.py gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ \
