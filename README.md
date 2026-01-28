@@ -39,13 +39,13 @@ project-supplied index files are modified to produce the corrected index  files 
 can be used with the host from_index() method. The ``metadata-tools`` package is intended
 to produce supplemental index files, which add columns to the corrected index file.
 Supplemental index files are identical in structure to index files, so this package can
-generate any kind of index file. Supplemental index files can be provded as arguments to
+generate any kind of index file. Supplemental index files can be provided as arguments to
 from_index() to create a merged dictionary.
 
 Supplemental index files are used as input to OPUS, and are available via viewmaster to be
 downloaded by PDS users.
 
-Geometry files tabulate the values of geometrc quantites for each data file, which are
+Geometry files tabulate the values of geometric quantites for each data file, which are
 derived from SPICE using the information in the index file or from the PDS3 label using
 OOPS.  The purpose of the geometry files is to provide input to OPUS.
 
@@ -64,9 +64,9 @@ pip install rms-metadata-tools
 
 The procedure for generating metadata tables for a given collection is as follows:
 
- 1. Create the supplemental index using <collection>_index.py.
- 2. Create the geometry tables using <collection>_geometry.py.
- 3. Generate the cumulative tables using <collection>_cumulative.py.
+ 1. Create the supplemental index using \<collection\>_index.py.
+ 2. Create the geometry tables using \<collection\>_geometry.py.
+ 3. Generate the cumulative tables using \<collection\>_cumulative.py.
 
 
 # Generating New Metadata Tables
@@ -93,7 +93,7 @@ along with its desired formatting. This behavior may be overridden by adding a k
 to index_config.py of the form:
 
 ```python
-key__<NAME>(label_path, label_dict)
+key__\<NAME\>(label_path, label_dict)
 ```
 
 where label_path is the path to the PDS label, and label_dict is a dictionary containing the
