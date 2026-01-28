@@ -54,7 +54,6 @@ OOPS.  The purpose of the geometry files is to provide input to OPUS.
 # Installation
 
 <!--
-
 The `metadata-tools` module is available via the `rms-metadata-tools`[![image](https://raw.githubusercontent.com/SETI/rms-metadata-tools/main/icons/link.png)](https://pypi.org/project/rms-metadata-tools)
 package on PyPI and can be installed with:
 
@@ -62,6 +61,12 @@ package on PyPI and can be installed with:
 pip install rms-metadata-tools
 ```
 -->
+
+Clone the rms-metadata-tools repo, activate the venv, and install the dependencies:
+
+% git clone https://github.com/SETI/rms-metadata-tools.git
+% activate
+% pip install -r requirements.txt
 
 # Getting Started
 
