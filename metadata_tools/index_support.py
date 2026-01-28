@@ -4,6 +4,7 @@
 import fortranformat as ff
 import fnmatch
 import ast
+import argparse
 
 import metadata_tools.common as com
 import metadata_tools.util as util
@@ -69,7 +70,7 @@ class IndexTable(com.Table):
         s = ' '+qualifier if qualifier else ' primary'
         logger.info('New%s index for %s.' % (s, self.volume_id))
 
-        # If the index name is the same as the primary inxex name,
+        # If the index name is the same as the primary index name,
         # then this is the primary index.
         create_primary = index_name == primary_index_name
 
@@ -459,10 +460,20 @@ def get_args(host=None, index_type=None):
             Parser containing the argument specifications.
    """
 
-    # Get parser with common args
-    parser = com.get_common_args(host=host)
+    # Define parser
+    parser = argparse.ArgumentParser(
+                    description='Index file generation utility%s.'
+                                % ('' if not host else
+                                   ' for ' + host))
+    
+    parser.add_argument('volume_tree', type=str, metavar='volume_tree',
+                        help='''File path to the top of the tree containing the
+                                volume data files.''', action=com.PathAction)
 
-    # Add parser for index args
+    # Get common args
+    parser = com.get_common_args(parser)
+
+    # Add index args
     gr = parser.add_argument_group('Index Arguments')
     gr.add_argument('--type', '-t', type=str, metavar='type',
                     default=index_type,
@@ -485,14 +496,14 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 
     Args:
         volume_tree (str, Path, or FCPath):
-            Top of the directory tree containing the volume, specifically the data labels.
+            Top of the directory tree containing the volume, specifically the labels.
         output_tree (str, Path, or FCPath):
-            Top of the directory tree in which to to write the new index files. "Updated" 
+            Top of the directory tree in which to to write the new index files. Corrected 
             index files (e.g., <volume>_index.tab) are assumed to reside here unless
             metadata_tree is given.
         template_path (str, Path, or FCPath): Path to the host template.
         metadata_tree (str, Path, or FCPath, optional):
-            Top of the directory tree in which to find the "updated" index file (e.g.,
+            Top of the directory tree in which to find the corrected index file (e.g.,
             <volume>_index.tab).
         volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
         qualifier (str, optional):

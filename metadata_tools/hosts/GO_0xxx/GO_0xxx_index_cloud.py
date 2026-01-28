@@ -8,7 +8,7 @@
 # cloud_tasks arguments are accepted. For example:
 #
 #   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
-#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ $RMS_VOLUMES/GO_0xxx/ GO_0017 --num-simultaneous-tasks 12
+#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ $RMS_VOLUMES/GO_0xxx/ -v GO_0017 --num-simultaneous-tasks 12
 #
 # For GCP runs, use:
 #

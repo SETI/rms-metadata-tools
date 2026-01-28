@@ -7,30 +7,30 @@
 #                               [--selection selection] [--exclude [exclude ...]]
 #                               [--new_only [new_only ...]] [--first first]
 #                               [--sampling sampling]
-#                               volume_tree metadata_tree output_tree [volume]
+#                               metadata_tree output_tree [volume]
 #
 #    options:
 #      -h, --help            show this help message and exit
 #
 #    Common Arguments:
-#      volume_tree           File path to the top to tree containing the volume
-#                            files.
 #      metadata_tree         File path to the top to tree containing the metadata
-#                            files.
-#      output_tree           File path to the top to tree in which to place the
-#                            volume files.
+#                            files, specifically the corrected index files.
+#      output_tree           File path to the top to tree from which to read the
+#                            supplemental index files, and in which to place the new
+#                            geometry tables.
 #      volume                If given, only this volume is processed.
 #      --labels [labels ...], -l [labels ...]
 #                            If given, labels are generated for existing files.
 #
 #    Geometry Arguments:
 #      --selection selection
-#                            A string containing: "S" to generate summary files;
-#                            "D" to generate detailed files.
+#                            A string containing:
+#                               "S" to generate summary files;
+#                               "D" to generate detailed files. (Not currently tested)
 #      --exclude [exclude ...], -e [exclude ...]
 #                            List of volumes to exclude.
 #      --new_only [new_only ...], -n [new_only ...]
-#                            Only volumes that contain no output files are
+#                            Only metadata volumes that contain no output files are
 #                            processed.
 #      --first first, -f first
 #                            If given, at most this many input files are processed
@@ -38,9 +38,9 @@
 #      --sampling sampling, -s sampling
 #                            Pixel sampling density.
 #
-#   e.g., python3 GO_0xxx_geometry.py $RMS_METADATA_TEST/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
-#         python3 GO_0xxx_geometry.py $RMS_METADATA_TEST/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ GO_0017
-#         python3 GO_0xxx_geometry.py $RMS_METADATA_TEST/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -p *C0349605600R*
+#   e.g., python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
+#         python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -v GO_0017
+#         python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -p *C0349605600R*
 #
 ##########################################################################################
 import host_init

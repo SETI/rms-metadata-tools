@@ -2,6 +2,7 @@
 # geometry_support.py - Tools for generating geometry tables.
 ################################################################################
 import re
+import argparse
 import oops
 import julian
 import numpy as np
@@ -1518,10 +1519,16 @@ def get_args(host=None, selection=None, exclude=None, sampling=8):
             Parser containing the argument specifications.
     """
 
-    # Get parser with common args
-    parser = com.get_common_args(host=host)
+    # Define parser
+    parser = argparse.ArgumentParser(
+                    description='Geometry table generation utility%s.'
+                                % ('' if not host else
+                                   ' for ' + host))
 
-    # Add parser for index args
+    # Add common args
+    parser = com.get_common_args(parser)
+
+    # Add geometry args
     gr = parser.add_argument_group('Geometry Arguments')
     gr.add_argument('--selection', type=str, metavar='selection',
                     default=selection,
@@ -1585,7 +1592,8 @@ def process_tables(template_name,
         parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
         args = parser.parse_args()
 
-    volume_tree = FCPath(args.volume_tree)
+#    volume_tree = FCPath(args.volume_tree)
+#    volume_tree = FCPath(args.output_tree)
     metadata_tree = FCPath(args.metadata_tree)
     output_tree = FCPath(args.output_tree)
     new_only = args.new_only is not False
@@ -1598,10 +1606,10 @@ def process_tables(template_name,
         new_only = False
 
     # Build volume glob
-    vol_glob = util.get_volume_glob(volume_tree.name)
+    vol_glob = util.get_volume_glob(output_tree.name)
 
     # Walk the volume tree, making indexes for each found volume
-    for root, dirs, _files in volume_tree.walk():
+    for root, dirs, _files in output_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue

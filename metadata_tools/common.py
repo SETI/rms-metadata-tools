@@ -94,39 +94,36 @@ def write_task_file(task_file):
 # Argument parser
 ##########################################################################################
 
+##########################################################################################
+# PathAction class
+##########################################################################################
+class PathAction(argparse.Action):
+    """Action method for path arguments.
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        if isinstance(values, list):
+            values = values[0]
+        vals = re.sub('://', '<<token>>', values)
+        vals = re.sub('//*', '/', vals)
+        vals = re.sub('<<token>>', '://', vals)
+        setattr(namespace, self.dest, vals)
+
 #=========================================================================================
-def get_common_args(host=None, no_metadata=False):
+def get_common_args(parser, no_metadata=False):
     """Common argument parser for metadata tools.
 
         Args:
-            host (str): Host name e.g. 'GO_0xxx'.
+            parser (argparse.Parser): Parser create by argparse.ArgumentParser().
             no_metadata (bool): If True, metadata_tree is not is not needed.
 
          Returns:
             argparser.ArgumentParser :
                 Parser containing the common argument specifications.
    """
-    # Action method for path arguments
-    class PathAction(argparse.Action):
-        def __call__(self, parser, namespace, values, option_string=None):
-            if isinstance(values, list):
-                values = values[0]
-            vals = re.sub('://', '<<token>>', values)
-            vals = re.sub('//*', '/', vals)
-            vals = re.sub('<<token>>', '://', vals)
-            setattr(namespace, self.dest, vals)
-
-    # Define parser
-    parser = argparse.ArgumentParser(
-                    description='Metadata generation utility%s.'
-                                % ('' if not host else
-                                   ' for ' + host))
 
     # Generate parser
     gr = parser.add_argument_group('Common Arguments')
-    gr.add_argument('volume_tree', type=str, metavar='volume_tree',
-                    help='''File path to the top of the tree containing the
-                            volume files.''', action=PathAction)
+
     if not no_metadata:
         gr.add_argument('metadata_tree', type=str, metavar='metadata_tree',
                         help='''File path to the top of the tree containing the
@@ -134,9 +131,9 @@ def get_common_args(host=None, no_metadata=False):
     gr.add_argument('output_tree', type=str, metavar='output_tree',
                     help='''File path to the top of the tree in which to place the
                             new files.''', action=PathAction)
-    gr.add_argument('volumes', type=str, nargs='*', metavar='volumes',
-                    help='''If given, only these volumes are processed.''')
 
+    gr.add_argument('--volumes', '-v', type=str, metavar='volumes',
+                    help='''If given, only these volumes are processed.''')
     gr.add_argument('--labels', '-l', action='store_true',
                     help='''If given, labels are generated for existing files.''')
     gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
