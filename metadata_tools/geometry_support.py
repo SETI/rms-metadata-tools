@@ -950,7 +950,7 @@ class Record(object):
             else:
                 results = [values.min().as_builtin(), values.max().as_builtin()]
         else:
-            results = values
+            results = [values]
 
         # Convert results to ISO
         if flag in ("ISO", "iso"):
@@ -1592,8 +1592,6 @@ def process_tables(template_name,
         parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
         args = parser.parse_args()
 
-#    volume_tree = FCPath(args.volume_tree)
-#    volume_tree = FCPath(args.output_tree)
     metadata_tree = FCPath(args.metadata_tree)
     output_tree = FCPath(args.output_tree)
     new_only = args.new_only is not False

@@ -132,7 +132,7 @@ def get_common_args(parser, no_metadata=False):
                     help='''File path to the top of the tree in which to place the
                             new files.''', action=PathAction)
 
-    gr.add_argument('--volumes', '-v', type=str, metavar='volumes',
+    gr.add_argument('--volumes', '-v', type=str, metavar='volumes', nargs='*',
                     help='''If given, only these volumes are processed.''')
     gr.add_argument('--labels', '-l', action='store_true',
                     help='''If given, labels are generated for existing files.''')

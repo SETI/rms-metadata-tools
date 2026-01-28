@@ -7,7 +7,7 @@
 #                               [--selection selection] [--exclude [exclude ...]]
 #                               [--new_only [new_only ...]] [--first first]
 #                               [--sampling sampling]
-#                               metadata_tree output_tree [volume]
+#                               metadata_tree output_tree
 #
 #    options:
 #      -h, --help            show this help message and exit
@@ -18,7 +18,8 @@
 #      output_tree           File path to the top to tree from which to read the
 #                            supplemental index files, and in which to place the new
 #                            geometry tables.
-#      volume                If given, only this volume is processed.
+#      --volumes [volumes, ...], -v [volumes, ...]
+#                            If given, only these volumes are processed.
 #      --labels [labels ...], -l [labels ...]
 #                            If given, labels are generated for existing files.
 #

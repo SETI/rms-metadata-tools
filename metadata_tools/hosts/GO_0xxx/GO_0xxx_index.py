@@ -4,7 +4,7 @@
 #
 # Usage:
 #    python GO_0xxx_index.py [-h] [--labels [labels ...]] [--type type]
-#                            volume_tree metadata_tree output_tree [volume]
+#                            volume_tree metadata_tree output_tree
 #
 #    options:
 #      -h, --help            show this help message and exit
@@ -16,7 +16,8 @@
 #                            files, specifically the corrected index files.
 #      output_tree           File path to the top to tree in which to place the
 #                            new supplemental files.
-#      volume                If given, only this volume is processed.
+#      --volumes [volumes, ...], -v [volumes, ...]
+#                            If given, only these volumes are processed.
 #      --labels [labels ...], -l [labels ...]
 #                          If given, labels are generated for existing files.
 #    Index Arguments:
