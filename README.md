@@ -45,7 +45,7 @@ from_index() to create a merged dictionary.
 Supplemental index files are used as input to OPUS, and are available via viewmaster to be
 downloaded by PDS users.
 
-Geometry files tabulate the values of geometric quantites for each data file, which are
+Geometry files tabulate the values of geometric quantities for each data file, which are
 derived from SPICE using the information in the index file or from the PDS3 label using
 OOPS.  The purpose of the geometry files is to provide input to OPUS.
 
@@ -53,12 +53,15 @@ OOPS.  The purpose of the geometry files is to provide input to OPUS.
 
 # Installation
 
+<!--
+
 The `metadata-tools` module is available via the `rms-metadata-tools`[![image](https://raw.githubusercontent.com/SETI/rms-metadata-tools/main/icons/link.png)](https://pypi.org/project/rms-metadata-tools)
 package on PyPI and can be installed with:
 
 ```sh
 pip install rms-metadata-tools
 ```
+-->
 
 # Getting Started
 
@@ -93,17 +96,17 @@ along with its desired formatting. This behavior may be overridden by adding a k
 to index_config.py of the form:
 
 ```python
-key__\<NAME\>(label_path, label_dict)
+key__<NAME>(label_path, label_dict)
 ```
 
 where label_path is the path to the PDS label, and label_dict is a dictionary containing the
-PDS label fields. The returned value is placed in the table.
+PDS label fields. The returned value is placed in the index file.
 
 Modifying the geometry tables requires editing of the column definition and format tables,
 and may require the addition of new backplane functions.
 
 To add a new geometry column:
-   1. Add a column definition to column definition file, e.g. COLUMNS_BODY.py.
+   1. Add a column definition to the column definition file, e.g. COLUMNS_BODY.py.
    2. Add a corresponding function to appropriate backplane module.
    3. Add a row to the format dictionary in geometry_support.py.
    4. Add column description(s) to the label template, e.g., body_summary.lbl.

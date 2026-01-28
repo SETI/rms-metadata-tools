@@ -95,7 +95,6 @@ FORMAT_DICT = {
     "sub_observer_latitude"     : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90, 0, ''),
 
     "limb_altitude"             : ("",    2, 12, "%12.3f", "%12.5e", -99999., 0, 0, 0, ''),
-#    "limb_clock_angle"          : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
     "limb_clock_angle"          : ("360", 2,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
 
     "pole_clock_angle"          : ("DEG", 1,  8, "%8.3f",  None,     -999., 0, 360, 0, ''),
