@@ -64,9 +64,11 @@ pip install rms-metadata-tools
 
 Clone the rms-metadata-tools repo, activate the venv, and install the dependencies:
 
+```sh
 % git clone https://github.com/SETI/rms-metadata-tools.git
 % activate
 % pip install -r requirements.txt
+```
 
 # Getting Started
 
