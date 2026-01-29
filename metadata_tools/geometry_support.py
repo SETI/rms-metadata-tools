@@ -2,7 +2,6 @@
 # geometry_support.py - Tools for generating geometry tables.
 ################################################################################
 import re
-import argparse
 import oops
 import julian
 import numpy as np
@@ -391,8 +390,9 @@ class Record(object):
             for i in range(len(ii)):
                 val = data_columns[ii[i]]
                 if float(val) == link['null_value']:
-                    for i in range(len(ii)):
-                        data_columns[ii[i]] = val
+                    for j in range(len(ii)):
+                        data_columns[ii[j]] = val
+                    break
 
             return data_columns
 

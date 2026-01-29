@@ -104,7 +104,7 @@ class PathAction(argparse.Action):
         if isinstance(values, list):
             values = values[0]
         vals = re.sub('://', '<<token>>', values)
-        vals = re.sub('//*', '/', vals)
+        vals = re.sub('/+', '/', vals)
         vals = re.sub('<<token>>', '://', vals)
         setattr(namespace, self.dest, vals)
 

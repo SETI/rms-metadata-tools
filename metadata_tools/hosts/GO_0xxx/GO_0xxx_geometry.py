@@ -43,7 +43,7 @@
 #         python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -p *C0349605600R*
 #
 ##########################################################################################
-import host_init    # noqa: F401 (imported for side effects)
+import host_init    # imported for side effects
 import metadata_tools.geometry_support as geom
 import geometry_config as config
 

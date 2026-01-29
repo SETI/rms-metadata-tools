@@ -4,7 +4,6 @@
 import fortranformat as ff
 import fnmatch
 import ast
-import argparse
 
 import metadata_tools.common as com
 import metadata_tools.util as util
@@ -462,7 +461,7 @@ def get_args(host=None, index_type=None):
 
     # Get common args
     parser = com.get_common_args(host=host)
-    
+
     # Add index args
     gr = parser.add_argument_group('Index Arguments')
     gr.add_argument('--type', '-t', type=str, metavar='type',

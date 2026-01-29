@@ -25,7 +25,7 @@
 #         python3 GO_0xxx_cumulative.py $RMS_METADATA/GO_0xxx/GO_0999/ -vv GO_0017
 #
 ##########################################################################################
-import host_init
+import host_init    # imported for side effects
 import metadata_tools.cumulative_support as cml
 
 cml.create_cumulative_indexes('GO_0xxx_supplemental_index',
