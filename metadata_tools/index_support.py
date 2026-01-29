@@ -460,19 +460,9 @@ def get_args(host=None, index_type=None):
             Parser containing the argument specifications.
    """
 
-    # Define parser
-    parser = argparse.ArgumentParser(
-                    description='Index file generation utility%s.'
-                                % ('' if not host else
-                                   ' for ' + host))
-    
-    parser.add_argument('volume_tree', type=str, metavar='volume_tree',
-                        help='''File path to the top of the tree containing the
-                                volume data files.''', action=com.PathAction)
-
     # Get common args
-    parser = com.get_common_args(parser)
-
+    parser = com.get_common_args(host=host)
+    
     # Add index args
     gr = parser.add_argument_group('Index Arguments')
     gr.add_argument('--type', '-t', type=str, metavar='type',

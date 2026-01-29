@@ -3,7 +3,7 @@
 # GO_0xxx_geometry.py: Generates all geometry tables and labels for Galileo SSI.
 #
 # Usage:
-#    python GO_0xxx_geometry.py [-h] [--labels [labels ...]]
+#    python GO_0xxx_geometry.py [-h] [--labels [labels ...]] [--volumes [volumes ...]
 #                               [--selection selection] [--exclude [exclude ...]]
 #                               [--new_only [new_only ...]] [--first first]
 #                               [--sampling sampling]
@@ -13,12 +13,11 @@
 #      -h, --help            show this help message and exit
 #
 #    Common Arguments:
-#      metadata_tree         File path to the top to tree containing the metadata
-#                            files, specifically the corrected index files.
-#      output_tree           File path to the top to tree from which to read the
-#                            supplemental index files, and in which to place the new
-#                            geometry tables.
-#      --volumes [volumes, ...], -v [volumes, ...]
+#      metadata_tree         Path to the top to tree containing the metadata files,
+#                            specifically the corrected index files.
+#      output_tree           Path to the top to tree from which to read the supplemental
+#                            index files, and in which to place the new geometry tables.
+#      --volumes [volumes, ...], -vv [volumes, ...]
 #                            If given, only these volumes are processed.
 #      --labels [labels ...], -l [labels ...]
 #                            If given, labels are generated for existing files.
@@ -40,11 +39,11 @@
 #                            Pixel sampling density.
 #
 #   e.g., python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
-#         python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -v GO_0017
+#         python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
 #         python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -p *C0349605600R*
 #
 ##########################################################################################
-import host_init
+import host_init    # noqa: F401 (imported for side effects)
 import metadata_tools.geometry_support as geom
 import geometry_config as config
 

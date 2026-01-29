@@ -8,24 +8,24 @@
 # cloud_tasks arguments are accepted. For example:
 #
 #   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
-#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ $RMS_VOLUMES/GO_0xxx/ -v GO_0017 --num-simultaneous-tasks 12
+#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ $RMS_VOLUMES/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
 #
-# For GCP runs, use:
-#
+# For GCP runs (not yet working), use:
 #   gcloud auth application-default login       # if necessary
-###   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json
 #
 #   cloud_tasks load_queue --config gcp_index_config.yml --task-file index_tasks.json -vv
 #   cloud_tasks manage_pool --config gcp_index_config.yml -vv
-#   cloud_tasks monitor_event_queue --config gcp_index_config.yml --output-file gcp_index_config.log
 #
-#   cloud_tasks stop --config gcp_index_config.yml
-#   cloud_tasks purge_queue --config gcp_index_config.yml
-#   cloud_tasks delete_queue --config gcp_index_config.yml
+#   Other useful commands
+#     cloud_tasks monitor_event_queue --config gcp_index_config.yml --output-file gcp_index_config.log
 #
-#   cloud_tasks show_queue --project-id rms-metadata --job-id metadata-index-job --provider gcp --detail
-#   cloud_tasks status --project-id rms-metadata --job-id metadata-index-job --provider gcp
-#   cloud_tasks list_running_instances --project-id rms-metadata --job-id metadata-index-job --provider gcp
+#     cloud_tasks stop --config gcp_index_config.yml
+#     cloud_tasks purge_queue --config gcp_index_config.yml
+#     cloud_tasks delete_queue --config gcp_index_config.yml
+#
+#     cloud_tasks show_queue --project-id rms-metadata --job-id metadata-index-job --provider gcp --detail
+#     cloud_tasks status --project-id rms-metadata --job-id metadata-index-job --provider gcp
+#     cloud_tasks list_running_instances --project-id rms-metadata --job-id metadata-index-job --provider gcp
 #
 #########################################################################################
 import asyncio

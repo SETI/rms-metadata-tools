@@ -105,11 +105,14 @@ def get_args(host=None, exclude=None):
             Parser containing the argument specifications.
     """
 
-    # Get parser with common args
-    parser = com.get_common_args(host=host, no_metadata=True)
+    # Get common args
+    parser = com.get_common_args(host=host, volume_arg=None, 
+                                            metadata_arg=None, 
+                                            output_arg='output_dir')
 
-    # Add parser for index args
+    # Add cumulative args
     gr = parser.add_argument_group('Cumulative Arguments')
+
     gr.add_argument('--exclude', '-e', nargs='*', type=str, metavar='exclude',
                     default=exclude,
                     help='''List of volumes to exclude.''')
@@ -131,8 +134,9 @@ def create_cumulative_indexes(template_name, exclude=None):
     args = parser.parse_args()
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
 
-    volume_tree = FCPath(args.volume_tree)
-    cumulative_dir = FCPath(args.output_tree)
+#    volume_tree = FCPath(args.volume_tree)
+    cumulative_dir = FCPath(args.output_dir)
+    volume_tree = cumulative_dir.parent
     volumes = args.volumes
 
     # Set logger

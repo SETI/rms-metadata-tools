@@ -1,14 +1,31 @@
 #!/usr/bin/env python
 #########################################################################################
 # GO_0xxx_geometry_cloud.py:
-#   Generates all geometry tables and labels for Galileo SSI using the cloud_tasks module.
+#   Generate supplemental geometry tables and labels for Galileo SSI using the cloud_tasks
+#   module.
 #
 # For local runs, the basic usage is identical to GO_0xxx_geometry.py. In addition, all
 # cloud_tasks arguments are accepted. For example:
 #
-#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -v GO_0022 --num-simultaneous-tasks 12 --max-runtime 10000
+#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
+#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ $RMS_VOLUMES/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
 #
+# For GCP runs (not yet working), use:
+#   gcloud auth application-default login       # if necessary
 #
+#   cloud_tasks load_queue --config gcp_geometry_config.yml --task-file geometry_tasks.json -vv
+#   cloud_tasks manage_pool --config gcp_geometry_config.yml -vv
+#
+#   Other useful commands
+#     cloud_tasks monitor_event_queue --config gcp_geometry_config.yml --output-file gcp_geometry_config.log
+#
+#     cloud_tasks stop --config gcp_geometry_config.yml
+#     cloud_tasks purge_queue --config gcp_geometry_config.yml
+#     cloud_tasks delete_queue --config gcp_geometry_config.yml
+#
+#     cloud_tasks show_queue --project-id rms-metadata --job-id metadata-geometry-job --provider gcp --detail
+#     cloud_tasks status --project-id rms-metadata --job-id metadata-geometry-job --provider gcp
+#     cloud_tasks list_running_instances --project-id rms-metadata --job-id metadata-geometry-job --provider gcp
 #
 #########################################################################################
 import asyncio

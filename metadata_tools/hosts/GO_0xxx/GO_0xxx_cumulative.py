@@ -3,19 +3,17 @@
 # GO_0xxx_cumulative.py: Generate cumulative files and labels for Galileo SSI.
 #
 # Usage:
-#    GO_0xxx_cumulative.py [-h] [--labels [labels ...]]
+#    GO_0xxx_cumulative.py [-h] [--labels [labels ...]] [--volumes [volumes ...]
 #                          [--exclude [exclude ...]]
-#                          input_tree output_tree [volume]
+#                          output_dir
 #
 #    options:
 #      -h, --help            show this help message and exit
 #
 #    Common Arguments:
-#      input_tree            File path to the top to tree containing the volume
-#                            files.
-#      output_tree           File path to the top to tree in which to place the
-#                            volume files.
-#      volume                If given, only this volume is processed.
+#      output_dir            Directory in which to place the cumulative files.
+#      --volumes [volumes, ...], -vv [volumes, ...]
+#                            If given, only these volumes are processed.
 #      --labels [labels ...], -l [labels ...]
 #                            If given, labels are generated for existing files.
 #
@@ -23,8 +21,8 @@
 #      --exclude [exclude ...], -e [exclude ...]
 #                            List of volumes to exclude.
 #
-#   e.g., python3 GO_0xxx_cumulative.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA/GO_0xxx/GO_0999/
-#         python3 GO_0xxx_cumulative.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA/GO_0xxx/GO_0999/ GO_0017
+#   e.g., python3 GO_0xxx_cumulative.py $RMS_METADATA/GO_0xxx/GO_0999/
+#         python3 GO_0xxx_cumulative.py $RMS_METADATA/GO_0xxx/GO_0999/ -vv GO_0017
 #
 ##########################################################################################
 import host_init

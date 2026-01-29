@@ -1518,14 +1518,8 @@ def get_args(host=None, selection=None, exclude=None, sampling=8):
             Parser containing the argument specifications.
     """
 
-    # Define parser
-    parser = argparse.ArgumentParser(
-                    description='Geometry table generation utility%s.'
-                                % ('' if not host else
-                                   ' for ' + host))
-
-    # Add common args
-    parser = com.get_common_args(parser)
+    # Get common args
+    parser = com.get_common_args(host=host, volume_arg=None)
 
     # Add geometry args
     gr = parser.add_argument_group('Geometry Arguments')

@@ -109,30 +109,44 @@ class PathAction(argparse.Action):
         setattr(namespace, self.dest, vals)
 
 #=========================================================================================
-def get_common_args(parser, no_metadata=False):
+def get_common_args(host=None,
+                    volume_arg='volume_tree', 
+                    metadata_arg='metadata_tree', 
+                    output_arg='output_tree'):
     """Common argument parser for metadata tools.
 
         Args:
-            parser (argparse.Parser): Parser create by argparse.ArgumentParser().
-            no_metadata (bool): If True, metadata_tree is not is not needed.
+            host (str): Host name, e.g. 'GOISS'.
+            volume_arg (str): Name of volume_tree arg or None to skip this argument.
+            metadata_arg (str): Name of volume_tree arg or None to skip this argument.
+            output_arg (bostrl): Name of volume_tree arg or None to skip this argument.
 
          Returns:
             argparser.ArgumentParser :
                 Parser containing the common argument specifications.
    """
 
-    # Generate parser
+    # Define parser
+    parser = argparse.ArgumentParser(
+                    description='Metadata table generation utility%s.'
+                                % ('' if not host else
+                                   ' for ' + host))
     gr = parser.add_argument_group('Common Arguments')
 
-    if not no_metadata:
-        gr.add_argument('metadata_tree', type=str, metavar='metadata_tree',
-                        help='''File path to the top of the tree containing the
+    if volume_arg:
+        parser.add_argument(volume_arg, type=str, metavar=volume_arg,
+                            help='''Path to the top of the tree containing the
+                                    volume data files.''', action=PathAction)
+    if metadata_arg:
+        gr.add_argument(metadata_arg, type=str, metavar=metadata_arg,
+                        help='''Path to the top of the tree containing the
                                 metadata files.''', action=PathAction)
-    gr.add_argument('output_tree', type=str, metavar='output_tree',
-                    help='''File path to the top of the tree in which to place the
-                            new files.''', action=PathAction)
+    if output_arg:
+        gr.add_argument(output_arg, type=str, metavar=output_arg,
+                        help='''Path to the top of the tree in which to place the
+                                new files.''', action=PathAction)
 
-    gr.add_argument('--volumes', '-v', type=str, metavar='volumes', nargs='*',
+    gr.add_argument('--volumes', '-vv', type=str, metavar='volumes', nargs='*',
                     help='''If given, only these volumes are processed.''')
     gr.add_argument('--labels', '-l', action='store_true',
                     help='''If given, labels are generated for existing files.''')
