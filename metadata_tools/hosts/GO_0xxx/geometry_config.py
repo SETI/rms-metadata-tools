@@ -1,5 +1,5 @@
 ##########################################################################################
-# host_config.py for GLL SSI
+# geometry_config.py for GLL SSI
 #
 #  Host-specific definitions and utilites for geometry file generation.
 #
@@ -11,22 +11,108 @@ import metadata_tools.hosts.GO_0xxx.host_init
 
 
 ##########################################################################################
-# SCLK-dependent mission-specific data (required)
+# GO_0xxx arguments
 ##########################################################################################
-# SYSTEM and SECONDARIES are always included in the body table regardless of whether they
-# intersect the FOV.
-#      SCLK_START range (inclusive)   PRIMARY   SECONDARIES
-DEFAULT_BODIES_TABLE = [
-    (('00180626.00', '00190641.00'), 'VENUS',   []),
-    (('00597197.00', '00623035.00'), 'EARTH',   []),
-    (('01645330.00', '01663247.00'), 'EARTH',   []),
-    (('01973272.00', '06475387.00'), 'JUPITER', [])]
+SC = -77
+index_glob = 'GO_????_index.lbl'
+selection = "S"
+exclude = ['GO_0999']
+glob = 'C0*.LBL'
+#glob = 'C0*[!G].LBL'
 
 
+##########################################################################################
+# MISSION TABLE:
+#
+#  Only SCLK ranges for which arguments are required need to be included in the table.
+#  Observations whose SCLK ranges are not in the mission table appear in the body table
+#  only if they have a target, as per rules 4 and 5 below. Observations that match any
+#  EXCEPTION are excluded from the SCLK range, i.e., the SCLK test is bypassed.
+#
+#  EXCEPTIONS may be either regular expressions to be matched against the OBSERVATION_ID
+#  or functions declared below that take the OOPS observation as an argument and return
+#  True or False.
+#
+#  RULES:
+#   1. The primary and secondary bodies, if specified, are always included.
+#   2. Children of the primary are included if they intersect the FOV. If
+#      there are selections, then only the selected children are considered.
+#   3. If there is no primary, all selections that intersect the FOV are included.
+#   4. The target is always included.
+#   5. If the target is a satellite, the parent is included.
+#   6. Additions are included whenever they intersect the FOV, regardless of the primary.
+#
+##########################################################################################
+EXCEPTIONS = [r'.*XCAL',
+              r'.*LCAL',
+              r'.*GOPX',
+              r'.*_CALIB',
+              r'.*____HTMC',
+              r'PHOCAL.*',
+              r'STRCAL.*',
+              r'.*CHECKOUT']
+MISSION_TABLE = [
+#   PHASE   |   SCLK_STARTs  |  EXCEPTIONS | PRIMARY | SECONDARIES | SELECTIONS | ADDITIONS
+#--------------------------------------------------------------------------------------------------------------
+  ('VENUS   ', ('00180626.00',
+                '00190641.00'), EXCEPTIONS, 'VENUS',   [],           [],           []),
+  ('EARTH I ', ('00609593.00',
+                '00623035.00'), EXCEPTIONS, 'EARTH',   [],           ['EARTH',
+                                                                      'MOON'],     []),
+  ('EARTH II', ('01645330.00',
+                '01654708.45'), EXCEPTIONS, 'EARTH',   [],           ['EARTH',
+                                                                      'MOON'],     []),
+  ('EMCONJ  ', ('01662361.00',
+                '01663187.00'), EXCEPTIONS, '',        ['EARTH',
+                                                        'MOON'],
+                                                                     ['EARTH',
+                                                                      'MOON'],     []),
+  ('SL9     ', ('02488066.45',
+                '02492218.00'), EXCEPTIONS, 'JUPITER', ['IO',
+                                                        'EUROPA',
+                                                        'GANYMEDE',
+                                                        'CALLISTO'],
+                                                                     ['IO',
+                                                                      'EUROPA',
+                                                                      'GANYMEDE',
+                                                                      'CALLISTO'],
+                                                                                   []),
+  ('JUPITER ', ('03464059.00',
+                '06475387.00'), EXCEPTIONS, 'JUPITER', [],           ['IO',
+                                                                      'EUROPA',
+                                                                      'GANYMEDE',
+                                                                      'CALLISTO',
+                                                                      'METIS',
+                                                                      'ADRASTEA',
+                                                                      'AMALTHEA',
+                                                                      'THEBE'],
+                                                                                   ['SATURN'])]
+
+##########################################################################################
+# Exception functions
+##########################################################################################
+
+#=========================================================================================
+def except_test(observation):
+    """Mission table exception function template.
+
+    Args:
+        observation (oops.Observation): OOPS Observation object.
+
+    Returns:
+        bool: True if the observation should be an exception.
+    """
+    return False
+
+
+##########################################################################################
+# Mission-specific data (required)
+##########################################################################################
 BORDER = 25                  # in units of full-size SSI pixels
 NAC_PIXEL = 6.0e-6           # approximate full-size SSI pixel in units of radians
 EXPAND = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians
 from_index = ssi.from_index
+
 
 ##########################################################################################
 # Meshgrid functions (required)
@@ -36,6 +122,7 @@ from_index = ssi.from_index
 def meshgrids(sampling):
 
     MODE_SIZES  = {"FULL": 1,
+                   "NONE":  1,
                    "HMA":  1,
                    "HIM":  1,
                    "IM8":  1,
@@ -119,22 +206,23 @@ def target_name(dict):
 
     return dict["TARGET_NAME"]
 
-    target = dict["TARGET_NAME"]
-    if target != "SKY":
-        return target
-
-    id = dict["OBSERVATION_ID"]
-    abbrev = id[id.index("_"):][4:6]
-
-    if abbrev == "SK":
-        desc = dict["TARGET_DESC"]
-        if desc in defs.BODY_NAMES:
-            return desc
-
-    try:
-        return col.CIMS_TARGET_ABBREVIATIONS[abbrev]
-    except KeyError:
-        return target
+# Leaving this here for when we implemnt Cassini ISS metadata....
+#    target = dict["TARGET_NAME"]
+#    if target != "SKY":
+#        return target
+#
+#    id = dict["OBSERVATION_ID"]
+#    abbrev = id[id.index("_"):][4:6]
+#
+#    if abbrev == "SK":
+#        desc = dict["TARGET_DESC"]
+#        if desc in defs.BODY_NAMES:
+#            return desc
+#
+#    try:
+#        return col.CIMS_TARGET_ABBREVIATIONS[abbrev]
+#    except KeyError:
+#        return target
 
 #=========================================================================================
 def cleanup():

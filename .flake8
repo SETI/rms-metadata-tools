@@ -32,8 +32,9 @@ extend-ignore =
     # E261 At least two spaces before inline comment
     # E262 Inline comment should start with '# '
     # E265 Block comment should start with '# '
+    # E401 multiple imports on one line
     # F401 module imported but unused
-    E302, E122, E127, E261, E262, E265, F401
+    E302, E122, E127, E261, E262, E265, E401, F401
 
 
 per-file-ignores =
@@ -41,11 +42,11 @@ per-file-ignores =
     # -> NINETY_PERCENT_RANGE_DEGREES table triggers this one
     metadata_tools/util.py: E131
 
-    # E401 module imported but unused
+    # F401 module imported but unused
     # -> metadata_tools.columns initializes the columns
     # E402 Module level import not at top of file
     # -> host must be initialized before metadata_tools.columns import
-    metadata_tools/hosts/GO_0xxx/host_init.py: E401, E402
+    metadata_tools/hosts/GO_0xxx/host_init.py: F401, E402
 
     # F821 undefined name
     # -> NINETY_PERCENT_RANGE_DEGREES table triggers this one

@@ -18,7 +18,6 @@ def get_bodies(body_names):
         bodies += bod.select_children("REGULAR")
     return {body.name: body for body in bodies}
 
-
 BODIES = get_bodies(defs.BODY_NAMES)
 
 #############################################
@@ -26,4 +25,5 @@ BODIES = get_bodies(defs.BODY_NAMES)
 #############################################
 column_files = list(defs.COLUMN_DIR.glob('COLUMNS_*.py'))
 for file in column_files:
-    exec(open(file).read())
+    with open(file.as_posix()) as f:
+        exec(f.read())

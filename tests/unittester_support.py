@@ -79,6 +79,7 @@ def bounds(test, file, table, key, min=0, max=360, minmax=True):
         nullval = nullvals.pop()
 
     val = table.column_values[key]
+
     test.assertFalse(np.any(np.where(
         np.logical_and(
             np.logical_or(val < min, val > max), val != nullval))), (key, file))

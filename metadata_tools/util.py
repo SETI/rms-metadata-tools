@@ -4,12 +4,44 @@
 import os
 import re
 import numpy as np
+import cspyce
 
+import pdstable
 from pathlib   import Path
 from filecache import FCPath
 
 import metadata_tools.defs as defs
 
+#===============================================================================
+def PdsTable(label_path):
+    """read a pds3table from an FCPath object.  To be replaced whenever pdstable is 
+       upgraded to use filecache.
+
+    Args:
+        label_path (str, Path, or FCPath): Path to the label file.
+
+    Returns:
+        pdstable.PdsTable: Table associated with the given label.
+    """
+    local_label_path = label_path.retrieve()
+    _local_table_path = label_path.with_suffix('.tab').retrieve() # Retrieve table as well
+    return pdstable.PdsTable(local_label_path)
+
+#===============================================================================
+def select_dir(tree, col, vol):
+    """Determine the template directory for a given collection and volume.
+
+    Args:
+        tree (FCPath): Base tree path.
+        col (str): Collection name.
+        vol (str): Volume name.
+
+    Returns:
+        FCPath: Directory path.
+    """
+    if tree.parts[-1] != col:
+        return tree / col / vol
+    return tree / vol
 
 #===============================================================================
 def get_index_name(dir, vol_id, type):
@@ -37,7 +69,7 @@ def get_index_name(dir, vol_id, type):
     return name
 
 #===============================================================================
-def get_template_name(filename, volume_id):
+def get_template_name(filename, volume_id, code_dir):
     """Determine the name of the label template.
 
     Args:
@@ -46,8 +78,7 @@ def get_template_name(filename, volume_id):
     Returns:
         str: Index name.
     """
-    dir = Path.cwd()
-    collection = dir.name
+    collection = code_dir.name
     return filename.replace(volume_id, collection).split('.')[0]
 
 #===============================================================================
@@ -69,8 +100,36 @@ def parse_template_name(template_name):
     parts = base.split('_')
     index_type = parts[-1]
     host = '_'.join(parts[0:-1])
+    template_dir = defs.PARENT_DIR / FCPath('hosts') / FCPath(host) / FCPath('templates')
 
-    return (host, index_type)
+    return (host, index_type, template_dir)
+
+#===============================================================================
+def pm(x):               ### move to utilities, why is this not in numpy?
+    """Return plus/minus the input.
+
+    Args:
+        x (numpy scalar): Data to smooth.
+
+    Returns:
+        numpy.ndarray: Plus and minus values.
+    """
+    
+    return np.array([x,-x])
+
+#===============================================================================
+def smooth(data, width):               ### move to utilities, why is this not in numpy?
+    """Smooth a curve using a moving box.
+
+    Args:
+        data (numpy.ndarray): Data to smooth.
+        width (int): Width of smoothing box.
+
+    Returns:
+        numpy.ndarray: Smoothed data.
+    """
+    kernel = np.ones(width)/width
+    return np.convolve(data, kernel, mode='same')
 
 #===============================================================================
 def splitpath(path: str, string: str):               ### move to utilities
@@ -103,7 +162,7 @@ def get_volume_subdir(path, volume_id):
         str: Final directory in tree.
     """
     return splitpath(path, volume_id)[-1]
-#    return path.split(volume_id)[-1]
+#    return path.split(volume_id)[-1]  ## not currently supprted by filecache
 
 #===============================================================================
 def replace(tree, placeholder, name):
@@ -235,15 +294,16 @@ def expandvars(filespec):           ### add to FCPath?
         str, Path, or FCPath: Expanded path.
 
     """
-    if not isinstance(filespec, str):
-        result = filespec.as_posix()
+    result = filespec
+    if not isinstance(result, str):
+        result = result.as_posix()
 
     result = re.sub('://', '<<token>>', result)
     result = os.path.expandvars(result)
     result = re.sub('<<token>>', '://', result)
 
     if isinstance(filespec, str):
-        return result.as_posix()
+        return result
     if isinstance(filespec, FCPath):
         return FCPath(result)
     return Path(result)
@@ -320,6 +380,46 @@ def write_txt_file(filespec, content, terminator='\r\n'):    ### move to utiliti
 
     # Write file
     filespec.write_text(content, encoding='utf-8')
+
+#===============================================================================
+def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilities
+    """Append text to a file, with some options.
+
+    Args:
+        filespec (str, Path, or FCPath): Path to the file to write.
+        content (str or list):
+            Text to write.  If list, each element is a line that will be terminated
+            using the specified terminator.  If string, existing terminators are
+            replaced with the specified terminator.
+        terminator (str): Desired line terminator.
+
+    Returns:
+        None
+    """
+    filespec = FCPath(filespec)
+
+    # Expand environment variables and resolve to absolute path
+    filespec = expandvars(filespec)
+
+    # Determine terminator
+    if terminator is None:
+        if isinstance(content, list):
+            crlf = content[0].endswith('\r\n')
+        else:
+            crlf = content.endswith('\r\n')
+        terminator = '\r\n' if crlf else '\n'
+
+    # Split into list of lines with no terminator
+    if not isinstance(content, list):
+        content = content.split('\n')
+    content = [c.rstrip('\r\n') for c in content]
+
+    # Reconstitute with correct terminator
+    content = terminator.join(content) + terminator
+
+    # Write file
+    with open(Path(filespec.as_posix()), "a") as file:
+        file.write(content)
 
 #===============================================================================
 def rebase(x, bases, ceil=False):    ### move to utilities
@@ -410,70 +510,49 @@ def sclk_format_count(fields, format):
     return count
 
 #===============================================================================
-def sclk_to_ticks(sclk, bases):
+def sclk_to_ticks(sclk, sc):
     """Convert spacecraft clock count string to ticks.
 
     Args:
         sclk (list): Spacecraft clock count string.
-        bases (list): Base (int) to use for each decimal place.
+        sc (int): NAIF spacecraft identifier.
 
     Returns:
         int: Spacecraft clock ticks.
     """
-
-    # Get fields
-    fields = sclk_split_count(sclk)
-
-    # Compute ticks
-    ticks = fields[-1]
-    for i in range(len(fields)-1):
-        ticks += fields[i]*bases[i+1]
-
-    return ticks
+    return cspyce.sctiks_alias(sc, sclk)
 
 #===============================================================================
-def convert_default_bodies_table(table, bases):
-    """Convert default bodies tables SCLK count string to ticks.
+def get_observation_id(observation):
+    """Utility function to determine the observation ID for an observation.
+
+    Args:
+        observation (oops.Observation): Observation object.
+
+    Returns:
+        str: Observation ID.
+    """
+    return str(observation.subfields['dict']['OBSERVATION_ID'])
+
+#===============================================================================
+def convert_mission_table(table, sc):
+    """Convert mission table SCLK count string to ticks using sclk_to_ticks().
 
     Args:
         table (list): Systems table.
-        bases (list): Base (int) to use for each decimal place.
+        sc (int): NAIF spacecraft identifier.
 
     Returns:
-        list: Converted Systems table containing ticks instead of strings.
+        list: Converted mission table containing ticks instead of strings.
     """
     new_table = []
     for item in table:
         new_table.append(
-            ((sclk_to_ticks(item[0][0], bases),
-              sclk_to_ticks(item[0][1], bases)),
-              item[1], item[2]))
+            ((sclk_to_ticks(item[1][0], sc),
+              sclk_to_ticks(item[1][1], sc)),
+              item[2], item[3], item[4], item[5], item[6]))
 
     return new_table
-
-#===============================================================================
-def get_primary(table, sclk, bases):
-    """Use converted default bodies table to determine the primary for a given
-       spacecraft clock count.
-
-    Args:
-        table (list):
-            Converted default bodies table containing sclk ticks instead of strings.
-        sclk (str): Spacecraft clock string corresponding to the observation time.
-        bases (list): Base (int) to use for each decimal place.
-
-    Returns:
-        NamedTuple (primary (str), secondaries (list)):
-            primary: Name of the primary corresponding to the given SCLK value.
-            secondaries:
-                Names of any secondaries.
-    """
-    sclk_ticks = sclk_to_ticks(sclk, bases)
-    for row in table:
-        sclks = row[0]
-        if sclk_ticks >= sclks[0] and sclk_ticks <= sclks[1]:
-            return (row[1], row[2])
-    return (None, None)
 
 #===============================================================================
 def range_of_n_angles(n, prob=0.1, tests=100000):
@@ -614,13 +693,14 @@ NINETY_PERCENT_RANGE_DEGREES = np.array([
 ])
 
 #===============================================================================
-def _ninety_percent_gap_degrees(n):
+def _ninety_percent_gap_degrees(n, scale=1.):
     """For n samples, determine the approximate number of degrees for the largest
     gap in coverage providing 90% confidence that the angular coverage is not
     actually complete.
 
     Args:
         n (int): Number of samples.
+        scale (float): Scale factor for result.
 
     Returns:
         float: Estimated number of degrees.
@@ -628,13 +708,13 @@ def _ninety_percent_gap_degrees(n):
 
     # Below 1000, use the tabulation
     if n < 1000:
-        return 360. - NINETY_PERCENT_RANGE_DEGREES[n]
+        return (360. - NINETY_PERCENT_RANGE_DEGREES[n]) * scale
 
     # Otherwise, this empirical fit does a good job
-    return 1808. * n**(-0.912)
+    return (1808. * n**(-0.912)) * scale
 
 #===============================================================================
-def _get_range_mod360(values, alt_format=None):
+def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
     """Determines the minimum and maximum values in the array, allowing for the
     possibility that the numeric range wraps around from 360 to 0.
 
@@ -643,7 +723,10 @@ def _get_range_mod360(values, alt_format=None):
         alt_format (str, optional):
             "-180" to return values in the range (-180,180) rather
             than (0,360).
-
+        width (int): If given, smoothing width for diffs.
+        diffmin (float): Minimum diff to consider.  If the maximum diff is below this value,
+                         then full coverage is assumed, unless the span of the given angles
+                         is smaller.
     Returns:
         list: Minimum and maximum values in the cyclic array.
     """
@@ -654,7 +737,7 @@ def _get_range_mod360(values, alt_format=None):
     complete_coverage = [-180., 180.] if use_minus_180 else [0., 360.]
 
     # Flatten the set of values
-    values = np.asarray(values.flatten().vals)
+    values = np.asarray(values).flatten()
 
     # With only one value, we know nothing
     if values.size <= 1:
@@ -665,11 +748,17 @@ def _get_range_mod360(values, alt_format=None):
     diffs = np.empty(values.size)
     diffs[:-1] = values[1:] - values[:-1]
     diffs[-1] = values[0] + 360. - values[-1]
+    span = 360 - diffs[-1]
+
+    # Smooth the diffs to remove noise from subsamping.  
+    wdiffs = diffs
+    if width > 1:
+        wdiffs = smooth(diffs, width)
 
     # Locate the largest gap and use it to define the range
     gap_index = np.argmax(diffs)
-    diff_max = diffs[gap_index]
     range_mod360 = [values[(gap_index + 1) % values.size], values[gap_index]]
+    diff_max = wdiffs[gap_index]
 
     # Convert to range -180 to 180 if necessary
     if use_minus_180:
@@ -678,9 +767,13 @@ def _get_range_mod360(values, alt_format=None):
         upper = (upper + 180.) % 360. - 180.
         range_mod360 = [lower, upper]
 
-    # We want 90% confidence that the coverage is not complete. Otherwise,
-    # return the complete range
+    # Return full coverage if max diff is below specified threshold. 
+    if span > diffmin and diff_max <= diffmin:
+        return complete_coverage
+
+    # Otherwise check 90% confidence that the coverage is not complete. 
     if diff_max >= _ninety_percent_gap_degrees(values.size):
         return range_mod360
-    else:
-        return complete_coverage
+
+    # Otherwise, return the complete range   
+    return complete_coverage

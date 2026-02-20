@@ -6,6 +6,7 @@
 ################################################################################
 import metadata_tools.util as util
 
+template_name = 'GO_0xxx_supplemental_index'
 
 ################################################################################
 # Spacecraft clock modulo
@@ -30,3 +31,4 @@ def get_volume_id(label_path):
     """
     top = 'GO_0xxx'
     return util.splitpath(label_path, top)[1].parts[0]
+

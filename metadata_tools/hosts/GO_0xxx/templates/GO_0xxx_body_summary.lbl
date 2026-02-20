@@ -2,18 +2,7 @@ $NOTE
 ##############################################################################
 # Geometry file template for bodies.
 #
-#  This template controls the creation of body geometry labels. The procedure
-#  for generating geometry tables for a host is as follows. Files referred to
-#  below should be copied into the top directory for the collection, e.g.,
-#  GO_0xxx:
-#
-#  1. Follow the instructions in <collection>_supplmental_index.lbl to generate
-#     the supplemental index files.
-#  1. Copy and edit this template host subdirectory.
-#  2. Copy and edit the <collection>_geometry.py script to reflect the
-#     type of index and glob pattern for the table files.
-#  3. Edit the DEFAULT_BODIES_TABLE and meshgrid definitions in host_config.py.
-#  4. Run <collection>_geometry.py from the collection top directory.
+#  This template controls the creation of body geometry labels.
 #
 ##############################################################################
 $END_NOTE
@@ -34,18 +23,25 @@ VOLUME_ID                       = "$volume_id$"
 $END_IF
 PRODUCT_CREATION_TIME           = $FILE_TIME(index_path)$
 
-$INCLUDE("./templates/host_defs.lbl")
+$INCLUDE("host_defs.lbl")
 
 OBJECT                          = BODY_SUMMARY_TABLE
   INTERCHANGE_FORMAT            = ASCII
   ROWS                          = $records$
   ROW_BYTES                     = $record_bytes$
   INDEX_TYPE                    = $index_type$
-  DESCRIPTION                   = "This index describes the geometry of all
-    observations in the volume or collection. The index contains one row for
-    each planet, regular satellite, or other targeted body that appears in
-    the field of view.  In addition, geometry is always tabulated for the body
-    identified by the SYSTEM_NAME keyword below.
+  DESCRIPTION                   = "This index describes the viewing
+    geometry for the planetary bodies observed in the Galileo SSI image
+    collection. The file contains multiple rows per image, one for each moon
+    or other targeted body that falls inside the image, plus one for the body
+    identified by the SYSTEM_NAME keyword (EARTH, VENUS, or JUPITER) whether
+    or not it appears.
+
+$IF(index_type == 'CUMULATIVE')
+    This is the cumulative index, describing all the images in the collection.
+$ELSE
+    This index describes the images found on volume $volume_id$.
+$END_IF
 
     Two types of geometry are represented in this index. Gridded quantites
     were constructed by uniformly sampling the pixels that comprise each data
@@ -103,10 +99,9 @@ OBJECT                          = BODY_SUMMARY_TABLE
       geometry parameters in this row of the table are applicable."
   END_OBJECT                    = COLUMN
 
-
 $ONCE(is_visual = True)
 $ONCE(is_saturn = False)
-$INCLUDE('../../templates/body_summary_columns.lbl')
+$INCLUDE('body_summary_columns.lbl')
 
 END_OBJECT                      = BODY_SUMMARY_TABLE
 END

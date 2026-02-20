@@ -7,8 +7,8 @@ $NOTE
 #   is_saturn:      True if this the Saturn system is observed by this data
 #                   set.
 # Below, we temporarily set the variable `night_override` to True for columns
-# where the night sight of a body should be included even if the observation
-# is visual.
+# where the night side of a body should be included even if the observation is
+# visual.
 ##############################################################################
 $END_NOTE
 $ONCE(night_override = False)
@@ -27,7 +27,7 @@ $ONCE(night_override = False)
       This column tabulates the minimum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -45,7 +45,7 @@ $ONCE(night_override = False)
       This column tabulates the maximum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -63,7 +63,7 @@ $ONCE(night_override = False)
       This column tabulates the minimum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -81,7 +81,7 @@ $ONCE(night_override = False)
       This column tabulates the maximum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -102,7 +102,7 @@ $ONCE(night_override = False)
       that capture both sides of the prime meridian, this value will be
       numerically greater than the westernmost longitude.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -123,7 +123,7 @@ $ONCE(night_override = False)
       that capture both sides of the prime meridian, this value will be
       numerically less than the easternmost longitude.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -147,7 +147,7 @@ $ONCE(night_override = False)
       greater than the 'maximum' angle.
 
       $ONCE(night_override = True)
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
@@ -172,7 +172,7 @@ $ONCE(night_override = False)
       less than the 'minimum' angle.
 
       $ONCE(night_override = True)
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
@@ -191,7 +191,7 @@ $ONCE(night_override = False)
       This column tabulates the minimum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -209,7 +209,7 @@ $ONCE(night_override = False)
       This column tabulates the maximum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -227,7 +227,7 @@ $ONCE(night_override = False)
       the smallest surface feature that can be resolved somewhere within the
       field of view.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -245,7 +245,7 @@ $ONCE(night_override = False)
       the smallest surface feature that can be resolved regardless of where it
       falls within the field of view.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -265,7 +265,7 @@ $ONCE(night_override = False)
       the smallest surface feature that can be resolved somewhere within the
       field of view no matter how it is oriented on the surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -286,7 +286,7 @@ $ONCE(night_override = False)
       view no matter where it falls in the field of view and no matter how it
       is oriented on the surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -300,7 +300,7 @@ $ONCE(night_override = False)
       This column tabulates the minimum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -314,7 +314,7 @@ $ONCE(night_override = False)
       This column tabulates the maximum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -332,7 +332,7 @@ $ONCE(night_override = False)
       This column tabulates the minimum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -350,7 +350,7 @@ $ONCE(night_override = False)
       This column tabulates the maximum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -369,7 +369,7 @@ $ONCE(night_override = False)
       sight intercept the body's surface.
 
       $ONCE(night_override = True)
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
@@ -389,7 +389,7 @@ $ONCE(night_override = False)
       sight intercept the body's surface.
 
       $ONCE(night_override = True)
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
@@ -407,7 +407,7 @@ $ONCE(night_override = False)
       This column tabulates the minimum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -424,7 +424,7 @@ $ONCE(night_override = False)
       This column tabulates the maximum value among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -441,7 +441,7 @@ $ONCE(night_override = False)
       radius are not included in the tabulation.
 
       $ONCE(night_override = True)
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
@@ -459,7 +459,7 @@ $ONCE(night_override = False)
       radius are not included in the tabulation.
 
       $ONCE(night_override = True)
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
@@ -482,7 +482,7 @@ $ONCE(night_override = False)
       numerically greater than the 'maximum' clock angle.
 
       $ONCE(night_override = True)
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
@@ -505,34 +505,36 @@ $ONCE(night_override = False)
       numerically greater than the 'maximum' clock angle.
 
       $ONCE(night_override = True)
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
-    DESCRIPTION                 = "Surface intercept time is the time when the
-      received photon left a point on the body's surface. It is given in ISO
-      format: YYYY-MM-DDTHH:mm:ss.sss.
+    NULL_CONSTANT               = "NA"
+    DESCRIPTION                 = "Surface intercept time is the International
+      Atomic Time (TAI) when the received photon left a point on the body's
+      surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss.
 
       This column tabulates the earliest time among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
-    DESCRIPTION                 = "Surface intercept time is the time when the
-      received photon left a point on the body's surface. It is given in ISO
-      format: YYYY-MM-DDTHH:mm:ss.sss.
+    NULL_CONSTANT               = "NA"
+    DESCRIPTION                 = "Surface intercept time is the International
+      Atomic Time (TAI) when the received photon left a point on the body's
+      surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss.
 
       This column tabulates the latest time among the pixels whose lines of
       sight intercept the body's surface.
 
-      $INCLUDE('../../templates/body_summary_details.lbl')
+      $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -689,6 +691,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_SUB_SOLAR_IAU_LONGITUDE
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
@@ -710,8 +713,8 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_SUB_SOLAR_IAU_LONGITUDE
-    UNIT                        = "deg"
     FORMAT                      = "F8.3"
+    UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     DESCRIPTION                 = "The sub-solar point is the point where a
@@ -809,7 +812,6 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_CENTER_DISTANCE
-    DATA_TYPE                   = ASCII_REAL
     FORMAT                      = "F12.3"
     UNIT                        = "km"
     DESCRIPTION                 = "Center distance is the distance from the
@@ -850,12 +852,12 @@ $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MINIMUM_DIAMETER_IN_PIXELS
+    NAME                        = DIAMETER_IN_PIXELS
     FORMAT                      = "F10.3"
     DESCRIPTION                 = "The physical diameter of the body,
       converted to pixels.
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing.
       It is computed for the body at its true distance, but as if it fell at
       the center of the field of view, with its longest axis perpendicular to
@@ -863,20 +865,7 @@ $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_DIAMETER_IN_PIXELS
-    FORMAT                      = "F10.3"
-    DESCRIPTION                 = "The physical diameter of the body,
-      converted to pixels.
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing.
-      It is computed for the body at its true distance, but as if it fell at
-      the center of the field of view, with its longest axis perpendicular to
-      the line of sight."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = MINIMUM_NORTH_POLE_CLOCK_ANGLE
+    NAME                        = NORTH_POLE_CLOCK_ANGLE
     FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
@@ -885,104 +874,49 @@ $ONCE(night_override = False)
       direction of the body's pole vector on the sky, measured as an angle
       clockwise from celestial north (i.e., toward celestial west).
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_NORTH_POLE_CLOCK_ANGLE
+    NAME                        = NORTH_POLE_POSITION_ANGLE
     FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
-    DESCRIPTION                 = "The north pole clock angle is the projected
-      direction of the body's pole vector on the sky, measured as an angle
-      clockwise from celestial north (i.e., toward celestial west).
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = MINIMUM_NORTH_POLE_POSITION_ANGLE
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The north pole position angle is the
       projected direction of the body's pole vector on the sky, measured as an
       angle counterclockwise from celestial north (i.e., toward celestial
       east).
 
-      This column tabulates the minimum value during the observation. It
+      This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
-  OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_NORTH_POLE_POSITION_ANGLE
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "The north pole position angle is the
-      projected direction of the body's pole vector on the sky, measured as an
-      angle counterclockwise from celestial north (i.e., toward celestial
-      east).
-
-      This column tabulates the maximum value during the observation. It
-      depends on the observation's timing but is independent of the pointing."
-  END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MINIMUM_CENTER_X_COORDINATE
+    NAME                        = CENTER_X_COORDINATE
     FORMAT                      = "F9.2"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
     DESCRIPTION                 = "Center X coordinate is the predicted
       horizontal coordinate of the center of the body within this data
-      product.
+      product. A fractional value of 0.5 indicates the center of the pixel.
 
-      This column tabulates the minimum value during the observation."
+      This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN
 
-  OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_CENTER_X_COORDINATE
-    FORMAT                      = "F9.2"
-    NULL_CONSTANT               = -99999.
-    VALID_MINIMUM               = -10000.
-    VALID_MAXIMUM               =  10000.
-    DESCRIPTION                 = "Center X coordinate is the predicted
-      horizontal coordinate of the center of the body within this data
-      product.
-
-      This column tabulates the maximum value during the observation."
-  END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
-    NAME                        = MINIMUM_CENTER_Y_COORDINATE
+    NAME                        = CENTER_Y_COORDINATE
     FORMAT                      = "F9.2"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
     DESCRIPTION                 = "Center Y coordinate is the predicted
       vertical coordinate of the center of the body within this data
-      product.
+      product. A fractional value of 0.5 indicates the center of the pixel.
 
-      This column tabulates the minimum value during the observation."
-  END_OBJECT                    = COLUMN
-
-  OBJECT                        = COLUMN
-    NAME                        = MAXIMUM_CENTER_Y_COORDINATE
-    FORMAT                      = "F9.2"
-    NULL_CONSTANT               = -99999.
-    VALID_MINIMUM               = -10000.
-    VALID_MAXIMUM               =  10000.
-    DESCRIPTION                 = "Center Y coordinate is the predicted
-      vertical coordinate of the center of the body within this data
-      product.
-
-      This column tabulates the maximum value during the observation."
+      This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN

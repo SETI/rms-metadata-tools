@@ -1,0 +1,13 @@
+numpy>=2.3.0
+rms-oops>=0.1.0
+rms-filecache>=3.0.0
+rms-pdslogger>=3.0.0
+rms-julian>=3.0.1
+rms-pdsparser>=2.0.0
+rms-cloud-tasks>=0.2.0
+json-stream>=2.3.3
+rms-pdstable>=0.0.10
+rms-vicar>=1.1.2
+rms-pdstemplate>=2.4.0
+fortranformat>=2.0.3
+

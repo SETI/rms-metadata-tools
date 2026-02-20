@@ -129,11 +129,11 @@ class Test_Geometry(unittest.TestCase):
             unit.bounds(self, file, table, 'SUB_OBSERVER_RING_LONGITUDE')
             unit.bounds(self, file, table, 'RING_CENTER_PHASE_ANGLE', min=0, max=180)
             unit.bounds(self, file, table, 'RING_CENTER_INCIDENCE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'RING_CENTER_NORTH_BASED_INCIDENCE_ANGLE', min=0, max=180)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_INCIDENCE_ANGLE', min=0, max=180)
             unit.bounds(self, file, table, 'RING_CENTER_EMISSION_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'RING_CENTER_NORTH_BASED_EMISSION_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'SOLAR_RING_OPENING_ANGLE', min=-90, max=90)
-            unit.bounds(self, file, table, 'OBSERVER_RING_OPENING_ANGLE', min=-90, max=90)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_EMISSION_ANGLE', min=0, max=180)
+            unit.bounds(self, file, table, 'SOLAR_RING_CENTER_OPENING_ANGLE', min=-90, max=90)
+            unit.bounds(self, file, table, 'OBSERVER_RING_CENTER_OPENING_ANGLE', min=-90, max=90)
 
     #===========================================================================
     # test geometry sky fields

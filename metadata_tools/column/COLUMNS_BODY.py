@@ -2,6 +2,8 @@
 # COLUMNS_BODY.py: Column definitions for body geometry tables
 ################################################################################
 import oops
+import metadata_tools.defs as defs
+import metadata_tools.util as util
 
 ################################################################################
 # *COLUMN description tuples are
@@ -51,8 +53,8 @@ BODY_COLUMNS = [
     (("phase_angle",            defs.BODYX),                    ("RM", "",   "")),
     (("incidence_angle",        defs.BODYX),                    ("RM", "",   "")),
     (("emission_angle",         defs.BODYX),                    ("RM", "",   "")),
-    (("limb_altitude",          defs.BODYX, -0.01, 1000, True), ("",   "",  "")),
-    (("limb_clock_angle",       defs.BODYX),                    ("",   "",  "")),
+    (("limb_altitude",          defs.BODYX, -0.01, 3, True),    ("",   "",  "")),
+    (("limb_clock_angle",       ("limb_altitude", defs.BODYX, -0.01, 3, True)), ("",   "",  "")),
     (("event_time",             defs.BODYX),                    ("RM", "", ""))]
 
 BODY_GRIDLESS_COLUMNS = [

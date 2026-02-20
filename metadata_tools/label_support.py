@@ -10,16 +10,19 @@ import metadata_tools.util as util
 import metadata_tools.defs as defs
 
 #===============================================================================
-def create(filepath, system=None,
-                     use_global_template=False,
-                     table_type=''):
+def create(filepath, host_template_path, 
+           system=None,
+           *,
+           use_global_template=False,
+           table_type=''):
     """Creates a label for a given geometry table.
 
     Args:
-        filepath (str|Path|FCPath): Path to the local or remote geometry table.
+        filepath (str|Path|FCPath): Path to the local or remote table.
+        host_template_path (str, Path, or FCPath): Path to the host template.
         system (str): Name of system, for rings and moons.
         use_global_template (bool):
-            If True, the label template is to be found in the global template
+            If True, the label template is to be found in the global template directory.
         table_type (str, optional): BODY, RING, SKY, SUPPLEMENTAL_INDEX, INVENTORY.
 
     Returns:
@@ -37,6 +40,7 @@ def create(filepath, system=None,
     dir = filepath.parent
     body = filepath.stem
     label_path = dir / (body + '.lbl')
+    host_template_dir = host_template_path.parent
 
     # Get the volume id
     underscore = filename.index('_')
@@ -47,8 +51,8 @@ def create(filepath, system=None,
     if use_global_template:
         template_path = FCPath(defs.GLOBAL_TEMPLATE_PATH) / FCPath('%s.lbl' % body[underscore+6+offset:])
     else:
-        template_name = util.get_template_name(filename, volume_id)
-        template_path = FCPath('./templates/').resolve() / (template_name + '.lbl')
+        template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
+        template_path = host_template_dir / (template_name + '.lbl')
 
     # Default preprocessor
     preprocess = pds3_table_preprocessor
@@ -56,12 +60,13 @@ def create(filepath, system=None,
         preprocess = None
 
     # Default template dictionary
-    fields = {'VOLUME_ID'  : volume_id,
-              'TABLE_TYPE' : table_type}
+    fields = {'VOLUME_ID'   : volume_id,
+              'TABLE_TYPE'  : table_type}
 
     # Generate label
     T = PdsTemplate(template_path, crlf=True,
                     preprocess=preprocess,
+                    includes=[defs.GLOBAL_TEMPLATE_PATH, host_template_dir],
                     kwargs={'formats':True, 'numbers':True, 'validate':False})
     T.write(fields, label_path=label_path, mode='repair')
 

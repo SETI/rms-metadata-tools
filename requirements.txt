@@ -1,16 +1,9 @@
+-r requirements-cloud.txt
 IPython
 coverage
 flake8
 pytest
-numpy
-rms-oops
-rms-filecache>=2.3.0
-rms-pdslogger>=3.0.0
-rms-julian
-#rms-pdsparser
-rms-pdstable
-rms-vicar
-fortranformat
+pydantic
 myst-parser
 sphinx
 sphinxcontrib-napoleon

@@ -3,15 +3,13 @@
 ################################################################################
 import fortranformat as ff
 import fnmatch
-import warnings
-import hosts.pds3 as pds3
+import ast
 
-import metadata_tools as meta
+import metadata_tools.common as com
 import metadata_tools.util as util
-import pdstable
 
-from pdsparser             import Pds3Label
-from filecache             import FCPath
+from pdsparser import PdsLabel
+from filecache import FCPath
 from pdstemplate.pds3table import Pds3Table
 
 import host_config as hconf
@@ -20,35 +18,38 @@ import index_config as config
 ################################################################################
 # IndexTable class
 ################################################################################
-class IndexTable(meta.Table):
+class IndexTable(com.Table):
     """Class describing an index table for a single volume.
     """
 
     #===========================================================================
-    def __init__(self, input_dir=None, output_dir=None, qualifier='', glob=None,
-                 **kwargs):
+    def __init__(self, input_dir=None, output_dir=None, template_path=None, metadata_dir=None,
+                       qualifier='', glob=None, **kwargs):
         """Constructor for an IndexTable object.
 
         Args:
             input_dir (str, Path, or FCPath):
                 Directory containing the volume, specifically the data labels.
             output_dir (str, Path, or FCPath):
-                Directory in which to find the "updated" index file (e.g.,
-                <volume>_index.tab, and in which to write the new index files.
+                Directory in which to write the new index files.
+            template_path (str, Path, or FCPath): Path to the host template.
+            metadata_dir (str, Path, or FCPath):
+                Directory in which to find the "updated" index file (e.g., <volume>_index.tab).
             qualifier (str, optional):
                 Qualifying string identifying the type of index file to create,
                 e.g., 'supplemental'.
-            glob (str, optional): Glob pattern for index files.
+            glob (str, optional): Glob pattern for data files.
         """
 
         # Initialize table, return if specific paths not given
-        super().__init__(output_dir, level="index", qualifier=qualifier, **kwargs)
+        super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
             return
 
         # Save inputs
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
+        self.metadata_dir = FCPath(metadata_dir)
         self.glob = glob
         self.usage = {}
         self.unused = set()
@@ -56,32 +57,28 @@ class IndexTable(meta.Table):
         # Get volume id
         self.volume_id = hconf.get_volume_id(self.input_dir)
 
-        logger = meta.get_logger()
-        s = ' '+qualifier if qualifier else ' primary'
-        logger.info('New%s index for %s.' % (s, self.volume_id))
-
         # Get relevant filenames and paths
         primary_index_name = util.get_index_name(self.input_dir, self.volume_id, None)
         index_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
-        template_name = util.get_template_name(index_name, self.volume_id)
-        self.index_path = self.output_dir/(index_name + '.tab')
+        self.index_path = self.metadata_dir/(index_name + '.tab')
 
-        # If the index name is the same as the primary inxex name,
+        # Initialize the logger
+        com.init_logger(self.output_dir, 'index')
+        logger = com.get_logger()
+
+        s = ' '+qualifier if qualifier else ' primary'
+        logger.info('New%s index for %s.' % (s, self.volume_id))
+
+        # If the index name is the same as the primary index name,
         # then this is the primary index.
         create_primary = index_name == primary_index_name
 
         # If there is a primary file, read it and build the file list
         if not create_primary:
-            self.primary_index_label_path = self.output_dir/(primary_index_name + '.lbl')
-            self.primary_index_path = self.output_dir/(primary_index_name + '.tab')
+            self.primary_index_label_path = self.metadata_dir/(primary_index_name + '.lbl')
+            self.primary_index_path = self.metadata_dir/(primary_index_name + '.tab')
 
-            try:
-                local_label_path = self.primary_index_label_path.retrieve()
-                table = pdstable.PdsTable(local_label_path)
-            except FileNotFoundError:
-                warnings.warn('Primary index file not found: %s. '
-                              'Skipping' % self.primary_index_label_path)
-                return
+            table = util.PdsTable(self.primary_index_label_path)
 
             primary_row_dicts = table.dicts_by_row()
             self.files = [FCPath(primary_row_dict['FILE_SPECIFICATION_NAME'])
@@ -95,7 +92,6 @@ class IndexTable(meta.Table):
             self.files = [f for f in input_dir.rglob('*.LBL')]
 
         # Extract relevent fields from the template
-        template_path = FCPath('./templates/')/(template_name + '.lbl')
         label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
         label_path = self.output_dir / FCPath(label_name + '.lbl')
 
@@ -105,12 +101,13 @@ class IndexTable(meta.Table):
         self.column_stubs = IndexTable._get_column_values(pds3_table)
 
     #===========================================================================
-    def create(self, labels_only=False):
+    def create(self, labels_only=False, pattern=None):
         """Create the index file for a single volume.
 
         Args:
             labels_only (bool):
                 If True, labels are generated for any existing geometry tables.
+            pattern (str): Glob pattern for sub-selecting files to process.
 
         Returns:
             None.
@@ -118,13 +115,7 @@ class IndexTable(meta.Table):
         if not hasattr(self, 'files'):
             return
 
-        logger = meta.get_logger()
-
-        # Open the output file; create dir if necessary
-        try:
-            self.output_dir.mkdir(exist_ok=True)
-        except NotImplementedError:
-            pass        ### need to check for existence.
+        logger = com.get_logger()
 
         # Build the index
         n = len(self.files)
@@ -134,10 +125,15 @@ class IndexTable(meta.Table):
                 name = file.name
                 root = file.parent
 
+                # Make any sub selection
+                if pattern and fnmatch.filter([name], pattern) == []:
+                    continue
+
                 # Match the glob pattern
-                file = fnmatch.filter([name], self.glob)[0]
+                file = fnmatch.filter([name], self.glob)
                 if file == []:
                     continue
+                file = file[0]
 
                 # Log volume ID and subpath
                 subdir = util.get_volume_subdir(root, hconf.get_volume_id(root))
@@ -168,8 +164,8 @@ class IndexTable(meta.Table):
 
         # Read the PDS3 label
         path = root/name
-        label = pds3.get_label(path)
-#        label = Pds3Label(path)
+
+        label_dict = PdsLabel.from_file(path).as_dict()
 
         # Write columns
         first = True
@@ -184,10 +180,7 @@ class IndexTable(meta.Table):
                 self.usage[column_name] = False
 
             # Get the value
-#            if name == 'C0349542165R.LBL':
-#                if column_name == 'CUT_OUT_WINDOW':
-#                    from IPython import embed; print('+++++++++++++'); embed()
-            value = self._index_one_value(column_stub, path, label)
+            value = self._index_one_value(column_stub, path, label_dict)
 
             # Write the value into the index
             if not first:
@@ -366,7 +359,7 @@ class IndexTable(meta.Table):
         Returns:
             str: Formatted value.
         """
-        logger = meta.get_logger()
+        logger = com.get_logger()
 
         # Get value parameters
         name = column_stub['NAME']
@@ -399,17 +392,17 @@ class IndexTable(meta.Table):
         try:
             result = IndexTable._format_value(value, format)
         except TypeError:
-            logger.warn("Invalid format: %s %s %s" % (name, value, format))
+            logger.warning("Invalid format: %s %s %s" % (name, value, format))
             result = width * "*"
 
         if len(result) > width:
-            logger.warn("No second format: %s %s %s %s" % (name, value, format, result))
+            logger.warning("No second format: %s %s %s %s" % (name, value, format, result))
 
         # Validate the formatted value
         try:
-            _ = eval(result)
-        except Exception:
-            logger.warn('Format error for %s: %s' % (name, value))
+            _ = ast.literal_eval(result)
+        except (ValueError, SyntaxError):
+            logger.warning('Format error for %s: %s' % (name, value))
 
         return result
 
@@ -466,10 +459,10 @@ def get_args(host=None, index_type=None):
             Parser containing the argument specifications.
    """
 
-    # Get parser with common args
-    parser = meta.get_common_args(host=host)
+    # Get common args
+    parser = com.get_common_args(host=host)
 
-    # Add parser for index args
+    # Add index args
     gr = parser.add_argument_group('Index Arguments')
     gr.add_argument('--type', '-t', type=str, metavar='type',
                     default=index_type,
@@ -480,33 +473,52 @@ def get_args(host=None, index_type=None):
     return parser
 
 #===============================================================================
-def process_index(template_name, glob=None):
+def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
+                  volumes=None,
+                  labels_only=False,
+                  qualifier=None,
+                  glob=None,
+                  pattern=None,
+                  task_file=None,
+                  task_list_only=False):
     """Creates index files for a collection of volumes.
 
     Args:
-        template_name (str): Name of input template.
-        glob (str, optional): Glob pattern for index files.
+        volume_tree (str, Path, or FCPath):
+            Top of the directory tree containing the volume, specifically the labels.
+        output_tree (str, Path, or FCPath):
+            Top of the directory tree in which to to write the new index files. Corrected 
+            index files (e.g., <volume>_index.tab) are assumed to reside here unless
+            metadata_tree is given.
+        template_path (str, Path, or FCPath): Path to the host template.
+        metadata_tree (str, Path, or FCPath, optional):
+            Top of the directory tree in which to find the corrected index file (e.g.,
+            <volume>_index.tab).
+        volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
+        qualifier (str, optional):
+            Qualifying string identifying the type of index file to create, e.g.,
+            'supplemental'.
+        glob (str, optional): Glob pattern for data files.
+        pattern (str): Glob pattern for sub-selecting files to process.
+        task_file (str, optional): Name of tasks file.
+        task_list_only (bool, optional):
+            If True, a tasks file is created and no processing is performed.
 
     Returns:
         None.
     """
-    logger = meta.get_logger()
+    logger = com.get_logger()
 
-    # Parse arguments
-    host, index_type = util.parse_template_name(template_name)
-    parser = get_args(host=host, index_type=index_type)
-    args = parser.parse_args()
-
-    input_tree = FCPath(args.input_tree)
-    output_tree = FCPath(args.output_tree)
-    volumes = args.volumes
-    labels_only = args.labels is not False
+    if metadata_tree is not None:
+        metadata_tree = FCPath(metadata_tree)
+    else:
+        metadata_tree = output_tree
 
     # Build volume glob
-    vol_glob = util.get_volume_glob(input_tree.name)
+    vol_glob = util.get_volume_glob(volume_tree.name)
 
     # Walk the input tree, making indexes for each found volume
-    for root, dirs, files in input_tree.walk():
+    for root, dirs, _files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue
@@ -524,20 +536,83 @@ def process_index(template_name, glob=None):
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
+
+                # Set up input and output directories
                 indir = root
-                if output_tree.parts[-1] != col:
-                    outdir = output_tree/col
-                outdir = output_tree/vol
+                outdir = util.select_dir(output_tree, col, vol)
+                metadata_dir = util.select_dir(metadata_tree, col, vol)
 
-                # Process this volumne
-                index = IndexTable(indir, outdir,
-                                   qualifier=args.type, volume_id=vol, glob=glob)
-                index.create(labels_only=labels_only)
+                # Update the task file...
+                if task_list_only:
+                    com.add_task(vol, 'index')
 
-                unused = index.unused if not unused else unused & index.unused
+                # ... or process this volumne
+                else:
+                    # Process this volumne
+                    index = IndexTable(indir, outdir, template_path, metadata_dir,
+                                       qualifier=qualifier, volume_id=vol, glob=glob)
+
+                    index.create(labels_only=labels_only, pattern=pattern)
+                    unused = index.unused if not unused else unused & index.unused
+
+        # Write the task file
+        if task_list_only:
+            com.write_task_file(task_file)
 
         # Log a warning for any columns that never had non-null values
         if unused:
-            logger.warn('Unused columns: %s', unused)
+            logger.warning('Unused columns: %s', unused)
+        logger.close(force=True)
+
+#===============================================================================
+def process_index(template_name,
+                  glob=None,
+                  volumes=None,
+                  args=None,
+                  task_file=None, 
+                  task_list_only=False):
+    """Creates index files for a collection of volumes.
+
+    Args:
+        template_name (str): Name of input template.
+        glob (str, optional): Glob pattern for data files.
+        volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
+        args (argparse.Namespace): Parsed arguments.
+        task_file (str, optional): 
+            Name of tasks file. This file is overwritten. If not given, tasks are provided 
+            via the task_source generator.
+        task_list_only (bool, optional):
+            If True, a task list is created and no processing is performed. If task_file is
+            given, then the task list is written to that file. Otherwise, the task list is
+            accessed via the task_source generator. 
+
+    Returns:
+        None.
+    """
+
+    # Parse arguments
+    host, index_type, template_dir = util.parse_template_name(template_name)
+    template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
+    if args is None:
+        parser = get_args(host=host, index_type=index_type)
+        args = parser.parse_args()
+
+#    if not task_list_only:
+#        print('testing', args.volumes)
+#        return
+
+    if volumes is None:
+        volumes = args.volumes
+
+    # Create the index
+    _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
+                  metadata_tree=args.metadata_tree,
+                  volumes=volumes,
+                  labels_only=args.labels is not False,
+                  qualifier=args.type,
+                  glob=glob,
+                  pattern=args.pattern,
+                  task_file=task_file,
+                  task_list_only=task_list_only)
 
 ################################################################################

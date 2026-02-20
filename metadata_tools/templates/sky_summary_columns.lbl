@@ -1,0 +1,53 @@
+  OBJECT                        = COLUMN
+    NAME                        = "MINIMUM_RIGHT_ASCENSION"
+    FORMAT                      = "F10.6"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The minimum value for J2000 right
+      ascension within the field of view sampled by this observation.
+
+      For fields of view that cross 360 degrees, the tabulated minimum value
+      will be greater than the maximum, meaning that the range of right
+      ascension is from the 'minimum' value to 360 and then from zero to the
+      'maximum'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MAXIMUM_RIGHT_ASCENSION"
+    FORMAT                      = "F10.6"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The maximum value for J2000 right
+      ascension within the field of view sampled by this observation.
+
+      For fields of view that cross 360 degrees, the tabulated minimum value
+      will be greater than the maximum, meaning that the range of right
+      ascension is from the 'minimum' value to 360 and then from zero to the
+      'maximum'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MINIMUM_DECLINATION"
+    FORMAT                      = "F10.6"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               =  90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The minimum value for J2000 declination
+      within the field of view sampled by the observation."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = "MAXIMUM_DECLINATION"
+    FORMAT                      = "F10.6"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               =  90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The maximum value for J2000 declination
+      within the field of view sampled by the observation."
+  END_OBJECT                    = COLUMN

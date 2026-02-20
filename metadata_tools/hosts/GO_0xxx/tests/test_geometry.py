@@ -2,13 +2,11 @@
 # GOSSI-specific metadata geometry unit tests
 ################################################################################
 import unittest
-
 import pdstable
-#import pdsparser
 import numpy as np
 
-import metadata_tools.util as util
-import metadata_tools.hosts.GO_0xxx.host_config as config
+#metadata_tools.util as util
+#import metadata_tools.hosts.GO_0xxx.host_config as config
 import tests.unittester_support as unit
 
 #SYSTEMS_TABLE = util.convert_systems_table(config.SYSTEMS_TABLE, config.SCLK_BASES)
@@ -76,14 +74,14 @@ class Test_Geometry_GOSSI(unittest.TestCase):
             unit.bounds(self, file, table, 'NORTH_BASED_INCIDENCE_ANGLE', min=35, max=145)
             unit.bounds(self, file, table, 'SOLAR_RING_ELEVATION', min=-35, max=35)
             unit.bounds(self, file, table, 'RING_CENTER_INCIDENCE_ANGLE', min=60, max=90)
-            unit.bounds(self, file, table, 'RING_CENTER_NORTH_BASED_INCIDENCE_ANGLE', min=35, max=145)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_INCIDENCE_ANGLE', min=35, max=145)
 
             #################### Slightly exceeds 90 deg in GO_0022
 #            unit.bounds(self, file, table, 'RING_CENTER_EMISSION_ANGLE', min=-30, max=30)
 
-            unit.bounds(self, file, table, 'RING_CENTER_NORTH_BASED_EMISSION_ANGLE', min=35, max=145)
-            unit.bounds(self, file, table, 'SOLAR_RING_OPENING_ANGLE', min=-35, max=35)
-            unit.bounds(self, file, table, 'OBSERVER_RING_OPENING_ANGLE', min=-30, max=30)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_EMISSION_ANGLE', min=35, max=145)
+            unit.bounds(self, file, table, 'SOLAR_RING_CENTER_OPENING_ANGLE', min=-35, max=35)
+            unit.bounds(self, file, table, 'OBSERVER_RING_CENTER_OPENING_ANGLE', min=-30, max=30)
 
 
 #########################################

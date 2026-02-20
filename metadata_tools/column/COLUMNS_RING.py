@@ -1,6 +1,8 @@
 ################################################################################
 # COLUMNS_RING.py: Column definitions for ring geometry tables
 ################################################################################
+import metadata_tools.defs as defs
+
 planet_ring = defs.BODYX + ":RING"
 planet_ansa = defs.BODYX + ":ANSA"
 
@@ -92,6 +94,8 @@ RING_GRIDLESS_COLUMNS = [
     (("body_diameter_in_pixels", planet_ring,
                             util.replacement_fn("defs.RING_SYSTEM_RADII", defs.BODYX)),
                                                             ("",   "",  "")),
+    (("pole_clock_angle",       defs.BODYX),                    ("",   "",  "")),
+    (("pole_position_angle",    defs.BODYX),                    ("",   "",  "")),
     (("center_coordinate",       defs.BODYX, "u"),                ("",   "",  "")),
     (("center_coordinate",       defs.BODYX, "v"),                ("",   "",  ""))]
 
