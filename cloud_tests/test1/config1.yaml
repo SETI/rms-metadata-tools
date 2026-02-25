@@ -17,6 +17,7 @@ gcp:
   startup_script_file:      test1_startup.sh
   service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
   region: us-central1
+  max_instances:            1
 
 
 ##### need to set up cloud driver like GO_0xxx_index_cloud.py
