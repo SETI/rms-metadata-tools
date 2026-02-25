@@ -17,10 +17,7 @@
 # gsutil ls gs://rms-metadata-jspitale/test.txt
 # gsutil cat gs://rms-metadata-jspitale/test.txt
 
-import sys
 from filecache import FCPath
-
-import metadata_tools.util as util
 
 filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
 if filespec.exists():
