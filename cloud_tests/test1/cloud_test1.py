@@ -45,4 +45,7 @@ async def main():
 
 #########################################################################################
 if __name__ == "__main__":
+    filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
+    filespec.write_text('Hello\nWorld\n', encoding='utf-8')
+    exit()
     asyncio.run(main())
