@@ -18,7 +18,6 @@
 # gsutil cat gs://rms-metadata-jspitale/test.txt
 
 import sys
-from cloud_tasks.worker import Worker, WorkerData
 from filecache import FCPath
 
 import metadata_tools.util as util
