@@ -37,6 +37,9 @@ def process_task(task_id: str,
 
 #========================================================================================
 async def main():
+    filespec = FCPath('gs://rms-metadata-jspitale/xxxtest.txt')
+    filespec.write_text('Hey\nYo\n', encoding='utf-8')
+
     worker = Worker(process_task, args=sys.argv[1:])
     await worker.start()
 
