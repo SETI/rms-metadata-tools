@@ -20,5 +20,4 @@ gcp:
   max_instances:            1
 
 
-##### need to set up cloud driver like GO_0xxx_index_cloud.py
 
