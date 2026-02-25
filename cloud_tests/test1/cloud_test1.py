@@ -17,7 +17,7 @@
 # gsutil ls gs://rms-metadata-jspitale/test.txt
 # gsutil cat gs://rms-metadata-jspitale/test.txt
 
-import asyncio
+#import asyncio
 import sys
 from cloud_tasks.worker import Worker, WorkerData
 from filecache import FCPath
@@ -48,4 +48,4 @@ if __name__ == "__main__":
     filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
     filespec.write_text('Hello\nWorld\n', encoding='utf-8')
     exit()
-    asyncio.run(main())
+#    asyncio.run(main())

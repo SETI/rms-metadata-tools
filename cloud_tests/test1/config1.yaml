@@ -13,7 +13,6 @@
 provider: gcp
 gcp:
   job_id: my-processing-job
-#  project_id: rms-node-419806
   project_id: rms-metadata
   startup_script_file:      test1_startup.sh
   service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
