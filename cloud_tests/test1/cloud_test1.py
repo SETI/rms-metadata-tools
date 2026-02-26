@@ -29,9 +29,5 @@ if filespec.exists():
     exit()
 
 filespec.write_text('Hello\nWorld\n', encoding='utf-8')
-
-
-from cloud_tasks.worker import Worker, WorkerData
-
 exit()
 
