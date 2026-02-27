@@ -13,8 +13,7 @@
 # For GCP runs (not yet working), use:
 #   gcloud auth application-default login       # if necessary
 #
-#   cloud_tasks load_queue --config gcp_index_config.yml --task-file index_tasks.json -vv
-#   cloud_tasks manage_pool --config gcp_index_config.yml -vv
+#   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json -vv
 #
 #   Other useful commands
 #     cloud_tasks monitor_event_queue --config gcp_index_config.yml --output-file gcp_index_config.log

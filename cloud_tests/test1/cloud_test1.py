@@ -17,21 +17,47 @@
 # gsutil ls gs://rms-metadata-jspitale/test.txt
 # gsutil cat gs://rms-metadata-jspitale/test.txt
 
-import sys
 from filecache import FCPath
-
-import metadata_tools.util as util
 
 filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
 if filespec.exists():
     content = filespec.read_text(encoding='utf-8')
     filespec.write_text(content + '\nGoodbye\nWorld\n', encoding='utf-8')
     exit()
-
 filespec.write_text('Hello\nWorld\n', encoding='utf-8')
-
-
-from cloud_tasks.worker import Worker, WorkerData
-
 exit()
 
+
+
+
+
+
+#mport asyncio
+#import sys
+#from cloud_tasks.worker import Worker, WorkerData
+#from filecache import FCPath
+
+#import metadata_tools.util as util
+
+#========================================================================================
+#def process_task(task_id: str,
+#                 task_data: dict[str, any],
+#                 worker_data: WorkerData) -> tuple[bool, any]:
+
+
+#    filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
+##    util.write_txt_file(filespec, ['Hello', 'World'])
+#    filespec.write_text(f"Hello from {worker_id}\n")
+#    return False, None
+
+#========================================================================================
+#async def main():
+###    filespec = FCPath('gs://rms-metadata-jspitale/xxxtest.txt')
+###    filespec.write_text('Hey\nYo\n', encoding='utf-8')
+
+#    worker = Worker(process_task, args=sys.argv[1:])
+#    await worker.start()
+
+#########################################################################################
+#if __name__ == "__main__":
+#    asyncio.run(main())
