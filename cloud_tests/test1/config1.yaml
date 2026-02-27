@@ -16,7 +16,7 @@ gcp:
   project_id: rms-metadata
   service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
   region: us-central1
-  max_instances:            1
+  max_instances:            4
   instance_types: ["^n2-.*", "^n3-.*", "^n4-.*"]
   boot_disk_types: pd-balanced
   startup_script_file:      test1_startup.sh
