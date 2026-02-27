@@ -35,8 +35,10 @@ def process_task(task_id: str,
 
     filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
     worker_id = multiprocessing.current_process().name
-#    filespec.write_text(f"Hello from {worker_id}\n")
-    util.write_txt_file(filespec, f"Hello from {worker_id}\n")
+
+    filespec.write_text(f"Hello from {worker_id}\n")
+#    util.write_txt_file(filespec, f"Hello from {worker_id}\n")
+
     return False, None
 
 #========================================================================================
