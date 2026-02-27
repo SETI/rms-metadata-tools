@@ -14,10 +14,12 @@ provider: gcp
 gcp:
   job_id: my-processing-job
   project_id: rms-metadata
-  startup_script_file:      test1_startup.sh
   service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
   region: us-central1
   max_instances:            1
+  instance_types: ["^n2-.*", "^n3-.*", "^n4-.*"]
+  boot_disk_types: pd-balanced
+  startup_script_file:      test1_startup.sh
 
 
 
