@@ -20,6 +20,7 @@
 
 
 import asyncio
+import multiprocessing
 import sys
 from cloud_tasks.worker import Worker, WorkerData
 from filecache import FCPath
@@ -34,6 +35,7 @@ def process_task(task_id: str,
 
     filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
 #    util.write_txt_file(filespec, ['Hello', 'World'])
+    worker_id = multiprocessing.current_process().name
     filespec.write_text(f"Hello from {worker_id}\n")
     return False, None
 
