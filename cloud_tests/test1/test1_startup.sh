@@ -4,7 +4,7 @@ cd
 #git clone https://github.com/SETI/rms-metadata-tools.git
 git clone -b jns--updates-continued --single-branch https://github.com/SETI/rms-metadata-tools.git
 cd rms-metadata-tools
-##python3 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements-cloud.txt
 
