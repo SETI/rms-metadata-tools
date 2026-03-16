@@ -3,7 +3,7 @@ apt-get update -y
 
 apt-get install -y python3 python3-pip python3-venv git
 cd || exit 1
-git clone https://github.com/SETI/rms-metadata-tools.gitnew_overrides
+git clone https://github.com/SETI/rms-metadata-tools.git || exit 1
 cd rms-metadata-tools || exit 1
 source venv/bin/activate || { echo 'No virtual environment' ; exit 1; }
 pip install -r requirements.txt
