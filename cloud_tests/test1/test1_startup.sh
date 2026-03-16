@@ -8,6 +8,6 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements-cloud.txt
 
-cd cloud_tests/test1
-python3 cloud_test1.py
+###cd cloud_tests/test1
+python3 cloud_tests/test1/cloud_test1.py
 
