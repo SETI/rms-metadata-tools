@@ -25,13 +25,12 @@ import sys
 from cloud_tasks.worker import Worker, WorkerData
 from filecache import FCPath
 
-import metadata_tools.util as util
+#####import metadata_tools.util as util  --> ModuleNotFoundError
 
 #========================================================================================
 def process_task(task_id: str,
                  task_data: dict[str, any],
                  worker_data: WorkerData) -> tuple[bool, any]:
-
 
     filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
     worker_id = multiprocessing.current_process().name
