@@ -1,3 +1,4 @@
+IPython
 numpy>=2.3.0
 rms-oops>=0.1.0
 rms-filecache>=3.0.0

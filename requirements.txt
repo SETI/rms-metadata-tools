@@ -1,5 +1,4 @@
 -r requirements-cloud.txt
-IPython
 coverage
 flake8
 pytest
