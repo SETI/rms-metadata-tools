@@ -29,7 +29,7 @@ from filecache import FCPath
 import sys
 sys.path.append('')
 
-import metadata_tools.util as util
+#import metadata_tools.util as util
 
 #========================================================================================
 def process_task(task_id: str,
