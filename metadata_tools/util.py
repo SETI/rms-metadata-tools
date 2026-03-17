@@ -396,10 +396,15 @@ def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilit
     Returns:
         None
     """
+    
     filespec = FCPath(filespec)
 
     # Expand environment variables and resolve to absolute path
     filespec = expandvars(filespec)
+
+    # IF no file, just run write_txt_file().
+    if not filespec.exists():
+        write_txt_file(filespec, content, terminator=terminator)
 
     # Determine terminator
     if terminator is None:
