@@ -44,7 +44,7 @@ def process_task(task_id: str,
     content = ''
     if filespec.exists():
         content = util.read_txt_file(filespec)
-    util.write_txt_file(filespec, content + f"Hello from {worker_id}!\n")
+    util.write_txt_file(filespec, content + [f"Hello from {worker_id}!\n"])
 
     return False, None
 
