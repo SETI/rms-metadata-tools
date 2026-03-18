@@ -326,6 +326,7 @@ def read_txt_file(filespec, as_string=False, terminator='\r\n'):    ### move to 
         terminator.
 
     """
+    filespec = FCPath(filespec)
 
     # Expand environment variables and resolve to absolute path
     filespec = expandvars(filespec)
@@ -358,6 +359,7 @@ def write_txt_file(filespec, content, terminator='\r\n'):    ### move to utiliti
     Returns:
         None
     """
+    filespec = FCPath(filespec)
 
     # Expand environment variables and resolve to absolute path
     filespec = expandvars(filespec)
@@ -396,13 +398,12 @@ def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilit
     Returns:
         None
     """
-    
     filespec = FCPath(filespec)
 
     # Expand environment variables and resolve to absolute path
     filespec = expandvars(filespec)
 
-    # IF no file, just run write_txt_file().
+    # If no file, just run write_txt_file().
     if not filespec.exists():
         write_txt_file(filespec, content, terminator=terminator)
 
