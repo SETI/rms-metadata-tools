@@ -37,11 +37,8 @@ def process_task(task_id: str,
 
     filespec = FCPath('gs://rms-metadata-jspitale/test.txt')
     worker_id = multiprocessing.current_process().name
-    print(worker_id, file=sys.stderr)
 
-#    filespec.write_text(f"Hello from {worker_id}\n")
 #    util.append_txt_file(filespec, f"Hello from {worker_id}!\n")
-
     content = ''
     if filespec.exists():
         content = util.read_txt_file(filespec)
