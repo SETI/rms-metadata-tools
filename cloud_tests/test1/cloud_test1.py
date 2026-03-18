@@ -39,7 +39,12 @@ def process_task(task_id: str,
     worker_id = multiprocessing.current_process().name
 
 #    filespec.write_text(f"Hello from {worker_id}\n")
-    util.write_txt_file(filespec, f"Hello from {worker_id}!\n")
+#    util.append_txt_file(filespec, f"Hello from {worker_id}!\n")
+
+    content = ''
+    if filespec.exists():
+        content = util.read_txt_file(filespec)
+    util.write_txt_file(filespec, content + f"Hello from {worker_id}!\n")
 
     return False, None
 
