@@ -5,9 +5,6 @@ import fortranformat as ff
 import fnmatch
 import ast
 
-#import sys
-#sys.path.append('')
-
 import metadata_tools.common as com
 import metadata_tools.util as util
 
