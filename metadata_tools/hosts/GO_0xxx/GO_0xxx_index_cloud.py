@@ -32,6 +32,7 @@ import sys
 from typing import Any
 from cloud_tasks.worker import Worker, WorkerData
 
+from IPython import embed; print('+++++++++++++'); embed()
 import metadata_tools.util as util
 import metadata_tools.common as com
 import host_config as hconf
