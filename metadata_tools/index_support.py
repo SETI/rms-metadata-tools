@@ -597,9 +597,10 @@ def process_index(template_name,
         parser = get_args(host=host, index_type=index_type)
         args = parser.parse_args()
 
-#    if not task_list_only:
-#        print('testing', args.volumes)
-#        return
+    if not task_list_only:
+        filespec = FCPath('gs://rms-metadata-jspitale/index_test.txt')
+        util.write_txt_file(filespec, f"xxx!\n")
+        return
 
     if volumes is None:
         volumes = args.volumes
