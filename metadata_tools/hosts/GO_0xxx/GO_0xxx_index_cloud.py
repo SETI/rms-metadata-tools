@@ -32,7 +32,8 @@ import sys
 from typing import Any
 from cloud_tasks.worker import Worker, WorkerData
 
-sys.path.append('')             #####################
+sys.path.append('')             ### This is needed to get the GCP instance to recognize
+                                ### the metadata_tools module
 
 import metadata_tools.util as util
 import metadata_tools.common as com
