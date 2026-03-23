@@ -13,7 +13,11 @@
 # For GCP runs (not yet working), use:
 #   gcloud auth application-default login       # if necessary
 #
-#   cloud_tasks run --config gcp_index_config.yml
+#   cloud_tasks run --config gcp_index_config.yml --continue
+#   cloud_tasks run --config gcp_index_config.yml --num-simultaneous-tasks 12 \
+#                               gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx \
+#                               gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx \
+#                               gs://rms-metadata-jspitale/metadata_test/GO_0xxx/
 #
 #   Other useful commands
 #     cloud_tasks monitor_event_queue --config gcp_index_config.yml --output-file gcp_index_config.log
@@ -60,9 +64,9 @@ async def main():
     # specifying the behavior of the worker process manager. They are optional
     # and most useful when running the worker locally.
 
-    from filecache import FCPath
-    ff = FCPath(f'gs://rms-metadata-jspitale/index_test.txt', _task_id)
-    util.write_txt_file(ff, '!!')
+#    from filecache import FCPath
+#    ff = FCPath(f'gs://rms-metadata-jspitale/index_test.txt')
+#    util.write_txt_file(ff, '!!')
 
     # parse metadata arguments
     host, index_type, _template_dir = util.parse_template_name(hconf.template_name)
