@@ -46,6 +46,10 @@ def process_task(_task_id: str,
                  task_data: dict[str, Any],
                  worker_data: WorkerData) -> tuple[bool, Any]:
 
+    from filecache import FCPath
+    ff = FCPath(f'gs://rms-metadata-jspitale/index_test-%s.txt', _task_id)
+    util.write_txt_file(ff, _task_id)
+
     # process the volume
     process_index(hconf.template_name,
                   glob=config.glob,
