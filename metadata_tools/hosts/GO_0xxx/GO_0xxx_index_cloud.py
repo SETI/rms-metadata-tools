@@ -46,10 +46,6 @@ def process_task(_task_id: str,
                  task_data: dict[str, Any],
                  worker_data: WorkerData) -> tuple[bool, Any]:
 
-    from filecache import FCPath
-    ff = FCPath(f'gs://rms-metadata-jspitale/index_test-%s.txt', _task_id)
-    util.write_txt_file(ff, _task_id)
-
     # process the volume
     process_index(hconf.template_name,
                   glob=config.glob,
@@ -63,6 +59,10 @@ async def main():
     # These command line arguments are used to override environment variables when
     # specifying the behavior of the worker process manager. They are optional
     # and most useful when running the worker locally.
+
+    from filecache import FCPath
+    ff = FCPath(f'gs://rms-metadata-jspitale/index_test.txt', _task_id)
+    util.write_txt_file(ff, '!!')
 
     # parse metadata arguments
     host, index_type, _template_dir = util.parse_template_name(hconf.template_name)
