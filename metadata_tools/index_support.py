@@ -547,8 +547,8 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                     com.add_task(vol, 'index')
 
                 # ... or process this volumne
-                else:
-                    # Process this volumne
+#                else:
+#                    # Process this volumne
 #                    index = IndexTable(indir, outdir, template_path, metadata_dir,
 #                                       qualifier=qualifier, volume_id=vol, glob=glob)
 #
