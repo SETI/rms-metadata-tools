@@ -548,12 +548,14 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 
                 # ... or process this volumne
                 else:
-                    # Process this volumne
-                    index = IndexTable(indir, outdir, template_path, metadata_dir,
-                                       qualifier=qualifier, volume_id=vol, glob=glob)
-
-                    index.create(labels_only=labels_only, pattern=pattern)
-                    unused = index.unused if not unused else unused & index.unused
+                    ff = FCPath(f'gs://rms-metadata-jspitale/index_test-%s.txt', vol)
+                    util.write_txt_file(ff, vol)
+#                    # Process this volumne
+#                    index = IndexTable(indir, outdir, template_path, metadata_dir,
+#                                       qualifier=qualifier, volume_id=vol, glob=glob)
+#
+#                    index.create(labels_only=labels_only, pattern=pattern)
+#                    unused = index.unused if not unused else unused & index.unused
 
         # Write the task file
         if task_list_only:
