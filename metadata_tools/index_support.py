@@ -40,7 +40,6 @@ class IndexTable(com.Table):
                 e.g., 'supplemental'.
             glob (str, optional): Glob pattern for data files.
         """
-        return #++++++++++++++++++++++++
 
         # Initialize table, return if specific paths not given
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
@@ -550,10 +549,10 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
+                    continue   #+++++++++++++++++++++++++++++++++++++++++++++
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
 
-                    continue   #+++++++++++++++++++++++++++++++++++++++++++++
                     index.create(labels_only=labels_only, pattern=pattern)
                     unused = index.unused if not unused else unused & index.unused
 
