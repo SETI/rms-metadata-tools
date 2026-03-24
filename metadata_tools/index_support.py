@@ -53,6 +53,7 @@ class IndexTable(com.Table):
         self.glob = glob
         self.usage = {}
         self.unused = set()
+        return #++++++++++++++++++++++++
 
         # Get volume id
         self.volume_id = hconf.get_volume_id(self.input_dir)
