@@ -60,9 +60,13 @@ async def main():
     # specifying the behavior of the worker process manager. They are optional
     # and most useful when running the worker locally.
 
+
+
     from filecache import FCPath
     ff = FCPath(f'gs://rms-metadata-jspitale/index_test.txt')
     util.write_txt_file(ff, '!!')
+
+
 
     # parse metadata arguments
     host, index_type, _template_dir = util.parse_template_name(hconf.template_name)
