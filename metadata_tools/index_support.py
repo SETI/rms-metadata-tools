@@ -547,13 +547,13 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                     com.add_task(vol, 'index')
 
                 # ... or process this volumne
-#                else:
-#                    # Process this volumne
-#                    index = IndexTable(indir, outdir, template_path, metadata_dir,
-#                                       qualifier=qualifier, volume_id=vol, glob=glob)
-#
-#                    index.create(labels_only=labels_only, pattern=pattern)
-#                    unused = index.unused if not unused else unused & index.unused
+                else:
+                    # Process this volumne
+                    index = IndexTable(indir, outdir, template_path, metadata_dir,
+                                       qualifier=qualifier, volume_id=vol, glob=glob)
+
+                    index.create(labels_only=labels_only, pattern=pattern)
+                    unused = index.unused if not unused else unused & index.unused
 
         # Write the task file
         if task_list_only:
@@ -600,10 +600,16 @@ def process_index(template_name,
     if volumes is None:
         volumes = args.volumes
 
+
+
+
     if not task_list_only:
         filespec = FCPath(f'gs://rms-metadata-jspitale/tests/index_test-{volumes[0]}.txt')
         util.write_txt_file(filespec, volumes[0])
-        return
+#        return
+
+
+
 
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
