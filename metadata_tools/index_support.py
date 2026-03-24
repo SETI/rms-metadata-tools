@@ -548,11 +548,11 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 
                 # ... or process this volumne
                 else:
-                    continue   #+++++++++++++++++++++++++++++++++++++++++++++
                     # Process this volumne
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
 
+                    continue   #+++++++++++++++++++++++++++++++++++++++++++++
                     index.create(labels_only=labels_only, pattern=pattern)
                     unused = index.unused if not unused else unused & index.unused
 
