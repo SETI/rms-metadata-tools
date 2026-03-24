@@ -112,7 +112,7 @@ class IndexTable(com.Table):
         Returns:
             None.
         """
-        continue   #+++++++++++++++++++++++++++++++++++++++++++++
+        return #++++++++++++++++++++++++++
         if not hasattr(self, 'files'):
             return
 
@@ -553,6 +553,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
                     index.create(labels_only=labels_only, pattern=pattern)
+                    continue   #+++++++++++++++++++++++++++++++++++++++++++++
                     unused = index.unused if not unused else unused & index.unused
 
         # Write the task file
