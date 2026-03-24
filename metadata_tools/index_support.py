@@ -548,6 +548,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 
                 # ... or process this volumne
                 else:
+                    continue
                     # Process this volumne
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
@@ -606,7 +607,7 @@ def process_index(template_name,
     if not task_list_only:
         filespec = FCPath(f'gs://rms-metadata-jspitale/tests/index_test-{volumes[0]}.txt')
         util.write_txt_file(filespec, volumes[0])
-        return
+#        return
 
 
 
