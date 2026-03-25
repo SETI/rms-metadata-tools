@@ -549,7 +549,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
-                    filespec = FCPath(f'gs://rms-metadata-jspitale/messages.txt')
 
 #                    util.gsprint(vol)
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
@@ -592,6 +591,9 @@ def process_index(template_name,
         None.
     """
 
+    filespec = FCPath(f'gs://rms-metadata-jspitale/messages.txt')
+    util.write_txt_file(filespec, 'zzz')
+    
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
 
@@ -602,7 +604,6 @@ def process_index(template_name,
 
     if volumes is None:
         volumes = args.volumes
-    util.write_txt_file(filespec, 'zzz')
 
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
