@@ -592,6 +592,11 @@ def process_index(template_name,
 
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
+
+    filespec = FCPath(f'gs://rms-metadata-jspitale/messages.txt')
+    util.write_txt_file(filespec, 'xxx')
+
+
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
     if args is None:
         parser = get_args(host=host, index_type=index_type)
