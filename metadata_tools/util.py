@@ -13,6 +13,25 @@ from filecache import FCPath
 import metadata_tools.defs as defs
 
 #===============================================================================
+def gsprint(message, filespec=None):
+    """Write a message to a gcloud file for degugging.
+
+    Args:
+        message (str): Mesaage to write.
+        filespec (str, Path, or FCPath): File to write to.
+
+    Returns: None
+    """
+    if not filespec:
+        filespec = FCPath(f'gs://rms-metadata-jspitale/messages.txt')
+
+    content = message
+    if filespec.exists():
+        content = [read_txt_file(filespec), content]
+
+    util.write_txt_file(filespec, message)
+
+#===============================================================================
 def PdsTable(label_path):
     """read a pds3table from an FCPath object.  To be replaced whenever pdstable is 
        upgraded to use filecache.
