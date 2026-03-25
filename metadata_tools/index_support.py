@@ -507,7 +507,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     Returns:
         None.
     """
-    util.write_txt_file(filespec, 'zzz')
     logger = com.get_logger()
 
     if metadata_tree is not None:
@@ -603,6 +602,7 @@ def process_index(template_name,
 
     if volumes is None:
         volumes = args.volumes
+    util.write_txt_file(filespec, 'zzz')
 
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
