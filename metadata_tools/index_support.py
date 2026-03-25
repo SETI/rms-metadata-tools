@@ -507,6 +507,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     Returns:
         None.
     """
+    util.write_txt_file(filespec, 'zzz')
     logger = com.get_logger()
 
     if metadata_tree is not None:
@@ -550,7 +551,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 else:
                     # Process this volumne
                     filespec = FCPath(f'gs://rms-metadata-jspitale/messages.txt')
-                    util.write_txt_file(filespec, 'xxx')
 
 #                    util.gsprint(vol)
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
