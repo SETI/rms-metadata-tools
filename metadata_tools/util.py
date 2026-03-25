@@ -25,11 +25,11 @@ def gsprint(message, filespec=None):
     if not filespec:
         filespec = FCPath(f'gs://rms-metadata-jspitale/messages.txt')
 
-    content = message
+    content = [message]
     if filespec.exists():
-        content = [read_txt_file(filespec), content]
+        content = read_txt_file(filespec) + content
 
-    write_txt_file(filespec, message)
+    write_txt_file(filespec, content)
 
 #===============================================================================
 def PdsTable(label_path):
