@@ -112,7 +112,7 @@ class IndexTable(com.Table):
         Returns:
             None.
         """
-        return #++++++++++++++++++++++++++
+#        return #++++++++++++++++++++++++++
         if not hasattr(self, 'files'):
             return
 
@@ -547,6 +547,9 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 if task_list_only:
                     com.add_task(vol, 'index')
 
+                    filespec = FCPath(f'gs://rms-metadata-jspitale/tests/index_test-{vol}.txt')
+                    util.write_txt_file(filespec, vol)
+
                 # ... or process this volumne
                 else:
                     # Process this volumne
@@ -603,12 +606,12 @@ def process_index(template_name,
 
 
 
-    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    if not task_list_only:
-        filespec = FCPath(f'gs://rms-metadata-jspitale/tests/index_test-{volumes[0]}.txt')
-        util.write_txt_file(filespec, volumes[0])
-        return
-    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#    if not task_list_only:
+#        filespec = FCPath(f'gs://rms-metadata-jspitale/tests/index_test-{volumes[0]}.txt')
+#        util.write_txt_file(filespec, volumes[0])
+#        return
+#    #++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 
