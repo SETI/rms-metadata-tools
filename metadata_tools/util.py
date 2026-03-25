@@ -14,7 +14,7 @@ import metadata_tools.defs as defs
 
 #===============================================================================
 def gsprint(message, filespec=None):
-    """Write a message to a gcloud file for degugging.
+    """Append a message to a gcloud file for degugging.
 
     Args:
         message (str): Mesaage to write.
@@ -29,7 +29,7 @@ def gsprint(message, filespec=None):
     if filespec.exists():
         content = [read_txt_file(filespec), content]
 
-    util.write_txt_file(filespec, message)
+    write_txt_file(filespec, message)
 
 #===============================================================================
 def PdsTable(label_path):
