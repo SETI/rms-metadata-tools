@@ -594,7 +594,6 @@ def process_index(template_name,
         None.
     """
 
-    util.gsprint('---xxyyyxx---')
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
 
