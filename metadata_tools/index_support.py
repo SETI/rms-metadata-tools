@@ -112,6 +112,7 @@ class IndexTable(com.Table):
         Returns:
             None.
         """
+        util.gsprint('fff')
         if not hasattr(self, 'files'):
             return
 
@@ -507,7 +508,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     Returns:
         None.
     """
-    util.gsprint('ddd')
     logger = com.get_logger()
 
     if metadata_tree is not None:
@@ -550,8 +550,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
-
-                    util.gsprint(vol)
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
                     index.create(labels_only=labels_only, pattern=pattern)
