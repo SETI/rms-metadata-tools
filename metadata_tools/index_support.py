@@ -41,6 +41,7 @@ class IndexTable(com.Table):
             glob (str, optional): Glob pattern for data files.
         """
 
+        util.gsprint('fggxff')
         # Initialize table, return if specific paths not given
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
@@ -549,11 +550,9 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
-                    util.gsprint('fff')
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
                     index.create(labels_only=labels_only, pattern=pattern)
-                    util.gsprint('fggff')
                     unused = index.unused if not unused else unused & index.unused
 
         # Write the task file
