@@ -603,6 +603,7 @@ def process_index(template_name,
         volumes = args.volumes
 
     util.gsprint('cxcc')
+    return
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
                   metadata_tree=args.metadata_tree,
