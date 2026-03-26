@@ -591,6 +591,8 @@ def process_index(template_name,
         None.
     """
 
+    util.gsprint('cxxcc')
+    return
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
 
@@ -602,8 +604,6 @@ def process_index(template_name,
     if volumes is None:
         volumes = args.volumes
 
-    util.gsprint('cxcc')
-    return
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
                   metadata_tree=args.metadata_tree,
