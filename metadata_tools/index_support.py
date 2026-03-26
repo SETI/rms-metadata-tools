@@ -550,6 +550,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
+                    util.gsprint('fggzzzzff')
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
                     index.create(labels_only=labels_only, pattern=pattern)
