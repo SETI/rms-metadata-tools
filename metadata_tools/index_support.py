@@ -507,6 +507,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     Returns:
         None.
     """
+    util.gsprint('ddd')
     logger = com.get_logger()
 
     if metadata_tree is not None:
