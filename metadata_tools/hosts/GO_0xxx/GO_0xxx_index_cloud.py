@@ -46,7 +46,6 @@ def process_task(_task_id: str,
                  task_data: dict[str, Any],
                  worker_data: WorkerData) -> tuple[bool, Any]:
 
-
     # process the volume
     process_index(hconf.template_name,
                   glob=config.glob,
@@ -70,6 +69,7 @@ async def main():
                     task_source=com.task_source,
                     args=sys.argv[1:],
                     argparser=parser)
+    util.gsprint('---xxyyxxcvvccxzzyxx---')
 
     # set up the task file containing one entry per volume
     process_index(hconf.template_name,
@@ -77,7 +77,6 @@ async def main():
                   args=worker._data.args,
                   task_list_only=True,
                   task_file=worker._data.args.task_file)
-    util.gsprint('---xxyyxxcccxzzyxx---')
 
     # queue the processing
     await worker.start()
