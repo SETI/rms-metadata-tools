@@ -41,7 +41,6 @@ class IndexTable(com.Table):
             glob (str, optional): Glob pattern for data files.
         """
 
-        util.gsprint('fggxff')
         # Initialize table, return if specific paths not given
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
