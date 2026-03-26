@@ -591,9 +591,10 @@ def process_index(template_name,
         None.
     """
 
-    filespec = FCPath(f'gs://rms-metadata-jspitale/messages.txt')
-    util.write_txt_file(filespec, 'yyy')
-    
+#    filespec = FCPath(f'gs://rms-metadata-jspitale/messages.txt')
+#    util.write_txt_file(filespec, 'yyy')
+    util.gsprint('ccc')
+
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
 
