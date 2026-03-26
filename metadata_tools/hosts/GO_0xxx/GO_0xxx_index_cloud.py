@@ -62,9 +62,8 @@ async def main():
 
 
 
-    from filecache import FCPath
-    ff = FCPath(f'gs://rms-metadata-jspitale/index_test.txt')
-    util.write_txt_file(ff, '!!')
+    util.gsprint('cxbxcc')
+    return
 
 
 
