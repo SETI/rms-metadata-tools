@@ -60,7 +60,7 @@ async def main():
     # specifying the behavior of the worker process manager. They are optional
     # and most useful when running the worker locally.
 
-    print('dfdfdfdfdf', file=sys.stderr, flush=True)
+    print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', file=sys.stderr, flush=True)
     # parse metadata arguments
     host, index_type, _template_dir = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host, index_type=index_type)
