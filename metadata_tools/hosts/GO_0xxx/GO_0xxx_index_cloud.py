@@ -60,6 +60,7 @@ async def main():
     # specifying the behavior of the worker process manager. They are optional
     # and most useful when running the worker locally.
 
+    print('dfdfdfdfdf', file=sys.stderr)
     # parse metadata arguments
     host, index_type, _template_dir = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host, index_type=index_type)
@@ -69,7 +70,6 @@ async def main():
                     task_source=com.task_source,
                     args=sys.argv[1:],
                     argparser=parser)
-    util.gsprint('---xxyyxxcvvccxzzyxx---')
 
     # set up the task file containing one entry per volume
     process_index(hconf.template_name,
