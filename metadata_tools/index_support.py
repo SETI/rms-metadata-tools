@@ -552,7 +552,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
-#                    util.gsprint('---x---')
+                    util.gsprint('---xccv---')
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
                     index.create(labels_only=labels_only, pattern=pattern)
@@ -593,6 +593,8 @@ def process_index(template_name,
     Returns:
         None.
     """
+
+    import logging; logging.warning('fghjk')
 
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
