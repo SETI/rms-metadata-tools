@@ -595,6 +595,9 @@ def process_index(template_name,
         None.
     """
 
+    import logging; logging.warning('0  -----------------------------------')
+    print('0-----------------------------', file=sys.stderr, flush=True)
+
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
 
