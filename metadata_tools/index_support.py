@@ -594,6 +594,7 @@ def process_index(template_name,
         None.
     """
 
+    import logging; logging.warning('xoxoxo')
     import logging; logging.basicConfig(level=logging.DEBUG); logging.debug('yoyoyo')
 
     # Parse arguments
