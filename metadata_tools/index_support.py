@@ -509,6 +509,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     Returns:
         None.
     """
+    print('1.0.1-----------------------------', file=sys.stderr, flush=True)
     logger = com.get_logger()
 
     if metadata_tree is not None:
