@@ -41,7 +41,7 @@ class IndexTable(com.Table):
             glob (str, optional): Glob pattern for data files.
         """
 
-        print('0.0-----------------------------', file=sys.stderr, flush=True)
+        print('1.0-----------------------------', file=sys.stderr, flush=True)
         # Initialize table, return if specific paths not given
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
@@ -552,12 +552,11 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
-                    import logging; logging.warning('0  -----------------------------------')
-                    print('0-----------------------------', file=sys.stderr, flush=True)
+                    print('1-----------------------------', file=sys.stderr, flush=True)
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
                     index.create(labels_only=labels_only, pattern=pattern)
-                    print('1-----------------------------', file=sys.stderr, flush=True)
+                    print('2-----------------------------', file=sys.stderr, flush=True)
                     unused = index.unused if not unused else unused & index.unused
 
         # Write the task file
@@ -595,7 +594,6 @@ def process_index(template_name,
         None.
     """
 
-    import logging; logging.warning('0  -----------------------------------')
     print('0-----------------------------', file=sys.stderr, flush=True)
 
     # Parse arguments
