@@ -517,9 +517,11 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     else:
         metadata_tree = output_tree
 
+    print('1.0.2-----------------------------', file=sys.stderr, flush=True)
     # Build volume glob
     vol_glob = util.get_volume_glob(volume_tree.name)
 
+    print('1.0.3-----------------------------', file=sys.stderr, flush=True)
     # Walk the input tree, making indexes for each found volume
     for root, dirs, _files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
