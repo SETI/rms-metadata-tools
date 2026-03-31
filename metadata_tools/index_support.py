@@ -536,12 +536,12 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         parts = root.parts
         col = parts[-2]
         vol = parts[-1]
-        print(f'-----------------------------{vol}', file=sys.stderr, flush=True)
 
         unused = None
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
+                print(f'-----------------------------ffffff', file=sys.stderr, flush=True)
 
                 # Set up input and output directories
                 indir = root
