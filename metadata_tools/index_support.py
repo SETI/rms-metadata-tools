@@ -548,7 +548,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 if not metadata_dir.exists():
                     util.dbprint(f'-----------------------------jjjjjj')
                     continue
-#                util.dbprint(f'-----------------------------kkkkkkk')
+                util.dbprint(f'-----------------------------kkkkkkk')
 
                 # Update the task file...
                 if task_list_only:
