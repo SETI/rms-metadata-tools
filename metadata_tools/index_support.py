@@ -527,7 +527,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue
-        print(f'{root}-----------------------------', file=sys.stderr, flush=True)
 
         # Sort directories for progress monitoring
         dirs.sort()
@@ -537,6 +536,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         parts = root.parts
         col = parts[-2]
         vol = parts[-1]
+        print(f'-----------------------------{vol}', file=sys.stderr, flush=True)
 
         unused = None
         # Test whether this root is a volume
