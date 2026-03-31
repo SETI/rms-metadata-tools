@@ -527,7 +527,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue
-        print(f'%s-----------------------------', root, file=sys.stderr, flush=True)
+        print(f'{root}-----------------------------', file=sys.stderr, flush=True)
 
         # Sort directories for progress monitoring
         dirs.sort()
