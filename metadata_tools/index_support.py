@@ -541,7 +541,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
-                print(f'-----------------------------ffffff', file=sys.stderr, flush=True)
 
                 # Set up input and output directories
                 indir = root
@@ -549,6 +548,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 metadata_dir = util.select_dir(metadata_tree, col, vol)
                 if not metadata_dir.exists():
                     continue
+                print(f'-----------------------------hhhhhhh', file=sys.stderr, flush=True)
 
                 # Update the task file...
                 if task_list_only:
