@@ -545,7 +545,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 indir = root
                 outdir = util.select_dir(output_tree, col, vol)
                 metadata_dir = util.select_dir(metadata_tree, col, vol)
-                util.dbprint(f'-------{root}')
                 if not metadata_dir.exists():
                     util.dbprint(f'-----------------------------jjjjjj')
                     continue

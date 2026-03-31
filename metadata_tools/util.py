@@ -53,6 +53,9 @@ def select_dir(tree, col, vol):
     Returns:
         FCPath: Directory path.
     """
+    dbprint(f'-------{col}')
+    dbprint(f'-------{vol}')
+    dbprint(f'-------{tree}')
     if tree.parts[-1] != col:
         return tree / col / vol
     return tree / vol
