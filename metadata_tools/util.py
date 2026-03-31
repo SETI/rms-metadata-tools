@@ -5,12 +5,26 @@ import os
 import re
 import numpy as np
 import cspyce
+import datetime as dt
+import sys
 
 import pdstable
 from pathlib   import Path
 from filecache import FCPath
 
 import metadata_tools.defs as defs
+
+#===============================================================================
+def dbprint(message):
+    """Print a messaage to stderr with time stamp for degugging.
+
+    Args:
+        message (str): Mesaage to write.
+
+    Returns: None
+    """
+    time = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f'{time} - {message}', file=sys.stderr, flush=True)
 
 #===============================================================================
 def PdsTable(label_path):

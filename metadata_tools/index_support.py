@@ -4,7 +4,6 @@
 import fortranformat as ff
 import fnmatch
 import ast
-import sys
 
 import metadata_tools.common as com
 import metadata_tools.util as util
@@ -42,7 +41,7 @@ class IndexTable(com.Table):
             glob (str, optional): Glob pattern for data files.
         """
 
-        print('1.0.0-----------------------------', file=sys.stderr, flush=True)
+        util.dbprint('1.0.0-----------------------------')
         # Initialize table, return if specific paths not given
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
@@ -509,7 +508,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     Returns:
         None.
     """
-    print('1.0.1-----------------------------', file=sys.stderr, flush=True)
+    util.dbprint('1.0.1-----------------------------')
     logger = com.get_logger()
 
     if metadata_tree is not None:
@@ -517,11 +516,11 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     else:
         metadata_tree = output_tree
 
-    print('1.0.2-----------------------------', file=sys.stderr, flush=True)
+    util.dbprint('1.0.2-----------------------------')
     # Build volume glob
     vol_glob = util.get_volume_glob(volume_tree.name)
 
-    print('1.0.3-----------------------------', file=sys.stderr, flush=True)
+    util.dbprint('1.0.3-----------------------------')
     # Walk the input tree, making indexes for each found volume
     for root, dirs, _files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
@@ -546,9 +545,9 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 indir = root
                 outdir = util.select_dir(output_tree, col, vol)
                 metadata_dir = util.select_dir(metadata_tree, col, vol)
-#                print(f'-----------------------------{metadata_dir}', file=sys.stderr, flush=True)
+#                util.dbprint(f'-----------------------------{metadata_dir}')
                 if not metadata_dir.exists():
-                    print(f'-----------------------------jjjjjj', file=sys.stderr, flush=True)
+                    util.dbprint(f'-----------------------------jjjjjj')
                     continue
 
                 # Update the task file...
@@ -558,11 +557,11 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volumne
-                    print('1.0-----------------------------', file=sys.stderr, flush=True)
+                    util.dbprint('1.0-----------------------------')
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
                     index.create(labels_only=labels_only, pattern=pattern)
-                    print('1.1-----------------------------', file=sys.stderr, flush=True)
+                    util.dbprint('1.1-----------------------------')
                     unused = index.unused if not unused else unused & index.unused
 
         # Write the task file
@@ -600,7 +599,7 @@ def process_index(template_name,
         None.
     """
 
-    print('0-----------------------------', file=sys.stderr, flush=True)
+    util.dbprint('0-----------------------------')
 
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
@@ -612,7 +611,7 @@ def process_index(template_name,
 
     if volumes is None:
         volumes = args.volumes
-    print('1-----------------------------', file=sys.stderr, flush=True)
+    util.dbprint('1-----------------------------')
 
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
