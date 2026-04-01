@@ -1,7 +1,7 @@
 IPython
 numpy>=2.3.0
 rms-oops>=0.1.0
-rms-filecache>=3.0.0
+rms-filecache>=3.1.0
 rms-pdslogger>=3.0.0
 rms-julian>=3.0.1
 rms-pdsparser>=2.0.0

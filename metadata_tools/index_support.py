@@ -41,7 +41,6 @@ class IndexTable(com.Table):
             glob (str, optional): Glob pattern for data files.
         """
 
-        util.dbprint('1.0.0-----------------------------')
         # Initialize table, return if specific paths not given
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
@@ -508,7 +507,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     Returns:
         None.
     """
-    util.dbprint('1.0.1-----------------------------')
     logger = com.get_logger()
 
     if metadata_tree is not None:
@@ -516,11 +514,9 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     else:
         metadata_tree = output_tree
 
-    util.dbprint('1.0.2-----------------------------')
     # Build volume glob
     vol_glob = util.get_volume_glob(volume_tree.name)
 
-    util.dbprint('1.0.3-----------------------------')
     # Walk the input tree, making indexes for each found volume
     for root, dirs, _files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
@@ -544,13 +540,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # Set up input and output directories
                 indir = root
                 outdir = util.select_dir(output_tree, col, vol)
-                util.dbprint(f'+++++++{outdir}')
                 metadata_dir = util.select_dir(metadata_tree, col, vol)
-                util.dbprint(f'+++++++{metadata_dir}')
-                util.dbprint(f'------+++++++{metadata_dir.exists()}')
-                if not metadata_dir.exists():
-                    util.dbprint(f'-----------------------------jjjjjj')
-                    continue
 
                 # Update the task file...
                 if task_list_only:
@@ -558,12 +548,15 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 
                 # ... or process this volumne
                 else:
-                    # Process this volumne
-                    util.dbprint('1.0-----------------------------')
-                    index = IndexTable(indir, outdir, template_path, metadata_dir,
+                    # Process this volume if possible
+                    try:
+                        index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
+                    except:
+                        continue
+
+#                    dbprint(f'0---------------------------------------------')
                     index.create(labels_only=labels_only, pattern=pattern)
-                    util.dbprint('1.1-----------------------------')
                     unused = index.unused if not unused else unused & index.unused
 
         # Write the task file
@@ -601,8 +594,6 @@ def process_index(template_name,
         None.
     """
 
-    util.dbprint('0-----------------------------')
-
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
 
@@ -613,7 +604,6 @@ def process_index(template_name,
 
     if volumes is None:
         volumes = args.volumes
-    util.dbprint('1-----------------------------')
 
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
