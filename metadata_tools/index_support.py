@@ -91,7 +91,7 @@ class IndexTable(com.Table):
         else:
             self.files = [f for f in input_dir.rglob('*.LBL')]
 
-        util.dbprint(f'205---------------------------------------------')
+        util.dbprint(f'205---------------------------------------------{self.output_dir}')
         # Initialize the logger
         com.init_logger(self.output_dir, 'index')
         logger = com.get_logger()
@@ -180,6 +180,7 @@ class IndexTable(com.Table):
             None.
         """
 
+        util.dbprint(f'400---------------------------------------------')
         # Read the PDS3 label
         path = root/name
 
@@ -188,6 +189,7 @@ class IndexTable(com.Table):
         # Write columns
         first = True
         line = ''
+        util.dbprint(f'401---------------------------------------------')
         for column_stub in self.column_stubs:
             if not column_stub:
                 continue
@@ -209,6 +211,7 @@ class IndexTable(com.Table):
 
             first = False
 
+        util.dbprint(f'402---------------------------------------------')
         self.rows += [line]
 
     #===========================================================================
