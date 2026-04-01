@@ -122,34 +122,41 @@ class IndexTable(com.Table):
         Returns:
             None.
         """
+        util.dbprint(f'300---------------------------------------------')
         if not hasattr(self, 'files'):
             return
 
         logger = com.get_logger()
 
+        util.dbprint(f'301---------------------------------------------')
         # Build the index
         n = len(self.files)
         if not labels_only:
             for i in range(n):
+                util.dbprint(f'3010---------------------------------------------')
                 file = self.files[i]
                 name = file.name
                 root = file.parent
 
                 # Make any sub selection
+                util.dbprint(f'3011---------------------------------------------')
                 if pattern and fnmatch.filter([name], pattern) == []:
                     continue
 
                 # Match the glob pattern
+                util.dbprint(f'3012---------------------------------------------')
                 file = fnmatch.filter([name], self.glob)
                 if file == []:
                     continue
                 file = file[0]
 
                 # Log volume ID and subpath
+                util.dbprint(f'3013---------------------------------------------')
                 subdir = util.get_volume_subdir(root, hconf.get_volume_id(root))
                 logger.info('%s %4d/%4d  %s' % (self.volume_id, i+1, n, subdir/name))
 
                 # Make the index for this file
+                util.dbprint(f'3014---------------------------------------------')
                 self.add(root, file)
 
             # Flag any unused columns
@@ -157,6 +164,7 @@ class IndexTable(com.Table):
                 if not self.usage[name]:
                     self.unused.update({name})
 
+        util.dbprint(f'302---------------------------------------------')
         # Write tables and make labels
         self.write(labels_only=labels_only)
 
