@@ -91,6 +91,7 @@ class IndexTable(com.Table):
         else:
             self.files = [f for f in input_dir.rglob('*.LBL')]
 
+        util.dbprint(f'205---------------------------------------------')
         # Initialize the logger
         com.init_logger(self.output_dir, 'index')
         logger = com.get_logger()
@@ -98,6 +99,7 @@ class IndexTable(com.Table):
         s = ' '+qualifier if qualifier else ' primary'
         logger.info('New%s index for %s.' % (s, self.volume_id))
 
+        util.dbprint(f'206---------------------------------------------')
         # Extract relevent fields from the template
         label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
         label_path = self.output_dir / FCPath(label_name + '.lbl')
@@ -106,6 +108,7 @@ class IndexTable(com.Table):
         pds3_table = Pds3Table(label_path, template, validate=False,
                                numbers=True, formats=True)
         self.column_stubs = IndexTable._get_column_values(pds3_table)
+        util.dbprint(f'207---------------------------------------------')
 
     #===========================================================================
     def create(self, labels_only=False, pattern=None):
