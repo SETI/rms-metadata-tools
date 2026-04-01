@@ -194,18 +194,22 @@ class IndexTable(com.Table):
             if not column_stub:
                 continue
 
+        util.dbprint(f'4010---------------------------------------------')
             # Add column name to usage dict if not already there
             column_name = column_stub['NAME']
             if column_name not in self.usage:
                 self.usage[column_name] = False
 
             # Get the value
+        util.dbprint(f'4011---------------------------------------------')
             value = self._index_one_value(column_stub, path, label_dict)
 
             # Write the value into the index
+        util.dbprint(f'4012---------------------------------------------')
             if not first:
                 line += ","
 
+        util.dbprint(f'4013---------------------------------------------')
             fvalue = IndexTable._format_column(column_stub, value)
             line += fvalue
 
