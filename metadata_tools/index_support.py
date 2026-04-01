@@ -62,13 +62,6 @@ class IndexTable(com.Table):
         index_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
         self.index_path = self.metadata_dir/(index_name + '.tab')
 
-        # Initialize the logger
-        com.init_logger(self.output_dir, 'index')
-        logger = com.get_logger()
-
-        s = ' '+qualifier if qualifier else ' primary'
-        logger.info('New%s index for %s.' % (s, self.volume_id))
-
         # If the index name is the same as the primary index name,
         # then this is the primary index.
         create_primary = index_name == primary_index_name
@@ -76,6 +69,8 @@ class IndexTable(com.Table):
         # If there is a primary file, read it and build the file list
         if not create_primary:
             self.primary_index_label_path = self.metadata_dir/(primary_index_name + '.lbl')
+            if not self.primary_index_label_path.exists():
+                raise FileNotFoundError(f'No primary index for {self.volume_id}')
             self.primary_index_path = self.metadata_dir/(primary_index_name + '.tab')
 
             table = util.PdsTable(self.primary_index_label_path)
@@ -90,6 +85,13 @@ class IndexTable(com.Table):
         # Otherwise, build the file list from the directory tree
         else:
             self.files = [f for f in input_dir.rglob('*.LBL')]
+
+        # Initialize the logger
+        com.init_logger(self.output_dir, 'index')
+        logger = com.get_logger()
+
+        s = ' '+qualifier if qualifier else ' primary'
+        logger.info('New%s index for %s.' % (s, self.volume_id))
 
         # Extract relevent fields from the template
         label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
@@ -537,7 +539,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
 
-                # Set up input and output directories
+                # Determine input and output directories
                 indir = root
                 outdir = util.select_dir(output_tree, col, vol)
                 metadata_dir = util.select_dir(metadata_tree, col, vol)
@@ -552,10 +554,10 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                     try:
                         index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
-                    except:
+                    except FileNotFoundError:
                         continue
 
-#                    dbprint(f'0---------------------------------------------')
+                    util.dbprint(f'0---------------------------------------------')
                     index.create(labels_only=labels_only, pattern=pattern)
                     unused = index.unused if not unused else unused & index.unused
 
