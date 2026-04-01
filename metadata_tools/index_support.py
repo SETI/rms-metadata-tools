@@ -571,8 +571,9 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                         continue
 
                     util.dbprint(f'1---------------------------------------------')
-#                    index.create(labels_only=labels_only, pattern=pattern)
-#                    unused = index.unused if not unused else unused & index.unused
+                    index.create(labels_only=labels_only, pattern=pattern)
+                    unused = index.unused if not unused else unused & index.unused
+                    util.dbprint(f'2---------------------------------------------')
 
         # Write the task file
         if task_list_only:
