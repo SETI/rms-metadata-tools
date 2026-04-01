@@ -42,11 +42,13 @@ class IndexTable(com.Table):
         """
 
         # Initialize table, return if specific paths not given
+        util.dbprint(f'200---------------------------------------------')
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
             return
 
         # Save inputs
+        util.dbprint(f'201---------------------------------------------')
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
         self.metadata_dir = FCPath(metadata_dir)
@@ -55,6 +57,8 @@ class IndexTable(com.Table):
         self.unused = set()
 
         # Get volume id
+        util.dbprint(f'202---------------------------------------------')
+        util.dbprint(f'203---------------------------------------------')
         self.volume_id = hconf.get_volume_id(self.input_dir)
 
         # Get relevant filenames and paths
@@ -67,6 +71,7 @@ class IndexTable(com.Table):
         create_primary = index_name == primary_index_name
 
         # If there is a primary file, read it and build the file list
+        util.dbprint(f'204---------------------------------------------')
         if not create_primary:
             self.primary_index_label_path = self.metadata_dir/(primary_index_name + '.lbl')
             if not self.primary_index_label_path.exists():
@@ -556,12 +561,12 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                     # Process this volume if possible
                     util.dbprint(f'0---------------------------------------------')
                     util.dbprint(f'01---------------------------------------------')
-#                    try:
-#                        index = IndexTable(indir, outdir, template_path, metadata_dir,
-#                                       qualifier=qualifier, volume_id=vol, glob=glob)
-#                    except FileNotFoundError:
-#                        continue
-#
+                    try:
+                        index = IndexTable(indir, outdir, template_path, metadata_dir,
+                                       qualifier=qualifier, volume_id=vol, glob=glob)
+                    except FileNotFoundError:
+                        continue
+
                     util.dbprint(f'1---------------------------------------------')
 #                    index.create(labels_only=labels_only, pattern=pattern)
 #                    unused = index.unused if not unused else unused & index.unused
