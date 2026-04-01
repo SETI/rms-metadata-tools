@@ -535,6 +535,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         vol = parts[-1]
 
         unused = None
+        util.dbprint(f'00---------------------------------------------')
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
