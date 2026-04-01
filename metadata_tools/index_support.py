@@ -599,6 +599,7 @@ def process_index(template_name,
         None.
     """
 
+    util.dbprint(f'0000---------------------------------------------')
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
 
