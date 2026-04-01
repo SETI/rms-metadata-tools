@@ -540,6 +540,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
+                util.dbprint(f'00.0---------------------------------------------')
 
                 # Determine input and output directories
                 indir = root
