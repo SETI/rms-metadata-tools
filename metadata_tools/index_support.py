@@ -555,13 +555,14 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 else:
                     # Process this volume if possible
                     util.dbprint(f'0---------------------------------------------')
-                    try:
-                        index = IndexTable(indir, outdir, template_path, metadata_dir,
-                                       qualifier=qualifier, volume_id=vol, glob=glob)
-                    except FileNotFoundError:
-                        continue
-
-                    util.dbprint(f'1---------------------------------------------')
+                    util.dbprint(f'01---------------------------------------------')
+#                    try:
+#                        index = IndexTable(indir, outdir, template_path, metadata_dir,
+#                                       qualifier=qualifier, volume_id=vol, glob=glob)
+#                    except FileNotFoundError:
+#                        continue
+#
+#                    util.dbprint(f'1---------------------------------------------')
 #                    index.create(labels_only=labels_only, pattern=pattern)
 #                    unused = index.unused if not unused else unused & index.unused
 
