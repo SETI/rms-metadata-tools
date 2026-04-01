@@ -223,6 +223,7 @@ class Table:
 
             # Write table
             logger.info("Writing: %s", self.filename)
+            util.dbprint(f'----------------------------------------{self.filename}')
             util.write_txt_file(self.filename, self.rows)
 
         # Write label
