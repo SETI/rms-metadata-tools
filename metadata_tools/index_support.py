@@ -562,7 +562,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 #                    except FileNotFoundError:
 #                        continue
 #
-#                    util.dbprint(f'1---------------------------------------------')
+                    util.dbprint(f'1---------------------------------------------')
 #                    index.create(labels_only=labels_only, pattern=pattern)
 #                    unused = index.unused if not unused else unused & index.unused
 
