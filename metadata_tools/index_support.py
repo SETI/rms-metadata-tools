@@ -42,13 +42,11 @@ class IndexTable(com.Table):
         """
 
         # Initialize table, return if specific paths not given
-        util.dbprint(f'200---------------------------------------------')
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
             return
 
         # Save inputs
-        util.dbprint(f'201---------------------------------------------')
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
         self.metadata_dir = FCPath(metadata_dir)
@@ -57,8 +55,6 @@ class IndexTable(com.Table):
         self.unused = set()
 
         # Get volume id
-        util.dbprint(f'202---------------------------------------------')
-        util.dbprint(f'203---------------------------------------------')
         self.volume_id = hconf.get_volume_id(self.input_dir)
 
         # Get relevant filenames and paths
@@ -71,7 +67,6 @@ class IndexTable(com.Table):
         create_primary = index_name == primary_index_name
 
         # If there is a primary file, read it and build the file list
-        util.dbprint(f'204---------------------------------------------')
         if not create_primary:
             self.primary_index_label_path = self.metadata_dir/(primary_index_name + '.lbl')
             if not self.primary_index_label_path.exists():
@@ -91,7 +86,6 @@ class IndexTable(com.Table):
         else:
             self.files = [f for f in input_dir.rglob('*.LBL')]
 
-        util.dbprint(f'205---------------------------------------------{self.output_dir}')
         # Initialize the logger
         com.init_logger(self.output_dir, 'index')
         logger = com.get_logger()
@@ -99,7 +93,6 @@ class IndexTable(com.Table):
         s = ' '+qualifier if qualifier else ' primary'
         logger.info('New%s index for %s.' % (s, self.volume_id))
 
-        util.dbprint(f'206---------------------------------------------')
         # Extract relevent fields from the template
         label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
         label_path = self.output_dir / FCPath(label_name + '.lbl')
@@ -108,7 +101,6 @@ class IndexTable(com.Table):
         pds3_table = Pds3Table(label_path, template, validate=False,
                                numbers=True, formats=True)
         self.column_stubs = IndexTable._get_column_values(pds3_table)
-        util.dbprint(f'207---------------------------------------------')
 
     #===========================================================================
     def create(self, labels_only=False, pattern=None):
@@ -122,51 +114,41 @@ class IndexTable(com.Table):
         Returns:
             None.
         """
-        util.dbprint(f'300---------------------------------------------')
         if not hasattr(self, 'files'):
             return
 
         logger = com.get_logger()
 
-        util.dbprint(f'301---------------------------------------------')
         # Build the index
         n = len(self.files)
         if not labels_only:
             for i in range(n):
-                util.dbprint(f'3010---------------------------------------------')
                 file = self.files[i]
                 name = file.name
                 root = file.parent
 
                 # Make any sub selection
-                util.dbprint(f'3011---------------------------------------------')
                 if pattern and fnmatch.filter([name], pattern) == []:
                     continue
 
                 # Match the glob pattern
-                util.dbprint(f'3012---------------------------------------------')
                 file = fnmatch.filter([name], self.glob)
                 if file == []:
                     continue
                 file = file[0]
 
                 # Log volume ID and subpath
-                util.dbprint(f'3013---------------------------------------------')
                 subdir = util.get_volume_subdir(root, hconf.get_volume_id(root))
                 logger.info('%s %4d/%4d  %s' % (self.volume_id, i+1, n, subdir/name))
 
                 # Make the index for this file
-                util.dbprint(f'3014---------------------------------------------')
                 self.add(root, file)
-                util.dbprint(f'3015---------------------------------------------')
 
-            util.dbprint(f'301.5----------------------------{self.filename}')
             # Flag any unused columns
             for name in self.usage:
                 if not self.usage[name]:
                     self.unused.update({name})
 
-        util.dbprint(f'302---------------------------------------------')
         # Write tables and make labels
         self.write(labels_only=labels_only)
 
@@ -182,48 +164,35 @@ class IndexTable(com.Table):
             None.
         """
 
-        util.dbprint(f'400---------------------------------------------')
         # Read the PDS3 label
         path = root/name
-        util.dbprint(root)
-        util.dbprint(name)
-
-        util.dbprint(f'400.1---------------------------------------')
         label_dict = PdsLabel.from_file(path).as_dict()
 
         # Write columns
-        util.dbprint(f'400.2---------------------------------------------')
         first = True
         line = ''
-        util.dbprint(f'401---------------------------------------------')
         for column_stub in self.column_stubs:
             if not column_stub:
                 continue
 
-            util.dbprint(f'4010---------------------------------------------')
             # Add column name to usage dict if not already there
             column_name = column_stub['NAME']
             if column_name not in self.usage:
                 self.usage[column_name] = False
 
             # Get the value
-            util.dbprint(f'4011---------------------------------------------')
             value = self._index_one_value(column_stub, path, label_dict)
 
             # Write the value into the index
-            util.dbprint(f'4012---------------------------------------------')
             if not first:
                 line += ","
 
-            util.dbprint(f'4013---------------------------------------------')
             fvalue = IndexTable._format_column(column_stub, value)
             line += fvalue
 
             first = False
 
-        util.dbprint(f'402---------------------------------------------')
         self.rows += [line]
-        util.dbprint(f'403---------------------------------------------')
 
     #===========================================================================
     def _index_one_value(self, column_stub, label_path, label_dict):
@@ -539,7 +508,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     Returns:
         None.
     """
-    util.dbprint(f'000---------------------------------------------')
     logger = com.get_logger()
 
     if metadata_tree is not None:
@@ -552,7 +520,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 
     # Walk the input tree, making indexes for each found volume
     for root, dirs, _files in volume_tree.walk():
-        util.dbprint(f'0010---------------------------------------------')
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue
@@ -567,11 +534,9 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         vol = parts[-1]
 
         unused = None
-        util.dbprint(f'00---------------------------------------------')
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
-                util.dbprint(f'00.0---------------------------------------------')
 
                 # Determine input and output directories
                 indir = root
@@ -585,18 +550,14 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                 # ... or process this volumne
                 else:
                     # Process this volume if possible
-                    util.dbprint(f'0---------------------------------------------')
-                    util.dbprint(f'01---------------------------------------------')
                     try:
                         index = IndexTable(indir, outdir, template_path, metadata_dir,
                                        qualifier=qualifier, volume_id=vol, glob=glob)
                     except FileNotFoundError:
                         continue
 
-                    util.dbprint(f'1---------------------------------------------')
                     index.create(labels_only=labels_only, pattern=pattern)
                     unused = index.unused if not unused else unused & index.unused
-                    util.dbprint(f'2---------------------------------------------')
 
         # Write the task file
         if task_list_only:
@@ -633,7 +594,6 @@ def process_index(template_name,
         None.
     """
 
-    util.dbprint(f'0000---------------------------------------------')
     # Parse arguments
     host, index_type, template_dir = util.parse_template_name(template_name)
 
