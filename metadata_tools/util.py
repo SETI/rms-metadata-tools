@@ -23,6 +23,7 @@ def dbprint(message):
 
     Returns: None
     """
+    return 
     time = dt.datetime.now()#.strftime('%Y-%m-%d %H:%M:%S')
     print(f'{time} - {message}', file=sys.stderr, flush=True)
 
