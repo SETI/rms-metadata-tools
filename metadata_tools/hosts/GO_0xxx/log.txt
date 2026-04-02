@@ -1,3 +1,2024 @@
+  message: '2026-04-02T21:17:02.371193+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T21:17:02.371125+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T21:17:02.371047+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T21:17:02.370954+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T21:17:02.370873+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T21:17:02.370757+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T21:17:02.370036+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T21:17:01.085301+00:00 instance-20260402-191353 CRON[10990]:
+  message: No shutdown scripts to run.
+  message: Starting shutdown scripts (version 20250116.00-0ubuntu1~24.04.3).
+  message: GCE Agent Stopped
+  message: 'Error watching metadata: context canceled'
+  message: 'startup-script:   Downloading proto_plus-1.27.2-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting proto-plus<2.0.0,>=1.22.3 (from google-cloud-billing->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading grpcio-1.80.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata
+  message: 'startup-script: Collecting grpcio<2.0.0,>=1.33.2 (from google-cloud-billing->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading google_auth-2.49.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting google-auth!=2.24.0,!=2.25.0,<3.0.0,>=2.14.1
+  message: 'startup-script:   Downloading google_api_core-2.30.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting google-api-core<3.0.0,>=2.11.0 (from google-api-core[grpc]<3.0.0,>=2.11.0->google-cloud-billing->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading s3transfer-0.16.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting s3transfer<0.17.0,>=0.16.0 (from boto3->rms-filecache>=3.1.0->-r
+  message: 'startup-script:   Downloading jmespath-1.1.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting jmespath<2.0.0,>=0.7.1 (from boto3->rms-filecache>=3.1.0->-r
+  message: 'startup-script:   Downloading botocore-1.42.82-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting botocore<1.43.0,>=1.42.82 (from boto3->rms-filecache>=3.1.0->-r
+  message: 'startup-script:   Downloading astropy_iers_data-0.2026.4.1.15.5.49-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting astropy-iers-data>=0.2025.10.27.0.39.10 (from
+  message: 'startup-script:   Downloading pyerfa-2.0.1.5-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+  message: 'startup-script: Collecting pyerfa>=2.0.1.1 (from astropy->rms-oops>=0.1.0->-r
+  message: 'startup-script:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.6/79.6
+  message: 'startup-script:   Downloading yarl-1.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting yarl<2.0,>=1.17.0 (from aiohttp->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading propcache-0.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting propcache>=0.2.0 (from aiohttp->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading multidict-6.7.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting multidict<7.0,>=4.5 (from aiohttp->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata
+  message: 'startup-script: Collecting frozenlist>=1.1.1 (from aiohttp->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8
+  message: 'startup-script: Collecting attrs>=17.3.0 (from aiohttp->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading aiosignal-1.4.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting aiosignal>=1.4.0 (from aiohttp->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading aiohappyeyeballs-2.6.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting aiohappyeyeballs>=2.5.0 (from aiohttp->rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading pure_eval-0.2.3-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pure-eval (from stack_data>=0.6.0->IPython->-r
+  message: 'startup-script:   Downloading asttokens-3.0.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting asttokens>=2.1.0 (from stack_data>=0.6.0->IPython->-r
+  message: 'startup-script:   Downloading executing-2.2.1-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting executing>=1.2.0 (from stack_data>=0.6.0->IPython->-r
+  message: 'startup-script:   Downloading certifi-2026.2.25-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting certifi>=2023.5.7 (from requests->rms-filecache>=3.1.0->-r
+  message: 'startup-script:   Downloading urllib3-2.6.3-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting urllib3<3,>=1.26 (from requests->rms-filecache>=3.1.0->-r
+  message: 'startup-script:   Downloading idna-3.11-py3-none-any.whl.metadata (8.4
+  message: 'startup-script: Collecting idna<4,>=2.5 (from requests->rms-filecache>=3.1.0->-r
+  message: 'startup-script:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.9/40.9
+  message: 'startup-script:   Downloading charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting charset_normalizer<4,>=2 (from requests->rms-filecache>=3.1.0->-r
+  message: 'startup-script:   Downloading wcwidth-0.6.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting wcwidth (from prompt_toolkit<3.1.0,>=3.0.41->IPython->-r
+  message: 'startup-script:   Downloading ptyprocess-0.7.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting ptyprocess>=0.5 (from pexpect>4.6->IPython->-r
+  message: 'startup-script:   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6
+  message: 'startup-script: Collecting mdurl~=0.1 (from markdown-it-py~=4.0->myst-parser->-r
+  message: 'startup-script:   Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting MarkupSafe>=2.0 (from jinja2->myst-parser->-r
+  message: 'startup-script:   Downloading parso-0.8.6-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting parso<0.9.0,>=0.8.4 (from jedi>=0.18.2->IPython->-r
+  message: 'startup-script:   Downloading sphinxcontrib_jquery-4.1-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinxcontrib-jquery<5,>=4 (from sphinx-rtd-theme->-r
+  message: 'startup-script:   Downloading pockets-0.9.1-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pockets>=0.3 (from sphinxcontrib-napoleon->-r
+  message: 'startup-script:   Downloading six-1.17.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting six>=1.5.2 (from sphinxcontrib-napoleon->-r
+  message: 'startup-script:   Downloading roman_numerals-4.1.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting roman-numerals>=1.0.0 (from sphinx->-r requirements.txt
+  message: 'startup-script:   Downloading imagesize-2.0.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting imagesize>=1.3 (from sphinx->-r requirements.txt
+  message: 'startup-script:   Downloading alabaster-1.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting alabaster>=0.7.14 (from sphinx->-r requirements.txt
+  message: 'startup-script:   Downloading babel-2.18.0-py3-none-any.whl.metadata (2.2
+  message: 'startup-script: Collecting babel>=2.13 (from sphinx->-r requirements.txt
+  message: 'startup-script:   Downloading snowballstemmer-3.0.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting snowballstemmer>=2.2 (from sphinx->-r requirements.txt
+  message: 'startup-script:   Downloading sphinxcontrib_serializinghtml-2.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinxcontrib-serializinghtml>=1.1.9 (from
+  message: 'startup-script:   Downloading sphinxcontrib_qthelp-2.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinxcontrib-qthelp>=1.0.6 (from sphinx->-r
+  message: 'startup-script:   Downloading sphinxcontrib_jsmath-1.0.1-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinxcontrib-jsmath>=1.0.1 (from sphinx->-r
+  message: 'startup-script:   Downloading sphinxcontrib_htmlhelp-2.1.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinxcontrib-htmlhelp>=2.0.6 (from sphinx->-r
+  message: 'startup-script:   Downloading sphinxcontrib_devhelp-2.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinxcontrib-devhelp>=1.0.6 (from sphinx->-r
+  message: 'startup-script:   Downloading sphinxcontrib_applehelp-2.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinxcontrib-applehelp>=1.0.7 (from sphinx->-r
+  message: 'startup-script:   Downloading mdit_py_plugins-0.5.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting mdit-py-plugins~=0.5 (from myst-parser->-r
+  message: 'startup-script:   Downloading markdown_it_py-4.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting markdown-it-py~=4.0 (from myst-parser->-r requirements.txt
+  message: 'startup-script:   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9
+  message: 'startup-script: Collecting jinja2 (from myst-parser->-r requirements.txt
+  message: 'startup-script:   Downloading docutils-0.22.4-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting docutils<0.23,>=0.20 (from myst-parser->-r
+  message: 'startup-script:   Downloading typing_inspection-0.4.2-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting typing-inspection>=0.4.2 (from pydantic->-r
+  message: 'startup-script:   Downloading pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+  message: 'startup-script: Collecting pydantic-core==2.41.5 (from pydantic->-r requirements.txt
+  message: 'startup-script:   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting annotated-types>=0.6.0 (from pydantic->-r requirements.txt
+  message: 'startup-script:   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8
+  message: 'startup-script: Collecting pluggy<2,>=1.5 (from pytest->-r requirements.txt
+  message: 'startup-script:   Downloading packaging-26.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting packaging>=22 (from pytest->-r requirements.txt
+  message: 'startup-script:   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting iniconfig>=1.0.1 (from pytest->-r requirements.txt
+  message: 'startup-script:   Downloading pyflakes-3.4.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pyflakes<3.5.0,>=3.4.0 (from flake8->-r requirements.txt
+  message: 'startup-script:   Downloading pycodestyle-2.14.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pycodestyle<2.15.0,>=2.14.0 (from flake8->-r
+  message: 'startup-script:   Downloading mccabe-0.7.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting mccabe<0.8.0,>=0.7.0 (from flake8->-r requirements.txt
+  message: 'startup-script:   Downloading pds4_tools-1.4-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pds4_tools (from rms-pdstable>=0.0.10->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading json_stream_rs_tokenizer-0.5.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting json-stream-rs-tokenizer>=0.4.17 (from json-stream>=2.3.3->-r
+  message: 'startup-script:   Downloading google_cloud_pubsub-2.36.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting google-cloud-pubsub (from rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading google_cloud_monitoring-2.30.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting google-cloud-monitoring (from rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading google_cloud_compute-1.47.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting google-cloud-compute (from rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading google_cloud_billing-1.19.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting google-cloud-billing (from rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.7/57.7
+  message: 'startup-script:   Downloading tqdm-4.67.3-py3-none-any.whl.metadata (57
+  message: 'startup-script: Collecting tqdm (from rms-cloud-tasks>=0.2.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading shortuuid-1.0.13-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting shortuuid (from rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting pyyaml (from rms-cloud-tasks>=0.2.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading prettytable-3.17.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting prettytable (from rms-cloud-tasks>=0.2.0->-r
+  message: 'startup-script:   Downloading click-8.3.1-py3-none-any.whl.metadata (2.6
+  message: 'startup-script: Collecting click (from rms-cloud-tasks>=0.2.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading asyncio-4.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting asyncio (from rms-cloud-tasks>=0.2.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading aiohttp-3.13.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting aiohttp (from rms-cloud-tasks>=0.2.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_textkernel-1.1.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-textkernel (from rms-julian>=3.0.1->-r
+  message: 'startup-script:   Downloading xattr-1.3.0-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl.metadata
+  message: 'startup-script: Collecting xattr (from rms-pdslogger>=3.0.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting typing_extensions (from rms-filecache>=3.1.0->-r
+  message: 'startup-script:   Downloading requests-2.33.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting requests (from rms-filecache>=3.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading google_cloud_storage-3.10.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting google-cloud-storage (from rms-filecache>=3.1.0->-r
+  message: 'startup-script:   Downloading filelock-3.25.2-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting filelock (from rms-filecache>=3.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading boto3-1.42.82-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting boto3 (from rms-filecache>=3.1.0->-r requirements-cloud.txt
+  message: 'startup-script:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 62.1/62.1
+  message: 'startup-script:   Downloading scipy-1.17.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting scipy (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_vax-1.0.5-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-vax (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_tabulation-2.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-tabulation (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_solar-2.0.3-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-solar (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 65.3/65.3
+  message: 'startup-script:   Downloading rms_polymath-1.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-polymath (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_interval-1.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-interval (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_fpzip-1.3.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+  message: 'startup-script: Collecting rms-fpzip (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading pyparsing-3.3.2-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pyparsing (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading pillow-12.2.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting Pillow (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading cspyce-2.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata
+  message: 'startup-script: Collecting cspyce (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading astropy-7.2.0-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting astropy (from rms-oops>=0.1.0->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading traitlets-5.14.3-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting traitlets>=5.13.0 (from IPython->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading stack_data-0.6.3-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting stack_data>=0.6.0 (from IPython->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading pygments-2.20.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pygments>=2.14.0 (from IPython->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading prompt_toolkit-3.0.52-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting prompt_toolkit<3.1.0,>=3.0.41 (from IPython->-r
+  message: 'startup-script:   Downloading pexpect-4.9.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pexpect>4.6 (from IPython->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading matplotlib_inline-0.2.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting matplotlib-inline>=0.1.6 (from IPython->-r
+  message: 'startup-script:   Downloading jedi-0.19.2-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting jedi>=0.18.2 (from IPython->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading ipython_pygments_lexers-1.1.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting ipython-pygments-lexers>=1.0.0 (from IPython->-r
+  message: 'startup-script:   Downloading decorator-5.2.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting decorator>=5.1.0 (from IPython->-r requirements-cloud.txt
+  message: 'startup-script:   Downloading sphinx_rtd_theme-3.1.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinx-rtd-theme (from -r requirements.txt
+  message: 'startup-script:   Downloading sphinxcontrib_napoleon-0.7-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting sphinxcontrib-napoleon (from -r requirements.txt
+  message: 'startup-script:   Downloading sphinx-9.1.0-py3-none-any.whl.metadata (5.8
+  message: 'startup-script: Collecting sphinx (from -r requirements.txt (line 7))'
+  message: 'startup-script:   Downloading myst_parser-5.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting myst-parser (from -r requirements.txt (line
+  message: 'startup-script:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.6/90.6
+  message: 'startup-script:   Downloading pydantic-2.12.5-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting pydantic (from -r requirements.txt (line 5))'
+  message: 'startup-script:   Downloading pytest-9.0.2-py3-none-any.whl.metadata (7.6
+  message: 'startup-script: Collecting pytest (from -r requirements.txt (line 4))'
+  message: 'startup-script:   Downloading flake8-7.3.0-py2.py3-none-any.whl.metadata
+  message: 'startup-script: Collecting flake8 (from -r requirements.txt (line 3))'
+  message: 'startup-script:   Downloading coverage-7.13.5-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata
+  message: 'startup-script: Collecting coverage (from -r requirements.txt (line 2))'
+  message: 'startup-script:   Downloading fortranformat-2.0.3-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting fortranformat>=2.0.3 (from -r requirements-cloud.txt
+  message: 'startup-script:      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.7/45.7
+  message: 'startup-script:   Downloading rms_pdstemplate-2.4.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-pdstemplate>=2.4.0 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_vicar-1.2.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-vicar>=1.1.2 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_pdstable-1.0.3-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-pdstable>=0.0.10 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading json_stream-2.5.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting json-stream>=2.3.3 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_cloud_tasks-0.2.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-cloud-tasks>=0.2.0 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_pdsparser-2.0.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-pdsparser>=2.0.0 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_julian-3.0.2-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-julian>=3.0.1 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_pdslogger-3.2.1-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-pdslogger>=3.0.0 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_filecache-3.1.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-filecache>=3.1.0 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading rms_oops-0.1.4-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting rms-oops>=0.1.0 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading numpy-2.4.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata
+  message: 'startup-script: Collecting numpy>=2.3.0 (from -r requirements-cloud.txt
+  message: 'startup-script:   Downloading ipython-9.12.0-py3-none-any.whl.metadata
+  message: 'startup-script: Collecting IPython (from -r requirements-cloud.txt (line
+  message: "startup-script: Cloning into 'rms-metadata-tools'..."
+  message: 'startup-script: /tmp/metadata-scripts766002686/startup-script: line 22:
+  message: 'startup-script: skipping needrestart since system is preparing for shutdown'
+  message: 'startup-script: Processing triggers for libc-bin (2.39-0ubuntu8.7) ...'
+  message: 'startup-script: Setting up libc-devtools (2.39-0ubuntu8.7) ...'
+  message: 'startup-script: Setting up libgd3:amd64 (2.3.3-9ubuntu5) ...'
+  message: 'startup-script: Setting up libfontconfig1:amd64 (2.15.0-1.1ubuntu2) ...'
+  message: 'startup-script: Processing triggers for sgml-base (1.31) ...'
+  message: 'startup-script: Processing triggers for man-db (2.12.0-4build2) ...'
+  message: 'startup-script: Processing triggers for libc-bin (2.39-0ubuntu8.7) ...'
+  message: 'startup-script: Setting up libheif-plugin-aomenc:amd64 (1.17.6-1ubuntu4.2)
+  message: 'startup-script: Setting up libheif-plugin-libde265:amd64 (1.17.6-1ubuntu4.2)
+  message: 'startup-script: Setting up libheif1:amd64 (1.17.6-1ubuntu4.2) ...'
+  message: 'startup-script: Setting up libheif-plugin-aomdec:amd64 (1.17.6-1ubuntu4.2)
+  message: 'startup-script: Setting up build-essential (12.10ubuntu1) ...'
+  message: 'startup-script: update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++
+  message: 'startup-script: Setting up g++ (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Setting up python3-dev (3.12.3-0ubuntu2.1) ...'
+  message: 'startup-script: Setting up libpython3-dev:amd64 (3.12.3-0ubuntu2.1) ...'
+  message: 'startup-script: Setting up g++-13 (13.3.0-6ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up g++-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Setting up python3.12-dev (3.12.3-1ubuntu0.12) ...'
+  message: 'startup-script: Setting up gcc (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Setting up libpython3.12-dev:amd64 (3.12.3-1ubuntu0.12)
+  message: 'startup-script: Setting up gcc-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Setting up g++-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Setting up cpp (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Setting up zlib1g-dev:amd64 (1:1.3.dfsg-3.1ubuntu2.1)
+  message: 'startup-script: Setting up gcc-13 (13.3.0-6ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up libexpat1-dev:amd64 (2.6.1-2ubuntu0.4) ...'
+  message: 'startup-script: Setting up dpkg-dev (1.22.6ubuntu6.5) ...'
+  message: 'startup-script: Setting up binutils (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Setting up gcc-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Setting up cpp-13 (13.3.0-6ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up cpp-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Setting up binutils-x86-64-linux-gnu (2.42-4ubuntu2.10)
+  message: 'startup-script: Setting up libstdc++-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Setting up libc6-dev:amd64 (2.39-0ubuntu8.7) ...'
+  message: 'startup-script: Setting up libtiff6:amd64 (4.5.1+git230720-4ubuntu2.5)
+  message: 'startup-script: Setting up libgcc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Setting up libjs-sphinxdoc (7.2.6-6) ...'
+  message: 'startup-script: Setting up python3-venv (3.12.3-0ubuntu2.1) ...'
+  message: 'startup-script: Setting up libgprofng0:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Setting up fontconfig-config (2.15.0-1.1ubuntu2) ...'
+  message: 'startup-script: Setting up cpp-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Setting up python3.12-venv (3.12.3-1ubuntu0.12) ...'
+  message: 'startup-script: Setting up libjpeg8:amd64 (8c-2ubuntu11) ...'
+  message: 'startup-script: Setting up libctf0:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Setting up libalgorithm-merge-perl (0.08-5) ...'
+  message: 'startup-script: Setting up libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...'
+  message: 'startup-script: Setting up libitm1:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up liblsan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up libcc1-0:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up libalgorithm-diff-xs-perl:amd64 (0.04-8build3)
+  message: 'startup-script: Setting up linux-tools-common (6.8.0-107.107) ...'
+  message: 'startup-script: Setting up libc-dev-bin (2.39-0ubuntu8.7) ...'
+  message: 'startup-script: Setting up libde265-0:amd64 (1.0.15-1build3) ...'
+  message: 'startup-script: Setting up libisl23:amd64 (0.26-3build1.1) ...'
+  message: 'startup-script: Setting up libbinutils:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Setting up libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...'
+  message: 'startup-script: Setting up libtsan2:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up libasan8:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up libcrypt-dev:amd64 (1:4.4.36-4build1) ...'
+  message: 'startup-script: Setting up libhwasan0:amd64 (14.2.0-4ubuntu2~24.04.1)
+  message: 'startup-script: Setting up libubsan1:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up libwebp7:amd64 (1.3.2-0.4build3) ...'
+  message: 'startup-script: Setting up libdpkg-perl (1.22.6ubuntu6.5) ...'
+  message: 'startup-script: Setting up libjpeg-turbo8:amd64 (2.1.5-2ubuntu2) ...'
+  message: 'startup-script: Setting up python3-pip (24.0+dfsg-1ubuntu1.3) ...'
+  message: 'startup-script: Setting up fonts-dejavu-core (2.37-8) ...'
+  message: 'startup-script: Setting up libatomic1:amd64 (14.2.0-4ubuntu2~24.04.1)
+  message: 'startup-script: Setting up libmpc3:amd64 (1.3.1-1build1.1) ...'
+  message: 'startup-script: Setting up fonts-dejavu-mono (2.37-8) ...'
+  message: 'startup-script: Setting up libquadmath0:amd64 (14.2.0-4ubuntu2~24.04.1)
+  message: 'startup-script: Setting up make (4.3-4.1build2) ...'
+  message: 'startup-script: Setting up gcc-13-base:amd64 (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Setting up rpcsvc-proto (1.4.2-0ubuntu7) ...'
+  message: 'startup-script: update-alternatives: using /usr/bin/fakeroot-sysv to provide
+  message: 'startup-script: Setting up fakeroot (1.33-1) ...'
+  message: 'startup-script: Setting up libfakeroot:amd64 (1.33-1) ...'
+  message: 'startup-script: Setting up libsframe1:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Setting up libjbig0:amd64 (2.1-6.1ubuntu2) ...'
+  message: 'startup-script: Setting up python3-wheel (0.42.0-2) ...'
+  message: 'startup-script: Setting up bzip2 (1.0.8-5.1build0.1) ...'
+  message: 'startup-script: Setting up libgomp1:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Setting up libctf-nobfd0:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Setting up linux-libc-dev:amd64 (6.8.0-107.107) ...'
+  message: 'startup-script: Setting up libdeflate0:amd64 (1.19-1build1.1) ...'
+  message: 'startup-script: Setting up binutils-common:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Setting up libalgorithm-diff-perl (1.201-1) ...'
+  message: 'startup-script: Setting up python3-pip-whl (24.0+dfsg-1ubuntu1.3) ...'
+  message: 'startup-script: Setting up libfile-fcntllock-perl (0.22-4ubuntu5) ...'
+  message: 'startup-script: Setting up libxpm4:amd64 (1:3.5.17-1build2) ...'
+  message: 'startup-script: Setting up liblerc4:amd64 (4.0.0+ds-4ubuntu2) ...'
+  message: 'startup-script: Setting up lto-disabled-list (47) ...'
+  message: 'startup-script: Setting up python3-setuptools-whl (68.1.2-2ubuntu1.2)
+  message: 'startup-script: Setting up manpages-dev (6.7-2) ...'
+  message: 'startup-script: Setting up libaom3:amd64 (3.8.2-2ubuntu0.1) ...'
+  message: 'startup-script: Setting up libsharpyuv0:amd64 (1.3.2-0.4build3) ...'
+  message: 'startup-script: Setting up javascript-common (11+nmu1) ...'
+  message: 'startup-script: Unpacking python3-venv (3.12.3-0ubuntu2.1) ...'
+  message: 'startup-script: Preparing to unpack .../90-python3-venv_3.12.3-0ubuntu2.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package python3-venv.'
+  message: 'startup-script: Unpacking python3.12-venv (3.12.3-1ubuntu0.12) ...'
+  message: 'startup-script: Preparing to unpack .../89-python3.12-venv_3.12.3-1ubuntu0.12_amd64.deb
+  message: 'startup-script: Selecting previously unselected package python3.12-venv.'
+  message: 'startup-script: Unpacking python3-setuptools-whl (68.1.2-2ubuntu1.2) ...'
+  message: 'startup-script: Preparing to unpack .../88-python3-setuptools-whl_68.1.2-2ubuntu1.2_all.deb
+  message: 'startup-script: Selecting previously unselected package python3-setuptools-whl.'
+  message: 'startup-script: Unpacking python3-pip-whl (24.0+dfsg-1ubuntu1.3) ...'
+  message: 'startup-script: Preparing to unpack .../87-python3-pip-whl_24.0+dfsg-1ubuntu1.3_all.deb
+  message: 'startup-script: Selecting previously unselected package python3-pip-whl.'
+  message: 'startup-script: Unpacking python3-pip (24.0+dfsg-1ubuntu1.3) ...'
+  message: 'startup-script: Preparing to unpack .../86-python3-pip_24.0+dfsg-1ubuntu1.3_all.deb
+  message: 'startup-script: Selecting previously unselected package python3-pip.'
+  message: 'startup-script: Unpacking python3-wheel (0.42.0-2) ...'
+  message: 'startup-script: Preparing to unpack .../85-python3-wheel_0.42.0-2_all.deb
+  message: 'startup-script: Selecting previously unselected package python3-wheel.'
+  message: 'startup-script: Unpacking python3-dev (3.12.3-0ubuntu2.1) ...'
+  message: 'startup-script: Preparing to unpack .../84-python3-dev_3.12.3-0ubuntu2.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package python3-dev.'
+  message: 'startup-script: Unpacking python3.12-dev (3.12.3-1ubuntu0.12) ...'
+  message: 'startup-script: Preparing to unpack .../83-python3.12-dev_3.12.3-1ubuntu0.12_amd64.deb
+  message: 'startup-script: Selecting previously unselected package python3.12-dev.'
+  message: 'startup-script: Unpacking manpages-dev (6.7-2) ...'
+  message: 'startup-script: Preparing to unpack .../82-manpages-dev_6.7-2_all.deb
+  message: 'startup-script: Selecting previously unselected package manpages-dev.'
+  message: 'startup-script: Unpacking linux-tools-common (6.8.0-107.107) over (6.8.0-106.106)
+  message: 'startup-script: Preparing to unpack .../81-linux-tools-common_6.8.0-107.107_all.deb
+  message: 'startup-script: Unpacking libpython3-dev:amd64 (3.12.3-0ubuntu2.1) ...'
+  message: 'startup-script: Preparing to unpack .../80-libpython3-dev_3.12.3-0ubuntu2.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libpython3-dev:amd64.'
+  message: 'startup-script: Unpacking libpython3.12-dev:amd64 (3.12.3-1ubuntu0.12)
+  message: 'startup-script: Preparing to unpack .../79-libpython3.12-dev_3.12.3-1ubuntu0.12_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libpython3.12-dev:amd64.'
+  message: 'startup-script: Unpacking zlib1g-dev:amd64 (1:1.3.dfsg-3.1ubuntu2.1) ...'
+  message: 'startup-script: Preparing to unpack .../78-zlib1g-dev_1%3a1.3.dfsg-3.1ubuntu2.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package zlib1g-dev:amd64.'
+  message: 'startup-script: Unpacking libjs-sphinxdoc (7.2.6-6) ...'
+  message: 'startup-script: Preparing to unpack .../77-libjs-sphinxdoc_7.2.6-6_all.deb
+  message: 'startup-script: Selecting previously unselected package libjs-sphinxdoc.'
+  message: 'startup-script: Unpacking libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...'
+  message: 'startup-script: Preparing to unpack .../76-libjs-underscore_1.13.4~dfsg+~1.11.4-3_all.deb
+  message: 'startup-script: Selecting previously unselected package libjs-underscore.'
+  message: 'startup-script: Unpacking libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...'
+  message: 'startup-script: Preparing to unpack .../75-libjs-jquery_3.6.1+dfsg+~3.5.14-1_all.deb
+  message: 'startup-script: Selecting previously unselected package libjs-jquery.'
+  message: 'startup-script: Unpacking libheif-plugin-aomenc:amd64 (1.17.6-1ubuntu4.2)
+  message: 'startup-script: Preparing to unpack .../74-libheif-plugin-aomenc_1.17.6-1ubuntu4.2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libheif-plugin-aomenc:amd64.'
+  message: 'startup-script: Unpacking libfile-fcntllock-perl (0.22-4ubuntu5) ...'
+  message: 'startup-script: Preparing to unpack .../73-libfile-fcntllock-perl_0.22-4ubuntu5_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libfile-fcntllock-perl.'
+  message: 'startup-script: Unpacking libexpat1-dev:amd64 (2.6.1-2ubuntu0.4) ...'
+  message: 'startup-script: Preparing to unpack .../72-libexpat1-dev_2.6.1-2ubuntu0.4_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libexpat1-dev:amd64.'
+  message: 'startup-script: Unpacking libc-devtools (2.39-0ubuntu8.7) ...'
+  message: 'startup-script: Preparing to unpack .../71-libc-devtools_2.39-0ubuntu8.7_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libc-devtools.'
+  message: 'startup-script: Unpacking libgd3:amd64 (2.3.3-9ubuntu5) ...'
+  message: 'startup-script: Preparing to unpack .../70-libgd3_2.3.3-9ubuntu5_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libgd3:amd64.'
+  message: 'startup-script: Unpacking libxpm4:amd64 (1:3.5.17-1build2) ...'
+  message: 'startup-script: Preparing to unpack .../69-libxpm4_1%3a3.5.17-1build2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libxpm4:amd64.'
+  message: 'startup-script: Unpacking libtiff6:amd64 (4.5.1+git230720-4ubuntu2.5)
+  message: 'startup-script: Preparing to unpack .../68-libtiff6_4.5.1+git230720-4ubuntu2.5_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libtiff6:amd64.'
+  message: 'startup-script: Unpacking libwebp7:amd64 (1.3.2-0.4build3) ...'
+  message: 'startup-script: Preparing to unpack .../67-libwebp7_1.3.2-0.4build3_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libwebp7:amd64.'
+  message: 'startup-script: Unpacking liblerc4:amd64 (4.0.0+ds-4ubuntu2) ...'
+  message: 'startup-script: Preparing to unpack .../66-liblerc4_4.0.0+ds-4ubuntu2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package liblerc4:amd64.'
+  message: 'startup-script: Unpacking libjbig0:amd64 (2.1-6.1ubuntu2) ...'
+  message: 'startup-script: Preparing to unpack .../65-libjbig0_2.1-6.1ubuntu2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libjbig0:amd64.'
+  message: 'startup-script: Unpacking libdeflate0:amd64 (1.19-1build1.1) ...'
+  message: 'startup-script: Preparing to unpack .../64-libdeflate0_1.19-1build1.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libdeflate0:amd64.'
+  message: 'startup-script: Unpacking libjpeg8:amd64 (8c-2ubuntu11) ...'
+  message: 'startup-script: Preparing to unpack .../63-libjpeg8_8c-2ubuntu11_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libjpeg8:amd64.'
+  message: 'startup-script: Unpacking libjpeg-turbo8:amd64 (2.1.5-2ubuntu2) ...'
+  message: 'startup-script: Preparing to unpack .../62-libjpeg-turbo8_2.1.5-2ubuntu2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libjpeg-turbo8:amd64.'
+  message: 'startup-script: Unpacking libheif1:amd64 (1.17.6-1ubuntu4.2) ...'
+  message: 'startup-script: Preparing to unpack .../61-libheif1_1.17.6-1ubuntu4.2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libheif1:amd64.'
+  message: 'startup-script: Unpacking libheif-plugin-libde265:amd64 (1.17.6-1ubuntu4.2)
+  message: 'startup-script: Preparing to unpack .../60-libheif-plugin-libde265_1.17.6-1ubuntu4.2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libheif-plugin-libde265:amd64.'
+  message: 'startup-script: Unpacking libde265-0:amd64 (1.0.15-1build3) ...'
+  message: 'startup-script: Preparing to unpack .../59-libde265-0_1.0.15-1build3_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libde265-0:amd64.'
+  message: 'startup-script: Unpacking libheif-plugin-aomdec:amd64 (1.17.6-1ubuntu4.2)
+  message: 'startup-script: Preparing to unpack .../58-libheif-plugin-aomdec_1.17.6-1ubuntu4.2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libheif-plugin-aomdec:amd64.'
+  message: 'startup-script: Unpacking libsharpyuv0:amd64 (1.3.2-0.4build3) ...'
+  message: 'startup-script: Preparing to unpack .../57-libsharpyuv0_1.3.2-0.4build3_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libsharpyuv0:amd64.'
+  message: 'startup-script: Unpacking libfontconfig1:amd64 (2.15.0-1.1ubuntu2) ...'
+  message: 'startup-script: Preparing to unpack .../56-libfontconfig1_2.15.0-1.1ubuntu2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libfontconfig1:amd64.'
+  message: 'startup-script: Unpacking libaom3:amd64 (3.8.2-2ubuntu0.1) ...'
+  message: 'startup-script: Preparing to unpack .../55-libaom3_3.8.2-2ubuntu0.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libaom3:amd64.'
+  message: 'startup-script: Unpacking libalgorithm-merge-perl (0.08-5) ...'
+  message: 'startup-script: Preparing to unpack .../54-libalgorithm-merge-perl_0.08-5_all.deb
+  message: 'startup-script: Selecting previously unselected package libalgorithm-merge-perl.'
+  message: 'startup-script: Unpacking libalgorithm-diff-xs-perl:amd64 (0.04-8build3)
+  message: 'startup-script: Preparing to unpack .../53-libalgorithm-diff-xs-perl_0.04-8build3_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libalgorithm-diff-xs-perl:amd64.'
+  message: 'startup-script: Unpacking libalgorithm-diff-perl (1.201-1) ...'
+  message: 'startup-script: Preparing to unpack .../52-libalgorithm-diff-perl_1.201-1_all.deb
+  message: 'startup-script: Selecting previously unselected package libalgorithm-diff-perl.'
+  message: 'startup-script: Unpacking javascript-common (11+nmu1) ...'
+  message: 'startup-script: Preparing to unpack .../51-javascript-common_11+nmu1_all.deb
+  message: 'startup-script: Selecting previously unselected package javascript-common.'
+  message: 'startup-script: Unpacking fontconfig-config (2.15.0-1.1ubuntu2) ...'
+  message: 'startup-script: Preparing to unpack .../50-fontconfig-config_2.15.0-1.1ubuntu2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package fontconfig-config.'
+  message: 'startup-script: Unpacking fonts-dejavu-core (2.37-8) ...'
+  message: 'startup-script: Preparing to unpack .../49-fonts-dejavu-core_2.37-8_all.deb
+  message: 'startup-script: Selecting previously unselected package fonts-dejavu-core.'
+  message: 'startup-script: Unpacking fonts-dejavu-mono (2.37-8) ...'
+  message: 'startup-script: Preparing to unpack .../48-fonts-dejavu-mono_2.37-8_all.deb
+  message: 'startup-script: Selecting previously unselected package fonts-dejavu-mono.'
+  message: 'startup-script: Unpacking fakeroot (1.33-1) ...'
+  message: 'startup-script: Preparing to unpack .../47-fakeroot_1.33-1_amd64.deb ...'
+  message: 'startup-script: Selecting previously unselected package fakeroot.'
+  message: 'startup-script: Unpacking libfakeroot:amd64 (1.33-1) ...'
+  message: 'startup-script: Preparing to unpack .../46-libfakeroot_1.33-1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libfakeroot:amd64.'
+  message: 'startup-script: Unpacking build-essential (12.10ubuntu1) ...'
+  message: 'startup-script: Preparing to unpack .../45-build-essential_12.10ubuntu1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package build-essential.'
+  message: 'startup-script: Unpacking dpkg-dev (1.22.6ubuntu6.5) ...'
+  message: 'startup-script: Preparing to unpack .../44-dpkg-dev_1.22.6ubuntu6.5_all.deb
+  message: 'startup-script: Selecting previously unselected package dpkg-dev.'
+  message: 'startup-script: Unpacking lto-disabled-list (47) ...'
+  message: 'startup-script: Preparing to unpack .../43-lto-disabled-list_47_all.deb
+  message: 'startup-script: Selecting previously unselected package lto-disabled-list.'
+  message: 'startup-script: Unpacking bzip2 (1.0.8-5.1build0.1) ...'
+  message: 'startup-script: Preparing to unpack .../42-bzip2_1.0.8-5.1build0.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package bzip2.'
+  message: 'startup-script: Unpacking libdpkg-perl (1.22.6ubuntu6.5) ...'
+  message: 'startup-script: Preparing to unpack .../41-libdpkg-perl_1.22.6ubuntu6.5_all.deb
+  message: 'startup-script: Selecting previously unselected package libdpkg-perl.'
+  message: 'startup-script: Unpacking make (4.3-4.1build2) ...'
+  message: 'startup-script: Preparing to unpack .../40-make_4.3-4.1build2_amd64.deb
+  message: 'startup-script: Selecting previously unselected package make.'
+  message: 'startup-script: Unpacking g++ (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Preparing to unpack .../39-g++_4%3a13.2.0-7ubuntu1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package g++.'
+  message: 'startup-script: Unpacking g++-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Preparing to unpack .../38-g++-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package g++-x86-64-linux-gnu.'
+  message: 'startup-script: Unpacking g++-13 (13.3.0-6ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../37-g++-13_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package g++-13.'
+  message: 'startup-script: Unpacking g++-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Preparing to unpack .../36-g++-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package g++-13-x86-64-linux-gnu.'
+  message: 'startup-script: Unpacking libstdc++-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Preparing to unpack .../35-libstdc++-13-dev_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libstdc++-13-dev:amd64.'
+  message: 'startup-script: Unpacking gcc (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Preparing to unpack .../34-gcc_4%3a13.2.0-7ubuntu1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package gcc.'
+  message: 'startup-script: Unpacking gcc-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Preparing to unpack .../33-gcc-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package gcc-x86-64-linux-gnu.'
+  message: 'startup-script: Unpacking gcc-13 (13.3.0-6ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../32-gcc-13_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package gcc-13.'
+  message: 'startup-script: Unpacking gcc-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Preparing to unpack .../31-gcc-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package gcc-13-x86-64-linux-gnu.'
+  message: 'startup-script: Unpacking libgcc-13-dev:amd64 (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Preparing to unpack .../30-libgcc-13-dev_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libgcc-13-dev:amd64.'
+  message: 'startup-script: Unpacking libquadmath0:amd64 (14.2.0-4ubuntu2~24.04.1)
+  message: 'startup-script: Preparing to unpack .../29-libquadmath0_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libquadmath0:amd64.'
+  message: 'startup-script: Unpacking libhwasan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../28-libhwasan0_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libhwasan0:amd64.'
+  message: 'startup-script: Unpacking libubsan1:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../27-libubsan1_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libubsan1:amd64.'
+  message: 'startup-script: Unpacking libtsan2:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../26-libtsan2_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libtsan2:amd64.'
+  message: 'startup-script: Unpacking liblsan0:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../25-liblsan0_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package liblsan0:amd64.'
+  message: 'startup-script: Unpacking libasan8:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../24-libasan8_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libasan8:amd64.'
+  message: 'startup-script: Unpacking libatomic1:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../23-libatomic1_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libatomic1:amd64.'
+  message: 'startup-script: Unpacking libitm1:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../22-libitm1_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libitm1:amd64.'
+  message: 'startup-script: Unpacking libgomp1:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../21-libgomp1_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libgomp1:amd64.'
+  message: 'startup-script: Unpacking libcc1-0:amd64 (14.2.0-4ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../20-libcc1-0_14.2.0-4ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libcc1-0:amd64.'
+  message: 'startup-script: Unpacking cpp (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Preparing to unpack .../19-cpp_4%3a13.2.0-7ubuntu1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package cpp.'
+  message: 'startup-script: Unpacking cpp-x86-64-linux-gnu (4:13.2.0-7ubuntu1) ...'
+  message: 'startup-script: Preparing to unpack .../18-cpp-x86-64-linux-gnu_4%3a13.2.0-7ubuntu1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package cpp-x86-64-linux-gnu.'
+  message: 'startup-script: Unpacking cpp-13 (13.3.0-6ubuntu2~24.04.1) ...'
+  message: 'startup-script: Preparing to unpack .../17-cpp-13_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package cpp-13.'
+  message: 'startup-script: Unpacking cpp-13-x86-64-linux-gnu (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Preparing to unpack .../16-cpp-13-x86-64-linux-gnu_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package cpp-13-x86-64-linux-gnu.'
+  message: 'startup-script: Unpacking libmpc3:amd64 (1.3.1-1build1.1) ...'
+  message: 'startup-script: Preparing to unpack .../15-libmpc3_1.3.1-1build1.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libmpc3:amd64.'
+  message: 'startup-script: Unpacking libisl23:amd64 (0.26-3build1.1) ...'
+  message: 'startup-script: Preparing to unpack .../14-libisl23_0.26-3build1.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libisl23:amd64.'
+  message: 'startup-script: Unpacking gcc-13-base:amd64 (13.3.0-6ubuntu2~24.04.1)
+  message: 'startup-script: Preparing to unpack .../13-gcc-13-base_13.3.0-6ubuntu2~24.04.1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package gcc-13-base:amd64.'
+  message: 'startup-script: Unpacking libc6-dev:amd64 (2.39-0ubuntu8.7) ...'
+  message: 'startup-script: Preparing to unpack .../12-libc6-dev_2.39-0ubuntu8.7_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libc6-dev:amd64.'
+  message: 'startup-script: Unpacking rpcsvc-proto (1.4.2-0ubuntu7) ...'
+  message: 'startup-script: Preparing to unpack .../11-rpcsvc-proto_1.4.2-0ubuntu7_amd64.deb
+  message: 'startup-script: Selecting previously unselected package rpcsvc-proto.'
+  message: 'startup-script: Unpacking libcrypt-dev:amd64 (1:4.4.36-4build1) ...'
+  message: 'startup-script: Preparing to unpack .../10-libcrypt-dev_1%3a4.4.36-4build1_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libcrypt-dev:amd64.'
+  message: 'startup-script: Unpacking linux-libc-dev:amd64 (6.8.0-107.107) ...'
+  message: 'startup-script: Preparing to unpack .../09-linux-libc-dev_6.8.0-107.107_amd64.deb
+  message: 'startup-script: Selecting previously unselected package linux-libc-dev:amd64.'
+  message: 'startup-script: Unpacking libc-dev-bin (2.39-0ubuntu8.7) ...'
+  message: 'startup-script: Preparing to unpack .../08-libc-dev-bin_2.39-0ubuntu8.7_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libc-dev-bin.'
+  message: 'startup-script: Unpacking binutils (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Preparing to unpack .../07-binutils_2.42-4ubuntu2.10_amd64.deb
+  message: 'startup-script: Selecting previously unselected package binutils.'
+  message: 'startup-script: Unpacking binutils-x86-64-linux-gnu (2.42-4ubuntu2.10)
+  message: 'startup-script: Preparing to unpack .../06-binutils-x86-64-linux-gnu_2.42-4ubuntu2.10_amd64.deb
+  message: 'startup-script: Selecting previously unselected package binutils-x86-64-linux-gnu.'
+  message: 'startup-script: Unpacking libgprofng0:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Preparing to unpack .../05-libgprofng0_2.42-4ubuntu2.10_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libgprofng0:amd64.'
+  message: 'startup-script: Unpacking libctf0:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Preparing to unpack .../04-libctf0_2.42-4ubuntu2.10_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libctf0:amd64.'
+  message: 'startup-script: Unpacking libctf-nobfd0:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Preparing to unpack .../03-libctf-nobfd0_2.42-4ubuntu2.10_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libctf-nobfd0:amd64.'
+  message: 'startup-script: Unpacking libbinutils:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Preparing to unpack .../02-libbinutils_2.42-4ubuntu2.10_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libbinutils:amd64.'
+  message: 'startup-script: Unpacking libsframe1:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Preparing to unpack .../01-libsframe1_2.42-4ubuntu2.10_amd64.deb
+  message: 'startup-script: Selecting previously unselected package libsframe1:amd64.'
+  message: 'startup-script: Unpacking binutils-common:amd64 (2.42-4ubuntu2.10) ...'
+  message: 'startup-script: Preparing to unpack .../00-binutils-common_2.42-4ubuntu2.10_amd64.deb
+  message: "startup-script: (Reading database ... \r(Reading database ... 5%\r(Reading\
+  message: 'startup-script: Selecting previously unselected package binutils-common:amd64.'
+  message: 'startup-script: Fetched 90.8 MB in 3s (31.4 MB/s)'
+  message: 'startup-script: dpkg-preconfigure: unable to re-open stdin: No such file
+  message: 'startup-script: Get:91 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:90 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:89 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:88 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:87 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:86 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:85 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:84 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:83 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:82 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:81 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:80 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:79 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:78 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:77 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:76 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:75 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:74 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:73 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:72 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:71 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:70 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:69 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:68 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:67 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:66 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:65 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:64 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:63 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:62 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:61 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:60 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:59 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:58 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:57 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:56 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:55 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:54 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:53 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:52 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:51 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:50 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:49 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:48 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:47 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:46 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:45 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:44 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:43 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:42 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:41 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:40 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:39 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:38 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:37 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:36 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:35 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:34 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:33 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:32 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:31 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:30 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:29 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:28 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:27 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:26 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:25 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:24 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:23 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:22 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:21 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:20 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:19 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:18 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:17 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:16 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:15 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:14 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:13 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:12 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:11 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:10 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:9 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:8 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:7 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:6 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:5 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:4 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:3 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:2 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:1 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: After this operation, 312 MB of additional disk space
+  message: 'startup-script: Need to get 90.8 MB of archives.'
+  message: 'startup-script: 1 upgraded, 90 newly installed, 0 to remove and 36 not
+  message: 'startup-script:   linux-tools-common'
+  message: 'startup-script: The following packages will be upgraded:'
+  message: 'startup-script:   zlib1g-dev'
+  message: 'startup-script:   python3-venv python3-wheel python3.12-dev python3.12-venv
+  message: 'startup-script:   manpages-dev python3-dev python3-pip python3-pip-whl
+  message: 'startup-script:   libubsan1 libwebp7 libxpm4 linux-libc-dev lto-disabled-list
+  message: 'startup-script:   libquadmath0 libsframe1 libsharpyuv0 libstdc++-13-dev
+  message: 'startup-script:   libjs-underscore liblerc4 liblsan0 libmpc3 libpython3-dev
+  message: 'startup-script:   libitm1 libjbig0 libjpeg-turbo8 libjpeg8 libjs-jquery
+  message: 'startup-script:   libheif-plugin-aomenc libheif-plugin-libde265 libheif1
+  message: 'startup-script:   libgcc-13-dev libgd3 libgomp1 libgprofng0 libheif-plugin-aomdec'
+  message: 'startup-script:   libdpkg-perl libexpat1-dev libfakeroot libfile-fcntllock-perl
+  message: 'startup-script:   libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libde265-0
+  message: 'startup-script:   libaom3 libasan8 libatomic1 libbinutils libc-dev-bin
+  message: 'startup-script:   libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl'
+  message: 'startup-script:   gcc-13-x86-64-linux-gnu gcc-x86-64-linux-gnu javascript-common'
+  message: 'startup-script:   g++-13-x86-64-linux-gnu g++-x86-64-linux-gnu gcc gcc-13
+  message: 'startup-script:   fontconfig-config fonts-dejavu-core fonts-dejavu-mono
+  message: 'startup-script:   cpp-13 cpp-13-x86-64-linux-gnu cpp-x86-64-linux-gnu
+  message: 'startup-script:   binutils binutils-common binutils-x86-64-linux-gnu build-essential
+  message: 'startup-script: The following NEW packages will be installed:'
+  message: 'startup-script:   libheif-plugin-svtenc libstdc++-13-doc make-doc'
+  message: 'startup-script:   libheif-plugin-j2kdec libheif-plugin-j2kenc libheif-plugin-rav1e'
+  message: 'startup-script:   libheif-plugin-ffmpegdec libheif-plugin-jpegdec libheif-plugin-jpegenc'
+  message: 'startup-script:   apache2 | lighttpd | httpd glibc-doc bzr libgd-tools
+  message: 'startup-script:   automake libtool flex bison gdb gcc-doc gcc-13-multilib
+  message: 'startup-script:   debian-keyring g++-multilib g++-13-multilib gcc-13-doc
+  message: 'startup-script:   binutils-doc gprofng-gui bzip2-doc cpp-doc gcc-13-locales
+  message: 'startup-script: Suggested packages:'
+  message: 'startup-script:   rpcsvc-proto zlib1g-dev'
+  message: 'startup-script:   python3-setuptools-whl python3-wheel python3.12-dev
+  message: 'startup-script:   lto-disabled-list make manpages-dev python3-dev python3-pip-whl'
+  message: 'startup-script:   libubsan1 libwebp7 libxpm4 linux-libc-dev linux-tools-common'
+  message: 'startup-script:   libquadmath0 libsframe1 libsharpyuv0 libstdc++-13-dev
+  message: 'startup-script:   libjs-underscore liblerc4 liblsan0 libmpc3 libpython3-dev
+  message: 'startup-script:   libitm1 libjbig0 libjpeg-turbo8 libjpeg8 libjs-jquery
+  message: 'startup-script:   libheif-plugin-aomenc libheif-plugin-libde265 libheif1
+  message: 'startup-script:   libgcc-13-dev libgd3 libgomp1 libgprofng0 libheif-plugin-aomdec'
+  message: 'startup-script:   libdpkg-perl libexpat1-dev libfakeroot libfile-fcntllock-perl
+  message: 'startup-script:   libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 libde265-0
+  message: 'startup-script:   libaom3 libasan8 libatomic1 libbinutils libc-dev-bin
+  message: 'startup-script:   libalgorithm-diff-perl libalgorithm-diff-xs-perl libalgorithm-merge-perl'
+  message: 'startup-script:   gcc-13-x86-64-linux-gnu gcc-x86-64-linux-gnu javascript-common'
+  message: 'startup-script:   g++-13-x86-64-linux-gnu g++-x86-64-linux-gnu gcc gcc-13
+  message: 'startup-script:   fontconfig-config fonts-dejavu-core fonts-dejavu-mono
+  message: 'startup-script:   cpp-13 cpp-13-x86-64-linux-gnu cpp-x86-64-linux-gnu
+  message: 'startup-script:   binutils binutils-common binutils-x86-64-linux-gnu build-essential
+  message: 'startup-script: The following additional packages will be installed:'
+  message: 'startup-script: git set to manually installed.'
+  message: 'startup-script: git is already the newest version (1:2.43.0-1ubuntu7.3).'
+  message: 'startup-script: python3 set to manually installed.'
+  message: 'startup-script: python3 is already the newest version (3.12.3-0ubuntu2.1).'
+  message: 'startup-script: Reading state information...'
+  message: 'startup-script: Building dependency tree...'
+  message: 'startup-script: Reading package lists...'
+  message: 'startup-script: Reading package lists...'
+  message: 'startup-script: Fetched 41.3 MB in 4s (9570 kB/s)'
+  message: 'startup-script: Get:56 http://security.ubuntu.com/ubuntu noble-security/multiverse
+  message: 'startup-script: Get:55 http://security.ubuntu.com/ubuntu noble-security/multiverse
+  message: 'startup-script: Get:54 http://security.ubuntu.com/ubuntu noble-security/multiverse
+  message: 'startup-script: Get:53 http://security.ubuntu.com/ubuntu noble-security/multiverse
+  message: 'startup-script: Get:52 http://security.ubuntu.com/ubuntu noble-security/restricted
+  message: 'startup-script: Get:51 http://security.ubuntu.com/ubuntu noble-security/restricted
+  message: 'startup-script: Get:50 http://security.ubuntu.com/ubuntu noble-security/restricted
+  message: 'startup-script: Get:49 http://security.ubuntu.com/ubuntu noble-security/universe
+  message: 'startup-script: Get:48 http://security.ubuntu.com/ubuntu noble-security/universe
+  message: 'startup-script: Get:47 http://security.ubuntu.com/ubuntu noble-security/universe
+  message: 'startup-script: Get:46 http://security.ubuntu.com/ubuntu noble-security/universe
+  message: 'startup-script: Get:45 http://security.ubuntu.com/ubuntu noble-security/main
+  message: 'startup-script: Get:44 http://security.ubuntu.com/ubuntu noble-security/main
+  message: 'startup-script: Get:43 http://security.ubuntu.com/ubuntu noble-security/main
+  message: 'startup-script: Get:42 http://security.ubuntu.com/ubuntu noble-security/main
+  message: 'startup-script: Get:41 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:40 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:39 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:38 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:37 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:36 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:35 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:34 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:33 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:32 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:31 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:30 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:29 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:28 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:27 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:26 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:25 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:24 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:23 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:22 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:21 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:20 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:19 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:18 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:17 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:16 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:15 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:14 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:13 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:12 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:11 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:10 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:9 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:8 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:7 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:6 http://security.ubuntu.com/ubuntu noble-security
+  message: 'startup-script: Get:5 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:4 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:3 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Get:2 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: 'startup-script: Hit:1 http://us-central1.gce.archive.ubuntu.com/ubuntu
+  message: Found startup-script in metadata.
+  message: Starting startup scripts (version 20250116.00-0ubuntu1~24.04.3).
+  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
+  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
+  message: 'Scheduler - added: [now 2026-04-02 21:16:10.710995878 +0000 UTC entry
+  message: Invoking job "telemetryJobID"
+  message: Successfully scheduled job telemetryJobID
+  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
+  message: 'Scheduling job: telemetryJobID'
+  message: Starting the scheduler to run jobs
+  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
+    messageRetentionDuration: 604800s
+    messageRetentionDuration: 604800s
+    messageRetentionDuration: 604800s
+    messageRetentionDuration: 604800s
+  message: '2026-04-02T21:15:33.373299+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: Successfully completed ApplyConfigTask
+  message: '2026-04-02T21:15:33.325258+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T21:15:33.325052+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T21:15:33.324774+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
+  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
+  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
+  message: '2026-04-02T21:15:33.310135+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: 'Validate: resource "install-pkg" validation successful.'
+  message: '2026-04-02T21:15:33.309632+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T21:15:33.309272+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: 'Check state: resource "add-repo" state is COMPLIANT.'
+  message: 'Validate: resource "add-repo" validation successful.'
+  message: '2026-04-02T21:15:33.269966+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: Executing policy "goog-ops-agent-policy"
+  message: '2026-04-02T21:15:33.187249+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: Beginning ApplyConfigTask.
+  message: '2026-04-02T20:30:04.138087+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T20:22:35.356421+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: 'Invalid user "jspitale" or key "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAFqkx1k2n5COVKaOS0s/T5XUjM8C7HkK9pLgqSHMyYwiQ+DwOgyZ7/oLMxA0pVgQ+KQZSvKBgIJ9pmJk3fN2ZMGKIB0uf5PtzcCIBftH3UDPU5uVh19V8TBpAHJVGvpAiNFPsudo8vsc51Vi94WFDTTo4auX2aBJiHyN6NhYABcnORquZJJfbEzMV2MDVG1ckN72DKkN7mZ2Z5kUNCTasTKDAKsMS6gNeEjJEaZnDIptZNBBVfmISXG73K1LUIketuEmUGrVGlUxheBSKY/+a4oByzp/HoPVHY+UmEopRfbx9EnY3nyjg6hjYAio+yBN8Faa5ieXoTMCJcmb8tZu9g8=
+  message: 'Invalid user "jspitale" or key "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBGJsLG82Sx4CZ8ygJnfG/M5iS2jmt7MUHXYP0rs6I9jmISt/vmxAzVCPiw/8R+4V+j/QoOyOmhmoG7mE2wJogkk=
+  message: '2026-04-02T20:22:35.353779+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T20:19:39.154045+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T20:17:01.062840+00:00 instance-20260402-191353 CRON[7346]:
+  message: '2026-04-02T20:15:02.524497+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: Successfully completed ApplyConfigTask
+  message: '2026-04-02T20:15:02.488424+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
+  message: '2026-04-02T20:15:02.488101+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
+  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
+  message: '2026-04-02T20:15:02.487583+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T20:15:02.468969+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: 'Validate: resource "install-pkg" validation successful.'
+  message: '2026-04-02T20:15:02.467591+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T20:15:02.467335+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: 'Check state: resource "add-repo" state is COMPLIANT.'
+  message: 'Validate: resource "add-repo" validation successful.'
+  message: '2026-04-02T20:15:02.423749+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: Executing policy "goog-ops-agent-policy"
+  message: '2026-04-02T20:15:02.307336+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: Beginning ApplyConfigTask.
+  message: '2026-04-02T19:30:08.773618+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:30:08.773468+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:30:08.770543+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:30:08.746953+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:17:46.203280+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: 'Invalid user "jspitale" or key "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCW7Ik8M4oGFKa6j5rOfQ3VKxVZJLd1UwwXjc2tQ+MRuScLMZatoKjXKEK7wuBlgqDIIy5sVxC+zjABoHOPH3HGq+IPEv6HDxtwW5z6m88YgmkTasv1S8SwgdterS+exq/u8/QfVVFsp8l4EHAw4labvwkUueBB4ALAOlR6BAVj/xT0Wn5dxqcteqtqT6tKja/F3DFJkrqeliT/mhZ+y0artPJhV34VKOXsSeBi3WhSMghjN0OK6SQS4ETcZ4UfDR//a/UTnS0Z22UQq9EUqrpJ3iOE1bqqACk5xKdb+Pu6WZcvzCrGYmXeZWtgZ17dq1XdZFAfTPNiNWyBTeWIVeE9
+  message: '2026-04-02T19:17:46.202582+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: 'Invalid user "jspitale" or key "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBG98x+eG6qOFH/+iVmFVvA6uN032geluMBsgGVatHOpjXLyQtdQjqxcoKfkxD0J4h75TLM7T12MpnLW0kc7CnAU=
+  message: '2026-04-02T19:17:01.026673+00:00 instance-20260402-191353 CRON[3545]:
+  message: '2026-04-02T19:15:37.713068+00:00 instance-20260402-191353 systemd-timesyncd[372]:
+  message: '2026-04-02T19:15:04.227067+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:15:03.706022+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:57.965510+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:49.130535+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.130479+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.130182+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.130092+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.129317+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.128065+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.122411+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.122179+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.118637+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:49.118524+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.118202+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.113233+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.113030+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.108540+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.108346+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.089748+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.087233+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.087128+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.084233+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.083010+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.082744+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.082538+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.081295+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.080173+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.078174+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.075373+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.066960+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:49.066544+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:49.060195+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.059278+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:49.042352+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:49.042261+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:49.041982+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:48.939132+00:00 instance-20260402-191353 otelopscol[1534]:
+  message: '2026-04-02T19:14:48.810639+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.767847+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:         processors:
+  message: '2026-04-02T19:14:48.767621+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:         receivers:
+  message: '2026-04-02T19:14:48.767584+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.767538+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     pipelines:'
+  message: '2026-04-02T19:14:48.767492+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   service:'
+  message: '2026-04-02T19:14:48.767462+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       metrics_pattern:
+  message: '2026-04-02T19:14:48.767423+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       type:
+  message: '2026-04-02T19:14:48.767396+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     metrics_filter:'
+  message: '2026-04-02T19:14:48.767353+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   processors:'
+  message: '2026-04-02T19:14:48.767325+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       collection_interval:
+  message: '2026-04-02T19:14:48.767294+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       type:
+  message: '2026-04-02T19:14:48.767264+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     hostmetrics:'
+  message: '2026-04-02T19:14:48.767227+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   receivers:'
+  message: '2026-04-02T19:14:48.767114+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:
+  message: '2026-04-02T19:14:48.767084+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:         receivers:
+  message: '2026-04-02T19:14:48.767052+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.767023+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     pipelines:'
+  message: '2026-04-02T19:14:48.766994+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   service:'
+  message: '2026-04-02T19:14:48.766963+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       -
+  message: '2026-04-02T19:14:48.766933+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       -
+    /var/log/messages'
+  message: '2026-04-02T19:14:48.766902+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       include_paths:'
+  message: '2026-04-02T19:14:48.766872+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       type:
+  message: '2026-04-02T19:14:48.766842+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     syslog:'
+  message: '2026-04-02T19:14:48.766811+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   receivers:'
+  message: '2026-04-02T19:14:48.766783+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:
+  message: '2026-04-02T19:14:48.766753+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:
+  message: '2026-04-02T19:14:48.766697+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:         processors:
+  message: '2026-04-02T19:14:48.766667+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:         receivers:
+  message: '2026-04-02T19:14:48.766637+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.766607+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     pipelines:'
+  message: '2026-04-02T19:14:48.766578+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   service:'
+  message: '2026-04-02T19:14:48.766548+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       metrics_pattern:
+  message: '2026-04-02T19:14:48.766517+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       type:
+  message: '2026-04-02T19:14:48.766487+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     metrics_filter:'
+  message: '2026-04-02T19:14:48.766455+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   processors:'
+  message: '2026-04-02T19:14:48.766416+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       collection_interval:
+  message: '2026-04-02T19:14:48.766374+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       type:
+  message: '2026-04-02T19:14:48.766095+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     hostmetrics:'
+  message: '2026-04-02T19:14:48.766062+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   receivers:'
+  message: '2026-04-02T19:14:48.766033+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:
+  message: '2026-04-02T19:14:48.766003+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:         receivers:
+  message: '2026-04-02T19:14:48.765970+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.765901+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     pipelines:'
+  message: '2026-04-02T19:14:48.765871+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   service:'
+  message: '2026-04-02T19:14:48.765841+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       -
+  message: '2026-04-02T19:14:48.765809+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       -
+    /var/log/messages'
+  message: '2026-04-02T19:14:48.765776+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       include_paths:'
+  message: '2026-04-02T19:14:48.765747+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:       type:
+  message: '2026-04-02T19:14:48.765718+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:     syslog:'
+  message: '2026-04-02T19:14:48.765688+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:   receivers:'
+  message: '2026-04-02T19:14:48.765651+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:
+  message: '2026-04-02T19:14:48.765519+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1483]:
+  message: '2026-04-02T19:14:48.730665+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.702660+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:         processors:
+  message: '2026-04-02T19:14:48.702631+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:         receivers:
+  message: '2026-04-02T19:14:48.702595+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.702566+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     pipelines:'
+  message: '2026-04-02T19:14:48.702538+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   service:'
+  message: '2026-04-02T19:14:48.702510+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       metrics_pattern:
+  message: '2026-04-02T19:14:48.702471+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       type:
+  message: '2026-04-02T19:14:48.702432+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     metrics_filter:'
+  message: '2026-04-02T19:14:48.702404+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   processors:'
+  message: '2026-04-02T19:14:48.702375+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       collection_interval:
+  message: '2026-04-02T19:14:48.702347+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       type:
+  message: '2026-04-02T19:14:48.702322+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     hostmetrics:'
+  message: '2026-04-02T19:14:48.702292+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   receivers:'
+  message: '2026-04-02T19:14:48.702265+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:
+  message: '2026-04-02T19:14:48.702224+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:         receivers:
+  message: '2026-04-02T19:14:48.702195+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.702167+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     pipelines:'
+  message: '2026-04-02T19:14:48.702141+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   service:'
+  message: '2026-04-02T19:14:48.702116+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       -
+  message: '2026-04-02T19:14:48.702088+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       -
+    /var/log/messages'
+  message: '2026-04-02T19:14:48.702058+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       include_paths:'
+  message: '2026-04-02T19:14:48.702027+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       type:
+  message: '2026-04-02T19:14:48.701981+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     syslog:'
+  message: '2026-04-02T19:14:48.701942+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   receivers:'
+  message: '2026-04-02T19:14:48.701792+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:
+  message: '2026-04-02T19:14:48.701764+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:
+  message: '2026-04-02T19:14:48.701709+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:         processors:
+  message: '2026-04-02T19:14:48.701680+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:         receivers:
+  message: '2026-04-02T19:14:48.701652+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.701622+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     pipelines:'
+  message: '2026-04-02T19:14:48.701593+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   service:'
+  message: '2026-04-02T19:14:48.701555+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       metrics_pattern:
+  message: '2026-04-02T19:14:48.701526+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       type:
+  message: '2026-04-02T19:14:48.701500+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     metrics_filter:'
+  message: '2026-04-02T19:14:48.701456+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   processors:'
+  message: '2026-04-02T19:14:48.701409+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       collection_interval:
+  message: '2026-04-02T19:14:48.701382+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       type:
+  message: '2026-04-02T19:14:48.701356+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     hostmetrics:'
+  message: '2026-04-02T19:14:48.701326+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   receivers:'
+  message: '2026-04-02T19:14:48.701299+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:
+  message: '2026-04-02T19:14:48.701269+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:         receivers:
+  message: '2026-04-02T19:14:48.701243+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.701216+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     pipelines:'
+  message: '2026-04-02T19:14:48.701187+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   service:'
+  message: '2026-04-02T19:14:48.701160+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       -
+  message: '2026-04-02T19:14:48.701133+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       -
+    /var/log/messages'
+  message: '2026-04-02T19:14:48.701091+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       include_paths:'
+  message: '2026-04-02T19:14:48.701061+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:       type:
+  message: '2026-04-02T19:14:48.701030+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:     syslog:'
+  message: '2026-04-02T19:14:48.700999+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:   receivers:'
+  message: '2026-04-02T19:14:48.700963+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:
+  message: '2026-04-02T19:14:48.700836+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1482]:
+  message: '2026-04-02T19:14:48.572121+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.568845+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.563529+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.537855+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.537812+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.537764+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.537659+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: Successfully completed ApplyConfigTask
+  message: ''
+  message: '         Celebrating 10 Years of Open, Fluent Innovation!'
+  message: '             Fluent Bit v4.2 – Direct Routes Ahead'
+  message: '                                                                  '
+  message: \_|   |_|\__,_|\___|_| |_|\__| \____/|_|\__|   \_/     |_(_)_____/
+  message: '| |   | | |_| |  __/ | | | |_  | |_/ / | |_   \ V /\___  |_./ /___'
+  message: "|  _| | | | | |/ _ \\ '_ \\| __| | ___ \\ | __| \\ \\ / / /_| |   / /\
+  message: "| |_  | |_   _  ___ _ __ | |_  | |_/ /_| |_  __   __/ /| | `' / /'"
+  message: '|  ___| |                | |   | ___ (_) |           /   | / __  \'
+  message: '______ _                  _    ______ _ _             ___   _____ '
+  message: ''
+  message: '* https://fluentbit.io'
+  message: '* Fluent Bit is a CNCF graduated project under the Fluent organization'
+  message: '* Copyright (C) 2015-2025 The Fluent Bit Authors'
+  message: Fluent Bit v4.2.1
+  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
+  message: 'Check state post enforcement: resource "install-pkg" state is COMPLIANT.'
+  message: '2026-04-02T19:14:48.222675+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.222495+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.222342+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.219981+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.219803+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.219718+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.219648+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.219575+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.219494+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.219382+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.219295+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.219196+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.219095+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.218892+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.196467+00:00 instance-20260402-191353 systemd[1431]:
+  message: '2026-04-02T19:14:48.131474+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:         processors:
+  message: '2026-04-02T19:14:48.131444+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:         receivers:
+  message: '2026-04-02T19:14:48.131383+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.131356+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     pipelines:'
+  message: '2026-04-02T19:14:48.131329+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   service:'
+  message: '2026-04-02T19:14:48.131300+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       metrics_pattern:
+  message: '2026-04-02T19:14:48.131269+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       type:
+  message: '2026-04-02T19:14:48.131241+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     metrics_filter:'
+  message: '2026-04-02T19:14:48.131210+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   processors:'
+  message: '2026-04-02T19:14:48.131181+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       collection_interval:
+  message: '2026-04-02T19:14:48.131147+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       type:
+  message: '2026-04-02T19:14:48.131118+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     hostmetrics:'
+  message: '2026-04-02T19:14:48.131087+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   receivers:'
+  message: '2026-04-02T19:14:48.131058+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.131030+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:         receivers:
+  message: '2026-04-02T19:14:48.131003+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.130968+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     pipelines:'
+  message: '2026-04-02T19:14:48.130940+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   service:'
+  message: '2026-04-02T19:14:48.130910+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       -
+  message: '2026-04-02T19:14:48.130876+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       -
+    /var/log/messages'
+  message: '2026-04-02T19:14:48.130847+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       include_paths:'
+  message: '2026-04-02T19:14:48.130818+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       type:
+  message: '2026-04-02T19:14:48.130789+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     syslog:'
+  message: '2026-04-02T19:14:48.130762+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   receivers:'
+  message: '2026-04-02T19:14:48.130733+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.130698+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.130637+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:         processors:
+  message: '2026-04-02T19:14:48.130600+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:         receivers:
+  message: '2026-04-02T19:14:48.130571+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.130543+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     pipelines:'
+  message: '2026-04-02T19:14:48.130507+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   service:'
+  message: '2026-04-02T19:14:48.130473+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       metrics_pattern:
+  message: '2026-04-02T19:14:48.130434+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       type:
+  message: '2026-04-02T19:14:48.130401+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     metrics_filter:'
+  message: '2026-04-02T19:14:48.130370+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   processors:'
+  message: '2026-04-02T19:14:48.130338+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       collection_interval:
+  message: '2026-04-02T19:14:48.130305+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       type:
+  message: '2026-04-02T19:14:48.130272+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     hostmetrics:'
+  message: '2026-04-02T19:14:48.130231+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   receivers:'
+  message: '2026-04-02T19:14:48.130204+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.130170+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:         receivers:
+  message: '2026-04-02T19:14:48.130137+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       default_pipeline:'
+  message: '2026-04-02T19:14:48.130105+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     pipelines:'
+  message: '2026-04-02T19:14:48.130071+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   service:'
+  message: '2026-04-02T19:14:48.130040+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       -
+  message: '2026-04-02T19:14:48.130006+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       -
+    /var/log/messages'
+  message: '2026-04-02T19:14:48.129964+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       include_paths:'
+  message: '2026-04-02T19:14:48.129841+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:       type:
+  message: '2026-04-02T19:14:48.129797+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:     syslog:'
+  message: '2026-04-02T19:14:48.129758+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:   receivers:'
+  message: '2026-04-02T19:14:48.129715+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.129570+00:00 instance-20260402-191353 google_cloud_ops_agent_engine[1434]:
+  message: '2026-04-02T19:14:48.048785+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.026772+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:48.007570+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:47.992623+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:47.990218+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:47.674425+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:42.038683+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:35.668646+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:35.665263+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:35.665133+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:35.161320+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:35.139411+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:35.138908+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:35.121513+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:35.093562+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:35.093467+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:35.093392+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:35.093240+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:35.015702+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:35.005100+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:35.001400+00:00 instance-20260402-191353 systemd-resolved[370]:
+  message: '2026-04-02T19:14:34.951512+00:00 instance-20260402-191353 google_metadata_script_runner[1284]:
+  message: '2026-04-02T19:14:34.947511+00:00 instance-20260402-191353 google_metadata_script_runner[1284]:
+  message: '2026-04-02T19:14:34.696391+00:00 instance-20260402-191353 google_compat_metadata_script_runner[1278]:
+  message: '2026-04-02T19:14:34.692084+00:00 instance-20260402-191353 google_compat_metadata_script_runner[1278]:
+  message: '2026-04-02T19:14:34.632838+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:34.542489+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:34.534530+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:34.534334+00:00 instance-20260402-191353 google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:34.515434+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:34.332738+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:34.332627+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:34.322514+00:00 instance-20260402-191353 systemd[1]:
+  message: "2026-04-02T19:14:34.321604+00:00 instance-20260402-191353 dbus-daemon[386]:\
+  message: '2026-04-02T19:14:34.190606+00:00 instance-20260402-191353 systemd[1]:
+  message: "2026-04-02T19:14:34.143215+00:00 instance-20260402-191353 dbus-daemon[386]:\
+  message: '2026-04-02T19:14:34.135450+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:34.132547+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:34.132460+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:34.132319+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:34.120454+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:34.120130+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:34.118685+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.873964+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.873848+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.872407+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.872348+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.872208+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.849999+00:00 instance-20260402-191353 networkd-dispatcher[1178]:
+  message: '2026-04-02T19:14:33.848421+00:00 instance-20260402-191353 networkd-dispatcher[1178]:                                  Dload  Upload   Total   Spent    Left  Speed'
+  message: '2026-04-02T19:14:33.848207+00:00 instance-20260402-191353 networkd-dispatcher[1178]:   %
+  message: '2026-04-02T19:14:33.833255+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.805598+00:00 instance-20260402-191353 systemd-timesyncd[372]:
+  message: '2026-04-02T19:14:33.803582+00:00 instance-20260402-191353 systemd-timesyncd[372]:
+  message: '2026-04-02T19:14:33.801495+00:00 instance-20260402-191353 systemd-timesyncd[372]:
+  message: '2026-04-02T19:14:33.799795+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.794281+00:00 instance-20260402-191353 systemd-networkd[261]:
+  message: '2026-04-02T19:14:33.771409+00:00 instance-20260402-191353 systemd-timesyncd[372]:
+  message: '2026-04-02T19:14:33.757818+00:00 instance-20260402-191353 systemd-networkd[261]:
+  message: '2026-04-02T19:14:33.736020+00:00 instance-20260402-191353 systemd-networkd[261]:
+  message: '2026-04-02T19:14:33.735541+00:00 instance-20260402-191353 systemd-networkd[261]:
+  message: '2026-04-02T19:14:33.118254+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.117795+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.110280+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.110207+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.110100+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.105403+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.105285+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.068881+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.027928+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:33.026641+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:32.533524+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:32.522469+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:32.509461+00:00 instance-20260402-191353 google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:32.499504+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:32.497642+00:00 instance-20260402-191353 google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:32.497533+00:00 instance-20260402-191353 google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:32.493517+00:00 instance-20260402-191353 google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:32.493395+00:00 instance-20260402-191353 google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:32.492995+00:00 instance-20260402-191353 google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:32.492890+00:00 instance-20260402-191353 google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:32.492062+00:00 instance-20260402-191353 google_guest_agent[459]:
+  message: '2026-04-02T19:14:32.149476+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:32.149014+00:00 instance-20260402-191353 exim4[399]:  exim4.'
+  message: '2026-04-02T19:14:32.041515+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:32.041357+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:32.017891+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:32.017686+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:32.017432+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:32.015262+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:32.014596+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:31.981292+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:31.972509+00:00 instance-20260402-191353 rsyslogd: [origin
+  message: "2026-04-02T19:14:31.972002+00:00 instance-20260402-191353 rsyslogd: imuxsock:\
+  message: '2026-04-02T19:14:31.966701+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:31.959249+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  message: '2026-04-02T19:14:31.957368+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:31.954594+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:31.954395+00:00 instance-20260402-191353 systemd[1]:
+  message: "2026-04-02T19:14:31.942684+00:00 instance-20260402-191353 dbus-daemon[386]:\
+  message: '2026-04-02T19:14:31.940065+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:31.936729+00:00 instance-20260402-191353 systemd[1]:
+  message: '2026-04-02T19:14:31.934620+00:00 instance-20260402-191353 rsyslogd: [origin
+  message: '2026-04-02T19:14:31.913046+00:00 localhost polkitd[539]: Started polkitd
+  message: '2026-04-02T19:14:31.890245+00:00 localhost systemd[1]: Starting polkit.service
+  message: '2026-04-02T19:14:31.871042+00:00 localhost systemd-hostnamed[502]: Hostname
+  message: "2026-04-02T19:14:31.869995+00:00 localhost dbus-daemon[386]: [system]\
+  message: '2026-04-02T19:14:31.868423+00:00 localhost systemd[1]: Started systemd-hostnamed.service
+  message: "2026-04-02T19:14:31.868316+00:00 localhost dbus-daemon[386]: [system]\
+  message: '2026-04-02T19:14:31.865898+00:00 localhost OSConfigAgent[425]: 2026-04-02T19:14:31.8652Z
+  message: '2026-04-02T19:14:31.776182+00:00 localhost systemd[1]: Started unattended-upgrades.service
+  message: '2026-04-02T19:14:31.776008+00:00 localhost systemd[1]: Starting systemd-hostnamed.service
+  message: '2026-04-02T19:14:31.755925+00:00 localhost systemd[1]: Started systemd-logind.service
+  message: '2026-04-02T19:14:31.740142+00:00 localhost exim4[479]: /usr/sbin/update-exim4.conf:
+  message: '2026-04-02T19:14:31.739567+00:00 localhost exim4[399]: Starting MTA:'
+  message: '2026-04-02T19:14:31.720773+00:00 localhost systemd[1]: Finished nvmf-autoconnect.service
+  message: '2026-04-02T19:14:31.720271+00:00 localhost systemd[1]: nvmf-autoconnect.service:
+  message: '2026-04-02T19:14:31.688274+00:00 localhost google_guest_compat_manager[414]:
+  message: '2026-04-02T19:14:31.688219+00:00 localhost google_guest_compat_manager[414]:
+  message: '2026-04-02T19:14:31.688069+00:00 localhost systemd[1]: Finished google-shutdown-scripts.service
+  message: '2026-04-02T19:14:31.621135+00:00 localhost OSConfigAgent[425]: 2026-04-02T19:14:31.6204Z
+  message: '2026-04-02T19:14:31.536271+00:00 localhost systemd[1]: Started google-guest-compat-manager.service
+  message: '2026-04-02T19:14:31.471314+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.468722+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.468642+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.468578+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.468506+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.468415+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.468259+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.467083+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.462517+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.458835+00:00 localhost google_guest_compat_manager[414]:
+  message: '2026-04-02T19:14:31.458574+00:00 localhost google_guest_agent_manager[405]:
+  message: '2026-04-02T19:14:31.457936+00:00 localhost google_guest_compat_manager[414]:
+  message: '2026-04-02T19:14:31.452273+00:00 localhost systemd[1]: Finished google-oslogin-cache.service
+  message: '2026-04-02T19:14:31.452156+00:00 localhost systemd[1]: google-oslogin-cache.service:
+  message: '2026-04-02T19:14:31.450243+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:31.394123+00:00 localhost systemd[1]: Started serial-getty@ttyS0.service
+  message: '2026-04-02T19:14:31.292515+00:00 localhost OSConfigAgent[425]: 2026-04-02T19:14:31.2920Z
+  message: '2026-04-02T19:14:31.257976+00:00 localhost systemd[1]: Starting nvmf-autoconnect.service
+  message: '2026-04-02T19:14:31.178201+00:00 localhost systemd[1]: Starting google-shutdown-scripts.service
+  message: '2026-04-02T19:14:31.073719+00:00 localhost oslogin_cache_refresh[450]:
+  message: '2026-04-02T19:14:31.073417+00:00 localhost google_oslogin_nss_cache[450]:
+  message: '2026-04-02T19:14:31.069187+00:00 localhost oslogin_cache_refresh[450]:
+  message: '2026-04-02T19:14:31.069026+00:00 localhost google_oslogin_nss_cache[450]:
+  message: '2026-04-02T19:14:31.042391+00:00 localhost systemd[1]: Starting google-oslogin-cache.service
+  message: "2026-04-02T19:14:30.941706+00:00 localhost systemd-resolved[370]: System\
+  message: '2026-04-02T19:14:30.906893+00:00 localhost systemd[1]: Started google-osconfig-agent.service
+  message: '2026-04-02T19:14:30.782652+00:00 localhost systemd[1]: Starting google-guest-compat-manager.service
+  message: '2026-04-02T19:14:30.740698+00:00 localhost networkd-dispatcher[407]: #015  0     0    0     0    0     0      0      0
+  message: '2026-04-02T19:14:30.735644+00:00 localhost networkd-dispatcher[407]:                                  Dload  Upload   Total   Spent    Left  Speed'
+  message: '2026-04-02T19:14:30.735446+00:00 localhost networkd-dispatcher[407]:   %
+  message: '2026-04-02T19:14:30.622132+00:00 localhost systemd[1]: Starting google-guest-agent-manager.service
+  message: '2026-04-02T19:14:30.572426+00:00 localhost networkd-dispatcher[388]: No
+  message: '2026-04-02T19:14:30.572283+00:00 localhost networkd-dispatcher[388]: No
+  message: '2026-04-02T19:14:30.482057+00:00 localhost systemd[1]: Started getty@tty1.service
+  message: '2026-04-02T19:14:30.346052+00:00 localhost systemd[1]: Starting exim4.service
+  message: "2026-04-02T19:14:30.324222+00:00 localhost dbus-daemon[386]: [system]\
+  message: '2026-04-02T19:14:30.324086+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.306986+00:00 localhost systemd[1]: Finished systemd-user-sessions.service
+  message: '2026-04-02T19:14:30.297595+00:00 localhost kernel: [    5.568365] audit:
+  message: '2026-04-02T19:14:30.297595+00:00 localhost kernel: [    5.568361] kauditd_printk_skb:
+  message: '2026-04-02T19:14:30.297593+00:00 localhost kernel: [    5.535646] audit:
+  message: '2026-04-02T19:14:30.297579+00:00 localhost kernel: [    5.529722] audit:
+  message: '2026-04-02T19:14:30.297578+00:00 localhost kernel: [    5.506494] audit:
+  message: '2026-04-02T19:14:30.297577+00:00 localhost kernel: [    5.215659] audit:
+  message: '2026-04-02T19:14:30.297576+00:00 localhost kernel: [    5.213161] audit:
+  message: '2026-04-02T19:14:30.297575+00:00 localhost kernel: [    5.210946] audit:
+  message: '2026-04-02T19:14:30.297568+00:00 localhost kernel: [    5.009749] audit:
+  message: '2026-04-02T19:14:30.297567+00:00 localhost kernel: [    5.006170] audit:
+  message: '2026-04-02T19:14:30.297566+00:00 localhost kernel: [    4.996925] audit:
+  message: '2026-04-02T19:14:30.297566+00:00 localhost kernel: [    4.578417] AES
+  message: '2026-04-02T19:14:30.297565+00:00 localhost kernel: [    4.577439] AVX2
+  message: '2026-04-02T19:14:30.297559+00:00 localhost kernel: [    4.548630] cryptd:
+  message: '2026-04-02T19:14:30.297556+00:00 localhost kernel: [    4.540250] RAPL
+  message: '2026-04-02T19:14:30.297555+00:00 localhost kernel: [    4.359771] ACPI:
+  message: '2026-04-02T19:14:30.297554+00:00 localhost kernel: [    4.347420] input:
+  message: '2026-04-02T19:14:30.297554+00:00 localhost kernel: [    4.346486] ACPI:
+  message: '2026-04-02T19:14:30.297553+00:00 localhost kernel: [    4.332156] input:
+  message: '2026-04-02T19:14:30.297552+00:00 localhost kernel: [    4.323114] sd 0:0:1:0:
+  message: '2026-04-02T19:14:30.297545+00:00 localhost kernel: [    3.959321] EXT4-fs
+  message: '2026-04-02T19:14:30.297545+00:00 localhost kernel: [    3.835627] EXT4-fs
+  message: '2026-04-02T19:14:30.297544+00:00 localhost kernel: [    3.503680] loop:
+  message: '2026-04-02T19:14:30.297543+00:00 localhost kernel: [    3.493617] fuse:
+  message: '2026-04-02T19:14:30.297542+00:00 localhost kernel: [    3.452785] pstore:
+  message: '2026-04-02T19:14:30.297541+00:00 localhost kernel: [    3.440746] pstore:
+  message: '2026-04-02T19:14:30.297532+00:00 localhost kernel: [    3.425675] device-mapper:
+  message: '2026-04-02T19:14:30.297532+00:00 localhost kernel: [    3.424747] device-mapper:
+  message: '2026-04-02T19:14:30.297530+00:00 localhost kernel: [    3.422677] device-mapper:
+  message: '2026-04-02T19:14:30.297470+00:00 localhost kernel: [    2.189427] Not
+  message: '2026-04-02T19:14:30.297470+00:00 localhost kernel: [    2.147582] EXT4-fs
+  message: '2026-04-02T19:14:30.297469+00:00 localhost kernel: [    2.071938]  sda:
+  message: '2026-04-02T19:14:30.297464+00:00 localhost kernel: [    1.922495] sd 0:0:1:0:
+  message: '2026-04-02T19:14:30.297464+00:00 localhost kernel: [    1.921584]  sda:
+  message: "2026-04-02T19:14:30.297463+00:00 localhost kernel: [    1.912605] sd 0:0:1:0:\
+  message: '2026-04-02T19:14:30.297463+00:00 localhost kernel: [    1.911770] sd 0:0:1:0:
+  message: '2026-04-02T19:14:30.297462+00:00 localhost kernel: [    1.910892] sd 0:0:1:0:
+  message: '2026-04-02T19:14:30.297462+00:00 localhost kernel: [    1.909658] sd 0:0:1:0:
+  message: '2026-04-02T19:14:30.297462+00:00 localhost kernel: [    1.908065] sd 0:0:1:0:
+  message: '2026-04-02T19:14:30.297456+00:00 localhost kernel: [    1.875949] scsi
+  message: '2026-04-02T19:14:30.297456+00:00 localhost kernel: [    1.856265] blk-mq:
+  message: '2026-04-02T19:14:30.297456+00:00 localhost kernel: [    1.855092] scsi
+  message: '2026-04-02T19:14:30.297455+00:00 localhost kernel: [    1.789174] virtio_net
+  message: '2026-04-02T19:14:30.297455+00:00 localhost kernel: [    1.760271] SCSI
+  message: '2026-04-02T19:14:30.297454+00:00 localhost kernel: [    1.649648] virtio-pci
+  message: '2026-04-02T19:14:30.297449+00:00 localhost kernel: [    1.648655] ACPI:
+  message: '2026-04-02T19:14:30.297449+00:00 localhost kernel: [    1.639923] virtio-pci
+  message: '2026-04-02T19:14:30.297448+00:00 localhost kernel: [    1.639102] ACPI:
+  message: '2026-04-02T19:14:30.297448+00:00 localhost kernel: [    1.627729] virtio-pci
+  message: '2026-04-02T19:14:30.297448+00:00 localhost kernel: [    1.625905] ACPI:
+  message: '2026-04-02T19:14:30.297447+00:00 localhost kernel: [    1.616494] virtio-pci
+  message: '2026-04-02T19:14:30.297442+00:00 localhost kernel: [    1.609702] ACPI:
+  message: '2026-04-02T19:14:30.297442+00:00 localhost kernel: [    1.503287]     TERM=linux'
+  message: '2026-04-02T19:14:30.297441+00:00 localhost kernel: [    1.503286]     HOME=/'
+  message: '2026-04-02T19:14:30.297441+00:00 localhost kernel: [    1.503285]   with
+  message: '2026-04-02T19:14:30.297441+00:00 localhost kernel: [    1.503283]     /init'
+  message: '2026-04-02T19:14:30.297440+00:00 localhost kernel: [    1.503280]   with
+  message: '2026-04-02T19:14:30.297440+00:00 localhost kernel: [    1.502473] Run
+  message: '2026-04-02T19:14:30.297433+00:00 localhost kernel: [    1.500708] x86/mm:
+  message: '2026-04-02T19:14:30.297433+00:00 localhost kernel: [    1.499585] x86/mm:
+  message: '2026-04-02T19:14:30.297432+00:00 localhost kernel: [    1.498461] x86/mm:
+  message: '2026-04-02T19:14:30.297432+00:00 localhost kernel: [    1.496491] Freeing
+  message: '2026-04-02T19:14:30.297431+00:00 localhost kernel: [    1.494695] Freeing
+  message: '2026-04-02T19:14:30.297430+00:00 localhost kernel: [    1.492875] Write
+  message: '2026-04-02T19:14:30.297423+00:00 localhost kernel: [    1.491588] Freeing
+  message: '2026-04-02T19:14:30.297422+00:00 localhost kernel: [    1.489835] Freeing
+  message: '2026-04-02T19:14:30.297418+00:00 localhost kernel: [    1.438852] input:
+  message: '2026-04-02T19:14:30.297417+00:00 localhost kernel: [    1.388443] evm:
+  message: '2026-04-02T19:14:30.297416+00:00 localhost kernel: [    1.387096] evm:
+  message: '2026-04-02T19:14:30.297416+00:00 localhost kernel: [    1.386163] evm:
+  message: '2026-04-02T19:14:30.297415+00:00 localhost kernel: [    1.385683] evm:
+  message: '2026-04-02T19:14:30.297408+00:00 localhost kernel: [    1.384306] evm:
+  message: '2026-04-02T19:14:30.297407+00:00 localhost kernel: [    1.382690] evm:
+  message: '2026-04-02T19:14:30.297406+00:00 localhost kernel: [    1.380137] evm:
+  message: '2026-04-02T19:14:30.297406+00:00 localhost kernel: [    1.378193] evm:
+  message: '2026-04-02T19:14:30.297405+00:00 localhost kernel: [    1.376818] evm:
+  message: '2026-04-02T19:14:30.297404+00:00 localhost kernel: [    1.373934] evm:
+  message: '2026-04-02T19:14:30.297397+00:00 localhost kernel: [    1.372015] ima:
+  message: '2026-04-02T19:14:30.297397+00:00 localhost kernel: [    1.344057] ima:
+  message: '2026-04-02T19:14:30.297396+00:00 localhost kernel: [    1.334249] ima:
+  message: "2026-04-02T19:14:30.297396+00:00 localhost kernel: [    1.330464] integrity:\
+  message: '2026-04-02T19:14:30.297395+00:00 localhost kernel: [    1.328062] integrity:
+  message: "2026-04-02T19:14:30.297394+00:00 localhost kernel: [    1.325421] integrity:\
+  message: '2026-04-02T19:14:30.297387+00:00 localhost kernel: [    1.324261] integrity:
+  message: "2026-04-02T19:14:30.297386+00:00 localhost kernel: [    1.322043] integrity:\
+  message: '2026-04-02T19:14:30.297386+00:00 localhost kernel: [    1.320927] integrity:
+  message: "2026-04-02T19:14:30.297385+00:00 localhost kernel: [    1.318577] integrity:\
+  message: '2026-04-02T19:14:30.297385+00:00 localhost kernel: [    1.317728] integrity:
+  message: '2026-04-02T19:14:30.297373+00:00 localhost kernel: [    1.315961] AppArmor:
+  message: '2026-04-02T19:14:30.297368+00:00 localhost kernel: [    1.314833] Key
+  message: '2026-04-02T19:14:30.297367+00:00 localhost kernel: [    1.307444] Key
+  message: '2026-04-02T19:14:30.297367+00:00 localhost kernel: [    1.305839] Key
+  message: "2026-04-02T19:14:30.297366+00:00 localhost kernel: [    1.301473] Loaded\
+  message: '2026-04-02T19:14:30.297366+00:00 localhost kernel: [    1.281199] Loading
+  message: '2026-04-02T19:14:30.297366+00:00 localhost kernel: [    1.280501] registered
+  message: '2026-04-02T19:14:30.297360+00:00 localhost kernel: [    1.278050] sched_clock:
+  message: '2026-04-02T19:14:30.297360+00:00 localhost kernel: [    1.276596] IPI
+  message: '2026-04-02T19:14:30.297359+00:00 localhost kernel: [    1.275168] No MBM
+  message: '2026-04-02T19:14:30.297359+00:00 localhost kernel: [    1.271986] NET:
+  message: '2026-04-02T19:14:30.297359+00:00 localhost kernel: [    1.270799] mip6:
+  message: '2026-04-02T19:14:30.297358+00:00 localhost kernel: [    1.269555] In-situ
+  message: '2026-04-02T19:14:30.297358+00:00 localhost kernel: [    1.268071] Segment
+  message: '2026-04-02T19:14:30.297351+00:00 localhost kernel: [    1.260204] NET:
+  message: '2026-04-02T19:14:30.297351+00:00 localhost kernel: [    1.245551] ledtrig-cpu:
+  message: '2026-04-02T19:14:30.297350+00:00 localhost kernel: [    1.244366] intel_pstate:
+  message: '2026-04-02T19:14:30.297350+00:00 localhost kernel: [    1.242088] rtc_cmos
+  message: '2026-04-02T19:14:30.297349+00:00 localhost kernel: [    1.240832] rtc_cmos
+  message: '2026-04-02T19:14:30.297349+00:00 localhost kernel: [    1.239418] rtc_cmos
+  message: '2026-04-02T19:14:30.297344+00:00 localhost kernel: [    1.237020] rtc_cmos
+  message: '2026-04-02T19:14:30.297343+00:00 localhost kernel: [    1.235343] serio:
+  message: '2026-04-02T19:14:30.297343+00:00 localhost kernel: [    1.232917] serio:
+  message: '2026-04-02T19:14:30.297343+00:00 localhost kernel: [    1.228125] i8042:
+  message: '2026-04-02T19:14:30.297342+00:00 localhost kernel: [    1.226102] i8042:
+  message: '2026-04-02T19:14:30.297342+00:00 localhost kernel: [    1.216486] tpm_tis
+  message: '2026-04-02T19:14:30.297284+00:00 localhost kernel: [    1.208645] 00:06:
+  message: '2026-04-02T19:14:30.297283+00:00 localhost kernel: [    1.206185] 00:05:
+  message: '2026-04-02T19:14:30.297283+00:00 localhost kernel: [    1.204079] 00:04:
+  message: '2026-04-02T19:14:30.297283+00:00 localhost kernel: [    1.201851] 00:03:
+  message: '2026-04-02T19:14:30.297282+00:00 localhost kernel: [    1.199336] Serial:
+  message: '2026-04-02T19:14:30.297282+00:00 localhost kernel: [    1.195879] io scheduler
+  message: '2026-04-02T19:14:30.297282+00:00 localhost kernel: [    1.194182] Block
+  message: '2026-04-02T19:14:30.297277+00:00 localhost kernel: [    1.192897] alg:
+  message: '2026-04-02T19:14:30.297276+00:00 localhost kernel: [    1.183007] Freeing
+  message: "2026-04-02T19:14:30.297276+00:00 localhost kernel: [    1.039756] Asymmetric\
+  message: '2026-04-02T19:14:30.297275+00:00 localhost kernel: [    1.038938] Key
+  message: '2026-04-02T19:14:30.297275+00:00 localhost kernel: [    1.037298] integrity:
+  message: '2026-04-02T19:14:30.297274+00:00 localhost kernel: [    1.035548] integrity:
+  message: '2026-04-02T19:14:30.297269+00:00 localhost kernel: [    1.030880] workingset:
+  message: '2026-04-02T19:14:30.297268+00:00 localhost kernel: [    1.029784] Key
+  message: '2026-04-02T19:14:30.297268+00:00 localhost kernel: [    1.027970] Initialise
+  message: '2026-04-02T19:14:30.297268+00:00 localhost kernel: [    1.025076] clocksource:
+  message: '2026-04-02T19:14:30.297267+00:00 localhost kernel: [    1.021479] clocksource:
+  message: '2026-04-02T19:14:30.297267+00:00 localhost kernel: [    1.017712] software
+  message: '2026-04-02T19:14:30.297261+00:00 localhost kernel: [    1.015807] Trying
+  message: '2026-04-02T19:14:30.297260+00:00 localhost kernel: [    1.015682] PCI-DMA:
+  message: '2026-04-02T19:14:30.297260+00:00 localhost kernel: [    1.014858] PCI:
+  message: '2026-04-02T19:14:30.297259+00:00 localhost kernel: [    1.013597] pci
+  message: '2026-04-02T19:14:30.297258+00:00 localhost kernel: [    1.011514] pci_bus
+  message: '2026-04-02T19:14:30.297258+00:00 localhost kernel: [    1.009491] pci_bus
+  message: '2026-04-02T19:14:30.297257+00:00 localhost kernel: [    1.008168] pci_bus
+  message: '2026-04-02T19:14:30.297250+00:00 localhost kernel: [    1.006534] pci_bus
+  message: '2026-04-02T19:14:30.297250+00:00 localhost kernel: [    1.005649] NET:
+  message: '2026-04-02T19:14:30.297241+00:00 localhost kernel: [    1.004675] NET:
+  message: '2026-04-02T19:14:30.297240+00:00 localhost kernel: [    1.002714] UDP-Lite
+  message: '2026-04-02T19:14:30.297239+00:00 localhost kernel: [    1.001246] UDP
+  message: '2026-04-02T19:14:30.297239+00:00 localhost kernel: [    0.999295] MPTCP
+  message: '2026-04-02T19:14:30.297232+00:00 localhost kernel: [    0.997061] TCP:
+  message: '2026-04-02T19:14:30.297231+00:00 localhost kernel: [    0.995486] TCP
+  message: '2026-04-02T19:14:30.297231+00:00 localhost kernel: [    0.992376] TCP
+  message: '2026-04-02T19:14:30.297230+00:00 localhost kernel: [    0.990238] Table-perturb
+  message: '2026-04-02T19:14:30.297230+00:00 localhost kernel: [    0.987765] tcp_listen_portaddr_hash
+  message: '2026-04-02T19:14:30.297229+00:00 localhost kernel: [    0.983699] IP idents
+  message: '2026-04-02T19:14:30.297228+00:00 localhost kernel: [    0.980870] NET:
+  message: '2026-04-02T19:14:30.297221+00:00 localhost kernel: [    0.978745] clocksource:
+  message: '2026-04-02T19:14:30.297220+00:00 localhost kernel: [    0.968076] pnp:
+  message: '2026-04-02T19:14:30.297220+00:00 localhost kernel: [    0.967008] pnp:
+  message: '2026-04-02T19:14:30.297219+00:00 localhost kernel: [    0.965993] AppArmor:
+  message: '2026-04-02T19:14:30.297218+00:00 localhost kernel: [    0.963663] VFS:
+  message: '2026-04-02T19:14:30.297217+00:00 localhost kernel: [    0.962796] VFS:
+  message: '2026-04-02T19:14:30.297211+00:00 localhost kernel: [    0.949953] clocksource:
+  message: '2026-04-02T19:14:30.297210+00:00 localhost kernel: [    0.947865] vgaarb:
+  message: '2026-04-02T19:14:30.297210+00:00 localhost kernel: [    0.947812] e820:
+  message: '2026-04-02T19:14:30.297209+00:00 localhost kernel: [    0.947810] e820:
+  message: '2026-04-02T19:14:30.297208+00:00 localhost kernel: [    0.947808] e820:
+  message: '2026-04-02T19:14:30.297207+00:00 localhost kernel: [    0.947805] e820:
+  message: '2026-04-02T19:14:30.297201+00:00 localhost kernel: [    0.947670] PCI:
+  message: '2026-04-02T19:14:30.297200+00:00 localhost kernel: [    0.945956] PCI:
+  message: '2026-04-02T19:14:30.297200+00:00 localhost kernel: [    0.944817] NetLabel:  unlabeled
+  message: '2026-04-02T19:14:30.297199+00:00 localhost kernel: [    0.943571] NetLabel:  protocols
+  message: '2026-04-02T19:14:30.297199+00:00 localhost kernel: [    0.942828] NetLabel:  domain
+  message: '2026-04-02T19:14:30.297198+00:00 localhost kernel: [    0.942828] NetLabel:
+  message: '2026-04-02T19:14:30.297197+00:00 localhost kernel: [    0.942240] Registered
+  message: '2026-04-02T19:14:30.297191+00:00 localhost kernel: [    0.937971] PTP
+  message: '2026-04-02T19:14:30.297190+00:00 localhost kernel: [    0.937300] pps_core:
+  message: '2026-04-02T19:14:30.297189+00:00 localhost kernel: [    0.936460] pps_core:
+  message: '2026-04-02T19:14:30.297189+00:00 localhost kernel: [    0.934986] iommu:
+  message: '2026-04-02T19:14:30.297188+00:00 localhost kernel: [    0.934363] iommu:
+  message: '2026-04-02T19:14:30.297187+00:00 localhost kernel: [    0.933408] ACPI:
+  message: '2026-04-02T19:14:30.297179+00:00 localhost kernel: [    0.930066] ACPI:
+  message: '2026-04-02T19:14:30.297179+00:00 localhost kernel: [    0.926055] ACPI:
+  message: '2026-04-02T19:14:30.297178+00:00 localhost kernel: [    0.922063] ACPI:
+  message: '2026-04-02T19:14:30.297178+00:00 localhost kernel: [    0.918923] ACPI:
+  message: '2026-04-02T19:14:30.297177+00:00 localhost kernel: [    0.891968] pci
+  message: '2026-04-02T19:14:30.297176+00:00 localhost kernel: [    0.881957] pci
+  message: '2026-04-02T19:14:30.297167+00:00 localhost kernel: [    0.866285] pci
+  message: '2026-04-02T19:14:30.297166+00:00 localhost kernel: [    0.833957] pci
+  message: '2026-04-02T19:14:30.297166+00:00 localhost kernel: [    0.818362] pci
+  message: '2026-04-02T19:14:30.297165+00:00 localhost kernel: [    0.793957] pci
+  message: '2026-04-02T19:14:30.297164+00:00 localhost kernel: [    0.784510] pci
+  message: '2026-04-02T19:14:30.297164+00:00 localhost kernel: [    0.768999] pci
+  message: '2026-04-02T19:14:30.297163+00:00 localhost kernel: [    0.740303] pci
+  message: '2026-04-02T19:14:30.297153+00:00 localhost kernel: [    0.729956] pci
+  message: '2026-04-02T19:14:30.297153+00:00 localhost kernel: [    0.716058] pci
+  message: '2026-04-02T19:14:30.297152+00:00 localhost kernel: [    0.714019] pci
+  message: '2026-04-02T19:14:30.297151+00:00 localhost kernel: [    0.676976] pci
+  message: '2026-04-02T19:14:30.297150+00:00 localhost kernel: [    0.638499] pci
+  message: '2026-04-02T19:14:30.297149+00:00 localhost kernel: [    0.634033] pci
+  message: '2026-04-02T19:14:30.297140+00:00 localhost kernel: [    0.631475] pci_bus
+  message: '2026-04-02T19:14:30.297140+00:00 localhost kernel: [    0.629964] pci_bus
+  message: '2026-04-02T19:14:30.297139+00:00 localhost kernel: [    0.629171] pci_bus
+  message: '2026-04-02T19:14:30.297138+00:00 localhost kernel: [    0.627595] pci_bus
+  message: '2026-04-02T19:14:30.297138+00:00 localhost kernel: [    0.625957] pci_bus
+  message: '2026-04-02T19:14:30.297137+00:00 localhost kernel: [    0.622821] PCI
+  message: "2026-04-02T19:14:30.297130+00:00 localhost kernel: [    0.621550] acpi\
+  message: '2026-04-02T19:14:30.297129+00:00 localhost kernel: [    0.619414] acpi
+  message: '2026-04-02T19:14:30.297129+00:00 localhost kernel: [    0.618040] acpi
+  message: '2026-04-02T19:14:30.297128+00:00 localhost kernel: [    0.616076] ACPI:
+  message: '2026-04-02T19:14:30.297127+00:00 localhost kernel: [    0.613388] ACPI:
+  message: '2026-04-02T19:14:30.297127+00:00 localhost kernel: [    0.612101] PCI:
+  message: '2026-04-02T19:14:30.297119+00:00 localhost kernel: [    0.609986] PCI:
+  message: '2026-04-02T19:14:30.297118+00:00 localhost kernel: [    0.607925] ACPI:
+  message: '2026-04-02T19:14:30.297117+00:00 localhost kernel: [    0.607074] ACPI:
+  message: '2026-04-02T19:14:30.297117+00:00 localhost kernel: [    0.606245] ACPI:
+  message: '2026-04-02T19:14:30.297116+00:00 localhost kernel: [    0.602949] ACPI:
+  message: '2026-04-02T19:14:30.297116+00:00 localhost kernel: [    0.599904] ACPI:
+  message: '2026-04-02T19:14:30.297115+00:00 localhost kernel: [    0.598487] ACPI:
+  message: '2026-04-02T19:14:30.297108+00:00 localhost kernel: [    0.598487] ACPI:
+  message: '2026-04-02T19:14:30.297107+00:00 localhost kernel: [    0.593982] HugeTLB:
+  message: '2026-04-02T19:14:30.297107+00:00 localhost kernel: [    0.593279] HugeTLB:
+  message: '2026-04-02T19:14:30.297106+00:00 localhost kernel: [    0.591671] HugeTLB:
+  message: '2026-04-02T19:14:30.297106+00:00 localhost kernel: [    0.590022] HugeTLB:
+  message: '2026-04-02T19:14:30.297105+00:00 localhost kernel: [    0.568779] kprobes:
+  message: '2026-04-02T19:14:30.297083+00:00 localhost kernel: [    0.566083] PCI:
+  message: '2026-04-02T19:14:30.297082+00:00 localhost kernel: [    0.564485] acpiphp:
+  message: '2026-04-02T19:14:30.297081+00:00 localhost kernel: [    0.562860] cpuidle:
+  message: '2026-04-02T19:14:30.297081+00:00 localhost kernel: [    0.560132] cpuidle:
+  message: "2026-04-02T19:14:30.297080+00:00 localhost kernel: [    0.557968] thermal_sys:\
+  message: "2026-04-02T19:14:30.297079+00:00 localhost kernel: [    0.556847] thermal_sys:\
+  message: "2026-04-02T19:14:30.296977+00:00 localhost kernel: [    0.555698] thermal_sys:\
+  message: "2026-04-02T19:14:30.296969+00:00 localhost kernel: [    0.553971] thermal_sys:\
+  message: "2026-04-02T19:14:30.296968+00:00 localhost kernel: [    0.551341] thermal_sys:\
+  message: '2026-04-02T19:14:30.296967+00:00 localhost kernel: [    0.551341] audit:
+  message: '2026-04-02T19:14:30.296967+00:00 localhost kernel: [    0.549978] audit:
+  message: '2026-04-02T19:14:30.296966+00:00 localhost kernel: [    0.547762] DMA:
+  message: '2026-04-02T19:14:30.296965+00:00 localhost kernel: [    0.546413] DMA:
+  message: '2026-04-02T19:14:30.296952+00:00 localhost kernel: [    0.544697] DMA:
+  message: '2026-04-02T19:14:30.296951+00:00 localhost kernel: [    0.543043] NET:
+  message: '2026-04-02T19:14:30.296951+00:00 localhost kernel: [    0.537970] futex
+  message: '2026-04-02T19:14:30.296950+00:00 localhost kernel: [    0.535840] clocksource:
+  message: '2026-04-02T19:14:30.296949+00:00 localhost kernel: [    0.535840] ACPI:
+  message: '2026-04-02T19:14:30.296949+00:00 localhost kernel: [    0.534613] x86/mm:
+  message: '2026-04-02T19:14:30.296945+00:00 localhost kernel: [    0.534371] devtmpfs:
+  message: '2026-04-02T19:14:30.296945+00:00 localhost kernel: [    0.533357] node
+  message: '2026-04-02T19:14:30.296944+00:00 localhost kernel: [    0.526821] smpboot:
+  message: '2026-04-02T19:14:30.296944+00:00 localhost kernel: [    0.525956] smpboot:
+  message: '2026-04-02T19:14:30.296943+00:00 localhost kernel: [    0.525416] smp:
+  message: '2026-04-02T19:14:30.296942+00:00 localhost kernel: [    0.521958] MMIO
+  message: '2026-04-02T19:14:30.296939+00:00 localhost kernel: [    0.517968] TAA
+  message: '2026-04-02T19:14:30.296938+00:00 localhost kernel: [    0.514408] MDS
+  message: '2026-04-02T19:14:30.296938+00:00 localhost kernel: [    0.513966] ....
+  message: '2026-04-02T19:14:30.296937+00:00 localhost kernel: [    0.513322] x86:
+  message: '2026-04-02T19:14:30.296936+00:00 localhost kernel: [    0.512116] smp:
+  message: '2026-04-02T19:14:30.296936+00:00 localhost kernel: [    0.510368] NMI
+  message: "2026-04-02T19:14:30.296932+00:00 localhost kernel: [    0.506872] rcu:\
+  message: '2026-04-02T19:14:30.296931+00:00 localhost kernel: [    0.506015] rcu:
+  message: '2026-04-02T19:14:30.296931+00:00 localhost kernel: [    0.505057] signal:
+  message: '2026-04-02T19:14:30.296930+00:00 localhost kernel: [    0.503493] Performance
+  message: '2026-04-02T19:14:30.296930+00:00 localhost kernel: [    0.501962] cblist_init_generic:
+  message: '2026-04-02T19:14:30.296929+00:00 localhost kernel: [    0.499527] cblist_init_generic:
+  message: '2026-04-02T19:14:30.296929+00:00 localhost kernel: [    0.497958] cblist_init_generic:
+  message: '2026-04-02T19:14:30.296925+00:00 localhost kernel: [    0.495412] cblist_init_generic:
+  message: '2026-04-02T19:14:30.296925+00:00 localhost kernel: [    0.493962] cblist_init_generic:
+  message: '2026-04-02T19:14:30.296924+00:00 localhost kernel: [    0.493949] cblist_init_generic:
+  message: '2026-04-02T19:14:30.296923+00:00 localhost kernel: [    0.493389] smpboot:
+  message: '2026-04-02T19:14:30.296923+00:00 localhost kernel: [    0.383009] Mountpoint-cache
+  message: '2026-04-02T19:14:30.296922+00:00 localhost kernel: [    0.381996] Mount-cache
+  message: '2026-04-02T19:14:30.296918+00:00 localhost kernel: [    0.380140] LSM
+  message: '2026-04-02T19:14:30.296917+00:00 localhost kernel: [    0.379515] TOMOYO
+  message: '2026-04-02T19:14:30.296917+00:00 localhost kernel: [    0.378577] AppArmor:
+  message: '2026-04-02T19:14:30.296916+00:00 localhost kernel: [    0.376125] Yama:
+  message: '2026-04-02T19:14:30.296916+00:00 localhost kernel: [    0.375456] landlock:
+  message: '2026-04-02T19:14:30.296915+00:00 localhost kernel: [    0.374114] LSM:
+  message: '2026-04-02T19:14:30.296912+00:00 localhost kernel: [    0.365963] pid_max:
+  message: '2026-04-02T19:14:30.296911+00:00 localhost kernel: [    0.364587] Freeing
+  message: "2026-04-02T19:14:30.296910+00:00 localhost kernel: [    0.333963] x86/fpu:\
+  message: '2026-04-02T19:14:30.296910+00:00 localhost kernel: [    0.333438] x86/fpu:
+  message: "2026-04-02T19:14:30.296909+00:00 localhost kernel: [    0.329958] x86/fpu:\
+  message: "2026-04-02T19:14:30.296909+00:00 localhost kernel: [    0.328889] x86/fpu:\
+  message: "2026-04-02T19:14:30.296905+00:00 localhost kernel: [    0.325978] x86/fpu:\
+  message: '2026-04-02T19:14:30.296904+00:00 localhost kernel: [    0.323284] ITS:
+  message: '2026-04-02T19:14:30.296904+00:00 localhost kernel: [    0.321963] active
+  message: '2026-04-02T19:14:30.296903+00:00 localhost kernel: [    0.320129] MMIO
+  message: '2026-04-02T19:14:30.296903+00:00 localhost kernel: [    0.319165] TAA:
+  message: '2026-04-02T19:14:30.296902+00:00 localhost kernel: [    0.317969] MDS:
+  message: '2026-04-02T19:14:30.296901+00:00 localhost kernel: [    0.315366] Speculative
+  message: '2026-04-02T19:14:30.296898+00:00 localhost kernel: [    0.313964] Spectre
+  message: '2026-04-02T19:14:30.296898+00:00 localhost kernel: [    0.311285] Spectre
+  message: '2026-04-02T19:14:30.296897+00:00 localhost kernel: [    0.309962] RETBleed:
+  message: '2026-04-02T19:14:30.296897+00:00 localhost kernel: [    0.307882] Spectre
+  message: '2026-04-02T19:14:30.296896+00:00 localhost kernel: [    0.305965] Spectre
+  message: '2026-04-02T19:14:30.296895+00:00 localhost kernel: [    0.304642] Spectre
+  message: '2026-04-02T19:14:30.296890+00:00 localhost kernel: [    0.301963] Spectre
+  message: '2026-04-02T19:14:30.296889+00:00 localhost kernel: [    0.297975] Spectre
+  message: '2026-04-02T19:14:30.296889+00:00 localhost kernel: [    0.295498] Last
+  message: '2026-04-02T19:14:30.296888+00:00 localhost kernel: [    0.294144] Last
+  message: '2026-04-02T19:14:30.296887+00:00 localhost kernel: [    0.289954] Calibrating
+  message: '2026-04-02T19:14:30.296887+00:00 localhost kernel: [    0.285887] clocksource:
+  message: '2026-04-02T19:14:30.296883+00:00 localhost kernel: [    0.282865] ..TIMER:
+  message: '2026-04-02T19:14:30.296882+00:00 localhost kernel: [    0.274882] Switched
+  message: '2026-04-02T19:14:30.296882+00:00 localhost kernel: [    0.269115] x2apic
+  message: '2026-04-02T19:14:30.296881+00:00 localhost kernel: [    0.266549] APIC:
+  message: '2026-04-02T19:14:30.296881+00:00 localhost kernel: [    0.265002] ACPI:
+  message: '2026-04-02T19:14:30.296880+00:00 localhost kernel: [    0.256991] printk:
+  message: '2026-04-02T19:14:30.296879+00:00 localhost kernel: [    0.254242] printk:
+  message: '2026-04-02T19:14:30.296876+00:00 localhost kernel: [    0.252915] printk:
+  message: '2026-04-02T19:14:30.296875+00:00 localhost kernel: [    0.251746] Console:
+  message: '2026-04-02T19:14:30.296875+00:00 localhost kernel: [    0.250380] rcu:
+  message: '2026-04-02T19:14:30.296874+00:00 localhost kernel: [    0.248521] NR_IRQS:
+  message: '2026-04-02T19:14:30.296873+00:00 localhost kernel: [    0.240615] rcu:
+  message: '2026-04-02T19:14:30.296873+00:00 localhost kernel: [    0.237940] rcu:
+  message: "2026-04-02T19:14:30.296869+00:00 localhost kernel: [    0.236630] \tTracing\
+  message: "2026-04-02T19:14:30.296868+00:00 localhost kernel: [    0.235685] \tRude\
+  message: "2026-04-02T19:14:30.296868+00:00 localhost kernel: [    0.234473] \tTrampoline\
+  message: "2026-04-02T19:14:30.296867+00:00 localhost kernel: [    0.230612] rcu:\
+  message: '2026-04-02T19:14:30.296866+00:00 localhost kernel: [    0.228324] rcu:
+  message: '2026-04-02T19:14:30.296865+00:00 localhost kernel: [    0.225430] Dynamic
+  message: '2026-04-02T19:14:30.296865+00:00 localhost kernel: [    0.222522] ftrace:
+  message: '2026-04-02T19:14:30.296861+00:00 localhost kernel: [    0.213924] ftrace:
+  message: '2026-04-02T19:14:30.296860+00:00 localhost kernel: [    0.211673] Kernel/User
+  message: '2026-04-02T19:14:30.296860+00:00 localhost kernel: [    0.209710] SLUB:
+  message: '2026-04-02T19:14:30.296859+00:00 localhost kernel: [    0.205392] Memory:
+  message: '2026-04-02T19:14:30.296858+00:00 localhost kernel: [    0.173877] software
+  message: '2026-04-02T19:14:30.296858+00:00 localhost kernel: [    0.171777] mem
+  message: '2026-04-02T19:14:30.296854+00:00 localhost kernel: [    0.169713] Inode-cache
+  message: '2026-04-02T19:14:30.296853+00:00 localhost kernel: [    0.167781] Dentry
+  message: '2026-04-02T19:14:30.296853+00:00 localhost kernel: [    0.165859] random:
+  message: '2026-04-02T19:14:30.296852+00:00 localhost kernel: [    0.164648] DMAR:
+  message: '2026-04-02T19:14:30.296851+00:00 localhost kernel: [    0.160079] Kernel
+  message: '2026-04-02T19:14:30.296851+00:00 localhost kernel: [    0.159644] Policy
+  message: '2026-04-02T19:14:30.296847+00:00 localhost kernel: [    0.157493] Built
+  message: '2026-04-02T19:14:30.296846+00:00 localhost kernel: [    0.157489] Fallback
+  message: '2026-04-02T19:14:30.296846+00:00 localhost kernel: [    0.154857] PV qspinlock
+  message: '2026-04-02T19:14:30.296845+00:00 localhost kernel: [    0.153744] kvm-guest:
+  message: '2026-04-02T19:14:30.296844+00:00 localhost kernel: [    0.153704] pcpu-alloc:
+  message: '2026-04-02T19:14:30.296844+00:00 localhost kernel: [    0.153697] pcpu-alloc:
+  message: '2026-04-02T19:14:30.296840+00:00 localhost kernel: [    0.150719] percpu:
+  message: '2026-04-02T19:14:30.296742+00:00 localhost kernel: [    0.148790] setup_percpu:
+  message: '2026-04-02T19:14:30.296741+00:00 localhost kernel: [    0.139758] clocksource:
+  message: '2026-04-02T19:14:30.296740+00:00 localhost kernel: [    0.139111] Booting
+  message: '2026-04-02T19:14:30.296740+00:00 localhost kernel: [    0.137993] [mem
+  message: '2026-04-02T19:14:30.296739+00:00 localhost kernel: [    0.136416] PM:
+  message: '2026-04-02T19:14:30.296735+00:00 localhost kernel: [    0.134547] PM:
+  message: '2026-04-02T19:14:30.296735+00:00 localhost kernel: [    0.133015] PM:
+  message: '2026-04-02T19:14:30.296734+00:00 localhost kernel: [    0.130943] PM:
+  message: '2026-04-02T19:14:30.296733+00:00 localhost kernel: [    0.128508] PM:
+  message: '2026-04-02T19:14:30.296733+00:00 localhost kernel: [    0.127585] smpboot:
+  message: '2026-04-02T19:14:30.296732+00:00 localhost kernel: [    0.126495] ACPI:
+  message: '2026-04-02T19:14:30.296731+00:00 localhost kernel: [    0.124770] ACPI:
+  message: '2026-04-02T19:14:30.296727+00:00 localhost kernel: [    0.123460] ACPI:
+  message: '2026-04-02T19:14:30.296727+00:00 localhost kernel: [    0.121480] ACPI:
+  message: '2026-04-02T19:14:30.296726+00:00 localhost kernel: [    0.119974] ACPI:
+  message: '2026-04-02T19:14:30.296725+00:00 localhost kernel: [    0.118954] IOAPIC[0]:
+  message: '2026-04-02T19:14:30.296725+00:00 localhost kernel: [    0.116997] ACPI:
+  message: '2026-04-02T19:14:30.296724+00:00 localhost kernel: [    0.114846] ACPI:
+  message: '2026-04-02T19:14:30.296721+00:00 localhost kernel: [    0.112327] On node
+  message: '2026-04-02T19:14:30.296720+00:00 localhost kernel: [    0.110115] On node
+  message: '2026-04-02T19:14:30.296719+00:00 localhost kernel: [    0.091051] On node
+  message: '2026-04-02T19:14:30.296719+00:00 localhost kernel: [    0.089521] On node
+  message: '2026-04-02T19:14:30.296718+00:00 localhost kernel: [    0.089515] On node
+  message: '2026-04-02T19:14:30.296717+00:00 localhost kernel: [    0.086770] Initmem
+  message: '2026-04-02T19:14:30.296714+00:00 localhost kernel: [    0.084206]   node   0:
+  message: '2026-04-02T19:14:30.296713+00:00 localhost kernel: [    0.082880]   node   0:
+  message: '2026-04-02T19:14:30.296712+00:00 localhost kernel: [    0.080830]   node   0:
+  message: '2026-04-02T19:14:30.296712+00:00 localhost kernel: [    0.079464]   node   0:
+  message: '2026-04-02T19:14:30.296711+00:00 localhost kernel: [    0.077656]   node   0:
+  message: '2026-04-02T19:14:30.296710+00:00 localhost kernel: [    0.076280] Early
+  message: '2026-04-02T19:14:30.296710+00:00 localhost kernel: [    0.075338] Movable
+  message: '2026-04-02T19:14:30.296706+00:00 localhost kernel: [    0.074546]   Device   empty'
+  message: '2026-04-02T19:14:30.296706+00:00 localhost kernel: [    0.072680]   Normal   [mem
+  message: '2026-04-02T19:14:30.296705+00:00 localhost kernel: [    0.070064]   DMA32    [mem
+  message: '2026-04-02T19:14:30.296704+00:00 localhost kernel: [    0.068656]   DMA      [mem
+  message: '2026-04-02T19:14:30.296704+00:00 localhost kernel: [    0.068226] Zone
+  message: '2026-04-02T19:14:30.296703+00:00 localhost kernel: [    0.066643] NODE_DATA(0)
+  message: '2026-04-02T19:14:30.296699+00:00 localhost kernel: [    0.065175] NUMA:
+  message: '2026-04-02T19:14:30.296699+00:00 localhost kernel: [    0.063712] NUMA:
+  message: '2026-04-02T19:14:30.296698+00:00 localhost kernel: [    0.062687] ACPI:
+  message: '2026-04-02T19:14:30.296697+00:00 localhost kernel: [    0.061666] ACPI:
+  message: '2026-04-02T19:14:30.296697+00:00 localhost kernel: [    0.059218] ACPI:
+  message: '2026-04-02T19:14:30.296696+00:00 localhost kernel: [    0.057478] SRAT:
+  message: '2026-04-02T19:14:30.296693+00:00 localhost kernel: [    0.054981] SRAT:
+  message: '2026-04-02T19:14:30.296692+00:00 localhost kernel: [    0.051964] ACPI:
+  message: '2026-04-02T19:14:30.296692+00:00 localhost kernel: [    0.049881] ACPI:
+  message: '2026-04-02T19:14:30.296691+00:00 localhost kernel: [    0.048225] ACPI:
+  message: '2026-04-02T19:14:30.296690+00:00 localhost kernel: [    0.046772] ACPI:
+  message: '2026-04-02T19:14:30.296690+00:00 localhost kernel: [    0.045505] ACPI:
+  message: '2026-04-02T19:14:30.296689+00:00 localhost kernel: [    0.043654] ACPI:
+  message: '2026-04-02T19:14:30.296683+00:00 localhost kernel: [    0.042135] ACPI:
+  message: '2026-04-02T19:14:30.296682+00:00 localhost kernel: [    0.040700] ACPI:
+  message: '2026-04-02T19:14:30.296682+00:00 localhost kernel: [    0.039171] ACPI:
+  message: '2026-04-02T19:14:30.296681+00:00 localhost kernel: [    0.036491] ACPI:
+  message: '2026-04-02T19:14:30.296680+00:00 localhost kernel: [    0.033856] ACPI:
+  message: '2026-04-02T19:14:30.296680+00:00 localhost kernel: [    0.031889] ACPI:
+  message: '2026-04-02T19:14:30.296676+00:00 localhost kernel: [    0.029663] ACPI:
+  message: '2026-04-02T19:14:30.296676+00:00 localhost kernel: [    0.027288] ACPI:
+  message: '2026-04-02T19:14:30.296675+00:00 localhost kernel: [    0.025665] ACPI:
+  message: '2026-04-02T19:14:30.296674+00:00 localhost kernel: [    0.024398] ACPI:
+  message: '2026-04-02T19:14:30.296674+00:00 localhost kernel: [    0.022479] ACPI:
+  message: '2026-04-02T19:14:30.296673+00:00 localhost kernel: [    0.019952] ACPI:
+  message: '2026-04-02T19:14:30.296669+00:00 localhost kernel: [    0.017283] ACPI:
+  message: '2026-04-02T19:14:30.296669+00:00 localhost kernel: [    0.016531] ACPI:
+  message: '2026-04-02T19:14:30.296668+00:00 localhost kernel: [    0.015690] ACPI:
+  message: '2026-04-02T19:14:30.296668+00:00 localhost kernel: [    0.015044] RAMDISK:
+  message: '2026-04-02T19:14:30.296667+00:00 localhost kernel: [    0.013555] Using
+  message: '2026-04-02T19:14:30.296666+00:00 localhost kernel: [    0.011554] last_pfn
+  message: '2026-04-02T19:14:30.296666+00:00 localhost kernel: [    0.009251] x86/PAT:
+  message: '2026-04-02T19:14:30.296662+00:00 localhost kernel: [    0.007742] last_pfn
+  message: '2026-04-02T19:14:30.296662+00:00 localhost kernel: [    0.007733] e820:
+  message: '2026-04-02T19:14:30.296661+00:00 localhost kernel: [    0.007728] e820:
+  message: '2026-04-02T19:14:30.296661+00:00 localhost kernel: [    0.006894] tsc:
+  message: '2026-04-02T19:14:30.296660+00:00 localhost kernel: [    0.001669] clocksource:
+  message: '2026-04-02T19:14:30.296659+00:00 localhost kernel: [    0.000003] kvm-clock:
+  message: '2026-04-02T19:14:30.296655+00:00 localhost kernel: [    0.000000] kvm-clock:
+  message: '2026-04-02T19:14:30.296655+00:00 localhost kernel: [    0.000000] Hypervisor
+  message: '2026-04-02T19:14:30.296654+00:00 localhost kernel: [    0.000000] DMI:
+  message: '2026-04-02T19:14:30.296653+00:00 localhost kernel: [    0.000000] SMBIOS
+  message: '2026-04-02T19:14:30.296653+00:00 localhost kernel: [    0.000000] secureboot:
+  message: '2026-04-02T19:14:30.296652+00:00 localhost kernel: [    0.000000] efi:
+  message: '2026-04-02T19:14:30.296648+00:00 localhost kernel: [    0.000000] efi:
+  message: '2026-04-02T19:14:30.296647+00:00 localhost kernel: [    0.000000] NX (Execute
+  message: '2026-04-02T19:14:30.296647+00:00 localhost kernel: [    0.000000] printk:
+  message: '2026-04-02T19:14:30.296646+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296646+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296645+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296645+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296641+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296640+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296639+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296639+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296638+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296637+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296634+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296633+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296632+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296632+00:00 localhost kernel: [    0.000000] BIOS-e820:
+  message: '2026-04-02T19:14:30.296631+00:00 localhost kernel: [    0.000000] BIOS-provided
+  message: '2026-04-02T19:14:30.296627+00:00 localhost kernel: [    0.000000] Command
+  message: '2026-04-02T19:14:30.277912+00:00 localhost kernel: [    0.000000] Linux
+  message: '2026-04-02T19:14:30.293748+00:00 localhost systemd[1]: Finished e2scrub_reap.service
+  message: '2026-04-02T19:14:30.293270+00:00 localhost systemd[1]: e2scrub_reap.service:
+  message: '2026-04-02T19:14:30.286331+00:00 localhost systemd[1]: Finished systemd-networkd-wait-online.service
+  message: '2026-04-02T19:14:30.281523+00:00 localhost systemd[1]: Started rsyslog.service
+  message: '2026-04-02T19:14:30.275167+00:00 localhost systemd[1]: Started dbus.service
+  message: '2026-04-02T19:14:30.270820+00:00 localhost rsyslogd: [origin software="rsyslogd"
+  message: "2026-04-02T19:14:30.270630+00:00 localhost rsyslogd: imuxsock: Acquired\
+  message: '2026-04-02T19:14:30.296564+00:00 localhost systemd[1]: Starting systemd-user-sessions.service
+  message: '2026-04-02T19:14:30.296558+00:00 localhost systemd[1]: systemd-pcrphase.service
+  message: '2026-04-02T19:14:30.296552+00:00 localhost systemd[1]: Starting systemd-logind.service
+  message: '2026-04-02T19:14:30.296537+00:00 localhost systemd[1]: Starting rsyslog.service
+  message: '2026-04-02T19:14:30.296513+00:00 localhost systemd[1]: nvmefc-boot-connections.service
+  message: '2026-04-02T19:14:30.296507+00:00 localhost systemd-networkd[261]: ens4:
+  message: '2026-04-02T19:14:30.296502+00:00 localhost systemd[1]: Starting networkd-dispatcher.service
+  message: "2026-04-02T19:14:30.296495+00:00 localhost dbus-daemon[386]: [system]\
+  message: '2026-04-02T19:14:30.296485+00:00 localhost systemd[1]: getty-static.service
+  message: '2026-04-02T19:14:30.296479+00:00 localhost systemd[1]: Starting e2scrub_reap.service
+  message: '2026-04-02T19:14:30.296474+00:00 localhost systemd[1]: Starting dbus.service
+  message: '2026-04-02T19:14:30.296468+00:00 localhost cron[385]: (CRON) INFO (Running
+  message: '2026-04-02T19:14:30.296463+00:00 localhost cron[385]: (CRON) INFO (pidfile
+  message: '2026-04-02T19:14:30.296457+00:00 localhost systemd[1]: Started cron.service
+  message: '2026-04-02T19:14:30.296448+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296443+00:00 localhost systemd[1]: Finished google-disk-expand.service
+  message: '2026-04-02T19:14:30.296437+00:00 localhost google_disk_expand[380]: Done.'
+  message: '2026-04-02T19:14:30.296431+00:00 localhost systemd[1]: google-disk-expand.service:
+  message: '2026-04-02T19:14:30.296426+00:00 localhost google_disk_expand[383]: The
+  message: '2026-04-02T19:14:30.296419+00:00 localhost google_disk_expand[383]: resize2fs
+  message: '2026-04-02T19:14:30.296410+00:00 localhost haveged[379]: haveged: fills:
+  message: '2026-04-02T19:14:30.296405+00:00 localhost haveged[379]: haveged: tot
+  message: '2026-04-02T19:14:30.296399+00:00 localhost haveged[379]: haveged: cpu:
+  message: '2026-04-02T19:14:30.296393+00:00 localhost haveged[379]: haveged: ver:
+  message: '2026-04-02T19:14:30.296388+00:00 localhost google_disk_expand[380]: Checking
+  message: '2026-04-02T19:14:30.296378+00:00 localhost systemd[1]: systemd-pcrphase-sysinit.service
+  message: '2026-04-02T19:14:30.296373+00:00 localhost systemd[1]: Starting google-disk-expand.service
+  message: '2026-04-02T19:14:30.296368+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296362+00:00 localhost systemd[1]: Listening on uuidd.socket
+  message: '2026-04-02T19:14:30.296356+00:00 localhost systemd[1]: Listening on dbus.socket
+  message: '2026-04-02T19:14:30.296350+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296341+00:00 localhost systemd[1]: Started systemd-tmpfiles-clean.timer
+  message: '2026-04-02T19:14:30.296336+00:00 localhost systemd[1]: Started man-db.timer
+  message: '2026-04-02T19:14:30.296331+00:00 localhost systemd[1]: Started logrotate.timer
+  message: '2026-04-02T19:14:30.296325+00:00 localhost systemd[1]: Started google-oslogin-cache.timer
+  message: '2026-04-02T19:14:30.296320+00:00 localhost systemd[1]: Started fstrim.timer
+  message: '2026-04-02T19:14:30.296315+00:00 localhost systemd[1]: Started exim4-base.timer
+  message: '2026-04-02T19:14:30.296309+00:00 localhost systemd[1]: Started e2scrub_all.timer
+  message: '2026-04-02T19:14:30.296300+00:00 localhost systemd[1]: Started dpkg-db-backup.timer
+  message: '2026-04-02T19:14:30.296294+00:00 localhost systemd[1]: Started apt-daily-upgrade.timer
+  message: '2026-04-02T19:14:30.296290+00:00 localhost systemd[1]: Started apt-daily.timer
+  message: '2026-04-02T19:14:30.296285+00:00 localhost haveged[379]: haveged: command
+  message: '2026-04-02T19:14:30.296279+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296274+00:00 localhost systemd[1]: Started haveged.service
+  message: '2026-04-02T19:14:30.296265+00:00 localhost systemd[1]: Finished apparmor.service
+  message: '2026-04-02T19:14:30.296260+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296254+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296249+00:00 localhost systemd[1]: Started systemd-resolved.service
+  message: "2026-04-02T19:14:30.296245+00:00 localhost systemd-resolved[370]: Defaulting\
+  message: '2026-04-02T19:14:30.296240+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296230+00:00 localhost systemd-timesyncd[372]: Initial
+  message: '2026-04-02T19:14:30.296224+00:00 localhost systemd-timesyncd[372]: Contacted
+  message: '2026-04-02T19:14:30.296218+00:00 localhost systemd[1]: Started systemd-timesyncd.service
+  message: '2026-04-02T19:14:30.296211+00:00 localhost systemd-resolved[370]: Negative
+  message: '2026-04-02T19:14:30.296204+00:00 localhost systemd-resolved[370]: . IN
+  message: '2026-04-02T19:14:30.296198+00:00 localhost systemd-resolved[370]: . IN
+  message: '2026-04-02T19:14:30.296194+00:00 localhost systemd-resolved[370]: Positive
+  message: '2026-04-02T19:14:30.296190+00:00 localhost systemd[1]: Finished systemd-update-utmp.service
+  message: '2026-04-02T19:14:30.296186+00:00 localhost systemd[1]: Starting systemd-update-utmp.service
+  message: '2026-04-02T19:14:30.296182+00:00 localhost systemd[1]: Starting systemd-timesyncd.service
+  message: '2026-04-02T19:14:30.296178+00:00 localhost systemd[1]: Starting systemd-resolved.service
+  message: '2026-04-02T19:14:30.296171+00:00 localhost systemd[1]: Finished systemd-tmpfiles-setup.service
+  message: '2026-04-02T19:14:30.296167+00:00 localhost systemd[1]: Finished systemd-machine-id-commit.service
+  message: '2026-04-02T19:14:30.296163+00:00 localhost systemd[1]: etc-machine\x2did.mount:
+  message: '2026-04-02T19:14:30.296160+00:00 localhost systemd[1]: Finished systemd-binfmt.service
+  message: '2026-04-02T19:14:30.296156+00:00 localhost systemd[1]: Mounted proc-sys-fs-binfmt_misc.mount
+  message: '2026-04-02T19:14:30.296151+00:00 localhost apparmor.systemd[327]: Reloading
+  message: '2026-04-02T19:14:30.296143+00:00 localhost apparmor.systemd[327]: Restarting
+  message: '2026-04-02T19:14:30.296139+00:00 localhost systemd[1]: Mounting proc-sys-fs-binfmt_misc.mount
+  message: '2026-04-02T19:14:30.296135+00:00 localhost systemd[1]: proc-sys-fs-binfmt_misc.automount:
+  message: '2026-04-02T19:14:30.296130+00:00 localhost systemd[1]: Starting systemd-tmpfiles-setup.service
+  message: '2026-04-02T19:14:30.296126+00:00 localhost systemd[1]: Starting systemd-machine-id-commit.service
+  message: '2026-04-02T19:14:30.296119+00:00 localhost systemd[1]: Starting systemd-binfmt.service
+  message: '2026-04-02T19:14:30.296115+00:00 localhost systemd[1]: Starting apparmor.service
+  message: '2026-04-02T19:14:30.296111+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296107+00:00 localhost systemd[1]: Mounted boot-efi.mount
+  message: '2026-04-02T19:14:30.296102+00:00 localhost systemd-networkd[261]: ens4:
+  message: '2026-04-02T19:14:30.296099+00:00 localhost systemd[1]: Starting systemd-networkd-wait-online.service
+  message: '2026-04-02T19:14:30.296091+00:00 localhost systemd-networkd[261]: ens4:
+  message: '2026-04-02T19:14:30.296087+00:00 localhost systemd-networkd[261]: ens4:
+  message: '2026-04-02T19:14:30.296083+00:00 localhost systemd[1]: Started systemd-networkd.service
+  message: '2026-04-02T19:14:30.296079+00:00 localhost systemd[1]: Mounting boot-efi.mount
+  message: '2026-04-02T19:14:30.296075+00:00 localhost systemd-networkd[261]: ens4:
+  message: '2026-04-02T19:14:30.296071+00:00 localhost systemd-networkd[261]: Enumeration
+  message: '2026-04-02T19:14:30.296065+00:00 localhost systemd-networkd[261]: lo:
+  message: '2026-04-02T19:14:30.296061+00:00 localhost systemd-networkd[261]: lo:
+  message: '2026-04-02T19:14:30.296057+00:00 localhost systemd[1]: Found device dev-disk-by\x2dpartuuid-50ffbbc3\x2dd960\x2d4dee\x2da626\x2d885ea407d206.device
+  message: '2026-04-02T19:14:30.296053+00:00 localhost systemd[1]: Found device dev-ttyS0.device
+  message: '2026-04-02T19:14:30.296049+00:00 localhost systemd[1]: Starting systemd-networkd.service
+  message: '2026-04-02T19:14:30.296044+00:00 localhost systemd[1]: Started systemd-udevd.service
+  message: "2026-04-02T19:14:30.296037+00:00 localhost systemd-udevd[240]: Using default\
+  message: '2026-04-02T19:14:30.296033+00:00 localhost systemd[1]: Starting systemd-udevd.service
+  message: '2026-04-02T19:14:30.296029+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.296024+00:00 localhost systemd[1]: Finished systemd-tmpfiles-setup-dev.service
+  message: '2026-04-02T19:14:30.296019+00:00 localhost systemd[1]: Finished systemd-journal-flush.service
+  message: '2026-04-02T19:14:30.296015+00:00 localhost systemd[1]: Finished systemd-growfs@-.service
+  message: '2026-04-02T19:14:30.296008+00:00 localhost systemd[1]: Starting systemd-tmpfiles-setup-dev.service
+  message: '2026-04-02T19:14:30.296002+00:00 localhost systemd-growfs[230]: Successfully
+  message: '2026-04-02T19:14:30.295998+00:00 localhost systemd[1]: Finished systemd-sysusers.service
+  message: '2026-04-02T19:14:30.295994+00:00 localhost systemd[1]: first-boot-complete.target
+  message: '2026-04-02T19:14:30.295990+00:00 localhost systemd[1]: Finished systemd-random-seed.service
+  message: '2026-04-02T19:14:30.295985+00:00 localhost systemd[1]: Starting systemd-sysusers.service
+  message: '2026-04-02T19:14:30.295977+00:00 localhost systemd[1]: Starting systemd-random-seed.service
+  message: '2026-04-02T19:14:30.295971+00:00 localhost systemd[1]: systemd-pstore.service
+  message: '2026-04-02T19:14:30.295965+00:00 localhost systemd[1]: Starting systemd-journal-flush.service
+  message: '2026-04-02T19:14:30.295959+00:00 localhost systemd[1]: Starting systemd-growfs@-.service
+  message: '2026-04-02T19:14:30.295954+00:00 localhost systemd[1]: systemd-firstboot.service
+  message: '2026-04-02T19:14:30.295945+00:00 localhost systemd[1]: Finished systemd-sysctl.service
+  message: '2026-04-02T19:14:30.295939+00:00 localhost systemd[1]: Finished systemd-remount-fs.service
+  message: '2026-04-02T19:14:30.295933+00:00 localhost systemd[1]: Mounted sys-kernel-config.mount
+  message: '2026-04-02T19:14:30.295928+00:00 localhost systemd[1]: Mounted sys-fs-fuse-connections.mount
+  message: '2026-04-02T19:14:30.295922+00:00 localhost systemd[1]: Starting systemd-sysctl.service
+  message: '2026-04-02T19:14:30.295916+00:00 localhost systemd[1]: systemd-repart.service
+  message: '2026-04-02T19:14:30.295907+00:00 localhost systemd[1]: Starting systemd-remount-fs.service
+  message: '2026-04-02T19:14:30.295901+00:00 localhost systemd[1]: Started systemd-fsckd.service
+  message: '2026-04-02T19:14:30.295896+00:00 localhost systemd[1]: Mounting sys-kernel-config.mount
+  message: '2026-04-02T19:14:30.295890+00:00 localhost systemd[1]: Mounting sys-fs-fuse-connections.mount
+  message: '2026-04-02T19:14:30.295885+00:00 localhost systemd[1]: Reached target
+  message: '2026-04-02T19:14:30.295880+00:00 localhost systemd[1]: Finished systemd-udev-trigger.service
+  message: '2026-04-02T19:14:30.295871+00:00 localhost systemd[1]: Finished systemd-network-generator.service
+  message: '2026-04-02T19:14:30.295865+00:00 localhost systemd[1]: Finished systemd-modules-load.service
+  message: '2026-04-02T19:14:30.295860+00:00 localhost systemd[1]: Finished systemd-fsck-root.service
+  message: '2026-04-02T19:14:30.295855+00:00 localhost systemd[1]: Finished modprobe@loop.service
+  message: '2026-04-02T19:14:30.295850+00:00 localhost systemd[1]: modprobe@loop.service:
+  message: '2026-04-02T19:14:30.295844+00:00 localhost systemd[1]: Finished modprobe@fuse.service
+  message: '2026-04-02T19:14:30.295835+00:00 localhost systemd[1]: modprobe@fuse.service:
+  message: '2026-04-02T19:14:30.295828+00:00 localhost systemd[1]: Finished modprobe@efi_pstore.service
+  message: '2026-04-02T19:14:30.295821+00:00 localhost systemd[1]: modprobe@efi_pstore.service:
+  message: '2026-04-02T19:14:30.295813+00:00 localhost systemd[1]: Finished modprobe@drm.service
+  message: '2026-04-02T19:14:30.295808+00:00 localhost systemd[1]: modprobe@drm.service:
+  message: '2026-04-02T19:14:30.295802+00:00 localhost systemd[1]: Finished modprobe@dm_mod.service
+  message: '2026-04-02T19:14:30.295778+00:00 localhost systemd[1]: modprobe@dm_mod.service:
+  message: '2026-04-02T19:14:30.277665+00:00 localhost systemd-fsck[221]: /dev/sda1:
+  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
+  message: 'Check state post enforcement: resource "add-repo" state is COMPLIANT.'
+  message: 'Enforce state: resource "install-pkg" enforcement successful.'
+  message: '[2026/04/02 19:14:49.75948668] [ info] [input:tail:tail.4] inotify_fs_add():
+  message: '[2026/04/02 19:14:49.75891615] [ info] [input:tail:tail.3] inotify_fs_add():
+  message: '[2026/04/02 19:14:49.75793745] [ info] [input:tail:tail.1] inotify_fs_add():
+  message: '[2026/04/02 19:14:49.45901152] [ info] [engine] Shutdown Grace Period=5,
+  message: '[2026/04/02 19:14:49.45604504] [ info] [output:prometheus_exporter:prometheus_exporter.2]
+  message: '[2026/04/02 19:14:49.44781051] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.25217786] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.25138480] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.25029354] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.24913241] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.20094722] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.19986419] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.19741972] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.18924669] [ info] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:49.18857996] [ info] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:49.18788653] [ info] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:49.18704848] [ info] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:49.13214535] [ info] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:49.12788058] [ info] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:49.4224027] [ info] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:49.4015678] [ info] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:49.3528597] [ warn] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.3490250] [ warn] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:49.3363295] [ info] [output:stackdriver:stackdriver.1]
+  message: '[2026/04/02 19:14:48.987810520] [ warn] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:48.987732503] [ warn] [output:stackdriver:stackdriver.0]
+  message: '[2026/04/02 19:14:48.987576000] [ info] [output:stackdriver:stackdriver.0]
+  message: "[2026/04/02 19:14:48.955280394] [ info] [input:emitter:emitter_for_rewrite_tag.10]\
+  message: '[2026/04/02 19:14:48.955222988] [ info] [input:emitter:emitter_for_rewrite_tag.10]
+  message: "[2026/04/02 19:14:48.954851319] [ info] [input:emitter:emitter_for_rewrite_tag.8]\
+  message: '[2026/04/02 19:14:48.954744823] [ info] [input:emitter:emitter_for_rewrite_tag.8]
+  message: '[2026/04/02 19:14:48.951679059] [ info] [input:storage_backlog:storage_backlog.5]
+  message: "[2026/04/02 19:14:48.951632734] [ info] [input:storage_backlog:storage_backlog.5]\
+  message: '[2026/04/02 19:14:48.951624333] [ info] [input:storage_backlog:storage_backlog.5]
+  message: '[2026/04/02 19:14:48.951521794] [ info] [input:tail:tail.4] db: delete
+  message: "[2026/04/02 19:14:48.935281094] [ info] [input:tail:tail.4] storage_strategy='memory'\
+  message: '[2026/04/02 19:14:48.935271233] [ info] [input:tail:tail.4] initializing'
+  message: '[2026/04/02 19:14:48.935106982] [ info] [input:tail:tail.3] db: delete
+  message: "[2026/04/02 19:14:48.912558646] [ info] [input:tail:tail.3] storage_strategy='memory'\
+  message: '[2026/04/02 19:14:48.912546579] [ info] [input:tail:tail.3] initializing'
+  message: "[2026/04/02 19:14:48.912223059] [ info] [input:dummy:dummy.2] storage_strategy='memory'\
+  message: '[2026/04/02 19:14:48.912213869] [ info] [input:dummy:dummy.2] initializing'
+  message: '[2026/04/02 19:14:48.912096746] [ info] [input:tail:tail.1] db: delete
+  message: "[2026/04/02 19:14:48.889647979] [ info] [input:tail:tail.1] storage_strategy='filesystem'\
+  message: '[2026/04/02 19:14:48.889640650] [ info] [input:tail:tail.1] initializing'
+  message: "[2026/04/02 19:14:48.889536573] [ info] [input:fluentbit_metrics:fluentbit_metrics.0]\
+  message: '[2026/04/02 19:14:48.889528860] [ info] [input:fluentbit_metrics:fluentbit_metrics.0]
+  message: '[2026/04/02 19:14:48.889443404] [ info] [ctraces ] version=0.6.6'
+  message: '[2026/04/02 19:14:48.889436406] [ info] [cmetrics] version=1.0.5'
+  message: '[2026/04/02 19:14:48.889422500] [ info] [simd    ] disabled'
+  message: '[2026/04/02 19:14:48.889415857] [ info] [storage] backlog input plugin:
+  message: '[2026/04/02 19:14:48.889405608] [ info] [storage] ver=1.5.4, type=memory+filesystem,
+  message: '[2026/04/02 19:14:48.889247584] [ info] [storage] created root path /var/lib/google-cloud-ops-agent/fluent-bit/buffers'
+  message: '[2026/04/02 19:14:48.889040150] [ info] [fluent bit] version=4.2.1, commit=,
+  message: '[API Check] Result: PASS'
+  message: logging client was created successfully
+  message: monitoring client was created successfully
+  message: '[Network Check] Result: PASS'
+  message: Request to the GCE Metadata server was successful.
+  message: 'GCE Metadata Server response status: 200 OK'
+  message: Request to dl.google.com was successful.
+  message: 'dl.google.com response status: 200 OK'
+  message: Request to packages.cloud.google.com was successful.
+  message: 'Packages API response status: 200 OK'
+  message: Request to the Monitoring API was successful.
+  message: 'Monitoring API response status: 200 OK'
+  message: Request to the Logging API was successful.
+  message: 'Logging API response status: 200 OK'
+  message: '[Ports Check] Result: PASS'
+  message: 'listening to [::]:20201:'
+  message: 'listening to 0.0.0.0:20201:'
+  message: 'listening to 0.0.0.0:20202:'
+  message: Created user jspitale
+  message: |
+  message: 'Interface(ens4) - State: {Index:2 MTU:1460 Name:ens4 HardwareAddr:42:01:0a:80:00:3b
+  message: 'Interface(lo) - State: {Index:1 MTU:65536 Name:lo HardwareAddr: Flags:up|loopback|running},
+  message: Cloud logging initialized (core_plugin)
+  message: 'Creating metric registry for "events_manager" with flush interval: 1m0s,
+  message: Clock drift token has changed, resetting clock skew.
+  message: 'Identified RTC mode isUTC to be: [true] from "/etc/adjtime"'
+  message: 'Instance has service account: true, setting ACS client isEnabled to true'
+  message: Skipping schedule job request for "gce-workload-cert-refresher"
+  message: Instance id is already set, no update required.
+  message: Adjtime file "/etc/adjtime" does not exist, checking timedatectl status
+  message: 'Initialized (version: "20260228.00")'
+  message: Successfully bootstrapped MDS mTLS credentials
+  message: Successfully installed client credentials
+  message: Installing client credentials...
+  message: Successfully installed Root CA cert
+  message: Installing Root CA cert...
+  message: Bootstrapping MDS mTLS credentials
+  message: 'Creating metric registry for "scheduled-job-manager" with flush interval:
+  message: Finished linux network management module setup.
+  message: Finished setting up netplan interfaces.
+  message: Setting up netplan interfaces.
+  message: Rolled back network configuration for [netplan NetworkManager systemd-networkd
+  message: Rolling back changes for dhclient.
+  message: Rolling back changes for wicked with reload [true].
+  message: Rolling back changes for systemd-networkd with reload [true].
+  message: Rolling back changes for NetworkManager with reload [true].
+  message: Rolling back changes for netplan with reload [false]
+  message: Running linux network management module setup.
+  message: Finished firstboot setup.
+  message: Successfully generated rsa type public key at "/etc/ssh/ssh_host_rsa_key.pub"
+  message: Successfully generated ed25519 type public key at "/etc/ssh/ssh_host_ed25519_key.pub"
+  message: Successfully generated ecdsa type public key at "/etc/ssh/ssh_host_ecdsa_key.pub"
+  message: Running firstboot setup...
+  message: Running core plugin...
+  message: No startup scripts to run
+  message: Running metadata script runner (version 20260228.00) for "startup" event
+  message: 'Google Guest Agent (version: "20260228.00") Initialized...'
+  message: Cloud logging initialized (google_guest_agent_manager)
+  message: Starting plugin metrics monitor job for plugin "GuestAgentCorePlugin_20260228.00"
+  message: 'Running in GDU universe: true'
+  message: Starting plugin monitor job for plugin "GuestAgentCorePlugin_20260228.00"
+  message: 'Creating metric registry for "events_manager" with flush interval: 1m0s,
+  message: Successfully installed plugin "GuestAgentCorePlugin_20260228.00"
+  message: Successfully started plugin "GuestAgentCorePlugin_20260228.00"
+  message: 'Instance has service account: true, setting ACS client isEnabled to true'
+  message: No config provided for plugin "GuestAgentCorePlugin", setting empty config
+  message: 'Creating metric registry for "scheduled-job-manager" with flush interval:
+  message: Installing plugin "GuestAgentCorePlugin", revision "20260228.00"
+  message: 'Current plugin state: plugin "GuestAgentCorePlugin" with revision "20260228.00"
+  message: Plugin manager initialized
+  message: 'Initializing plugin manager for instance "6025654367051514128", agent
+  message: Registered ACS watcher and handler
+  message: 'Running Guest Agent setup with config: {Version:20260228.00 EnableACSWatcher:true
+  message: Initializing Google Guest Agent...
+  message: Installing apt package "google-cloud-ops-agent"
+  message: 'Check state: resource "install-pkg" state is NON_COMPLIANT.'
+  message: 'Validate: resource "install-pkg" validation successful.'
+  message: 'Enforce state: resource "add-repo" enforcement successful.'
+  message: Enforcing repo /etc/apt/sources.list.d/osconfig_managed_143a0c896b.list.
+  message: 'Check state: resource "add-repo" state is NON_COMPLIANT.'
+  message: 'Validate: resource "add-repo" validation successful.'
+  message: Executing policy "goog-ops-agent-policy"
+  message: Beginning ApplyConfigTask.
+  message: Writing repo file /etc/apt/sources.list.d/google_osconfig_managed.list
+  message: OSConfig Agent (version 20260119.00-g1) started.
   message: No shutdown scripts to run.
   message: Starting shutdown scripts (version 20250116.00-0ubuntu1~24.04.3).
   message: GCE Agent Stopped
@@ -3848,206 +5869,3 @@
   message: 'Scheduling job: telemetryJobID'
   message: Starting the scheduler to run jobs
   message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 21:19:09.445828425 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 21:19:07.995990575 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 21:15:34.514434329 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-          message: A n2-highcpu-96 VM instance is currently unavailable in the us-central1-b
-    message: ZONE_RESOURCE_POOL_EXHAUSTED
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:54:33.433135142 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:54:19.269736159 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:45:57.175560784 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:43:45.437639749 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:39:30.096187672 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: |
-  message: 'Interface(ens4), State: {Index:2 MTU:1460 Name:ens4 HardwareAddr:42:01:0a:80:0f:d2
-  message: 'Interface(lo), State: {Index:1 MTU:65536 Name:lo HardwareAddr: Flags:up|loopback|running},
-  message: Getting current interface state and routes
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:39:26.999364282 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:36:39.53862625 +0000 UTC entry 1
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:36:10.173322456 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:27:06.669184413 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 20:25:03.070974626 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-01 19:49:29.749077185 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: 'Scheduler - added: [now 2026-04-01 19:47:20.641270488 +0000 UTC entry
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
