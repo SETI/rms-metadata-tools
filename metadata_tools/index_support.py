@@ -158,8 +158,9 @@ class IndexTable(com.Table):
                 # Make the index for this file
                 util.dbprint(f'3014---------------------------------------------')
                 self.add(root, file)
+                util.dbprint(f'3015---------------------------------------------')
 
-            util.dbprint(f'3015----------------------------{self.filename}')
+            util.dbprint(f'301.5----------------------------{self.filename}')
             # Flag any unused columns
             for name in self.usage:
                 if not self.usage[name]:
