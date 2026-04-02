@@ -548,6 +548,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
 
     # Walk the input tree, making indexes for each found volume
     for root, dirs, _files in volume_tree.walk():
+        util.dbprint(f'0010---------------------------------------------')
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue
