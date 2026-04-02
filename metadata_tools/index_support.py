@@ -219,6 +219,7 @@ class IndexTable(com.Table):
 
         util.dbprint(f'402---------------------------------------------')
         self.rows += [line]
+        util.dbprint(f'403---------------------------------------------')
 
     #===========================================================================
     def _index_one_value(self, column_stub, label_path, label_dict):
