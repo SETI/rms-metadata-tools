@@ -186,9 +186,11 @@ class IndexTable(com.Table):
         # Read the PDS3 label
         path = root/name
 
+        util.dbprint(f'400.1---------------------------------------{path}')
         label_dict = PdsLabel.from_file(path).as_dict()
 
         # Write columns
+        util.dbprint(f'400.2---------------------------------------------')
         first = True
         line = ''
         util.dbprint(f'401---------------------------------------------')
