@@ -5,18 +5,14 @@ gcp:
   service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
   region:                   us-central1
   max_instances:            10
-#  instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
-  instance_types:           ["e2"]
+  instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
+#  instance_types:           ["e2"]
   boot_disk_types:          pd-balanced
   max_runtime:              10000
-#  max_cpu:                  8
+  max_cpu:                  16
 #  min_memory_per_cpu:       4                       # GB
 #  max_total_price_per_hour: 1.00                    # USD/hour
   startup_script_file:      gcp_index_startup.sh
 
 
-
-
-# cpus per task
-# use 16 cpus
 
