@@ -13,25 +13,8 @@
 # For GCP runs (not yet working), use:
 #   gcloud auth application-default login       # if necessary
 #
-#
-#
 #   python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -tf index_tasks.json
 #   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json
-#
-#
-#
-#   cloud_tasks run --config gcp_index_config.yml --continue
-#
-#   Other useful commands
-#     cloud_tasks monitor_event_queue --config gcp_index_config.yml --output-file gcp_index_config.log
-#
-#     cloud_tasks stop --config gcp_index_config.yml
-#     cloud_tasks purge_queue --config gcp_index_config.yml
-#     cloud_tasks delete_queue --config gcp_index_config.yml
-#
-#     cloud_tasks show_queue --project-id rms-metadata --job-id metadata-index-job --provider gcp --detail
-#     cloud_tasks status --project-id rms-metadata --job-id metadata-index-job --provider gcp
-#     cloud_tasks list_running_instances --project-id rms-metadata --job-id metadata-index-job --provider gcp
 #
 #########################################################################################
 import asyncio
