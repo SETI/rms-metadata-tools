@@ -598,12 +598,16 @@ def process_index(template_name,
     host, index_type, template_dir = util.parse_template_name(template_name)
 
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
-    if args is None:
+    if not args:
         parser = get_args(host=host, index_type=index_type)
         args = parser.parse_args()
 
-    if volumes is None:
+    if not volumes:
         volumes = args.volumes
+
+    if 'task_file' in args:
+        task_list_only = True
+        task_file = args.task_file
 
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,

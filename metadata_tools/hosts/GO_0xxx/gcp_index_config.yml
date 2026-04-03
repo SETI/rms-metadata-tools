@@ -4,7 +4,8 @@ gcp:
   project_id:               rms-metadata
   service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
   region:                   us-central1
-  max_instances:            10
+  min_instances:            10
+  max_instances:            24
   instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
   boot_disk_types:          pd-balanced
   max_runtime:              10000
