@@ -13,7 +13,7 @@
 # For GCP runs (not yet working), use:
 #   gcloud auth application-default login       # if necessary
 #
-#   python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -tf index_tasks.json
+#   python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to index_tasks.json
 #   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json
 #
 #########################################################################################

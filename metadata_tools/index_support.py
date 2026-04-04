@@ -608,9 +608,9 @@ def process_index(template_name,
     if not volumes:
         volumes = args.volumes
 
-    if 'task_file' in args:
+    if args.task_output:
         task_list_only = True
-        task_file = args.task_file
+        task_file = args.task_output
 
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,

@@ -152,7 +152,7 @@ def get_common_args(host=None,
                     help='''If given, labels are generated for existing files.''')
     gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
                     help='''Glob pattern to select files.''')
-    gr.add_argument('--task-file', '-tf', type=str, metavar='task_file',
+    gr.add_argument('--task-output', '-to', type=str, metavar='task_output',
                     help='''If given, a task file is written and no processing is performed.''')
 
     # Return parser
