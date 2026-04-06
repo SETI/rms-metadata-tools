@@ -12,6 +12,7 @@ gcp:
     disks: [
       disk_size_gb: 500
     ]
+  }
 
   max_runtime:              10000
   max_cpu:                  16
