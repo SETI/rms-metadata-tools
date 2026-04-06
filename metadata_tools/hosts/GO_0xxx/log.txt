@@ -1,736 +1,639 @@
-  message: '2026-04-03T23:28:53.222914+00:00 instance-20260402-191353 OSConfigAgent[425]:
+---
+insertId: 3nypvuf2sgqec
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T15:44:49.181468468Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T15:44:48.148997773Z'
+---
+insertId: 152k56if2h0geo
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T15:34:49.193660365Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T15:34:48.149152399Z'
+---
+insertId: hrffldf28b2l5
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T15:24:49.185710435Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T15:24:48.149018356Z'
+---
+insertId: 1f3t0emf3db9qw
+jsonPayload:
+  message: '2026-04-06T15:17:01.391825+00:00 instance-20260402-191353 CRON[318584]:
+    (root) CMD (cd / && run-parts --report /etc/cron.hourly)'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:17:02.193645456Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:17:01.392191542Z'
+---
+insertId: 1j00rpdf2ka4zg
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T15:14:49.190752859Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T15:14:48.148913215Z'
+---
+insertId: 1ko15quf2eqgqb
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T15:04:49.199719968Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T15:04:48.149192895Z'
+---
+insertId: 9fyaxkf3ivvlq
+jsonPayload:
+  message: '2026-04-06T15:01:13.387771+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.3875Z OSConfigAgent Info: Successfully completed ApplyConfigTask'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.388309932Z'
+---
+insertId: tp0wgef2optf0
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.3875Z'
   message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T23:28:53.170714+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T23:28:53.170440+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.(*configTask).run
+  line: '451'
+timestamp: '2026-04-06T15:01:13.387886224Z'
+---
+insertId: 9fyaxkf3ivvlp
+jsonPayload:
+  message: '2026-04-06T15:01:13.345836+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.3452Z OSConfigAgent Info: Policy "goog-ops-agent-policy" resource
+    "install-pkg" state: COMPLIANT'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.346280476Z'
+---
+insertId: 9fyaxkf3ivvlo
+jsonPayload:
+  message: '2026-04-06T15:01:13.345510+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.3451Z OSConfigAgent Info: Policy "goog-ops-agent-policy" resource
+    "add-repo" state: COMPLIANT'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.346278973Z'
+---
+insertId: 9fyaxkf3ivvln
+jsonPayload:
+  message: '2026-04-06T15:01:13.345131+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.3449Z OSConfigAgent Info: Check state: resource "install-pkg"
+    state is COMPLIANT.'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.346272801Z'
+---
+insertId: tp0wgef2optez
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.3452Z'
   message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  os_policy_assignment: projects/518418372076/locations/us-central1-b/osPolicyAssignments/goog-ops-agent-v2-template-1-7-0-us-central1-b@9c336460-04dc-44f6-a0ff-19f6beb5125a
+  os_policy_id: goog-ops-agent-policy
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.(*configTask).postCheckState
+  line: '291'
+timestamp: '2026-04-06T15:01:13.345284202Z'
+---
+insertId: tp0wgef2optey
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.3451Z'
   message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: '2026-04-03T23:28:53.169809+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  os_policy_assignment: projects/518418372076/locations/us-central1-b/osPolicyAssignments/goog-ops-agent-v2-template-1-7-0-us-central1-b@9c336460-04dc-44f6-a0ff-19f6beb5125a
+  os_policy_id: goog-ops-agent-policy
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.(*configTask).postCheckState
+  line: '291'
+timestamp: '2026-04-06T15:01:13.345225913Z'
+---
+insertId: tp0wgef2optex
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.3449Z'
   message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T23:28:53.149676+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T23:28:53.149026+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  os_policy_assignment: projects/518418372076/locations/us-central1-b/osPolicyAssignments/goog-ops-agent-v2-template-1-7-0-us-central1-b@9c336460-04dc-44f6-a0ff-19f6beb5125a
+  os_policy_id: goog-ops-agent-policy
+  resource_id: install-pkg
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.checkConfigResourceState
+  line: '202'
+timestamp: '2026-04-06T15:01:13.345013386Z'
+---
+insertId: 9fyaxkf3ivvlm
+jsonPayload:
+  message: '2026-04-06T15:01:13.327367+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.3272Z OSConfigAgent Info: Validate: resource "install-pkg"
+    validation successful.'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.327504902Z'
+---
+insertId: tp0wgef2optew
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.3272Z'
   message: 'Validate: resource "install-pkg" validation successful.'
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  os_policy_assignment: projects/518418372076/locations/us-central1-b/osPolicyAssignments/goog-ops-agent-v2-template-1-7-0-us-central1-b@9c336460-04dc-44f6-a0ff-19f6beb5125a
+  os_policy_id: goog-ops-agent-policy
+  resource_id: install-pkg
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.validateConfigResource
+  line: '165'
+timestamp: '2026-04-06T15:01:13.327291125Z'
+---
+insertId: 9fyaxkf3ivvll
+jsonPayload:
+  message: '2026-04-06T15:01:13.326730+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.3265Z OSConfigAgent Info: Check state: resource "add-repo"
+    state is COMPLIANT.'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.326928704Z'
+---
+insertId: tp0wgef2optev
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.3265Z'
   message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: '2026-04-03T23:28:53.148114+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  os_policy_assignment: projects/518418372076/locations/us-central1-b/osPolicyAssignments/goog-ops-agent-v2-template-1-7-0-us-central1-b@9c336460-04dc-44f6-a0ff-19f6beb5125a
+  os_policy_id: goog-ops-agent-policy
+  resource_id: add-repo
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.checkConfigResourceState
+  line: '202'
+timestamp: '2026-04-06T15:01:13.326658716Z'
+---
+insertId: 9fyaxkf3ivvlk
+jsonPayload:
+  message: '2026-04-06T15:01:13.325827+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.3256Z OSConfigAgent Info: Validate: resource "add-repo" validation
+    successful.'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.326140057Z'
+---
+insertId: tp0wgef2opteu
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.3256Z'
   message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T23:28:53.113272+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  os_policy_assignment: projects/518418372076/locations/us-central1-b/osPolicyAssignments/goog-ops-agent-v2-template-1-7-0-us-central1-b@9c336460-04dc-44f6-a0ff-19f6beb5125a
+  os_policy_id: goog-ops-agent-policy
+  resource_id: add-repo
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.validateConfigResource
+  line: '165'
+timestamp: '2026-04-06T15:01:13.325711604Z'
+---
+insertId: 9fyaxkf3ivvlj
+jsonPayload:
+  message: '2026-04-06T15:01:13.291288+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.2910Z OSConfigAgent Info: Executing policy "goog-ops-agent-policy"'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.292055106Z'
+---
+insertId: tp0wgef2optet
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.2910Z'
   message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T23:28:53.004868+00:00 instance-20260402-191353 OSConfigAgent[425]:
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  os_policy_assignment: projects/518418372076/locations/us-central1-b/osPolicyAssignments/goog-ops-agent-v2-template-1-7-0-us-central1-b@9c336460-04dc-44f6-a0ff-19f6beb5125a
+  os_policy_id: goog-ops-agent-policy
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.(*configTask).run
+  line: '395'
+timestamp: '2026-04-06T15:01:13.291091828Z'
+---
+insertId: 9fyaxkf3ivvli
+jsonPayload:
+  message: '2026-04-06T15:01:13.173574+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T15:01:13.1724Z OSConfigAgent Info: Beginning ApplyConfigTask.'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T15:01:14.195216474Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T15:01:13.175295372Z'
+---
+insertId: tp0wgef2optes
+jsonPayload:
+  localTimestamp: '2026-04-06T15:01:13.1724Z'
   message: Beginning ApplyConfigTask.
-  message: '2026-04-03T23:17:01.723407+00:00 instance-20260402-191353 CRON[104392]:
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    message: Log google_metadata_script_runner does not exist in the _Default bucket
-  message: '2026-04-03T22:28:22.531463+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T22:28:22.480626+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: '2026-04-03T22:28:22.480207+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: '2026-04-03T22:28:22.479907+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: '2026-04-03T22:28:22.463782+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T22:28:22.463630+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T22:28:22.463338+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T22:28:22.427254+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T22:28:22.334871+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T22:17:01.699479+00:00 instance-20260402-191353 CRON[101113]:
-  message: '2026-04-03T22:13:50.886355+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Error waiting for task (attempt 2 of 10): rpc error: code = Unavailable
-  message: '2026-04-03T22:04:50.774571+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Error waiting for task (attempt 1 of 10): rpc error: code = Internal desc
-  message: '2026-04-03T21:27:51.817746+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T21:27:51.763954+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T21:27:51.763606+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: '2026-04-03T21:27:51.763231+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T21:27:51.744283+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: '2026-04-03T21:27:51.743739+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: '2026-04-03T21:27:51.742744+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T21:27:51.709178+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T21:27:51.616698+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T21:17:01.675093+00:00 instance-20260402-191353 CRON[97768]:
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: '2026-04-03T20:27:21.326434+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T20:27:21.239645+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T20:27:21.239427+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T20:27:21.239148+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T20:27:21.223254+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: '2026-04-03T20:27:21.222395+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T20:27:21.222019+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T20:27:21.190284+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T20:27:20.967895+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T20:17:01.650299+00:00 instance-20260402-191353 CRON[94545]:
-  message: '2026-04-03T19:31:08.795997+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T19:31:08.792009+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T19:31:08.791721+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T19:31:08.735060+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T19:26:50.305732+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T19:26:50.256373+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T19:26:50.255986+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T19:26:50.255672+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T19:26:50.233506+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: '2026-04-03T19:26:50.232777+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: '2026-04-03T19:26:50.231432+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T19:26:50.205508+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T19:26:50.112568+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T19:17:01.623977+00:00 instance-20260402-191353 CRON[91508]:
-  message: '2026-04-03T19:16:08.765830+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T19:16:08.765371+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T19:16:08.760886+00:00 instance-20260402-191353 oslogin_cache_refresh[91497]:
-  message: '2026-04-03T19:16:08.760584+00:00 instance-20260402-191353 google_oslogin_nss_cache[91497]:
-  message: '2026-04-03T19:16:08.757220+00:00 instance-20260402-191353 oslogin_cache_refresh[91497]:
-  message: '2026-04-03T19:16:08.756304+00:00 instance-20260402-191353 google_oslogin_nss_cache[91497]:
-  message: '2026-04-03T19:16:08.739055+00:00 instance-20260402-191353 systemd[1]:
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: '2026-04-03T18:26:19.743189+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T18:26:19.684229+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T18:26:19.683925+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T18:26:19.683637+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T18:26:19.667933+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T18:26:19.667786+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T18:26:19.667375+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T18:26:19.640688+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T18:26:19.488777+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T18:17:01.595984+00:00 instance-20260402-191353 CRON[88433]:
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: '2026-04-03T17:25:48.980971+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T17:25:48.914837+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T17:25:48.914559+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T17:25:48.914260+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T17:25:48.897057+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T17:25:48.896593+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T17:25:48.896015+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T17:25:48.863962+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T17:25:48.759444+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: '2026-04-03T17:17:01.573755+00:00 instance-20260402-191353 CRON[85306]:
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-03 16:27:35.019795714 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: Invoking job "telemetryJobID"
-  message: 'Scheduler - added: [now 2026-04-03 16:25:27.666013754 +0000 UTC entry
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: '2026-04-03T16:25:18.120730+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T16:25:18.053402+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T16:25:18.053295+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T16:25:18.052604+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T16:25:18.036440+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T16:25:18.036304+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T16:25:18.036045+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T16:25:18.002855+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T16:25:17.906386+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: '2026-04-03T16:19:33.408819+00:00 instance-20260402-191353 google_guest_agent[459]:
-  message: '2026-04-03T16:19:33.408218+00:00 instance-20260402-191353 google_guest_agent[459]:
-  message: 'Invalid user "jspitale" or key "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCQLcRBpOixiLg9rh6usDw+pPEk7l6QgLyZQ3JZuBXa4no6UfW9G59XqLs0j4D8NOlAdhSTjDr7dpcYWRvBunN2nHmsJgX+kb2x9aW/qRAcJrts6huTM39zk0kRYo8Navq0GlMXmRq80LkW27bwqO6cFuZP10dRiM2foCdQOL5VRXl9gT7SRr/S5PnPEYlaE5/7DIFAwFyQ9uG7ZilJEBVpDExd3H1LwKFyYt+kCU3H3TSjtQ6rFEJIACIGQdgX4VmSr8bF97rXbKRWTgoQwGoECI2Wk7c9kyusukyOZEQLYy/50v4QnuUu2p4WV77rLIwuO4J3uMvaoBNllUpw/Vif
-  message: 'Invalid user "jspitale" or key "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBOzo8Vx0yfC4g7gLZ2mt/UJoYtaOdlgF8VifvH9YDDOJx6+ue0nfkxwxBwl8axLcjm40ahnCQtNap3Yespjcxog=
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: GCE Agent Stopped
-  message: 'Error watching metadata: context canceled'
-  message: '2026-04-03T16:17:43.870580+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:17:43.870238+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:17:43.869823+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.869463+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.869058+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.868481+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.868133+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.867792+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.867394+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.867007+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.866524+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.865988+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.865370+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.863804+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.857354+00:00 instance-20260402-191353 systemd[82164]:
-  message: '2026-04-03T16:17:43.744753+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:17:43.740871+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:17:43.723060+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:17:43.721132+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:17:01.546438+00:00 instance-20260402-191353 CRON[82143]:
-  message: '2026-04-03T16:15:28.326032+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:15:28.324818+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:15:28.323627+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:15:28.322103+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:15:28.310023+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:15:28.238217+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:15:28.236800+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:15:28.221943+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.221334+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.220578+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.220422+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.220230+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.220068+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.219940+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.219828+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.219712+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.219567+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.219426+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.219320+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.219168+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.218586+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.215903+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:15:28.213453+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:15:18.168326+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:13:54.717918+00:00 instance-20260402-191353 google_guest_agent[459]:
-  message: '2026-04-03T16:13:54.717034+00:00 instance-20260402-191353 google_guest_agent[459]:
-  message: 'Invalid user "jspitale" or key "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCm7Jz4WMuBgGRRF2MTGDalrXevv3BLV2NZsfltKQlrLl5uZkaUty+NcTLUvBCuTWPe/S4nl3veaX8KqlF8l4Y3WBxg45adtkfjzA+8Ew7i0Qk41Tbkld42ljG0oEYCqjTY/NXSJ+lGWCFpnO3PVCmrdpejzQ8/pFo7m47KYA5o+ax9kW4xE3i2CQimmYPUZxylVG6A83rzp6IG2frg7RcTFRdpD6kbih+YtYMURz4tEjGpwzzGthc2WZmCmEU/YO/pFSiuvGJQWD7tinv6GJhsTKigdTqmuhkJICmjoKC9nx1u/4ThQq2rU6iC1W+0n18oowkRUckotdMnrhA3WCpL
-  message: 'Invalid user "jspitale" or key "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBM2XPEtDci/udPdvdMZWD/WBqg1AKQgxbntlaSb1HfPssmvzzwRmvwsWLtWKlRRNGVP2DEm53vrI0+Md4Bdsr3o=
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: 'Error reloading service: Failed to reload-or-restart sshd.service: Unit
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-03 16:11:05.739266702 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: Completed adding/removing routes for aliases, forwarded IP and target-instance
-  message: 'Scheduler - added: [now 2026-04-03 16:11:05.309150673 +0000 UTC entry
-  message: Invoking job "telemetryJobID"
-  message: Successfully scheduled job telemetryJobID
-  message: Scheduling job "telemetryJobID" to run at 24.000000 hr interval
-  message: 'Scheduling job: telemetryJobID'
-  message: Starting the scheduler to run jobs
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-  message: '2026-04-03T16:10:59.758884+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.758617+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.758238+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:10:59.758071+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:10:59.757849+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.757592+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.757259+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.755054+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.754547+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.753591+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.753372+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.753042+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.751692+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.749668+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.745070+00:00 instance-20260402-191353 systemd[81595]:
-  message: '2026-04-03T16:10:59.570764+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:10:59.547635+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:10:59.525432+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T16:10:59.519819+00:00 instance-20260402-191353 systemd[1]:
-  message: OSConfig Agent (version 20250115.01-0ubuntu1~24.04.1) started.
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-    messageRetentionDuration: 604800s
-  message: '2026-04-03T15:24:47.575478+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T15:24:47.458795+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T15:24:47.458514+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T15:24:47.458154+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T15:24:47.442697+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T15:24:47.442359+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: '2026-04-03T15:24:47.441562+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T15:24:47.402203+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T15:24:47.300250+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T15:17:01.523562+00:00 instance-20260402-191353 CRON[78675]:
-  message: '2026-04-03T14:24:16.817158+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T14:24:16.768852+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T14:24:16.768691+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T14:24:16.768275+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T14:24:16.746944+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T14:24:16.746681+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: '2026-04-03T14:24:16.745545+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T14:24:16.717365+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T14:24:16.602587+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T14:17:01.498644+00:00 instance-20260402-191353 CRON[75437]:
-  message: '2026-04-03T13:23:46.130969+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T13:23:46.082672+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T13:23:46.082358+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: '2026-04-03T13:23:46.081593+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T13:23:46.062253+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T13:23:46.062038+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T13:23:46.060526+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T13:23:46.028845+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T13:23:45.905502+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T13:17:01.475011+00:00 instance-20260402-191353 CRON[72252]:
-  message: '2026-04-03T13:15:38.772754+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T13:15:38.771969+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T13:15:38.768878+00:00 instance-20260402-191353 oslogin_cache_refresh[72230]:
-  message: '2026-04-03T13:15:38.768672+00:00 instance-20260402-191353 google_oslogin_nss_cache[72230]:
-  message: '2026-04-03T13:15:38.764550+00:00 instance-20260402-191353 oslogin_cache_refresh[72230]:
-  message: '2026-04-03T13:15:38.763911+00:00 instance-20260402-191353 google_oslogin_nss_cache[72230]:
-  message: '2026-04-03T13:15:38.746740+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T12:23:15.416666+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T12:23:15.334790+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T12:23:15.334610+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T12:23:15.334308+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T12:23:15.319303+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T12:23:15.318977+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T12:23:15.317688+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T12:23:15.288552+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T12:23:15.185336+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T12:17:01.452277+00:00 instance-20260402-191353 CRON[69182]:
-  message: '2026-04-03T11:22:44.610307+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T11:22:44.561548+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T11:22:44.561044+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T11:22:44.560764+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T11:22:44.537771+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T11:22:44.537497+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T11:22:44.537030+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T11:22:44.504172+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T11:22:44.394832+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T11:17:01.428376+00:00 instance-20260402-191353 CRON[66118]:
-  message: '2026-04-03T10:22:13.900403+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T10:22:13.851730+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: '2026-04-03T10:22:13.851413+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: '2026-04-03T10:22:13.850921+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T10:22:13.834330+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T10:22:13.833817+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: '2026-04-03T10:22:13.832888+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T10:22:13.803055+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T10:22:13.677752+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T10:17:01.404226+00:00 instance-20260402-191353 CRON[62855]:
-  message: '2026-04-03T09:35:48.328046+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T09:35:48.327588+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T09:35:48.327221+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T09:35:44.591013+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T09:21:43.435754+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T09:21:43.392260+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T09:21:43.392134+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T09:21:43.391850+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T09:21:43.375358+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T09:21:43.375043+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: '2026-04-03T09:21:43.374412+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T09:21:43.336784+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T09:21:43.234747+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T09:17:01.380508+00:00 instance-20260402-191353 CRON[59176]:
-  message: '2026-04-03T08:21:11.058736+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T08:21:11.014068+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T08:21:11.013901+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T08:21:11.013577+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T08:21:10.998160+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T08:21:10.997986+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T08:21:10.997762+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T08:21:10.972593+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T08:21:10.878263+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T08:17:01.356537+00:00 instance-20260402-191353 CRON[55844]:
-  message: '2026-04-03T07:20:41.035959+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T07:20:40.960324+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T07:20:40.960123+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T07:20:40.959840+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T07:20:40.943611+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: '2026-04-03T07:20:40.942317+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T07:20:40.942002+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T07:20:40.901175+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T07:20:40.374674+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T07:17:01.334666+00:00 instance-20260402-191353 CRON[52575]:
-  message: '2026-04-03T07:15:12.816420+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T07:15:12.815770+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T07:15:12.812979+00:00 instance-20260402-191353 oslogin_cache_refresh[52545]:
-  message: '2026-04-03T07:15:12.812793+00:00 instance-20260402-191353 google_oslogin_nss_cache[52545]:
-  message: '2026-04-03T07:15:12.805852+00:00 instance-20260402-191353 oslogin_cache_refresh[52545]:
-  message: '2026-04-03T07:15:12.805437+00:00 instance-20260402-191353 google_oslogin_nss_cache[52545]:
-  message: '2026-04-03T07:15:12.786574+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T06:41:08.742663+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T06:41:08.742337+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T06:41:08.741936+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T06:40:08.742795+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T06:25:01.302702+00:00 instance-20260402-191353 CRON[40649]:
-  message: '2026-04-03T06:20:09.608817+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T06:20:09.570155+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T06:20:09.569905+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T06:20:09.569625+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T06:20:09.552525+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T06:20:09.552338+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T06:20:09.551909+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T06:20:09.514835+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T06:20:09.388837+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T06:17:01.293131+00:00 instance-20260402-191353 CRON[40134]:
-  message: '2026-04-03T05:19:38.868112+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T05:19:38.825717+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T05:19:38.825524+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T05:19:38.825227+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T05:19:38.809683+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: '2026-04-03T05:19:38.809192+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T05:19:38.808725+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T05:19:38.767749+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T05:19:38.636525+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T05:17:01.273043+00:00 instance-20260402-191353 CRON[36939]:
-  message: '2026-04-03T04:19:08.134056+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T04:19:08.091847+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T04:19:08.091683+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T04:19:08.091361+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T04:19:08.072884+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T04:19:08.072517+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T04:19:08.072060+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T04:19:08.039773+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T04:19:07.934100+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T04:17:01.245863+00:00 instance-20260402-191353 CRON[33655]:
-  message: '2026-04-03T03:30:50.558888+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T03:30:50.558556+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T03:30:50.558086+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T03:30:48.742816+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T03:18:37.346085+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T03:18:37.312887+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T03:18:37.312728+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T03:18:37.312451+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T03:18:37.298380+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T03:18:37.298190+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T03:18:37.297810+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T03:18:37.264806+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T03:18:37.166288+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T03:17:01.222691+00:00 instance-20260402-191353 CRON[30292]:
-  message: '2026-04-03T03:10:01.214242+00:00 instance-20260402-191353 CRON[29778]:
-  message: '2026-04-03T02:18:06.628604+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T02:18:06.587293+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T02:18:06.587011+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T02:18:06.586588+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: '2026-04-03T02:18:06.570888+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T02:18:06.570129+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: '2026-04-03T02:18:06.569006+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T02:18:06.540964+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T02:18:06.440438+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T02:17:01.192127+00:00 instance-20260402-191353 CRON[27088]:
-  message: '2026-04-03T01:17:35.921409+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T01:17:35.875348+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T01:17:35.875086+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T01:17:35.874823+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T01:17:35.860024+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T01:17:35.859867+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T01:17:35.859539+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T01:17:35.832443+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T01:17:35.732139+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T01:17:01.168826+00:00 instance-20260402-191353 CRON[23877]:
-  message: '2026-04-03T01:15:08.769101+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:15:08.768856+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:15:08.765604+00:00 instance-20260402-191353 oslogin_cache_refresh[23856]:
-  message: '2026-04-03T01:15:08.765372+00:00 instance-20260402-191353 google_oslogin_nss_cache[23856]:
-  message: '2026-04-03T01:15:08.756400+00:00 instance-20260402-191353 oslogin_cache_refresh[23856]:
-  message: '2026-04-03T01:15:08.755897+00:00 instance-20260402-191353 google_oslogin_nss_cache[23856]:
-  message: '2026-04-03T01:15:08.734456+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.873727+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.873260+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.870920+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.870378+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.868010+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.838856+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.764440+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.764334+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:14.764233+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.763499+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.763372+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.762402+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.762279+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.762107+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.758621+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.758235+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.757640+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.756843+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.753811+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.751381+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.748639+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.744679+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.726107+00:00 instance-20260402-191353 systemd[1431]:
-  message: '2026-04-03T01:10:14.717948+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:04.467653+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T01:10:04.467017+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:17:05.311454+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Successfully completed ApplyConfigTask
-  message: '2026-04-03T00:17:05.262610+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T00:17:05.262434+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T00:17:05.262134+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Policy "goog-ops-agent-policy" resource "install-pkg" state: COMPLIANT'
-  message: 'Policy "goog-ops-agent-policy" resource "add-repo" state: COMPLIANT'
-  message: 'Check state: resource "install-pkg" state is COMPLIANT.'
-  message: '2026-04-03T00:17:05.245458+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T00:17:05.245256+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: '2026-04-03T00:17:05.244901+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: 'Validate: resource "install-pkg" validation successful.'
-  message: 'Check state: resource "add-repo" state is COMPLIANT.'
-  message: 'Validate: resource "add-repo" validation successful.'
-  message: '2026-04-03T00:17:05.210265+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Executing policy "goog-ops-agent-policy"
-  message: '2026-04-03T00:17:05.106032+00:00 instance-20260402-191353 OSConfigAgent[425]:
-  message: Beginning ApplyConfigTask.
-  message: '2026-04-03T00:17:01.145178+00:00 instance-20260402-191353 CRON[20652]:
-  message: '2026-04-03T00:00:08.929241+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:00:08.928991+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:00:08.889539+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:00:08.888438+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:00:08.806816+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:00:08.787045+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:00:08.786654+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:00:08.747971+00:00 instance-20260402-191353 systemd[1]:
-  message: '2026-04-03T00:00:08.743045+00:00 instance-20260402-191353 systemd[1]:
+  omitempty: null
+labels:
+  agent_version: 20260119.00-g1
+  compliance_run_id: 84251751-07d5-457c-9626-c6aeb4b1792c
+  instance_name: instance-20260402-191353
+  task_type: APPLY_CONFIG_TASK
+logName: projects/rms-metadata/logs/OSConfigAgent
+receiveTimestamp: '2026-04-06T15:01:14.205099991Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: INFO
+sourceLocation:
+  file: config_task.go
+  function: github.com/GoogleCloudPlatform/osconfig/agentendpoint.(*configTask).run
+  line: '369'
+timestamp: '2026-04-06T15:01:13.172837033Z'
+---
+insertId: zst5u5f2dzuuq
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T14:54:49.182201031Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T14:54:48.149096092Z'
+---
+insertId: aaqchrf2wvjms
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T14:44:49.181909197Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T14:44:48.149333093Z'
+---
+insertId: ril5j3f2ub9jc
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T14:34:49.204978259Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T14:34:48.149345500Z'
+---
+insertId: 11rsbpmf2yok9p
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T14:24:49.191194710Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T14:24:48.149147080Z'
+---
+insertId: 13509csf2er826
+jsonPayload:
+  message: '2026-04-06T14:17:01.367134+00:00 instance-20260402-191353 CRON[315435]:
+    (root) CMD (cd / && run-parts --report /etc/cron.hourly)'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T14:17:02.191544042Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T14:17:01.368103441Z'
+---
+insertId: 8loipsf3n444e
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T14:14:49.183822722Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T14:14:48.149121084Z'
+---
+insertId: yqugunf300jk8
+jsonPayload:
+  code: LogPingOpsAgent
+labels:
+  agent.googleapis.com/health/agentKind: ops-agent
+  agent.googleapis.com/health/agentVersion: 2.64.0
+  agent.googleapis.com/health/schemaVersion: v1
+logName: projects/rms-metadata/logs/ops-agent-health
+receiveTimestamp: '2026-04-06T14:04:49.187346550Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+severity: DEBUG
+timestamp: '2026-04-06T14:04:48.149181878Z'
+---
+insertId: 1orl214f2w35zb
+jsonPayload:
+  message: '2026-04-06T14:00:42.896258+00:00 instance-20260402-191353 OSConfigAgent[425]:
+    2026-04-06T14:00:42.8958Z OSConfigAgent Info: Successfully completed ApplyConfigTask'
+labels:
+  compute.googleapis.com/resource_name: instance-20260402-191353
+logName: projects/rms-metadata/logs/syslog
+receiveTimestamp: '2026-04-06T14:00:43.180851022Z'
+resource:
+  labels:
+    instance_id: '6025654367051514128'
+    project_id: rms-metadata
+    zone: us-central1-b
+  type: gce_instance
+timestamp: '2026-04-06T14:00:42.896930878Z'
