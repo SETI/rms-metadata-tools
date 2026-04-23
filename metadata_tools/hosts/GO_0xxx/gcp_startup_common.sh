@@ -3,10 +3,10 @@
 #cd
 ##git clone https://github.com/SETI/rms-metadata-tools.git
 #git clone -b jns--updates-continued --single-branch https://github.com/SETI/rms-metadata-tools.git
-cd rms-metadata-tools
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+#cd rms-metadata-tools
+#python3 -m venv venv
+#source venv/bin/activate
+#pip install -r requirements.txt
 
 ##cd hosts/GO_0xxx
 
