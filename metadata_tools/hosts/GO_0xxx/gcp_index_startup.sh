@@ -1,5 +1,5 @@
 #!/bin/bash
-
+source ./gcp_startup_common.sh
 apt-get update -y
 apt-get install -y python3 python3-pip python3-venv git
 cd
@@ -10,9 +10,13 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
+##cd hosts/GO_0xxx
 
-source "${BASH_SOURCE%/*}gcp_startup_common.sh"
-
+## -------------------------------------------------------
+## Additional instance shell commands
+##  gcloud auth application-default login
+##  export GCLOUD_PROJECT="rms-metadata"
+## -------------------------------------------------------
 
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
                 gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
