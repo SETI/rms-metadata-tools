@@ -1580,8 +1580,9 @@ def process_tables(template_name,
 
     # Parse arguments
     host, _index_type, template_dir = util.parse_template_name(template_name)
+
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
-    if args is None:
+    if not args:
         parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
         args = parser.parse_args()
 

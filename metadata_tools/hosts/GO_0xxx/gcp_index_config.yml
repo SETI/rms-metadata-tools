@@ -8,17 +8,16 @@ gcp:
   instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
 #  instance_types:           ["e2"]
   boot_disk_types:          pd-balanced
-  instance_properties: {
-    disks: [
-      disk_size_gb: 500
-    ]
-  }
+#  instance_properties: {
+#    disks: [
+#      disk_size_gb: 500
+#    ]
+#  }
 
   max_runtime:              10000
   max_cpu:                  16
 #  min_memory_per_cpu:       4                       # GB
 #  max_total_price_per_hour: 1.00                    # USD/hour
   startup_script_file:      gcp_index_startup.sh
-
 
 
