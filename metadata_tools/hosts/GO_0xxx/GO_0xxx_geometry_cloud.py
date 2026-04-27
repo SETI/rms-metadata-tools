@@ -18,7 +18,7 @@
 #
 #   - to use a new task file:
 #     python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 -to geometry_tasks.json
-#     cloud_tasks run --config gcp_geometry_config.yml --task-file geometry_tasks.json
+#     cloud_tasks run --config gcp_geometry_config.yml --task-file geometry_tasks.json --total-boot-disk-size 50
 #
 #########################################################################################
 import asyncio

@@ -19,12 +19,7 @@ pip install -r requirements.txt
 ## -------------------------------------------------------
 
 
-sudo mkdir -p /mnt/pd1
-sudo mount -o ro /dev/disk/by-id/google-oops-resources-part1 /mnt/pd1
 
-sudo mkdir /mnt/pd1/OOPS-Resources
-sudo chown $USER /mnt/pd1/OOPS-Resources
-gsutil -m rsync -r gs://rms-node-oops-resources /mnt/pd1/OOPS-Resources
 
 
 

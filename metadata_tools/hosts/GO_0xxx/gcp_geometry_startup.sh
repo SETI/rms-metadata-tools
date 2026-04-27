@@ -1,7 +1,7 @@
 #!/bin/bash
 
-apt-get update -y
-apt-get install -y python3 python3-pip python3-venv git
+apt-get update -y                                               ## sudo
+apt-get install -y python3 python3-pip python3-venv git         ## sudo
 cd
 #git clone https://github.com/SETI/rms-metadata-tools.git
 git clone -b jns--updates-continued --single-branch https://github.com/SETI/rms-metadata-tools.git
@@ -18,12 +18,18 @@ pip install -r requirements.txt
 ##  export GCLOUD_PROJECT="rms-metadata"
 ## -------------------------------------------------------
 
-sudo mkdir -p /mnt/pd1
-sudo mount -o ro /dev/disk/by-id/google-oops-resources-part1 /mnt/pd1
 
-sudo mkdir /mnt/pd1/OOPS-Resources
-sudo chown $USER /mnt/pd1/OOPS-Resources
-gsutil -m rsync -r gs://rms-node-oops-resources /mnt/pd1/OOPS-Resources
+
+
+export INSTANCE_NAME=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/name)
+gcloud compute instances attach-disk $INSTANCE_NAME --disk=ssd-oops-resources-central1-a-1 --zone=us-central1-a --device-name=nav-resources
+sudo mkdir -p /mnt/nav-resources
+sudo mount -o ro /dev/disk/by-id/google-nav-resources-part1 /mnt/nav-resources
+
+
+
+
+
 
 
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
