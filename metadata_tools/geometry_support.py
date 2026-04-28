@@ -973,6 +973,7 @@ class Record(object):
                 if valid_minimum != valid_maximum:
                     if (number < valid_minimum) | (number > valid_maximum):
                         number = null_value
+                from IPython import embed; print('+++++++++++++'); embed()
                 string = standard_format % number
             # string values: left justify and enclose in double quotes
             else:
@@ -1580,9 +1581,8 @@ def process_tables(template_name,
 
     # Parse arguments
     host, _index_type, template_dir = util.parse_template_name(template_name)
-
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
-    if not args:
+    if args is None:
         parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
         args = parser.parse_args()
 

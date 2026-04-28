@@ -7,6 +7,18 @@ sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
 cd
 
+
+
+
+
+###  modified unmerged oops branch...
+git clone -b jns-host-updates --single-branch https://github.com/SETI/rms-oops.git
+pip install -e ~/rms-oops/
+###
+
+
+
+
 #git clone https://github.com/SETI/rms-metadata-tools.git
 git clone -b jns--updates-continued --single-branch https://github.com/SETI/rms-metadata-tools.git
 cd rms-metadata-tools
@@ -21,9 +33,20 @@ sudo mkdir -p /mnt/nav-resources
 sudo mount -o ro /dev/disk/by-id/google-nav-resources-part1 /mnt/nav-resources
 export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
 
+
+
 # Run the geometry code
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
                 gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
                 gs://rms-metadata-jspitale/metadata_test/GO_0xxx/
 
 
+
+
+
+
+
+
+python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry.py \
+                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0002
