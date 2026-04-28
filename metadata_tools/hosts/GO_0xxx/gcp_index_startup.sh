@@ -6,6 +6,12 @@ export GCLOUD_PROJECT="rms-metadata"             # terminal
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
 cd
+
+###  modified unmerged oops branch...
+git clone -b jns-host-updates --single-branch https://github.com/SETI/rms-oops.git
+###
+
+
 #git clone https://github.com/SETI/rms-metadata-tools.git
 git clone -b jns--updates-continued --single-branch https://github.com/SETI/rms-metadata-tools.git
 cd rms-metadata-tools
@@ -13,8 +19,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-##cd hosts/GO_0xxx
-
+# Run the index code
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
                 gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
                 gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
