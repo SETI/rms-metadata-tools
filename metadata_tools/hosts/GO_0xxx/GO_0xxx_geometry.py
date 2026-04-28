@@ -44,11 +44,7 @@
 #
 ##########################################################################################
 import host_init    # imported for side effects
-
-import sys                      ### This is needed to get a GCP instance to recognize
-sys.path.append('')             ### the metadata_tools module
 import metadata_tools.geometry_support as geom
-
 import geometry_config as config
 
 geom.process_tables('GO_0xxx_supplemental_index',
