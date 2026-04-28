@@ -29,7 +29,11 @@
 #
 ##########################################################################################
 import host_init    # imported for side effects
-import metadata_tools.index_support as idx
+
+import sys                      ### This is needed to get a GCP instance to recognize
+sys.path.append('')             ### the metadata_tools module
+import metadata_tools.geometry_support as geom
+
 import index_config as config
 
 idx.process_index('GO_0xxx_supplemental_index',
