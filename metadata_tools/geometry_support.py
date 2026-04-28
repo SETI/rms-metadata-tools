@@ -973,10 +973,7 @@ class Record(object):
                 if valid_minimum != valid_maximum:
                     if (number < valid_minimum) | (number > valid_maximum):
                         number = null_value
-                try:
-                    string = standard_format % number
-                except:
-                    from IPython import embed; print('+++++++++++++'); embed()
+                string = standard_format % number
             # string values: left justify and enclose in double quotes
             else:
                 string = '"' + number.strip('"').ljust(column_width-2) + '"'

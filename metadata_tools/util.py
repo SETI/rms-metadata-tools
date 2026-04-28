@@ -762,6 +762,7 @@ def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
 
     # With only one value, we know nothing
     if values.size <= 1:
+        from IPython import embed; print('+++++++++++++'); embed()
         return [values, values]
 
     # Locate the largest gap in coverage
