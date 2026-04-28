@@ -1,5 +1,8 @@
 #!/bin/bash
+##  gcloud auth application-default login        # needed for manual paste into instance
+export GCLOUD_PROJECT="rms-metadata"             # terminal
 
+# sudo needed for manual paste into instance terminal..
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
 cd
@@ -11,12 +14,6 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 ##cd hosts/GO_0xxx
-
-## -------------------------------------------------------
-## Additional instance shell commands
-##  gcloud auth application-default login
-##  export GCLOUD_PROJECT="rms-metadata"
-## -------------------------------------------------------
 
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
                 gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
