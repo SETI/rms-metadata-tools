@@ -149,6 +149,7 @@ def meshgrids(sampling):
 
         # Construct the meshgrid
         limit += 0.0001
+        from IPython import embed; print('+++++++++++++'); embed()
         meshgrid = oops.Meshgrid.for_fov(ssi.SSI.fovs[mode], origin,
                                          undersample=under, limit=limit, swap=True)
         meshgrids[mode] = meshgrid

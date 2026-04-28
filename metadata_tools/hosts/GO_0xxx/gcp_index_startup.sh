@@ -18,11 +18,6 @@ pip install -r requirements.txt
 ##  export GCLOUD_PROJECT="rms-metadata"
 ## -------------------------------------------------------
 
-
-
-
-
-
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
                 gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
                 gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
