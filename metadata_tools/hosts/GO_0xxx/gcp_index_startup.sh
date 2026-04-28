@@ -7,11 +7,6 @@ sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
 cd
 
-###  modified unmerged oops branch...
-git clone -b jns-host-updates --single-branch https://github.com/SETI/rms-oops.git
-###
-
-
 #git clone https://github.com/SETI/rms-metadata-tools.git
 git clone -b jns--updates-continued --single-branch https://github.com/SETI/rms-metadata-tools.git
 cd rms-metadata-tools
