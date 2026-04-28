@@ -960,7 +960,6 @@ class Record(object):
         # Write the formatted value(s)
         strings = []
         for number in results:
-            print(number)
             error_message = ""
 
             # numeric values: flag common exceptions and use standard format
