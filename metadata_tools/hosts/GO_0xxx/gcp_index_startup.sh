@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ######## index / geometry common code ####################################################
-export GCLOUD_PROJECT="rms-metadata"             # terminal
+#export GCLOUD_PROJECT="rms-metadata"             # terminal
 
 # sudo needed for manual paste into instance terminal..
 sudo apt-get update -y
