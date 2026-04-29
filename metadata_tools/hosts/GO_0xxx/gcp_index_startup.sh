@@ -1,5 +1,6 @@
 #!/bin/bash
-##  gcloud auth application-default login        # needed for manual paste into instance
+
+######## index / geometry common code ####################################################
 export GCLOUD_PROJECT="rms-metadata"             # terminal
 
 # sudo needed for manual paste into instance terminal..
@@ -13,6 +14,7 @@ cd rms-metadata-tools
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+##########################################################################################
 
 # Run the index code
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
@@ -23,3 +25,9 @@ python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
 
 
 
+##  Manual paste into instance..
+#gcloud auth application-default login
+#python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index.py \
+#                gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
+#                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
+#                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0002
