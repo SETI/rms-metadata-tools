@@ -1,7 +1,6 @@
 #!/bin/bash
 
 ######## index / geometry common code ####################################################
-#export GCLOUD_PROJECT="rms-metadata"             # terminal
 
 # sudo needed for manual paste into instance terminal..
 sudo apt-get update -y
@@ -26,6 +25,7 @@ python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
 
 
 ##  Manual paste into instance..
+#export GCLOUD_PROJECT="rms-metadata"
 #gcloud auth application-default login
 #python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index.py \
 #                gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \

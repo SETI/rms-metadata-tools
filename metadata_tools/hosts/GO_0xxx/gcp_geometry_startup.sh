@@ -9,8 +9,6 @@ export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
 
 
 ######## index / geometry common code ####################################################
-export GCLOUD_PROJECT="rms-metadata"             # terminal
-
 # sudo needed for manual paste into instance terminal..
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
@@ -49,6 +47,7 @@ python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
 
 
 ##  Manual paste into instance..
+#export GCLOUD_PROJECT="rms-metadata"
 #gcloud auth application-default login
 #python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry.py \
 #                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
