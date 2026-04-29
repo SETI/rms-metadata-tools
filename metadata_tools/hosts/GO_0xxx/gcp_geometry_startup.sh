@@ -47,8 +47,8 @@ python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
 
 
 ##  Manual paste into instance..
-export GCLOUD_PROJECT="rms-metadata"
-gcloud auth application-default login
-python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry.py \
-                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
-                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0002
+#export GCLOUD_PROJECT="rms-metadata"
+#gcloud auth application-default login
+#python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry.py \
+#                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
+#                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0002
