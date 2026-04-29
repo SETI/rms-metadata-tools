@@ -28,7 +28,7 @@ pip install -r requirements.txt
 
 # Mount OOPS-Resources
 export INSTANCE_NAME=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/name)
-gcloud compute instances attach-disk $INSTANCE_NAME --disk=ssd-oops-resources-central1-a-1 --zone=us-central1-a --device-name=nav-resources
+gcloud compute instances attach-disk $INSTANCE_NAME --disk=ssd-oops-resources-central1-a-1 --zone=us-central1-a --device-name=nav-resources --mode ro
 sudo mkdir -p /mnt/nav-resources
 sudo mount -o ro /dev/disk/by-id/google-nav-resources-part1 /mnt/nav-resources
 export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
