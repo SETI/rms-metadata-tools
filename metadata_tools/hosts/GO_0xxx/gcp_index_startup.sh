@@ -1,7 +1,6 @@
 #!/bin/bash
 
 ######## index / geometry common code ####################################################
-
 # sudo needed for manual paste into instance terminal..
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
