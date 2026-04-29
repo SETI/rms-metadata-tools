@@ -8,7 +8,7 @@ rms-pdsparser>=2.0.0
 rms-cloud-tasks>=0.2.0
 json-stream>=2.3.3
 rms-pdstable>=1.0.3
-rms-vicar>=1.1.2
+rms-vicar>=1.2.1
 rms-pdstemplate>=2.4.0
 fortranformat>=2.0.3
 

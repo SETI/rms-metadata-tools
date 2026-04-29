@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ##########################################################################################
 
 
-###  modified unmerged oops branch...
+###  modified unmerged oops branch (TBR)...
 cd
 git clone -b jns-host-updates --single-branch https://github.com/SETI/rms-oops.git
 pip install -e ~/rms-oops/
@@ -47,8 +47,10 @@ python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
 
 
 ##  Manual paste into instance..
-#export GCLOUD_PROJECT="rms-metadata"
-#gcloud auth application-default login
-#python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry.py \
-#                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
-#                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0002
+: <<'COMMENT_BLOCK'
+export GCLOUD_PROJECT="rms-metadata"
+gcloud auth application-default login
+python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry.py \
+                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0004
+COMMENT_BLOCK
