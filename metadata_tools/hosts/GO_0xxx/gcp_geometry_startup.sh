@@ -24,10 +24,10 @@ pip install -r requirements.txt
 
 
 ###  modified unmerged oops branch (TBR)...
-#cd
-#git clone -b jns-host-updates --single-branch https://github.com/SETI/rms-oops.git
+cd
+git clone https://github.com/SETI/rms-oops.git
 #pip install -e ~/rms-oops/
-#cd rms-metadata-tools
+cd rms-metadata-tools
 ###
 
 
