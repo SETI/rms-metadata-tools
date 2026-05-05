@@ -9,11 +9,6 @@ gcp:
   instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
 #  instance_types:           ["e2"]
   boot_disk_types:          pd-balanced
-#  instance_properties: {
-#    disks: [
-#      disk_size_gb: 500
-#    ]
-#  }
 
   max_runtime:              10000
   max_cpu:                  16

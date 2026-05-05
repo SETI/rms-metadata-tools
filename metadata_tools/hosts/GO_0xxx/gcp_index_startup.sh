@@ -25,7 +25,6 @@ python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
 
 ##  Manual paste into instance..
 : <<'COMMENT_BLOCK'
-export GCLOUD_PROJECT="rms-metadata"
 gcloud auth application-default login
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index.py \
                 gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
