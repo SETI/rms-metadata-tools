@@ -36,6 +36,8 @@ def init_logger(dir, type):
 
     _LOGGER.add_handler(pdslogger.STDOUT_HANDLER)
 
+    _LOGGER.warning('Initialized %s log for %s' % (type, dir.name))
+
 #=========================================================================================
 
 def get_logger():
