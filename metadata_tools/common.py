@@ -32,11 +32,10 @@ def init_logger(dir, type):
     name = '%s_%s-log.txt' % (dir.name, type)
     path = dir / name
     path.unlink(missing_ok=True)
-    _LOGGER.add_handler(pdslogger.file_handler(path, level='warning'))
-
+    
+    _LOGGER.add_handler(pdslogger.file_handler(path, level='normal'))
     _LOGGER.add_handler(pdslogger.STDOUT_HANDLER)
-
-    _LOGGER.warning('Initialized %s log for %s' % (type, dir.name))
+    _LOGGER.log('header', 'Initialized %s log for %s' % (type, dir.name))
 
 #=========================================================================================
 
