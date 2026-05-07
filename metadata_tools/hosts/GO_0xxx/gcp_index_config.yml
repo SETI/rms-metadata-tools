@@ -7,14 +7,15 @@ gcp:
   zone:                     us-central1-a
 
 
-  instance_types: ["^n4-.*"]
+#  instance_types: ["^n2-.*"]
+  instance_types: ["n4d-highmem-96"]
   min_cpu: 8
   max_cpu: 32
   max_instances: 24
   cpus_per_task: 4
-  min_memory_per_task: 16GB
-  boot_disk_base_size: 10GB
-  boot_disk_per_task: 2GB
+  min_memory_per_task: 16
+  boot_disk_base_size: 10
+  boot_disk_per_task: 2
   boot_disk_types: pd-ssd
 
 #  max_instances:            24
