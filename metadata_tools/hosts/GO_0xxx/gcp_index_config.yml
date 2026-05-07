@@ -4,11 +4,11 @@ gcp:
   project_id:               rms-metadata
   service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
   region:                   us-central1
-  zone:                     us-central1-a
+#  zone:                     us-central1-a
 
 
 #  instance_types: ["^n2-.*"]
-  instance_types: ["n4d-highmem-96"]
+  instance_types: ["^n4-.*"]
   min_cpu: 8
   max_cpu: 32
   max_instances: 24
