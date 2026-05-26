@@ -7,8 +7,8 @@ gcp:
   zone:                     us-central1-a
 
 
-#  instance_types: ["^n2-.*"]
-  instance_types: ["^c4-.*"]
+  instance_types: ["^n2-.*"]
+#  instance_types: ["^c4-.*"]
   min_cpu: 8
   max_cpu: 32
   max_instances: 24
