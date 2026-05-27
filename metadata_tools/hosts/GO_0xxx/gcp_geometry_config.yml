@@ -7,30 +7,26 @@ gcp:
   zone:                     us-central1-a
 
 
-
-
-
-#  instance_types: ["^c4-.*"]
-#  min_cpu: 8
-#  max_cpu: 32
+  instance_types: ["^c4-.*"]
+  min_cpu: 8
+  max_cpu: 32
 #  max_instances: 24
-#  cpus_per_task: 4
-#  min_memory_per_task: 16
-#  boot_disk_base_size: 10
-#  boot_disk_per_task: 2
-#  boot_disk_types: hd-balanced
+  max_instances: 1
+  cpus_per_task: 4
+  min_memory_per_task: 16
+  boot_disk_base_size: 10
+  boot_disk_per_task: 2
+  boot_disk_types: hd-balanced
 
+#  max_instances:            24
+#  instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
+##  instance_types:           ["e2"]
+#  boot_disk_types:          pd-balanced
 
-
-
-  max_instances:            24
-  instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
-#  instance_types:           ["e2"]
-  boot_disk_types:          pd-balanced
-  max_runtime:              10000
-  max_cpu:                  4
-#  min_memory_per_cpu:       4                       # GB
-#  max_total_price_per_hour: 1.00                    # USD/hour
+#  max_runtime:              10000
+#  max_cpu:                  4
+##  min_memory_per_cpu:       4                       # GB
+##  max_total_price_per_hour: 1.00                    # USD/hour
 
 
   startup_script_file:      gcp_geometry_startup.sh
