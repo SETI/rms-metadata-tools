@@ -39,8 +39,8 @@ export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
 # Run the geometry code
 python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
                 gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
-                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ \
-                > gs://rms-metadata-jspitale/geometry-log.txt
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ #\
+#                > gs://rms-metadata-jspitale/geometry-log.txt
 
 
 
