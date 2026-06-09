@@ -85,9 +85,9 @@ def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
     # Write table and label
     if content:
         logger.info('Writing cumulative file %s.' % cumulative_file)
-        from IPython import embed; print('+++++++++++++'); embed()
         util.write_txt_file(cumulative_file, content)
-
+        print(content)
+        
         logger.info('Writing cumulative label.')
         lab.create(cumulative_file, template_path,
                    table_type=table_type.upper(),
