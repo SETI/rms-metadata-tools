@@ -10,15 +10,15 @@
 #   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
 #   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
 #
-# For GCP runs (not yet working), use:
+# For GCP runs, use:
 #   gcloud auth application-default login       # if necessary
 #
 #   - to use the task file used for the index files:
-#     cloud_tasks run --config gcp_geometry_config.yml --task-file index_tasks.json --total-boot-disk-size 50
+#     cloud_tasks run --config gcp_geometry_config.yml --task-file index_tasks.json
 #
 #   - to use a new task file:
 #     python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 -to geometry_tasks.json
-#     cloud_tasks run --config gcp_geometry_config.yml --task-file geometry_tasks.json --total-boot-disk-size 50 --use-spot
+#     cloud_tasks run --config gcp_geometry_config.yml --task-file geometry_tasks.json --use-spot
 #
 #########################################################################################
 import asyncio
