@@ -13,7 +13,7 @@
 #   gcloud auth application-default login       # if necessary
 #
 #   - to use the task file used for the index files:
-#     cloud_tasks run --config gcp_cumulative_config.yml --task-file cumulative_tasks.json
+#     cloud_tasks run --config gcp_cumulative_config.yml --task-file cumulative_tasks.json --use-spot
 #
 #########################################################################################
 import asyncio
