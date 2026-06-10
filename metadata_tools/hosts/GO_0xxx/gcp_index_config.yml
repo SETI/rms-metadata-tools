@@ -15,8 +15,8 @@ gcp:
   min_memory_per_task: 16
   boot_disk_base_size: 10
   boot_disk_per_task: 2
-  boot_disk_types: pd-ssd
-#  boot_disk_types: hd-balanced
+#  boot_disk_types: pd-ssd
+  boot_disk_types: pd-balanced
 
   startup_script_file:      gcp_index_startup.sh
 
