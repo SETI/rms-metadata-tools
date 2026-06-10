@@ -9,7 +9,7 @@ gcp:
 
   instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
   boot_disk_types:          pd-balanced
-  max_instances:            1
+  max_instances:            2
   cpus_per_task:            1
   min_memory_per_task:      8
 
