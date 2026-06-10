@@ -14,7 +14,7 @@
 #   gcloud auth application-default login       # if necessary
 #
 #   python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to index_tasks.json
-#   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json --use-spot
+#   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json --use-spot   # --total-boot-disk-size 50
 #
 #########################################################################################
 import asyncio
