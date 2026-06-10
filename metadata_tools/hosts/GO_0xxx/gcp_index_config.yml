@@ -7,16 +7,26 @@ gcp:
   zone:                     us-central1-a
 
 
-  instance_types: ["^n2-.*"]
-  min_cpu: 8
-  max_cpu: 32
-  max_instances: 24
-  cpus_per_task: 4
-  min_memory_per_task: 16
-  boot_disk_base_size: 10
-  boot_disk_per_task: 2
-#  boot_disk_types: pd-ssd
-  boot_disk_types: pd-balanced
+  instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
+  boot_disk_types:          pd-balanced
+  max_instances:            2
+  cpus_per_task:            1
+  min_memory_per_task:      8
+
+  max_runtime:              10000
+  max_cpu:                  4
+
+
+#  instance_types: ["^n2-.*"]
+#  min_cpu: 8
+#  max_cpu: 32
+#  max_instances: 24
+#  cpus_per_task: 4
+#  min_memory_per_task: 16
+#  boot_disk_base_size: 10
+#  boot_disk_per_task: 2
+##  boot_disk_types: pd-ssd
+#  boot_disk_types: pd-balanced
 
   startup_script_file:      gcp_index_startup.sh
 
