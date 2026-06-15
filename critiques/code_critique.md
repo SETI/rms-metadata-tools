@@ -46,6 +46,25 @@ The analysis above is the original point-in-time review. Progress since:
   package `__all__` — it reproduced the original failure and blocks regressions, with no SPICE
   import. (The `eval()` in `util.replace` and the broader `BODYX` placeholder mechanism remain
   open — only the bad attribute references were fixed.)
+- **§1 (High) module size** — **resolved**. `geometry_support.py` (1654 lines) was split into a
+  `geometry_support/` package of ten modules, every file < 500 lines (largest is `record.py` at
+  ~300): `formats.py` (FORMAT_DICT/ALT_FORMAT_DICT/MISSION_TABLE), `masks.py`
+  (`construct_excluded_mask`, config-free), `formatting.py` (`formatted_column`/`circle_coverage`,
+  config-free), `prep.py` (`prep_row`/`append_body_prefix`), `bodies_select.py`
+  (`inventory`/`select_bodies`/`get_system`/`get_primary`/`obs_excluded`), `record.py`
+  (the `Record` class), `tables.py` (the five table classes), `suite.py` (`Suite`), and
+  `process.py` (`get_args`/`process_tables`). The five state-light helpers became module-level
+  free functions (directly unit-testable without a SPICE-backed `Record`); `Record` keeps the
+  orchestration methods. The public import surface is unchanged — `import
+  metadata_tools.geometry_support as geom` still exposes `FORMAT_DICT`, `Record`, the table
+  classes, `Suite`, `get_args`, `process_tables` via the package `__init__`. The extraction was
+  mechanical and output-preserving: `FORMAT_DICT`/`ALT_FORMAT_DICT` are byte-identical and the
+  latent correctness bugs (`prep_row` target reuse, `construct_excluded_mask` dead branch) were
+  **moved verbatim**, not fixed, so the change is reviewable as pure structure. Verified by the
+  hermetic import smoke test (`len(FORMAT_DICT) == 52`, all public names present), the updated
+  `tests/test_geometry_columns_contract.py` (now globs every module in the package), and a net
+  ruff reduction (68 → 28 findings, no new finding categories) across the extracted code. See
+  `plans/plan1_split_geometry_support.md`.
 - **§2/§3 — partially**: `util.replace`/`replacement_dict`/`replacement_fn` are now
   type-annotated and the `dict` builtin shadowing in them is fixed; mypy is clean on the new
   `columns`/`bodies` package and its tests.
@@ -67,10 +86,9 @@ The analysis above is the original point-in-time review. Progress since:
   `_create_index` `unused`/loop-scope, `append_txt_file` double-write, `_prep_row` `target`
   reuse, and `_construct_excluded_mask` dead branch. A new High-severity bug was also
   identified and reproduced: `util.add_by_base` drops a carry on tick-boundary sums (see §9).
-- **§1** — `geometry_support.py` (1654 lines) not yet split. An implementation plan to split it
-  into a `geometry_support/` package (every file < 500 lines, output byte-for-byte preserved)
-  is drafted in `plans/plan1_split_geometry_support.md`; a companion hermetic-test-suite plan
-  (≥90% coverage with no SPICE/holdings) is in `plans/plan2_test_suite.md`.
+- **§1** — `geometry_support.py` split into a `geometry_support/` package is **done** (see
+  Resolved above). The companion hermetic-test-suite plan (≥90% coverage with no SPICE/holdings)
+  is in `plans/plan2_test_suite.md`.
 - **Testing/tooling (improved)** — the default test run is now hermetic: `pytest` deselects the
   `integration` (SPICE/oops) and new `requires_archive` (`$RMS_METADATA` holdings) markers, and
   `scripts/run-all-checks.sh -i/--integration` opts those back in. `unittester_support` no longer

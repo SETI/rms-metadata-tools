@@ -21,20 +21,25 @@ import ast
 import pathlib
 
 _SRC = pathlib.Path(__file__).resolve().parents[1] / 'src' / 'metadata_tools'
-_GEOMETRY_SUPPORT = _SRC / 'geometry_support.py'
+# geometry_support is now a package; the col.<NAME> references live across its
+# submodules (chiefly record.py). Glob every module in the package directory.
+_GEOMETRY_SUPPORT = sorted((_SRC / 'geometry_support').glob('*.py'))
 _COLUMNS_INIT = _SRC / 'columns' / '__init__.py'
 
 
-def _col_attributes(source: pathlib.Path) -> set[str]:
-    """Return every ``NAME`` referenced as ``col.NAME`` in a source file."""
-    tree = ast.parse(source.read_text())
-    return {
-        node.attr
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Attribute)
-        and isinstance(node.value, ast.Name)
-        and node.value.id == 'col'
-    }
+def _col_attributes(sources: list[pathlib.Path]) -> set[str]:
+    """Return every ``NAME`` referenced as ``col.NAME`` across source files."""
+    attrs: set[str] = set()
+    for source in sources:
+        tree = ast.parse(source.read_text())
+        attrs |= {
+            node.attr
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Attribute)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == 'col'
+        }
+    return attrs
 
 
 def _columns_all() -> set[str]:
