@@ -30,8 +30,22 @@ The analysis above is the original point-in-time review. Progress since:
   `exec()` loop is gone and the `BODIES` oops registry moved to `metadata_tools/bodies.py`.
   The package `__init__` re-exports the same names explicitly (no `import *`). **All 40 F821
   errors are resolved**; the assembled column data is unchanged (the move was byte-identical).
-- **§10 (Critical) — partially**: the column `.py` files now ship in the wheel (verified via
-  `python -m build`) because `columns/` is a real package. The `.lbl` template gap remains.
+- **§10 (Critical) packaging data** — **fully resolved**. The column `.py` files already shipped
+  (because `columns/` is a real package); `[tool.setuptools.package-data]` now also declares
+  `templates/*.lbl` for the `metadata_tools` and `hosts.GO_0xxx` packages, so all 12 `.lbl`
+  templates appear in both the wheel and the sdist (verified via `python -m build` + zip/tar
+  inspection). The dangling `py.typed` package-data entry (which named a non-existent marker
+  file — see §3) was removed rather than faked, since the package is not yet fully annotated.
+  pyroma still rates the metadata 10/10.
+- **§7 / §9 (High) detailed-geometry `AttributeError`s** — **resolved**. `Record.__init__` in
+  `geometry_support.py` now selects `col.RING_DETAILED_DICT` / `col.BODY_DETAILED_DICT` on the
+  detailed path (the `*_SUMMARY_DETAILED` names never existed) and substitutes `defs.BODYX`
+  (not the non-existent `col.BODYX`). Confirmed `level` is only ever `'summary'`/`'detailed'`.
+  Summary-path output is unchanged. Added `tests/test_geometry_columns_contract.py`: a hermetic
+  AST guard asserting every `col.<NAME>` in `geometry_support` is exported by the `columns`
+  package `__all__` — it reproduced the original failure and blocks regressions, with no SPICE
+  import. (The `eval()` in `util.replace` and the broader `BODYX` placeholder mechanism remain
+  open — only the bad attribute references were fixed.)
 - **§2/§3 — partially**: `util.replace`/`replacement_dict`/`replacement_fn` are now
   type-annotated and the `dict` builtin shadowing in them is fixed; mypy is clean on the new
   `columns`/`bodies` package and its tests.
@@ -44,12 +58,24 @@ The analysis above is the original point-in-time review. Progress since:
 
 **Still open (deliberately out of scope of the changes so far)**
 
-- **§10 (Critical)** — `*.lbl` templates still missing from `[tool.setuptools.package-data]`.
-- **§7 / §9** — the `eval()` in `util.replace`, the `BODYX` placeholder mechanism, and the
-  latent `col.RING_SUMMARY_DETAILED`/`BODY_SUMMARY_DETAILED`/`BODYX` `AttributeError`s are
+- **§7 / §9** — the `eval()` in `util.replace` and the `BODYX` placeholder mechanism are
   unchanged. The columns refactor deliberately preserved the existing tuple data
-  representation, so these are untouched.
-- **§1** — `geometry_support.py` (1654 lines) not yet split.
+  representation, so these are untouched. (The latent
+  `col.RING_SUMMARY_DETAILED`/`BODY_SUMMARY_DETAILED`/`col.BODYX` `AttributeError`s are now
+  fixed — see Resolved above.)
+- **§9** — the remaining correctness bugs are untouched: `_get_null_value` `continue`-vs-`break`,
+  `_create_index` `unused`/loop-scope, `append_txt_file` double-write, `_prep_row` `target`
+  reuse, and `_construct_excluded_mask` dead branch. A new High-severity bug was also
+  identified and reproduced: `util.add_by_base` drops a carry on tick-boundary sums (see §9).
+- **§1** — `geometry_support.py` (1654 lines) not yet split. An implementation plan to split it
+  into a `geometry_support/` package (every file < 500 lines, output byte-for-byte preserved)
+  is drafted in `plans/plan1_split_geometry_support.md`; a companion hermetic-test-suite plan
+  (≥90% coverage with no SPICE/holdings) is in `plans/plan2_test_suite.md`.
+- **Testing/tooling (improved)** — the default test run is now hermetic: `pytest` deselects the
+  `integration` (SPICE/oops) and new `requires_archive` (`$RMS_METADATA` holdings) markers, and
+  `scripts/run-all-checks.sh -i/--integration` opts those back in. `unittester_support` no longer
+  reads env vars at import, so collection succeeds without the holdings tree. The library itself
+  remains largely untested (§4) — coverage is still well below the configured `fail_under = 90`.
 - **§3** — the rest of the library remains unannotated; mypy is not green repo-wide.
 - **§2** — builtin shadowing in other `util.py`/`geometry_support.py` functions (`id`,
   `format`, `type`, …) and the remainder of the original 293 ruff errors persist (the 40 F821
@@ -121,7 +147,8 @@ The analysis above is the original point-in-time review. Progress since:
 - **Finding (High):** `_create_index` "unused columns" accumulation never works: `unused = None` is reset **inside** the per-directory `walk` loop (`index_support.py:536`), and `logger.close(force=True)` plus the task-file write are also inside the loop (lines 562-569). **Evidence:** indentation at 536/562-569. **Suggestion:** Initialize `unused` before the loop; move the close/write/warn after it.
 - **Finding (Medium):** `_construct_excluded_mask` (`geometry_support.py:872-879`) has unreachable code: `if np.any(excluded): return excluded` precedes `if np.all(excluded): return True` (all-True implies any-True), and the `#!!!!` comment admits the gridless case is unhandled. **Suggestion:** Resolve the gridless-backplane TODO and remove the dead branch.
 - **Finding (Medium):** `_prep_row` reuses the loop variable `target` as both the function parameter and a per-column local (`geometry_support.py:710`), and builds the `override` dict (lines 736-739) from whatever `null_value`/`valid_minimum`/`valid_maximum` happened to survive the last column iteration. **Suggestion:** Use distinct names and build the override per column.
-- **Finding (Medium):** `append_txt_file` (`util.py:417-444`) writes the file when it doesn't exist (line 423-424) but does **not** `return`, then falls through and appends again — duplicating content on first write. **Suggestion:** `return` after the `write_txt_file` call.
+- **Finding (High):** `add_by_base` (`util.py:284-301`) drops a carry. When the carry into a position plus that position's `(x_digit + y_digit) % base` equals `base`, the result digit is left equal to `base` and the extra carry is never propagated. **Evidence (reproduced):** `add_by_base([9,9],[0,1],[10,10])` returns `[0, 10, 0]`; the correct base-10 result is `[1, 0, 0]`. This feeds `_spacecraft_clock_stop_count_from_label` (`host_config.py:88`), so a stop SCLK can be malformed for exposures that land on a tick boundary. **Suggestion:** add the incoming carry before taking `% base`, or re-normalize digits in a final carry pass; add a unit test covering the chained-carry case.
+- **Finding (Medium):** `append_txt_file` (`util.py:417-444`) writes the file when it doesn't exist (line 423-424) but does **not** `return`, then falls through and appends again — duplicating content on first write. **Evidence (reproduced):** appending `['lineA','lineB']` to a new path yields `lineA\nlineB\nlineA\nlineB\n`. **Suggestion:** `return` after the `write_txt_file` call.
 - **Finding (Low):** Typo `'Mulitple index files found'` (`geometry_support.py:1279`) and many docstring typos (`messaage`, `degugging`, `occurence`, `exluded`, `dicstionary`, `corresopnding`).
 
 ## 10. Packaging and distribution
