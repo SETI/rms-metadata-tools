@@ -8,24 +8,17 @@
 # cloud_tasks arguments are accepted. For example:
 #
 #   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
-#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ $RMS_VOLUMES/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
+#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
 #
-# For GCP runs (not yet working), use:
+# For GCP runs, use:
 #   gcloud auth application-default login       # if necessary
 #
-#   cloud_tasks load_queue --config gcp_geometry_config.yml --task-file geometry_tasks.json -vv
-#   cloud_tasks manage_pool --config gcp_geometry_config.yml -vv
+#   - to use the task file used for the index files:
+#     cloud_tasks run --config gcp_geometry_config.yml --task-file index_tasks.json
 #
-#   Other useful commands
-#     cloud_tasks monitor_event_queue --config gcp_geometry_config.yml --output-file gcp_geometry_config.log
-#
-#     cloud_tasks stop --config gcp_geometry_config.yml
-#     cloud_tasks purge_queue --config gcp_geometry_config.yml
-#     cloud_tasks delete_queue --config gcp_geometry_config.yml
-#
-#     cloud_tasks show_queue --project-id rms-metadata --job-id metadata-geometry-job --provider gcp --detail
-#     cloud_tasks status --project-id rms-metadata --job-id metadata-geometry-job --provider gcp
-#     cloud_tasks list_running_instances --project-id rms-metadata --job-id metadata-geometry-job --provider gcp
+#   - to use a new task file:
+#     python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 -to geometry_tasks.json
+#     cloud_tasks run --config gcp_geometry_config.yml --task-file geometry_tasks.json --use-spot
 #
 #########################################################################################
 import asyncio
@@ -33,7 +26,10 @@ import sys
 from typing import Any
 from cloud_tasks.worker import Worker, WorkerData
 
+sys.path.append('')             ### This is needed to get the GCP instance to recognize
+                                ### the metadata_tools module
 import metadata_tools.util as util
+
 import metadata_tools.common as com
 import host_config as hconf
 import geometry_config as config

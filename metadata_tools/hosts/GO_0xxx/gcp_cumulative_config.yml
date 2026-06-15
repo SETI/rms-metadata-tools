@@ -1,11 +1,10 @@
 provider: gcp
 gcp:
-  job_id:                   metadata-index-job
+  job_id:                   metadata-cumulative-job
   project_id:               rms-metadata
   service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
   region:                   us-central1
   zone:                     us-central1-a
-
 
   instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
   boot_disk_types:          pd-balanced
@@ -17,17 +16,6 @@ gcp:
   max_cpu:                  4
 
 
-#  instance_types: ["^n2-.*"]
-#  min_cpu: 8
-#  max_cpu: 32
-#  max_instances: 24
-#  cpus_per_task: 4
-#  min_memory_per_task: 16
-#  boot_disk_base_size: 10
-#  boot_disk_per_task: 2
-##  boot_disk_types: pd-ssd
-#  boot_disk_types: pd-balanced
-
-  startup_script_file:      gcp_index_startup.sh
+  startup_script_file:      gcp_cumulative_startup.sh
 
 

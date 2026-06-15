@@ -21,8 +21,8 @@
 #      --exclude [exclude ...], -e [exclude ...]
 #                            List of volumes to exclude.
 #
-#   e.g., python3 GO_0xxx_cumulative.py $RMS_METADATA/GO_0xxx/GO_0999/
-#         python3 GO_0xxx_cumulative.py $RMS_METADATA/GO_0xxx/GO_0999/ -vv GO_0017
+#   e.g., python3 GO_0xxx_cumulative.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/
+#         python3 GO_0xxx_cumulative.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/ -vv GO_0017
 #
 ##########################################################################################
 import host_init    # imported for side effects

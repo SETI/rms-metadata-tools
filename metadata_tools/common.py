@@ -32,9 +32,10 @@ def init_logger(dir, type):
     name = '%s_%s-log.txt' % (dir.name, type)
     path = dir / name
     path.unlink(missing_ok=True)
-    _LOGGER.add_handler(pdslogger.file_handler(path, level='warning'))
-
+    
+    _LOGGER.add_handler(pdslogger.file_handler(path, level='normal'))
     _LOGGER.add_handler(pdslogger.STDOUT_HANDLER)
+    _LOGGER.log('header', 'Initialized %s log for %s' % (type, dir.name))
 
 #=========================================================================================
 
@@ -60,7 +61,7 @@ def task_source():
 
 #==========================================================================
 def add_task(volume_id, index_type):
-    """Add a task to the task file.
+    """Add a task to the task list.
     Args:
         volume_id (str): ID of volume to add.
         index_type (str): 'index' or 'geometry'.
@@ -152,6 +153,8 @@ def get_common_args(host=None,
                     help='''If given, labels are generated for existing files.''')
     gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
                     help='''Glob pattern to select files.''')
+    gr.add_argument('--task-output', '-to', type=str, metavar='task_output',
+                    help='''If given, a task file is written and no processing is performed.''')
 
     # Return parser
     return parser
@@ -223,6 +226,7 @@ class Table:
 
             # Write table
             logger.info("Writing: %s", self.filename)
+            util.dbprint(f'----------------------------------------{self.filename}')
             util.write_txt_file(self.filename, self.rows)
 
         # Write label

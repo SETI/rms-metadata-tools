@@ -8,7 +8,6 @@ sudo mkdir -p /mnt/nav-resources
 sudo mount -o ro /dev/disk/by-id/google-nav-resources-part1 /mnt/nav-resources
 export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
 
-
 ######## index / geometry common code ####################################################
 # sudo needed for manual paste into instance terminal..
 sudo apt-get update -y
@@ -23,25 +22,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 ##########################################################################################
 
-
-###  modified unmerged oops branch (TBR)...
-#cd
-#git clone https://github.com/SETI/rms-oops.git
-##pip install -e ~/rms-oops/
-#cd rms-metadata-tools
-###
-
-
-export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
-
-# Run the geometry code
-python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
-                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
-                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/
-
-
-
-
+# Run the cumulative code
+python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/GO_0999/
+                --task-file metadata_tools/hosts/GO_0xxx/cumulative_tasks.json
 
 
 
@@ -49,7 +33,7 @@ python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
 ##  Manual paste into instance..
 : <<'COMMENT_BLOCK'
 gcloud auth application-default login
-python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry.py \
-                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
-                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0004
+python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/G0_0999/ \
+                --task-file metadata_tools/hosts/GO_0xxx/cumulative_tasks.json
 COMMENT_BLOCK

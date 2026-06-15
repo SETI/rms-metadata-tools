@@ -1,0 +1,21 @@
+# gcloud auth application-default login       # if necessary
+
+# cloud_tasks load_queue --config config.yaml --task-file test_tasks2.json -vv
+# cloud_tasks manage_pool --config config.yaml -vv
+
+# cloud_tasks monitor_event_queue --config config.yaml --output-file config.log
+
+# cloud_tasks purge_queue --config config.yaml
+# cloud_tasks delete_queue --config config.yaml
+
+# gsutil ls
+
+provider: gcp
+gcp:
+  job_id: my-processing-job
+  project_id: rms-metadata
+  startup_script_file:      test_startup2.sh
+  service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
+  region: us-central1
+  max_instances:            1
+

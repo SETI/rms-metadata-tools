@@ -1,15 +1,33 @@
 #!/bin/bash
-apt-get update -y
 
-apt-get install -y python3 python3-pip python3-venv git
-cd || exit 1
-git clone https://github.com/SETI/rms-metadata-tools.gitnew_overrides
-cd rms-metadata-tools || exit 1
-source venv/bin/activate || { echo 'No virtual environment' ; exit 1; }
+######## index / geometry common code ####################################################
+# sudo needed for manual paste into instance terminal..
+sudo apt-get update -y
+sudo apt-get install -y python3 python3-pip python3-venv git
+cd
+
+#git clone https://github.com/SETI/rms-metadata-tools.git
+git clone -b jns--updates-continued --single-branch https://github.com/SETI/rms-metadata-tools.git
+cd rms-metadata-tools
+python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-cd hosts/GO_0xxx || exit 1
-python3 GO_0xxx_index_cloud.py gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ gs://rms-node-metadata/GO_0xxx/ --index_tree gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/
+##########################################################################################
+
+# Run the index code
+python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
+                gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
+                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/
 
 
 
+
+##  Manual paste into instance..
+: <<'COMMENT_BLOCK'
+gcloud auth application-default login
+python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index.py \
+                gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
+                gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0002
+COMMENT_BLOCK

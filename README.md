@@ -129,7 +129,7 @@ Information on contributing to this package can be found in the
 - [Documentation](https://rms-metadata-tools.readthedocs.io)
 - [Repository](https://github.com/SETI/rms-metadata-tools)
 - [Issue tracker](https://github.com/SETI/rms-metadata-tools/issues)
-- [PyPi](https://pypi.org/project/rms-metadata-tools)
+<!--  - [PyPi](https://pypi.org/project/rms-metadata-tools)  -->
 
 # Licensing
 

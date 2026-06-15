@@ -5,12 +5,28 @@ import os
 import re
 import numpy as np
 import cspyce
+import datetime as dt
+import sys
+
 
 import pdstable
 from pathlib   import Path
 from filecache import FCPath
 
 import metadata_tools.defs as defs
+
+#===============================================================================
+def dbprint(message):
+    """Print a messaage to stderr with time stamp for degugging.
+
+    Args:
+        message (str): Mesaage to write.
+
+    Returns: None
+    """
+#    return 
+    time = dt.datetime.now()#.strftime('%Y-%m-%d %H:%M:%S')
+    print(f'{time} - {message}', file=sys.stderr, flush=True)
 
 #===============================================================================
 def PdsTable(label_path):
@@ -326,6 +342,7 @@ def read_txt_file(filespec, as_string=False, terminator='\r\n'):    ### move to 
         terminator.
 
     """
+    filespec = FCPath(filespec)
 
     # Expand environment variables and resolve to absolute path
     filespec = expandvars(filespec)
@@ -358,6 +375,7 @@ def write_txt_file(filespec, content, terminator='\r\n'):    ### move to utiliti
     Returns:
         None
     """
+    filespec = FCPath(filespec)
 
     # Expand environment variables and resolve to absolute path
     filespec = expandvars(filespec)
@@ -400,6 +418,10 @@ def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilit
 
     # Expand environment variables and resolve to absolute path
     filespec = expandvars(filespec)
+
+    # If no file, just run write_txt_file().
+    if not filespec.exists():
+        write_txt_file(filespec, content, terminator=terminator)
 
     # Determine terminator
     if terminator is None:
@@ -741,7 +763,7 @@ def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
 
     # With only one value, we know nothing
     if values.size <= 1:
-        return [values, values]
+        return [values[0], values[0]]
 
     # Locate the largest gap in coverage
     values = np.sort(values % 360)

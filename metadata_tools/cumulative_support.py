@@ -86,7 +86,7 @@ def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
     if content:
         logger.info('Writing cumulative file %s.' % cumulative_file)
         util.write_txt_file(cumulative_file, content)
-
+    
         logger.info('Writing cumulative label.')
         lab.create(cumulative_file, template_path,
                    table_type=table_type.upper(),
@@ -121,23 +121,31 @@ def get_args(host=None, exclude=None):
     return parser
 
 #===============================================================================
-def create_cumulative_indexes(template_name, exclude=None):
+def create_cumulative_indexes(template_name, 
+                              volumes=None,
+                              args=None,
+                              exclude=None):
     """Creates the cumulative files for a collection of volumes.
 
     Args:
         template_name (str): Name of index template.
+        volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
+        args (argparse.Namespace): Parsed arguments.
         exclude (list, optional): List of volumes to exclude.
     """
     # Parse arguments
     host, _index_type, template_dir = util.parse_template_name(template_name)
-    parser = get_args(host=host, exclude=exclude)
-    args = parser.parse_args()
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
 
-#    volume_tree = FCPath(args.volume_tree)
+    if not args:
+        parser = get_args(host=host, exclude=exclude)
+        args = parser.parse_args()
+
+    if not volumes:
+        volumes = args.volumes
+
     cumulative_dir = FCPath(args.output_dir)
     volume_tree = cumulative_dir.parent
-    volumes = args.volumes
 
     # Set logger
     logger = com.get_logger()
