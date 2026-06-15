@@ -62,9 +62,10 @@ pythonpath = [
 ]
 testpaths = ["tests"]
 # TODO Update desired parallelism
-addopts = ["-n", "auto", "--cov=src", "--strict-markers", "--strict-config", "-m", "not integration"]
+addopts = ["-n", "auto", "--cov=src", "--strict-markers", "--strict-config", "-m", "not integration and not requires_archive"]
 markers = [
   "integration: requires oops/SPICE host initialization (excluded by default)",
+  "requires_archive: requires the $RMS_METADATA holdings tree (excluded by default)",
 ]
 
 [tool.setuptools]

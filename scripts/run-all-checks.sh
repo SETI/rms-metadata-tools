@@ -16,6 +16,9 @@
 #   -c, --code             Run all code checks (sets each RUN_* code flag true)
 #   -d, --docs             Run Sphinx and PyMarkdown (RUN_SPHINX, RUN_PYMARKDOWN)
 #   -m, --markdown         Run only PyMarkdown (RUN_PYMARKDOWN)
+#   -i, --integration      Also run integration/holdings tests (oops/SPICE host
+#                          init and the $RMS_METADATA tree). These are excluded
+#                          by default; this flag includes them in the pytest run.
 #   --ruff-check           Run ruff check only (may combine with other --* flags)
 #   --ruff-format          Run ruff format --check only
 #   --mypy                 Run mypy only
@@ -57,6 +60,11 @@
 #   Sphinx:   make -C docs html SPHINXOPTS="-W"
 #   Markdown: pymarkdown scan docs/ .cursor/ README.md CONTRIBUTING.md
 #
+#   Pytest test selection: by default only hermetic tests run; tests requiring
+#   SPICE/oops host initialization (marker "integration") or the $RMS_METADATA
+#   holdings tree (marker "requires_archive") are excluded. Pass -i/--integration
+#   to include them.
+#
 # Exit codes:
 #   0 - All requested checks passed
 #   1 - One or more checks failed
@@ -85,6 +93,8 @@ RUN_VULTURE=false
 RUN_SPHINX=false
 RUN_PYMARKDOWN=false
 SCOPE_SPECIFIED=false
+# Modifier (not a scope): include the SPICE/holdings tests in the pytest run.
+RUN_INTEGRATION=false
 
 # Per-check defaults (override by exporting before invoking this script, or
 # permanently change here)
@@ -225,6 +235,12 @@ while [[ $# -gt 0 ]]; do
         -m|--markdown)
             RUN_PYMARKDOWN=true
             SCOPE_SPECIFIED=true
+            shift
+            ;;
+        -i|--integration)
+            # Modifier only: does not select a scope, just widens pytest's
+            # test selection to include integration/holdings tests.
+            RUN_INTEGRATION=true
             shift
             ;;
         --ruff-check)
@@ -387,10 +403,20 @@ run_code_checks() {
 
     # -n controls parallelism; --dist loadscope keeps each test module on one
     # worker to avoid time-mocking and fixture-isolation interference.
-    # Coverage (--cov=psfmodel) and strict options come from pyproject.toml addopts.
+    # Coverage (--cov=src) and strict options come from pyproject.toml addopts.
+    # By default pyproject's addopts deselect the "integration" and
+    # "requires_archive" tests (SPICE/oops host init and the $RMS_METADATA
+    # holdings tree). -i/--integration overrides that marker filter so every
+    # test runs; "integration or not integration" is a tautology selecting all.
     if [ "$RUN_PYTEST" = true ] && [ "$ENABLE_PYTEST" = true ]; then
-        print_info "Running pytest (-n ${PYTEST_WORKERS})..."
-        if python -m pytest -q -n "$PYTEST_WORKERS" --dist loadscope tests; then
+        local marker_args=()
+        if [ "$RUN_INTEGRATION" = true ]; then
+            marker_args=(-m "integration or not integration")
+            print_info "Running pytest (-n ${PYTEST_WORKERS}, including integration/holdings tests)..."
+        else
+            print_info "Running pytest (-n ${PYTEST_WORKERS}, hermetic tests only)..."
+        fi
+        if python -m pytest -q -n "$PYTEST_WORKERS" --dist loadscope "${marker_args[@]}" tests; then
             print_success "Pytest passed"
         else
             print_error "Pytest failed"

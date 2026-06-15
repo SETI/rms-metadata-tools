@@ -5,8 +5,11 @@ import glob
 import os
 import numpy as np
 
-METADATA = os.environ['RMS_METADATA']
-VOLUMES = os.environ['RMS_VOLUMES']
+# Read lazily so that importing this support module never fails at collection
+# time when the holdings tree is absent. The tests that actually use these are
+# marked ``requires_archive`` and excluded from the default run.
+METADATA = os.environ.get('RMS_METADATA')
+VOLUMES = os.environ.get('RMS_VOLUMES')
 
 #===============================================================================
 # get summary filenames  ### LIB

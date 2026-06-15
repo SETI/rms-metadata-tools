@@ -5,8 +5,14 @@ import unittest
 import pdstable
 import pdsparser
 import numpy as np
+import pytest
 
 import tests.unittester_support as unit
+
+# These tests read pre-generated tables/labels from the $RMS_METADATA holdings
+# tree; they are excluded from the default run (see the requires_archive marker
+# in pyproject.toml and scripts/run-all-checks.sh --integration).
+pytestmark = pytest.mark.requires_archive
 
 
 class Test_Geometry(unittest.TestCase):
