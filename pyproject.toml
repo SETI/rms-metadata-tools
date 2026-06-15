@@ -71,8 +71,13 @@ markers = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+# PDS3 label templates are read at runtime (see defs.GLOBAL_TEMPLATE_PATH and the
+# per-host templates/ directories); they must ship in the wheel.
+# py.typed is intentionally NOT declared: the package is not yet fully annotated, so
+# advertising it as typed would mislead downstream type checkers.
 [tool.setuptools.package-data]
-"metadata_tools" = ["py.typed"]
+"metadata_tools" = ["templates/*.lbl"]
+"metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
