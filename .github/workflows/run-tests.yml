@@ -3,16 +3,16 @@ run-name: Run Tests triggered by ${{ github.ref_type }} ${{ github.ref_name }} o
 
 on:
   workflow_dispatch:
-  # pull_request:
-  #   branches: [ main ]
-  # push:
-  #   branches: [ main ]
-  # schedule:
-  #   - cron: "21 11 * * 0"
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: "21 11 * * 0"
 
 jobs:
   lint:
-    name: Lint REPONAME
+    name: Lint rms-metadata-tools
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,14 +41,14 @@ jobs:
 
       - name: Sphinx
         run: |
-          sphinx-build -b html docs docs/_build
+          sphinx-build -W -b html docs docs/_build
 
       - name: PyMarkdown
         run: |
           pymarkdown scan docs/ .cursor/ README.md CONTRIBUTING.md
 
   test:
-    name: Test REPONAME
+    name: Test rms-metadata-tools
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -57,7 +57,6 @@ jobs:
       fail-fast: false
     permissions:
       contents: read
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -73,15 +72,15 @@ jobs:
 
       - name: Test with coverage
         run: |
-          python -m pytest --cov -n auto
+          python -m pytest --cov=src --cov-report=xml -n auto tests
 
       - name: Print coverage report
         run: |
           coverage report -m
 
       - name: Upload coverage report to codecov
-        uses: codecov/codecov-action@v5
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
+        uses: codecov/codecov-action@v6
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13' && !github.event.pull_request.head.repo.fork
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true

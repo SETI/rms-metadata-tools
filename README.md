@@ -1,3 +1,7 @@
+# rms-metadata-tools
+
+<!-- pyml disable MD025 -->
+
 [![GitHub release; latest by date](https://img.shields.io/github/v/release/SETI/rms-metadata-tools)](https://github.com/SETI/rms-metadata-tools/releases)
 [![GitHub Release Date](https://img.shields.io/github/release-date/SETI/rms-metadata-tools)](https://github.com/SETI/rms-metadata-tools/releases)
 [![Test Status](https://img.shields.io/github/actions/workflow/status/SETI/rms-metadata-tools/run-tests.yml?branch=main)](https://github.com/SETI/rms-metadata-tools/actions)
@@ -21,6 +25,12 @@
 ![GitHub License](https://img.shields.io/github/license/SETI/rms-metadata-tools)
 [![Number of GitHub stars](https://img.shields.io/github/stars/SETI/rms-metadata-tools)](https://github.com/SETI/rms-metadata-tools/stargazers)
 ![GitHub forks](https://img.shields.io/github/forks/SETI/rms-metadata-tools)
+[![DOI](https://zenodo.org/badge/rms-metadata-tools.svg)](https://zenodo.org/badge/latestdoi/rms-metadata-tools)
+<!-- start-after-point -->
+
+# Features
+
+`rms-metadata-tools` is TODO
 
 # Introduction
 
