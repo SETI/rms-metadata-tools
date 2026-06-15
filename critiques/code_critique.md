@@ -65,6 +65,23 @@ The analysis above is the original point-in-time review. Progress since:
   `tests/test_geometry_columns_contract.py` (now globs every module in the package), and a net
   ruff reduction (68 → 28 findings, no new finding categories) across the extracted code. See
   `plans/plan1_split_geometry_support.md`.
+- **§1 (cont.) all engine modules now < 500 lines** — **resolved**. Beyond the
+  `geometry_support` split, the two other oversized modules were split mechanically
+  (output-preserving, public import surface unchanged): `util.py` (802 →
+  `util.py` ≈420 + `util_ranges.py` + `util_textfiles.py`, re-exported) and
+  `index_support.py` (623 → `index_support.py` ≈450 + `index_formats.py`, the five
+  pure column/format statics moved to free functions). `find src/metadata_tools
+  -name '*.py' | xargs wc -l` confirms every file is now < 500 lines.
+- **§4 (Critical) the suite now exercises the library** — **resolved**. A hermetic
+  unit layer (`tests/conftest.py` import shim + 16 test modules) imports and calls
+  the engine with no SPICE kernels and no `$RMS_METADATA`/`$RMS_VOLUMES`. `pytest`
+  reaches **93.1%** coverage of the host-agnostic engine (`fail_under = 90` now
+  genuinely met, where it was ~0% before). The SPICE/GCP-only seams
+  (`hosts/*`, `bodies.py`) are excluded from the denominator with documented
+  `omit` entries; SPICE-bound constructors are covered via monkeypatching, not
+  blanket pragmas. Ten code defects are pinned by tests (four as strict `xfail`
+  asserting intended behavior, the rest as characterization tests) — see
+  `critiques/final_report.md` for the full list and `plans/plan2_test_suite.md`.
 - **§2/§3 — partially**: `util.replace`/`replacement_dict`/`replacement_fn` are now
   type-annotated and the `dict` builtin shadowing in them is fixed; mypy is clean on the new
   `columns`/`bodies` package and its tests.
@@ -82,18 +99,22 @@ The analysis above is the original point-in-time review. Progress since:
   representation, so these are untouched. (The latent
   `col.RING_SUMMARY_DETAILED`/`BODY_SUMMARY_DETAILED`/`col.BODYX` `AttributeError`s are now
   fixed — see Resolved above.)
-- **§9** — the remaining correctness bugs are untouched: `_get_null_value` `continue`-vs-`break`,
-  `_create_index` `unused`/loop-scope, `append_txt_file` double-write, `_prep_row` `target`
-  reuse, and `_construct_excluded_mask` dead branch. A new High-severity bug was also
-  identified and reproduced: `util.add_by_base` drops a carry on tick-boundary sums (see §9).
+- **§9** — the remaining correctness bugs are **not fixed**, but are now **pinned by tests**
+  (no production code changed): `_get_null_value` `continue`-vs-`break`, `append_txt_file`
+  double-write, `add_by_base` carry, and `obs_excluded` short-circuit are strict `xfail`
+  tests; `_prep_row` last-column override, `construct_excluded_mask` dead branch, and a newly
+  found `prep_row` tuple-tiles `TypeError` are characterization tests. `_create_index`
+  `unused`/loop-scope remains latent (its walk is exercised for coverage but the single-close
+  intersection is not yet asserted). Full catalog in `critiques/final_report.md`.
 - **§1** — `geometry_support.py` split into a `geometry_support/` package is **done** (see
   Resolved above). The companion hermetic-test-suite plan (≥90% coverage with no SPICE/holdings)
   is in `plans/plan2_test_suite.md`.
 - **Testing/tooling (improved)** — the default test run is now hermetic: `pytest` deselects the
   `integration` (SPICE/oops) and new `requires_archive` (`$RMS_METADATA` holdings) markers, and
   `scripts/run-all-checks.sh -i/--integration` opts those back in. `unittester_support` no longer
-  reads env vars at import, so collection succeeds without the holdings tree. The library itself
-  remains largely untested (§4) — coverage is still well below the configured `fail_under = 90`.
+  reads env vars at import, so collection succeeds without the holdings tree. The hermetic unit
+  layer added since (see Resolved §4 above) now brings engine coverage to 93.1%, above the
+  configured `fail_under = 90`.
 - **§3** — the rest of the library remains unannotated; mypy is not green repo-wide.
 - **§2** — builtin shadowing in other `util.py`/`geometry_support.py` functions (`id`,
   `format`, `type`, …) and the remainder of the original 293 ruff errors persist (the 40 F821

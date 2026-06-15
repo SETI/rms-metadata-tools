@@ -120,7 +120,24 @@ cloud = [
 branch = true
 parallel = true
 source = ["metadata_tools"]
-omit = ["tests/*", "_version.py"]
+# The default test run is hermetic (no SPICE kernels, no $RMS_METADATA holdings).
+# Coverage therefore measures the host-agnostic engine. The following are
+# excluded from the denominator because they cannot run without SPICE/GCP:
+#   - hosts/*       per-host plugin config, runnable entry scripts, cloud
+#                   workers, and host-local tests; these import host_config /
+#                   geometry_config as top-level modules (CWD-dependent) and
+#                   drive oops/SPICE or rms-cloud-tasks.
+#   - bodies.py     builds the oops Body registry via oops.Body.lookup(), which
+#                   needs the kernels; the engine tests stub it (see
+#                   tests/conftest.py).
+# Any other SPICE-only seam is excluded with a targeted, commented
+# `# pragma: no cover` at the call site, never a blanket file omit.
+omit = [
+  "tests/*",
+  "*/_version.py",
+  "*/metadata_tools/bodies.py",
+  "*/metadata_tools/hosts/*",
+]
 
 [tool.coverage.report]
 exclude_lines = [

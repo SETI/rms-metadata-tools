@@ -2,9 +2,10 @@
 # tests/test_geometry.py
 ################################################################################
 import unittest
-import pdstable
-import pdsparser
+
 import numpy as np
+import pdsparser
+import pdstable
 import pytest
 
 import tests.unittester_support as unit

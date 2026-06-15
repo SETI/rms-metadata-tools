@@ -2,8 +2,9 @@
 # tests/test_index.py
 ################################################################################
 import unittest
-import pdstable
+
 import numpy as np
+import pdstable
 import pytest
 
 import tests.unittester_support as unit
