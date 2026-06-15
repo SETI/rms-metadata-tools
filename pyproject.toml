@@ -5,20 +5,33 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rms-metadata-tools"
 dynamic = ["version"]
-description = "TODO"
+description = "Generate PDS3 index, geometry, and cumulative metadata tables and labels for planetary science data collections"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "TODO"
+  "numpy>=2.3.0",
+  "rms-oops>=0.2.0",
+  "rms-filecache>=3.1.0",
+  "rms-pdslogger>=3.0.0",
+  "rms-julian>=3.0.1",
+  "rms-pdsparser>=2.0.0",
+  "rms-pdstable>=1.0.3",
+  "rms-vicar>=1.2.1",
+  "rms-pdstemplate>=2.4.0",
+  "rms-textkernel>=1.1.1",
+  "fortranformat>=2.0.3",
 ]
 license = {text = "Apache-2.0"}
 authors = [
-  {name = "Robert S. French", email = "rfrench@seti.org"}
+  {name = "Joe Spitale", email = "jspitale@seti.org"}
 ]
 maintainers = [
-  {name = "Robert S. French", email = "rfrench@seti.org"}
+  {name = "Joe Spitale", email = "jspitale@seti.org"}
 ]
-keywords = ["TODO"]
+keywords = [
+  "pds", "pds3", "planetary science", "metadata", "geometry",
+  "spice", "ring-moon systems", "astronomy",
+]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Natural Language :: English",
@@ -65,24 +78,29 @@ write_to = "src/metadata_tools/_version.py"
 
 [project.optional-dependencies]
 dev = [
-  "metadata_tools",
   "coverage>=7.0",
-  # "mypy>=1.0",
+  "mypy>=1.0",
   "pymarkdownlnt>=0.9.35",
   "pytest>=7.0",
   "pytest-cov>=4.0",
   "pytest-xdist>=3.8.0",
   "ruff>=0.8",
-  # "bandit[toml]>=1.8",
+  "bandit[toml]>=1.8",
   "pyroma>=4.2",
-  # "vulture>=2.14",
-  "metadata_tools[docs]",
+  "vulture>=2.14",
+  "rms-metadata-tools[docs]",
 ]
 docs = [
   "myst-parser",
   "sphinx>=7",
   "sphinxcontrib-mermaid",
   "sphinx-rtd-theme",
+]
+# Extra dependencies for distributing table generation across GCP via
+# rms-cloud-tasks (the hosts/<HOST>/*_cloud.py workers).
+cloud = [
+  "rms-cloud-tasks>=0.2.0",
+  "json-stream>=2.3.3",
 ]
 
 [project.scripts]
@@ -148,13 +166,11 @@ enabled = false
 # Inline HTML (e.g. <br>) allowed in Markdown.
 enabled = false
 
-# Uncomment when enabling bandit in [project.optional-dependencies].dev.
-# [tool.bandit]
-# exclude_dirs = ["tests", "venv", ".venv"]
-# targets = ["src"]
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+targets = ["src"]
 
-# Uncomment when enabling vulture in [project.optional-dependencies].dev.
-# [tool.vulture]
-# paths = ["src"]
-# exclude = ["tests/"]
-# min_confidence = 70
+[tool.vulture]
+paths = ["src"]
+exclude = ["tests/"]
+min_confidence = 70

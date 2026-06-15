@@ -18,7 +18,6 @@ class Test_Geometry(unittest.TestCase):
         # Get labels to test
         files = unit.match(unit.METADATA, '*_inventory.lbl')
         files = unit.exclude(files, 'templates/', 'old/', '__skip/')
-#        from IPython import embed; print('+++++++++++++'); embed()
 
         # Test labels
         print()
