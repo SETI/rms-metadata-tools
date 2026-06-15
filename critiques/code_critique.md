@@ -65,13 +65,6 @@ The analysis above is the original point-in-time review. Progress since:
   `tests/test_geometry_columns_contract.py` (now globs every module in the package), and a net
   ruff reduction (68 → 28 findings, no new finding categories) across the extracted code. See
   `plans/plan1_split_geometry_support.md`.
-- **§1 (cont.) all engine modules now < 500 lines** — **resolved**. Beyond the
-  `geometry_support` split, the two other oversized modules were split mechanically
-  (output-preserving, public import surface unchanged): `util.py` (802 →
-  `util.py` ≈420 + `util_ranges.py` + `util_textfiles.py`, re-exported) and
-  `index_support.py` (623 → `index_support.py` ≈450 + `index_formats.py`, the five
-  pure column/format statics moved to free functions). `find src/metadata_tools
-  -name '*.py' | xargs wc -l` confirms every file is now < 500 lines.
 - **§4 (Critical) the suite now exercises the library** — **resolved**. A hermetic
   unit layer (`tests/conftest.py` import shim + 16 test modules) imports and calls
   the engine with no SPICE kernels and no `$RMS_METADATA`/`$RMS_VOLUMES`. `pytest`

@@ -6,7 +6,6 @@ import types
 import pytest
 from filecache import FCPath
 
-import metadata_tools.index_formats as idxf
 import metadata_tools.index_support as idx
 
 IndexTable = idx.IndexTable
@@ -29,31 +28,31 @@ class FakePds3Table:
 # _format_value
 #===============================================================================
 def test_format_value_character_is_quoted_and_padded():
-    assert idxf._format_value('IO', 'A10') == '"IO        "'
+    assert IndexTable._format_value('IO', 'A10') == '"IO        "'
 
 
 def test_format_value_real():
-    assert idxf._format_value(3.14159, 'F8.3') == '   3.142'
+    assert IndexTable._format_value(3.14159, 'F8.3') == '   3.142'
 
 
 def test_format_value_integer():
-    assert idxf._format_value(42, 'I5') == '   42'
+    assert IndexTable._format_value(42, 'I5') == '   42'
 
 
 #===============================================================================
 # _format_parms
 #===============================================================================
 def test_format_parms_character_width_includes_quotes():
-    assert idxf._format_parms('A10') == (12, 'CHARACTER')
+    assert IndexTable._format_parms('A10') == (12, 'CHARACTER')
 
 
 def test_format_parms_real():
-    assert idxf._format_parms('F8.3') == (8, 'ASCII_REAL')
+    assert IndexTable._format_parms('F8.3') == (8, 'ASCII_REAL')
 
 
 def test_format_parms_integer():
     # Integer formats hit the TypeError fallback path that re-formats with 0.
-    assert idxf._format_parms('I5') == (5, 'ASCII_INTEGER')
+    assert IndexTable._format_parms('I5') == (5, 'ASCII_INTEGER')
 
 
 #===============================================================================
@@ -64,7 +63,7 @@ def test_get_null_value_returns_last_present_key():
     # `continue` where it means `break`).
     table = FakePds3Table([{'NULL_CONSTANT': '-999',
                             'NOT_APPLICABLE_CONSTANT': 'N/A'}])
-    assert idxf._get_null_value(table, 1) == 'N/A'
+    assert IndexTable._get_null_value(table, 1) == 'N/A'
 
 
 @pytest.mark.xfail(strict=True, reason='BUG: _get_null_value uses continue '
@@ -72,7 +71,7 @@ def test_get_null_value_returns_last_present_key():
                    'not returned; a column with only NULL_CONSTANT set yields None.')
 def test_get_null_value_prefers_highest_priority_key():
     table = FakePds3Table([{'NULL_CONSTANT': '-999'}])
-    assert idxf._get_null_value(table, 1) == '-999'
+    assert IndexTable._get_null_value(table, 1) == '-999'
 
 
 #===============================================================================
@@ -83,7 +82,7 @@ def test_get_column_values_iterates_until_indexerror():
         {'NAME': 'A', 'FORMAT': 'A4', 'ITEMS': None, 'NULL_CONSTANT': '-'},
         {'NAME': 'B', 'FORMAT': 'I5', 'ITEMS': 2, 'NULL_CONSTANT': '0'},
     ])
-    stubs = idxf._get_column_values(table)
+    stubs = IndexTable._get_column_values(table)
     assert [s['NAME'] for s in stubs] == ['A', 'B']
     assert stubs[1]['ITEMS'] == 2
 
@@ -93,21 +92,21 @@ def test_get_column_values_iterates_until_indexerror():
 #===============================================================================
 def test_format_column_multi_item_expands_and_joins():
     stub = {'NAME': 'X', 'FORMAT': '"A4"', 'ITEMS': 2, 'NULL_CONSTANT': '-'}
-    assert idxf._format_column(stub, ['AB', 'CD']) == '"AB  ","CD  "'
+    assert IndexTable._format_column(stub, ['AB', 'CD']) == '"AB  ","CD  "'
 
 
 def test_format_column_scrubs_whitespace_and_quotes():
     stub = {'NAME': 'X', 'FORMAT': '"A8"', 'ITEMS': None, 'NULL_CONSTANT': '-'}
     # Leading/trailing space stripped, newline -> space, doubled space
     # collapsed, embedded quotes removed.
-    assert idxf._format_column(stub, '  a"b\n c  ') == '"ab c    "'
+    assert IndexTable._format_column(stub, '  a"b\n c  ') == '"ab c    "'
 
 
 def test_format_column_invalid_format_warns_and_returns_stars():
     stub = {'NAME': 'X', 'FORMAT': '"F8.3"', 'ITEMS': None, 'NULL_CONSTANT': '-'}
     # A list value is incompatible with a real format -> TypeError fallback,
     # which logs a warning and returns a field of '*' the column width wide.
-    result = idxf._format_column(stub, [1, 2])
+    result = IndexTable._format_column(stub, [1, 2])
     assert result == 8 * '*'
 
 

@@ -3,8 +3,7 @@
 **Date:** 2026-06-15
 **Branch:** `ai_rewrite`
 **Scope:** Implementation of `plans/plan1_split_geometry_support.md` and
-`plans/plan2_test_suite.md`, plus the additional "no module > 500 lines" success
-criterion applied to the whole engine.
+`plans/plan2_test_suite.md`.
 
 This report records (a) the structural work done and (b) every code problem the
 work surfaced. **No production behavior was changed** — the splits are mechanical
@@ -17,23 +16,17 @@ a separate change so the refactor stays reviewable.
 
 ## 1. What was done
 
-### 1.1 Module splits (all source files now < 500 lines)
+### 1.1 `geometry_support.py` split into a package
 
 | Before | Lines | After |
 |---|---:|---|
 | `geometry_support.py` | 1654 | `geometry_support/` package: `formats` `masks` `formatting` `prep` `bodies_select` `record` `tables` `suite` `process` `__init__` (≤ 298 each) |
-| `util.py` | 802 | `util.py` (≈420) + `util_ranges.py` + `util_textfiles.py` |
-| `index_support.py` | 623 | `index_support.py` (≈450) + `index_formats.py` |
 
 The public import surface is unchanged: `import metadata_tools.geometry_support
-as geom`, `import metadata_tools.util as util`, and `import
-metadata_tools.index_support as idx` expose exactly the same names they did
-before (re-exported from the new modules). The five state-light geometry helpers
-and the five index-format helpers became module-level free functions — the reason
-they are now directly unit-testable without a SPICE-backed object.
-
-Verification: `find src/metadata_tools -name '*.py' | xargs wc -l` — the largest
-file is `geometry_support/record.py` at ~298 lines.
+as geom` exposes exactly the same names it did before (re-exported from the
+package `__init__`). The five state-light geometry helpers became module-level
+free functions — the reason they are now directly unit-testable without a
+SPICE-backed object.
 
 ### 1.2 Hermetic test suite (`pytest` default run, no SPICE, no holdings)
 
@@ -77,7 +70,7 @@ passing test in the same commit that fixes the bug.
    `['lineA','lineB']` ends up containing both lines twice.
    *Test:* `test_util_textfile.py::test_append_to_new_file_writes_content_once`.
 
-3. **`index_formats._get_null_value` returns the last, not the first, null
+3. **`IndexTable._get_null_value` returns the last, not the first, null
    keyword** — *correctness, High.* The priority loop uses `continue` where it
    means `break`, so the result is the lookup of the **lowest-priority** keyword
    present. A column with only `NULL_CONSTANT` set returns `None`.
