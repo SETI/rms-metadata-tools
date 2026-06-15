@@ -167,8 +167,8 @@ class Record(object):
         else:
             self.dicts |= {
                 'sun'    : col.SUN_DETAILED_COLUMNS,
-                'ring'   : col.RING_SUMMARY_DETAILED,
-                'body'   : col.BODY_SUMMARY_DETAILED
+                'ring'   : col.RING_DETAILED_DICT,
+                'body'   : col.BODY_DETAILED_DICT
             }
 
         # Set up planet-based geometry
@@ -213,7 +213,7 @@ class Record(object):
                                 defs.BODYX, self.target)
             self.body_tile_dict[self.target] = \
                 util.replace(col.BODY_TILES,
-                                col.BODYX, self.target)
+                                defs.BODYX, self.target)
 
     #===============================================================================
     def _inventory(self, bodies):
