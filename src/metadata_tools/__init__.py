@@ -76,7 +76,7 @@ Modifying the geometry tables requires editing of the column definition and form
 and may require the addition of new backplane functions.
 
 To add a new geometry column:
-   1. Add a column definition to column definition file, e.g. COLUMNS_BODY.py.
+   1. Add a column definition to a column definition file, e.g. columns/body.py.
    2. Add a corresponding function to appropriate backplane module.
    3. Add a row to the format dictionary in geometry_support.py.
    4. Add column description(s) to the label template, e.g., body_summary.lbl.

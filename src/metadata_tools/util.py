@@ -7,6 +7,7 @@ import numpy as np
 import cspyce
 import datetime as dt
 import sys
+from typing import Any
 
 
 import pdstable
@@ -24,13 +25,13 @@ def dbprint(message):
 
     Returns: None
     """
-#    return 
+#    return
     time = dt.datetime.now()#.strftime('%Y-%m-%d %H:%M:%S')
     print(f'{time} - {message}', file=sys.stderr, flush=True)
 
 #===============================================================================
 def PdsTable(label_path):
-    """read a pds3table from an FCPath object.  To be replaced whenever pdstable is 
+    """read a pds3table from an FCPath object.  To be replaced whenever pdstable is
        upgraded to use filecache.
 
     Args:
@@ -130,7 +131,7 @@ def pm(x):               ### move to utilities, why is this not in numpy?
     Returns:
         numpy.ndarray: Plus and minus values.
     """
-    
+
     return np.array([x,-x])
 
 #===============================================================================
@@ -181,7 +182,7 @@ def get_volume_subdir(path, volume_id):
 #    return path.split(volume_id)[-1]  ## not currently supprted by filecache
 
 #===============================================================================
-def replace(tree, placeholder, name):
+def replace(tree: list[Any], placeholder: str, name: str) -> Any:
     """Return a copy of the tree of objects, with each occurrence of the
     placeholder string replaced by the given name.  If a dictionary reference is
     detected, then it is evaluated.
@@ -196,7 +197,7 @@ def replace(tree, placeholder, name):
 
     """
 
-    new_tree = []
+    new_tree: list[Any] = []
     for leaf in tree:
         # Main entries: replace placeholder and evaulate dict references
         if type(leaf) in (tuple, list):
@@ -226,13 +227,13 @@ def replace(tree, placeholder, name):
         return new_tree
 
 #===============================================================================
-def replacement_dict(tree, placeholder, names):
+def replacement_dict(tree: list[Any], placeholder: str, names: list[str]) -> dict[str, Any]:
     """Create a dictionary of copies of the tree of objects, where each
     dictionary entry is keyed by a name in the list and returns a copy of the
     tree using that name as the replacement.
 
     Args:
-        tree (list): List contining the tree.
+        tree (list): List containing the tree.
         placeholder (str): Placeholder to replace
         name (list): List of replacement strings.
 
@@ -241,25 +242,25 @@ def replacement_dict(tree, placeholder, names):
 
     """
 
-    dict = {}
+    result: dict[str, Any] = {}
     for name in names:
-        dict[name] = replace(tree, placeholder, name)
+        result[name] = replace(tree, placeholder, name)
 
-    return dict
+    return result
 
 #===============================================================================
-def replacement_fn(dict, name):
+def replacement_fn(dict_name: str, name: str) -> str:
     """Create a replacement-able dictionary reference.
 
     Args:
-        dict (str): Name  of dictionary.
+        dict_name (str): Name of dictionary.
         name (str): Dictionary key, which could be a placeholder string.
 
     Returns:
         str: Dictionary reference keyed by possible placeholder name.
 
     """
-    return dict + '["' + name + '"]'
+    return dict_name + '["' + name + '"]'
 
 #===============================================================================
 def get_volume_glob(col):
@@ -772,7 +773,7 @@ def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
     diffs[-1] = values[0] + 360. - values[-1]
     span = 360 - diffs[-1]
 
-    # Smooth the diffs to remove noise from subsamping.  
+    # Smooth the diffs to remove noise from subsamping.
     wdiffs = diffs
     if width > 1:
         wdiffs = smooth(diffs, width)
@@ -789,13 +790,13 @@ def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
         upper = (upper + 180.) % 360. - 180.
         range_mod360 = [lower, upper]
 
-    # Return full coverage if max diff is below specified threshold. 
+    # Return full coverage if max diff is below specified threshold.
     if span > diffmin and diff_max <= diffmin:
         return complete_coverage
 
-    # Otherwise check 90% confidence that the coverage is not complete. 
+    # Otherwise check 90% confidence that the coverage is not complete.
     if diff_max >= _ninety_percent_gap_degrees(values.size):
         return range_mod360
 
-    # Otherwise, return the complete range   
+    # Otherwise, return the complete range
     return complete_coverage

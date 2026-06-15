@@ -62,8 +62,10 @@ pythonpath = [
 ]
 testpaths = ["tests"]
 # TODO Update desired parallelism
-addopts = ["-n", "auto", "--cov=src", "--strict-markers", "--strict-config"]
-markers = []
+addopts = ["-n", "auto", "--cov=src", "--strict-markers", "--strict-config", "-m", "not integration"]
+markers = [
+  "integration: requires oops/SPICE host initialization (excluded by default)",
+]
 
 [tool.setuptools]
 [tool.setuptools.packages.find]
@@ -131,8 +133,9 @@ module = "metadata_tools._version"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-# module = ["metadata_tools.*"]
-# ignore_missing_imports = true
+# oops (rms-oops) ships no type stubs or py.typed marker.
+module = ["oops.*"]
+ignore_missing_imports = true
 
 [tool.ruff]
 target-version = "py310"

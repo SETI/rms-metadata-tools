@@ -1,9 +1,11 @@
 ################################################################################
-# COLUMNS_BODY.py: Column definitions for body geometry tables
+# body.py: Column definitions for body geometry tables
 ################################################################################
 import oops
+
 import metadata_tools.defs as defs
 import metadata_tools.util as util
+from metadata_tools.bodies import BODIES
 
 ################################################################################
 # *COLUMN description tuples are
@@ -110,7 +112,7 @@ for body in defs.BODY_NAMES:
         ("where_above",   ("latitude", defs.BODYX),  70. * oops.RPD)
     ]
 
-BODY_TILE_DICT = {}
+BODY_TILE_DICT: dict[str, object] = {}
 
 for body in defs.BODY_NAMES:
     BODY_TILE_DICT[body] = {}

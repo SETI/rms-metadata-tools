@@ -40,7 +40,7 @@ import geometry_config as config
 # specifying them separately in the both the format dict and the label template.
 #
 # Adding a geometry column:
-#   1. Add a column definition to column definition file, e.g. COLUMNS_BODY.py.
+#   1. Add a column definition to a column definition file, e.g. columns/body.py.
 #   2. Add a corresponding function to appropriate backplane module.
 #   3. Add a row to the format dictionary below.
 #   4. Add column description(s) to the label template, e.g., body_summary.lbl.

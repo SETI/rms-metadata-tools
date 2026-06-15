@@ -10,7 +10,6 @@ from filecache import FCPath
 #####################
 _metadata = sys.modules[__name__]
 PARENT_DIR = FCPath(_metadata.__file__).parent
-COLUMN_DIR = PARENT_DIR / 'column'
 GLOBAL_TEMPLATE_PATH = PARENT_DIR / 'templates'
 
 NULL = "null"

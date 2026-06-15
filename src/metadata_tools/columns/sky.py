@@ -1,6 +1,7 @@
 ################################################################################
-# COLUMNS_SUN.py: Column definitions for sun geometry tables
+# sky.py: Column definitions for sky geometry tables
 ################################################################################
+import oops
 
 ################################################################################
 # *COLUMN description tuples are
@@ -33,29 +34,29 @@
 #                       "-180" = use the range (-180,180) instead of (0,360).
 #
 ################################################################################
-SUN_COLUMNS = [
-    (("latitude",               "SUN", "centric"),           ("",  "",  "")),
-    (("latitude",               "SUN", "graphic"),           ("",  "",  "")),
-    (("longitude",              "SUN", "iau", "west"),       ("",  "",  "")),
-#     (("longitude",              "SUN", "iau", "east"),      ("",  "",  "")),
-    (("longitude",              "SUN", "obs", "west", -180), ("",  "",  ""), "-180"),
-#     (("longitude",              "SUN", "obs", "east", -180), ("",  "",  ""), "-180"),
-    (("finest_resolution",      "SUN"),                      ("",  "",  "")),
-    (("coarsest_resolution",    "SUN"),                      ("",  "",  "")),
-    (("distance",               "SUN"),                      ("",  "",  "")),
-    (("event_time",             "SUN"),                      ("", "", ""))]
+SKY_COLUMNS = [
+    (("right_ascension",        ()),                        ("",  "",  "")),
+    (("declination",            ()),                        ("",  "",  ""))]
 
-SUN_GRIDLESS_COLUMNS = [
-    (("sub_observer_latitude",  "SUN", "centric"),           ("",   "",  "")),
-    (("sub_observer_latitude",  "SUN", "graphic"),           ("",   "",  "")),
-    (("sub_observer_longitude", "SUN", "iau", "west"),       ("",   "",  "")),
-#     (("sub_observer_longitude", "SUN", "iau", "east"),      ("",   "",  "")),
-    (("center_resolution",      "SUN", "u"),                 ("",   "",  "")),
-    (("center_distance",        "SUN", "obs"),               ("",   "",  "")),
-    (("radius_in_pixels",       "SUN"),                      ("",   "",  "")),
-    (("center_coordinate",      "SUN", "x"),                 ("",   "",  "")),
-    (("center_coordinate",      "SUN", "y"),                 ("",   "",  ""))]
+################################################################################
+# Define the tiling for detailed listings
+#
+# The first item in the list defines a region to test for a suitable pixel
+# count. The remaining items define a sequence of tiles to use in a
+# detailed tabulation.
+################################################################################
+###TODO: not tested...
+SKY_TILES = [
+    ("where_all", ""),                      # mask over remaining tiles
+    ("where_below",   ("declination", ""), -70. * oops.RPD),
+    ("where_between", ("declination", ""), -70. * oops.RPD, -50. * oops.RPD),
+    ("where_between", ("declination", ""), -50. * oops.RPD, -30. * oops.RPD),
+    ("where_between", ("declination", ""), -30. * oops.RPD, -10. * oops.RPD),
+    ("where_between", ("declination", ""), -10. * oops.RPD,  10. * oops.RPD),
+    ("where_between", ("declination", ""),  10. * oops.RPD,  30. * oops.RPD),
+    ("where_between", ("declination", ""),  30. * oops.RPD,  50. * oops.RPD),
+    ("where_between", ("declination", ""),  50. * oops.RPD,  70. * oops.RPD),
+    ("where_above",   ("declination", ""),  70. * oops.RPD)
+]
 
-SUN_SUMMARY_COLUMNS  = SUN_COLUMNS + SUN_GRIDLESS_COLUMNS
-SUN_DETAILED_COLUMNS = SUN_COLUMNS
 ################################################################################

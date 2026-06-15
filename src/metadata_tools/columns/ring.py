@@ -1,7 +1,10 @@
 ################################################################################
-# COLUMNS_RING.py: Column definitions for ring geometry tables
+# ring.py: Column definitions for ring geometry tables
 ################################################################################
+import numpy as np
+
 import metadata_tools.defs as defs
+import metadata_tools.util as util
 
 planet_ring = defs.BODYX + ":RING"
 planet_ansa = defs.BODYX + ":ANSA"
