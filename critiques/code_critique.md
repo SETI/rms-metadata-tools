@@ -17,6 +17,23 @@ Top priorities: **fix packaging metadata so the package installs**, **get the li
 Newest first. Each entry is a discrete unit of work landed on `ai_rewrite`; the
 per-finding status tags in §1–§10 are the authoritative detail.
 
+- **2026-06-16 — Removed `dbprint` and made the host tests live (§2, §4).**
+  Deleted `util.dbprint` (a `print()`-to-stderr debug helper) and its call site in
+  `common.Table.write` — the adjacent `logger.info("Writing: %s", ...)` already
+  records the filename — plus the now-unused `datetime`/`sys` imports and the two
+  `dbprint` test hooks; no `print()` remains in `src/` (§2 → RESOLVED). The
+  uncollected GOSSI host tests were moved from
+  `src/metadata_tools/hosts/GO_0xxx/tests/` into the normal suite at
+  `tests/hosts/GO_0xxx/` (new `tests/hosts/` package, one subpackage per host),
+  so `testpaths=["tests"]` now collects them; each carries the `requires_archive`
+  marker (§4 → RESOLVED). While there, every residual `unittest.TestCase` test —
+  the two moved host modules **and** the pre-existing `tests/test_index.py` /
+  `tests/test_geometry.py` — was converted to plain pytest functions and the
+  shared helper dropped its unused `unittest.TestCase` parameter, so `import
+  unittest` no longer appears under `tests/`. Finally that helper was renamed
+  `tests/unittester_support.py` → `tests/archive_support.py` (imported as
+  `support`) to stop implying unittest and to describe its `$RMS_METADATA`
+  archive role. 224 hermetic tests still pass (93.57% cov); `ruff`/`mypy` clean.
 - **2026-06-16 — Tooling decision: `ruff format` is not used.** The project does
   not run `ruff format`; it stays off via the single `ENABLE_RUFF_FORMAT:=false`
   default in `scripts/run-all-checks.sh` (the source of truth). `ruff check` is the
@@ -233,7 +250,7 @@ The analysis above is the original point-in-time review. Progress since:
 (Full detail in `tests_critique.md`.) Summary for this report:
 
 - **[RESOLVED]** **Finding (Critical):** The test suite does not exercise the library. `tests/test_*.py` only read pre-generated `.lbl` files from `$RMS_METADATA`; they never `import metadata_tools`. Coverage of `src/` is effectively ~0%, yet `pyproject.toml` sets `fail_under = 90` and `--cov=src`. **Suggestion:** Add unit tests that import and call the pure functions in `util.py` (`add_by_base`, `rebase`, `sclk_*`, `get_volume_glob`, `_get_range_mod360`) and the formatting logic in `index_support.py`. **Update:** done (Plan 2) — `tests/conftest.py` import shim + 16 hermetic modules bring engine coverage to **93.1%**, above `fail_under = 90`. The SPICE/GCP-only seams (`hosts/*`, `bodies.py`) are excluded from the denominator with documented `omit` entries.
-- **[RESOLVED]** **Finding (High):** Host tests under `src/metadata_tools/hosts/GO_0xxx/tests/` are never collected (`testpaths = ["tests"]`), so they are dead. **Suggestion:** Decide whether host tests run in CI; if so add their path to `testpaths`. **Update:** **fixed** (2026-06-16) — the host tests were moved into the collected tree at `tests/hosts/<HOST>/` (`tests/hosts/GO_0xxx/test_index.py`, `test_geometry.py`), under a new `tests/hosts/` package with one subpackage per host. `testpaths = ["tests"]` recurses, so they are now collected. They read the `$RMS_METADATA` holdings, so each carries `pytestmark = pytest.mark.requires_archive` (matching the generic holdings-backed tests) and is excluded from the default run but opted in by `scripts/run-all-checks.sh --integration`. CLAUDE.md updated to the new location. While moving them, the moved tests **and** the pre-existing holdings-backed `tests/test_index.py`/`tests/test_geometry.py` were converted from `unittest.TestCase` classes to plain pytest functions (per `python_testing.mdc`: "new tests should not be `unittest.TestCase`"); the shared `unittester_support.bounds()` helper dropped its unused `unittest.TestCase` parameter, so `import unittest` no longer appears anywhere under `tests/`.
+- **[RESOLVED]** **Finding (High):** Host tests under `src/metadata_tools/hosts/GO_0xxx/tests/` are never collected (`testpaths = ["tests"]`), so they are dead. **Suggestion:** Decide whether host tests run in CI; if so add their path to `testpaths`. **Update:** **fixed** (2026-06-16) — the host tests were moved into the collected tree at `tests/hosts/<HOST>/` (`tests/hosts/GO_0xxx/test_index.py`, `test_geometry.py`), under a new `tests/hosts/` package with one subpackage per host. `testpaths = ["tests"]` recurses, so they are now collected. They read the `$RMS_METADATA` holdings, so each carries `pytestmark = pytest.mark.requires_archive` (matching the generic holdings-backed tests) and is excluded from the default run but opted in by `scripts/run-all-checks.sh --integration`. CLAUDE.md updated to the new location. While moving them, the moved tests **and** the pre-existing holdings-backed `tests/test_index.py`/`tests/test_geometry.py` were converted from `unittest.TestCase` classes to plain pytest functions (per `python_testing.mdc`: "new tests should not be `unittest.TestCase`"); the shared `bounds()` helper dropped its unused `unittest.TestCase` parameter, so `import unittest` no longer appears anywhere under `tests/`. The helper module itself was then renamed `tests/unittester_support.py` → `tests/archive_support.py` (imported as `support`) — it no longer relates to unittest, and the new name reflects its `$RMS_METADATA` archive role while avoiding pytest's `test_*.py` collection pattern.
 
 ## 5. Performance and resource use
 
