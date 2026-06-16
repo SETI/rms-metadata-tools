@@ -18,7 +18,7 @@ BODYX = "bodyx"     # Placeholder for an arbitrary body to be filled in by
 NAME_LENGTH = 12
 
 # Maintain a list of translations for target names
-TRANSLATIONS = {}
+TRANSLATIONS: dict[str, str] = {}
 
 ##########################################################################################
 # List of body names

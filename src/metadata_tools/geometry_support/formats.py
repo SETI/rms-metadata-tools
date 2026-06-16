@@ -1,9 +1,16 @@
 ################################################################################
 # geometry_support/formats.py - Geometry column format dictionaries.
 ################################################################################
+from typing import Any
+
 import geometry_config as config
 
 import metadata_tools.util as util
+
+# A FORMAT_DICT/ALT_FORMAT_DICT value tuple:
+#   (flag, number_of_values, column_width, standard_format, overflow_format,
+#    null_value, valid_minimum, valid_maximum, link_id, link)
+FormatTuple = tuple[str, int, int, str, str | None, float | str, float, float, int, str]
 
 ################################################################################
 # FORMAT_DICT tuples are:
@@ -34,7 +41,7 @@ import metadata_tools.util as util
 #   6. Update the unit tests.
 #
 ################################################################################
-FORMAT_DICT = {
+FORMAT_DICT: dict[str, FormatTuple] = {
     "right_ascension"           : ("360", 2, 10, "%10.6f", "%10.5f", -999., 0, 360, 0, ''),
     "center_right_ascension"    : ("360", 2, 10, "%10.6f", "%10.5f", -999., 0, 360, 0, ''),
     "declination"               : ("DEG", 2, 10, "%10.6f", "%10.5f", -999., -90, 90, 0, ''),
@@ -104,12 +111,12 @@ FORMAT_DICT = {
     "where_in_back"             : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
     "where_antisunward"         : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, '')}
 
-ALT_FORMAT_DICT = {
+ALT_FORMAT_DICT: dict[tuple[str, str], FormatTuple] = {
     ("ring_angular_resolution", "km")
                                 : ("KM",   2, 10, "%10.5f", "%10.4e", -999., 0, 0, 0, ''),
     ("longitude",      "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, ''),
     ("ring_longitude", "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, ''),
     ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, '')}
 
-MISSION_TABLE = \
+MISSION_TABLE: list[Any] = \
     util.convert_mission_table(config.MISSION_TABLE, config.SC)

@@ -5,6 +5,7 @@
 # number-formatting logic can be unit-tested without the host plugin.
 ################################################################################
 import warnings
+from typing import Any, cast
 
 import julian
 import numpy as np
@@ -12,21 +13,23 @@ import oops
 import polymath
 
 import metadata_tools.util as util
+from metadata_tools.geometry_support.formats import FormatTuple
 
 
 #===============================================================================
-def circle_coverage(angles, null_value, sampling, flag=None):
+def circle_coverage(angles: Any, null_value: float | str, sampling: int,
+                    flag: str | None = None) -> list[Any]:
     """Returns inferred angular coverage, accounting for the mask.
 
     Args:
-        angles (list, np.array, or Scalar): Angles in deg.
+        angles: Angles in deg, as a list, np.array, or Scalar.
         null_value: Value to return when fully masked.
-        sampling (int): Pixel sampling density.
-        flag (str, optional):
+        sampling: Pixel sampling density.
+        flag:
             "-180" to return values in the range (-180,180) rather than (0,360).
 
     Returns:
-        list: Minimum and maximum values in the cyclic array.
+        Minimum and maximum values in the cyclic array.
     """
 
     # Apply mask
@@ -47,16 +50,16 @@ def circle_coverage(angles, null_value, sampling, flag=None):
                                   width=sampling+1, diffmin=1, alt_format=flag)
 
 #===============================================================================
-def formatted_column(values, fmt, sampling):
+def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
     """Returns one formatted column (or a pair of columns) as a string.
 
     Args:
-        values (oops.Scalar): A Scalar of values with its applied mask.
-        fmt (tuple): Format tuple from FORMAT_DICT/ALT_FORMAT_DICT.
-        sampling (int): Pixel sampling density.
+        values: A Scalar of values with its applied mask (or a string).
+        fmt: Format tuple from FORMAT_DICT/ALT_FORMAT_DICT.
+        sampling: Pixel sampling density.
 
     Returns:
-        str: Formatted column.
+        Formatted column.
     """
 
     # Interpret the format
@@ -69,6 +72,7 @@ def formatted_column(values, fmt, sampling):
         values = values * oops.DPR
 
     # Create a list of the numeric values for this column
+    results: list[Any]
     if not isinstance(values, str):
         if number_of_values == 1:
             meanval = values.mean().as_builtin()
@@ -98,9 +102,11 @@ def formatted_column(values, fmt, sampling):
             results = [str(s[0]), str(s[1])]
 
     # Write the formatted value(s)
-    strings = []
-    for number in results:
+    strings: list[str] = []
+    for entry in results:
+        number: Any = entry
         error_message = ""
+        string: str
 
         # numeric values: flag common exceptions and use standard format
         if not isinstance(number, str):
@@ -120,11 +126,13 @@ def formatted_column(values, fmt, sampling):
 
         # handle formatting overflow
         if len(string) > column_width:
-            string = overflow_format % number
+            # An overflow format is always defined for columns that can overflow.
+            overflow = cast(str, overflow_format)
+            string = overflow % number
 
             if len(string) > column_width:
                 number = min(max(-9.99e99, number), 9.99e99)
-                string99 = overflow_format % number
+                string99 = overflow % number
 
                 if len(string99) > column_width:
                     error_message = "column overflow: " + string

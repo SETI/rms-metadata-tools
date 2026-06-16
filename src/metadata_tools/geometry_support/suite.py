@@ -3,6 +3,8 @@
 ################################################################################
 import fnmatch
 import traceback
+from pathlib import Path
+from typing import Any, cast
 
 import geometry_config as config
 from filecache import FCPath
@@ -22,24 +24,29 @@ class Suite:
     """
 
     #===========================================================================
-    def __init__(self, input_dir, output_dir, template_path, metadata_dir=None,
-                       selection='', glob=None, index_glob=None, first=None, sampling=8):
+    def __init__(self, input_dir: str | Path | FCPath, output_dir: str | Path | FCPath,
+                       template_path: str | Path | FCPath,
+                       metadata_dir: str | Path | FCPath | None = None,
+                       selection: str = '', glob: str | None = None,
+                       index_glob: str | None = None, first: int | None = None,
+                       sampling: int = 8) -> None:
         """Constructor for a geometry Suite object.
 
         Args:
-            input_dir (str, Path, or FCPath): Directory containing the volume.
-            output_dir (str, Path, or FCPath):
+            input_dir: Directory containing the volume.
+            output_dir:
                 Directory in which to write the geometry files.
-            template_path (str, Path, or FCPath): Path to the host template.
-            selection (str, optional):
+            template_path: Path to the host template.
+            metadata_dir: Directory containing the metadata files.
+            selection:
                 A string containing...
                 "S" to generate summary files;
                 "D" to generate detailed files.
-            glob (str, optional): Glob pattern for data files.
-            index_glob (str, optional): Glob pattern for index files.
-            first (bool, optional):
+            glob: Glob pattern for data files.
+            index_glob: Glob pattern for index files.
+            first:
                 If given, at most this many files are processed in each volume.
-            sampling (int, optional): Pixel sampling density.
+            sampling: Pixel sampling density.
         """
         # Save inputs
         self.input_dir = FCPath(input_dir)
@@ -52,7 +59,7 @@ class Suite:
         self.sampling = sampling
 
         # Determine processing levels
-        self.levels = []
+        self.levels: list[str] = []
         for sel in selection:
             if sel == 'S':
                 self.levels += ['summary']
@@ -60,7 +67,7 @@ class Suite:
                 self.levels += ['detailed']
 
         # Check for supplemental index
-        index_filenames = list(self.metadata_dir.glob(self.index_glob))
+        index_filenames = list(self.metadata_dir.glob(cast(str, self.index_glob)))
         if len(index_filenames) == 0:
             return
         if len(index_filenames) > 1:
@@ -75,12 +82,13 @@ class Suite:
             self.input_dir.joinpath(supplemental_index_name+ext)
 
         # Initialize the logger
-        com.init_logger(input_dir, 'geometry')
+        com.init_logger(self.input_dir, 'geometry')
         logger = com.get_logger()
 
         logger.info('New geometry index for %s.', self.volume_id)
 
         # Get observations
+        self.observations: Any
         try:
             self.observations = config.from_index(index_filename,
                                                   supplemental_index_filename)
@@ -96,23 +104,24 @@ class Suite:
 
     #===========================================================================
     @staticmethod
-    def get_override(record, qualifier, name=None):
+    def get_override(record: Record, qualifier: str,
+                     name: str | None = None) -> list[dict[str, Any]]:
         """Build a dictionary of column overrides.
 
         Args:
-            record (Record): Any Record.
+            record: Any Record.
             qualifier: 'sky', 'sun', 'ring', or 'body'.
-            name (str, optional): Name identifying a specific column description.
+            name: Name identifying a specific column description.
 
         Returns:
-            list: Dict containing override names and values for each column.
+            Dicts containing override names and values for each column.
         """
 
         column_descs = record.dicts[qualifier]
         if name:
             column_descs = column_descs[name]
 
-        overrides = []
+        overrides: list[dict[str, Any]] = []
         for column_desc in column_descs:
             # Get format for this column
             event_key = column_desc[0]
@@ -133,16 +142,16 @@ class Suite:
 
     #===========================================================================
     @staticmethod
-    def get_overrides(record):
+    def get_overrides(record: Record) -> dict[str, list[dict[str, Any]]]:
         """Build a dictionary of column overrides.
 
         Args:
-            record (Record): Any Record.
+            record: Any Record.
 
         Returns:
-            list: Dicts containing over names and values for each column.
+            Dicts containing override names and values for each column, keyed by qualifier.
         """
-        overrides = {}
+        overrides: dict[str, list[dict[str, Any]]] = {}
 
         overrides['sky'] = Suite.get_override(record, 'sky')
 #        overrides['sun'] = Suite.get_override(record, 'sun')
@@ -152,18 +161,15 @@ class Suite:
         return overrides
 
     #===========================================================================
-    def add_tables(self, output_dir, level):
+    def add_tables(self, output_dir: str | Path | FCPath, level: str) -> None:
         """Add a set of tables.
 
         Args:
-            output_dir (str, Path, or FCPath):
+            output_dir:
                 Directory in which to write the geometry files.
-           level (str): 'summary' or'detailed''.
-
-        Returns:
-            None.
+            level: 'summary' or 'detailed'.
         """
-        self.tables = [
+        self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = [
             InventoryTable(output_dir, self.template_path, volume_id=self.volume_id),
             SkyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
 #            SunTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
@@ -172,16 +178,16 @@ class Suite:
             ]
 
     #===========================================================================
-    def make_records(self, index):
+    def make_records(self, index: int) -> list[Record]:
         """Add a record for each processing level.
 
         Args:
-           index (int): Row index.
+            index: Row index.
 
         Returns:
-            list: One record for each processing level.
+            One record for each processing level.
         """
-        records = []
+        records: list[Record] = []
         for level in self.levels:
             records.append(
                 Record(self.observations[index],
@@ -192,15 +198,12 @@ class Suite:
         return records
 
     #===========================================================================
-    def add(self, records):
+    def add(self, records: list[Record]) -> None:
         """Add a row to all tables.
 
         Args:
-            records (list):
+            records:
                 Records describing the rows to add, one for each processing level.
-
-        Returns:
-            None.
         """
         for table in self.tables:
             for record in records:
@@ -208,30 +211,24 @@ class Suite:
                     table.add(record)
 
     #===========================================================================
-    def write(self, labels_only=False):
+    def write(self, labels_only: bool = False) -> None:
         """Write all tables and their labels.
 
         Args:
-            labels_only (bool):
+            labels_only:
                 If True, labels are generated for any existing geometry tables.
-
-        Returns:
-            None
         """
         for table in self.tables:
             table.write(labels_only=labels_only)
 
     #===========================================================================
-    def create(self, labels_only=False, pattern=None):
+    def create(self, labels_only: bool = False, pattern: str | None = None) -> None:
         """Process the volume and write a suite of geometry files.
 
         Args:
-            labels_only (bool):
+            labels_only:
                 If True, labels are generated for any existing geometry tables.
-            pattern (str): Glob pattern for sub-selecting files to process.
-
-        Returns:
-            None
+            pattern: Glob pattern for sub-selecting files to process.
         """
         logger = com.get_logger()
 

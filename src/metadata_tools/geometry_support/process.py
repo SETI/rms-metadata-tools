@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support/process.py - Entry points for geometry table generation.
 ################################################################################
+import argparse
 import fnmatch
 
 from filecache import FCPath
@@ -11,21 +12,22 @@ from metadata_tools.geometry_support.suite import Suite
 
 
 #===============================================================================
-def get_args(host=None, selection=None, exclude=None, sampling=8):
+def get_args(host: str | None = None, selection: str | None = None,
+             exclude: list[str] | None = None,
+             sampling: int = 8) -> argparse.ArgumentParser:
     """Argument parser for geometric metadata.
 
     Args:
-        host (str): Host name, e.g. 'GOISS'.
-        selection (str, optional):
+        host: Host name, e.g. 'GOISS'.
+        selection:
             A string containing...
             "S" to generate summary files;
             "D" to generate detailed files.
-        exclude (list, optional): List of volumes to exclude.
-        sampling (int, optional): Pixel sampling density.
+        exclude: List of volumes to exclude.
+        sampling: Pixel sampling density.
 
      Returns:
-        argparser.ArgumentParser :
-            Parser containing the argument specifications.
+        Parser containing the argument specifications.
     """
 
     # Get common args
@@ -55,34 +57,34 @@ def get_args(host=None, selection=None, exclude=None, sampling=8):
     return parser
 
 #===============================================================================
-def process_tables(template_name,
-                   volumes=None,
-                   selection=None,
-                   exclude=None,
-                   sampling=8,
-                   glob=None,
-                   index_glob=None,
-                   args=None,
-                   task_file=None,
-                   task_list_only=False):
+def process_tables(template_name: str,
+                   volumes: list[str] | None = None,
+                   selection: str | None = None,
+                   exclude: list[str] | None = None,
+                   sampling: int = 8,
+                   glob: str | None = None,
+                   index_glob: str | None = None,
+                   args: argparse.Namespace | None = None,
+                   task_file: str | None = None,
+                   task_list_only: bool = False) -> None:
     """Create geometry tables for a collection of volumes.
 
     Args:
-        template_name (str): Name of index template.
-        volumes (list, optional): List of volume ids to process. Overrides args.volumes.
-        selection (str, optional):
+        template_name: Name of index template.
+        volumes: List of volume ids to process. Overrides args.volumes.
+        selection:
             A string containing...
             "S" to generate summary files;
             "D" to generate detailed files.
-        exclude (list, optional): List of volumes to exclude.
-        sampling (int, optional): Pixel sampling density.
-        glob (str, optional): Glob pattern for data files.
-        index_glob (str, optional): Glob pattern for index files.
-        args (argparse.Namespace): Parsed arguments.
-        task_file (str, optional):
+        exclude: List of volumes to exclude.
+        sampling: Pixel sampling density.
+        glob: Glob pattern for data files.
+        index_glob: Glob pattern for index files.
+        args: Parsed arguments.
+        task_file:
             Name of tasks file. This file is overwritten. If not given, tasks are provided
             via the task_source generator.
-        task_list_only (bool, optional):
+        task_list_only:
             If True, a task list is created and no processing is performed. If task_file is
             given, then the task list is written to that file. Otherwise, the task list is
             accessed via the task_source generator.

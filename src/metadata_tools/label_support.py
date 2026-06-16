@@ -1,6 +1,9 @@
 ################################################################################
 # label_support.py - Tools for generating metadata labels.
 ################################################################################
+from collections.abc import Callable
+from pathlib import Path
+
 from filecache import FCPath
 from pdstemplate import PdsTemplate
 from pdstemplate.pds3table import pds3_table_preprocessor
@@ -10,20 +13,21 @@ import metadata_tools.util as util
 
 
 #===============================================================================
-def create(filepath, host_template_path,
-           system=None,
+def create(filepath: str | Path | FCPath,
+           host_template_path: str | Path | FCPath | None,
+           system: str | None = None,
            *,
-           use_global_template=False,
-           table_type=''):
+           use_global_template: bool = False,
+           table_type: str | None = '') -> None:
     """Creates a label for a given geometry table.
 
     Args:
-        filepath (str|Path|FCPath): Path to the local or remote table.
-        host_template_path (str, Path, or FCPath): Path to the host template.
-        system (str): Name of system, for rings and moons.
-        use_global_template (bool):
+        filepath: Path to the local or remote table.
+        host_template_path: Path to the host template.
+        system: Name of system, for rings and moons.
+        use_global_template:
             If True, the label template is to be found in the global template directory.
-        table_type (str, optional): BODY, RING, SKY, SUPPLEMENTAL_INDEX, INVENTORY.
+        table_type: BODY, RING, SKY, SUPPLEMENTAL_INDEX, INVENTORY.
 
     Returns:
         None.
@@ -31,7 +35,8 @@ def create(filepath, host_template_path,
     filepath = FCPath(filepath)
     if not filepath.exists():
         return
-    table_type = table_type.upper()
+    host_template_path = FCPath(host_template_path)
+    table_type = (table_type or '').upper()
 
     # Get the label path
     if not system:
@@ -56,13 +61,13 @@ def create(filepath, host_template_path,
         template_path = host_template_dir / (template_name + '.lbl')
 
     # Default preprocessor
-    preprocess = pds3_table_preprocessor
+    preprocess: Callable[..., object] | None = pds3_table_preprocessor
     if 'inventory' in body:
         preprocess = None
 
     # Default template dictionary
-    fields = {'VOLUME_ID'   : volume_id,
-              'TABLE_TYPE'  : table_type}
+    fields: dict[str, str] = {'VOLUME_ID'   : volume_id,
+                              'TABLE_TYPE'  : table_type}
 
     # Generate label
     template = PdsTemplate(template_path, crlf=True,

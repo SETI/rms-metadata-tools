@@ -4,6 +4,9 @@
 import argparse
 import json
 import re
+from collections.abc import Iterator
+from pathlib import Path
+from typing import Any
 
 import pdslogger
 from filecache import FCPath
@@ -21,11 +24,11 @@ _LOGGER = pdslogger.PdsLogger.get_logger('metadata', digits=0, lognames=False,
 SYSTEM_NULL = "NONE"
 
 #=========================================================================================
-def init_logger(log_dir, log_type):
+def init_logger(log_dir: FCPath, log_type: str) -> None:
     """Initialize logger.
     Args:
-        log_dir (FCPath): Directory to log.
-        log_type (str): Type of log to create.
+        log_dir: Directory to log.
+        log_type: Type of log to create.
     Returns:
         None
     """
@@ -39,7 +42,7 @@ def init_logger(log_dir, log_type):
 
 #=========================================================================================
 
-def get_logger():
+def get_logger() -> pdslogger.PdsLogger:
     """The global PdsLogger for the metadata tools."""
     return _LOGGER
 
@@ -47,10 +50,10 @@ def get_logger():
 ##########################################################################################
 # Cloud task management
 ##########################################################################################
-task_list = []
+task_list: list[dict[str, Any]] = []
 
 #==========================================================================
-def task_source():
+def task_source() -> Iterator[dict[str, Any]]:
     """Task source generator for cloud_tasks.
     Args:
         None.
@@ -60,11 +63,11 @@ def task_source():
     yield from task_list
 
 #==========================================================================
-def add_task(volume_id, index_type):
+def add_task(volume_id: str, index_type: str) -> None:
     """Add a task to the task list.
     Args:
-        volume_id (str): ID of volume to add.
-        index_type (str): 'index' or 'geometry'.
+        volume_id: ID of volume to add.
+        index_type: 'index' or 'geometry'.
 
     Returns:
         None
@@ -78,10 +81,10 @@ def add_task(volume_id, index_type):
     task_list.append({'task_id':task_id, 'data':task_args})
 
 #==========================================================================
-def write_task_file(task_file):
+def write_task_file(task_file: str | None) -> None:
     """Write the tasks file.
     Args:
-        task_file(str): Name of file to write.
+        task_file: Name of file to write.
     Returns:
         None
     """
@@ -101,7 +104,10 @@ def write_task_file(task_file):
 class PathAction(argparse.Action):
     """Action method for path arguments.
     """
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(self, parser: argparse.ArgumentParser,
+                 namespace: argparse.Namespace,
+                 values: Any,
+                 option_string: str | None = None) -> None:
         if isinstance(values, list):
             values = values[0]
         vals = re.sub('://', '<<token>>', values)
@@ -110,21 +116,20 @@ class PathAction(argparse.Action):
         setattr(namespace, self.dest, vals)
 
 #=========================================================================================
-def get_common_args(host=None,
-                    volume_arg='volume_tree',
-                    metadata_arg='metadata_tree',
-                    output_arg='output_tree'):
+def get_common_args(host: str | None = None,
+                    volume_arg: str | None = 'volume_tree',
+                    metadata_arg: str | None = 'metadata_tree',
+                    output_arg: str | None = 'output_tree') -> argparse.ArgumentParser:
     """Common argument parser for metadata tools.
 
         Args:
-            host (str): Host name, e.g. 'GOISS'.
-            volume_arg (str): Name of volume_tree arg or None to skip this argument.
-            metadata_arg (str): Name of volume_tree arg or None to skip this argument.
-            output_arg (bostrl): Name of volume_tree arg or None to skip this argument.
+            host: Host name, e.g. 'GOISS'.
+            volume_arg: Name of volume_tree arg or None to skip this argument.
+            metadata_arg: Name of volume_tree arg or None to skip this argument.
+            output_arg: Name of volume_tree arg or None to skip this argument.
 
          Returns:
-            argparser.ArgumentParser :
-                Parser containing the common argument specifications.
+            Parser containing the common argument specifications.
    """
 
     # Define parser
@@ -167,51 +172,54 @@ class Table:
     """
 
     #=====================================================================================
-    def __init__(self, output_dir=None, template_path=None,
-                 volume_id=None, level=None, qualifier=None, prefix=None,
-                 suffix=None, use_global_template=False):
+    def __init__(self, output_dir: str | Path | FCPath | None = None,
+                 template_path: str | Path | FCPath | None = None,
+                 volume_id: str | None = None, level: str | None = None,
+                 qualifier: str | None = None, prefix: str | None = None,
+                 suffix: str | None = None, use_global_template: bool = False) -> None:
         """Constructor for a table object.
 
         Args:
-            output_dir (str, Path, or FCPath):
+            output_dir:
                 Directory in which to write the index files.
-            template_path (str, Path, or FCPath): Path to the host template.
-            volume_id (str): Volume ID.
-            level (str, optional):
+            template_path: Path to the host template.
+            volume_id: Volume ID.
+            level:
                 Processing level: "summary", "detailed", or "index".
-            qualifier (str):
+            qualifier:
                 "sky", "sun", "ring", "body", "inventory", or "supplemental".
-            prefix (str): File path prefix.
-            suffix (str): File name suffix.
-            use_global_template (bool):
+            prefix: File path prefix.
+            suffix: File name suffix.
+            use_global_template:
                 If True, the label template is to be found in the global
                 template directory.
 
         """
-        self.template_path = None
+        self.template_path: FCPath | None = None
         if template_path:
             self.template_path = FCPath(template_path)
         self.volume_id = volume_id
         self.level = level
         self.qualifier = qualifier
         self.use_global_template = use_global_template
-        self.rows = []
+        self.rows: list[str] = []
+        self.filename: FCPath
 
         if not output_dir:
             return
 
         if not suffix:
             suffix = "_%s_%s.tab" % (self.qualifier, self.level)
-        prefix = output_dir.joinpath(self.volume_id).as_posix()
+        prefix = FCPath(output_dir).joinpath(self.volume_id).as_posix()
         self.filename = FCPath(prefix + suffix)
 
 
     #=====================================================================================
-    def write(self, labels_only=False):
+    def write(self, labels_only: bool = False) -> None:
         """Write a table and its label.
 
         Args:
-            labels_only (bool, optional):
+            labels_only:
                 If True, labels are generated for any existing geometry
                 tables.
 
@@ -232,6 +240,7 @@ class Table:
         # Write label
         table_type = self.qualifier
         if self.level:
+            assert table_type is not None
             table_type += '_' + self.level
         lab.create(self.filename, self.template_path,
                    table_type=table_type, use_global_template=self.use_global_template)

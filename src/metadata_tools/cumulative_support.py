@@ -1,7 +1,10 @@
 ################################################################################
 # cumulative_support.py - Code for cumulative index files
 ################################################################################
+import argparse
 import fnmatch
+from pathlib import Path
+from typing import cast
 
 import host_config as hconf
 from filecache import FCPath
@@ -14,30 +17,37 @@ import metadata_tools.util as util
 
 
 #===============================================================================
-def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
-              exclude=None, volumes=None):
+def _cat_rows(volume_tree: FCPath,
+              cumulative_dir: FCPath,
+              template_path: str | Path | FCPath,
+              volume_glob: str,
+              table: com.Table,
+              *,
+              exclude: list[str] | None = None,
+              volumes: list[str] | None = None) -> None:
     """Creates the cumulative files for a collection of volumes.
 
     Args:
-        volume_tree (str, Path, or FCPath): Root of the tree containing the volumes.
-        cumulative_dir (str, Path, or FCPath):
+        volume_tree: Root of the tree containing the volumes.
+        cumulative_dir:
             Directory in which the cumulative files will reside.
-        template_path (str, Path, or FCPath): Path to the host template.
-        volume_glob (str): Glob pattern for volume identification.
-        table (geom.Table or idx.Index): Table object.
-        exclude (list, optional): List of volumes to exclude.
-        volumes (str, optional): If given, only these volumes are processed.
+        template_path: Path to the host template.
+        volume_glob: Glob pattern for volume identification.
+        table: Table object.
+        exclude: List of volumes to exclude.
+        volumes: If given, only these volumes are processed.
     """
     logger = com.get_logger()
 
-    table_type = table.qualifier
+    table_type = table.qualifier or ''
     if table.level:
         table_type += '_' + table.level
     ext = '.csv' if table_type == 'inventory' else '.tab'
 
     # Walk the input tree, adding lines for each found volume
     logger.info('Building Cumulative %s table', table_type)
-    content = []
+    content: list[str] = []
+    cumulative_file = FCPath('')
     for root, dirs, _files in volume_tree.walk(top_down=True):
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
@@ -74,7 +84,8 @@ def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
                     # Read the table file; skip this volume if it has none
                     table_file = root / ('%s_%s' % (vol, table_type) + ext)
                     try:
-                        lines = util.read_txt_file(table_file)
+                        # as_string is False, so the result is a list of lines.
+                        lines = cast(list[str], util.read_txt_file(table_file))
                     except FileNotFoundError:
                         continue
 
@@ -94,16 +105,16 @@ def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
                    use_global_template=table.use_global_template)
 
 #===============================================================================
-def get_args(host=None, exclude=None):
+def get_args(host: str | None = None,
+             exclude: list[str] | None = None) -> argparse.ArgumentParser:
     """Argument parser for cumulative metadata.
 
     Args:
-        host (str): Host name, e.g. 'GOISS'.
-        exclude (list, optional): List of volumes to exclude.
+        host: Host name, e.g. 'GOISS'.
+        exclude: List of volumes to exclude.
 
      Returns:
-        argparser.ArgumentParser :
-            Parser containing the argument specifications.
+        Parser containing the argument specifications.
     """
 
     # Get common args
@@ -122,17 +133,17 @@ def get_args(host=None, exclude=None):
     return parser
 
 #===============================================================================
-def create_cumulative_indexes(template_name,
-                              volumes=None,
-                              args=None,
-                              exclude=None):
+def create_cumulative_indexes(template_name: str,
+                              volumes: list[str] | None = None,
+                              args: argparse.Namespace | None = None,
+                              exclude: list[str] | None = None) -> None:
     """Creates the cumulative files for a collection of volumes.
 
     Args:
-        template_name (str): Name of index template.
-        volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
-        args (argparse.Namespace): Parsed arguments.
-        exclude (list, optional): List of volumes to exclude.
+        template_name: Name of index template.
+        volumes: List of volume ids to process.  Overrides args.volumes.
+        args: Parsed arguments.
+        exclude: List of volumes to exclude.
     """
     # Parse arguments
     host, _index_type, template_dir = util.parse_template_name(template_name)

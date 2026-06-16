@@ -155,8 +155,28 @@ module = "metadata_tools._version"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-# oops (rms-oops) ships no type stubs or py.typed marker.
-module = ["oops.*"]
+# Third-party runtime deps that ship no type stubs or py.typed marker.
+module = [
+    "oops.*",
+    "polymath.*",
+    "cspyce.*",
+    "fortranformat.*",
+    "julian.*",
+    "pdslogger.*",
+    "pdsparser.*",
+    "pdstable.*",
+    "pdstemplate.*",
+    "vicar.*",
+    "textkernel.*",
+    "json_stream.*",
+    "cloud_tasks.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Host config/init modules are imported as top-level names (the plugin pattern,
+# resolvable only when CWD is the host dir), so mypy cannot follow them.
+module = ["host_config", "host_init", "index_config", "geometry_config"]
 ignore_missing_imports = true
 
 [tool.ruff]

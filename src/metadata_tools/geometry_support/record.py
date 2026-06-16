@@ -1,6 +1,8 @@
 ################################################################################
 # geometry_support/record.py - The Record class (one geometry table row).
 ################################################################################
+from typing import Any, cast
+
 import geometry_config as config
 import oops
 
@@ -18,18 +20,19 @@ class Record:
     """
 
     #===========================================================================
-    def __init__(self, observation, volume_id, meshgrids, sampling, level):
+    def __init__(self, observation: Any, volume_id: str, meshgrids: dict[str, Any],
+                 sampling: int, level: str) -> None:
         """Constructor for a geometry record.
 
         Args:
-            observation (oops.Observation): OOPS Observation object.
-            volume_id (str): Volume ID.
-            meshgrids (dict): All meshgrids associated with this host.
-            sampling (int): Pixel sampling density.
-            level (str, optional): Processing level: 'summary' or 'detailed'.
+            observation: OOPS Observation object.
+            volume_id: Volume ID.
+            meshgrids: All meshgrids associated with this host.
+            sampling: Pixel sampling density.
+            level: Processing level: 'summary' or 'detailed'.
         """
         self.observation = observation
-        self.backplane_keys = {}
+        self.backplane_keys: dict[str, list[Any]] = {}
 
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
@@ -40,7 +43,7 @@ class Record:
         self.pointing_available = True
 
         # Level-specific column dictionaries
-        self.dicts = {'sky' : col.SKY_COLUMNS}
+        self.dicts: dict[str, Any] = {'sky' : col.SKY_COLUMNS}
         if level == 'summary':
             self.dicts |= {
                 'sun'    : col.SUN_SUMMARY_COLUMNS,
@@ -55,13 +58,13 @@ class Record:
             }
 
         # Set up planet-based geometry
-        self.bodies = []
-        self.blocker = None
+        self.bodies: list[str] = []
+        self.blocker: str | None = None
 
         if self.primary:
-            self.rings_present = col.BODIES[self.primary].ring_frame is not None
-            self.ring_tile_dict = col.RING_TILE_DICT[self.primary]
-            self.body_tile_dict = col.BODY_TILE_DICT[self.primary]
+            self.rings_present: bool = col.BODIES[self.primary].ring_frame is not None
+            self.ring_tile_dict: Any = col.RING_TILE_DICT[self.primary]
+            self.body_tile_dict: Any = col.BODY_TILE_DICT[self.primary]
 
         # Determine target
         self.target = str(config.target_name(observation.dict))
@@ -95,36 +98,38 @@ class Record:
                 util.replace(col.BODY_SUMMARY_COLUMNS,
                                 defs.BODYX, self.target)
             self.body_tile_dict[self.target] = \
-                util.replace(col.BODY_TILES,
+                util.replace(cast(list[Any], col.BODY_TILES),
                                 defs.BODYX, self.target)
 
     #===========================================================================
     @staticmethod
-    def get_backplane_key(column_desc):
+    def get_backplane_key(column_desc: Any) -> str:
         """Extract the backplane key from the column description.
 
         Args:
-            column_desc (list): A column description; its first element is the
+            column_desc: A column description; its first element is the
                 event key (a tuple whose first element is the backplane key, or
                 the backplane key itself).
 
         Returns:
-            str: The backplane key.
+            The backplane key.
         """
 
         event_key = column_desc[0]
-        return event_key[0] if isinstance(event_key, tuple) else event_key
+        key = event_key[0] if isinstance(event_key, tuple) else event_key
+        return cast(str, key)
 
     #===========================================================================
-    def get_key_map(self, columns, qualifier):
+    def get_key_map(self, columns: list[str],
+                    qualifier: str) -> tuple[list[Any], list[str]]:
         """Construct the mapping between backplane keys and column values.
 
         Args:
-            columns (list): One str for each column.
+            columns: One str for each column.
             qualifier: 'sky', 'sun', 'ring', or 'body'.
 
         Returns:
-            list: tuples of (backplane key, column value)
+            A tuple (backplane keys, column values).
         """
 
         # Get all backplane keys
@@ -148,29 +153,30 @@ class Record:
         return (backplane_keys, data_columns)
 
     #===========================================================================
-    def postprocess(self, columns, qualifier):
+    def postprocess(self, columns: list[str], qualifier: str) -> list[str]:
         """Process the completed record.
 
         Args:
-            columns (list): One str for each column.
-            qualifier (str): 'sky', 'sun', 'ring', or 'body'.
+            columns: One str for each column.
+            qualifier: 'sky', 'sun', 'ring', or 'body'.
 
         Returns:
-            None
+            The processed columns.
         """
 
-        def link_null(link, backplane_keys, data_columns):
+        def link_null(link: dict[str, Any], backplane_keys: list[Any],
+                      data_columns: list[str]) -> list[str]:
             """Enter null value for all linked columns if any of them are null.
 
             Args:
-                link (dict): Defines the link:
-                                 backplane_key : Linked backplane key.
-                                 null_value    : Null value for this key.
-                backplane_keys (list): All backplane keys.
-                data_columns (list): Column values for each backplane key.
+                link: Defines the link:
+                          backplane_key : Linked backplane key.
+                          null_value    : Null value for this key.
+                backplane_keys: All backplane keys.
+                data_columns: Column values for each backplane key.
 
             Returns:
-                Update data columns
+                The updated data columns.
             """
             # Locate the linked columns
             ii = [i for i, key in enumerate(backplane_keys) if key==link['backplane_key']]
@@ -188,7 +194,7 @@ class Record:
         backplane_keys, data_columns = self.get_key_map(columns, qualifier)
 
         # Build link dictionary
-        links = {}
+        links: dict[str, dict[str, Any]] = {}
         for key in backplane_keys:
             fmt = formats.FORMAT_DICT[key]
             (_,_,_,_,_, null_value, _, _, link_id, link) = fmt
@@ -208,23 +214,25 @@ class Record:
         return columns
 
     #===============================================================================
-    def _meshgrid(self, observation, meshgrids):
+    def _meshgrid(self, observation: Any, meshgrids: dict[str, Any]) -> Any:
         """Looks up the meshgrid for an observation.
 
         Args:
-            observation (oops.Observation): OOPS Observation object.
-            meshgrids (dict): All meshgrids associated with this host.
+            observation: OOPS Observation object.
+            meshgrids: All meshgrids associated with this host.
 
         Returns:
-            oops.Meshgrid: Meshgrid for the given observation.
+            Meshgrid for the given observation.
         """
         return config.meshgrid(meshgrids, observation)
 
     #===============================================================================
-    def add(self, qualifier, *,
-                  name=None, target=None, tiles=None, tiling_min=100,
-                  ignore_shadows=False, start_index=1, allow_zero_rows=True,
-                  no_mask=False, no_body=False):
+    def add(self, qualifier: str, *,
+                  name: str | None = None, target: str | None = None,
+                  tiles: list[Any] | tuple[Any, ...] | None = None, tiling_min: int = 100,
+                  ignore_shadows: bool = False, start_index: int = 1,
+                  allow_zero_rows: bool = True, no_mask: bool = False,
+                  no_body: bool = False) -> list[str]:
         """Generates the geometry for one row, given a list of column descriptions.
 
         The tiles argument supports detailed listings where a geometric region is
@@ -250,25 +258,28 @@ class Record:
 
         Args:
             qualifier: 'sky', 'sun', 'ring', or 'body'.
-            name (str, optional): Name identifying a specific column description.
-            target (str, optional): Optionally, the target name to write into the record.
-            tiles (list, optional):
+            name: Name identifying a specific column description.
+            target: Optionally, the target name to write into the record.
+            tiles:
                 An optional list of boolean backplane keys, used to
                 support the generation of detailed tabulations instead
                 of summary tabulations. See details above.
-            tiling_min (int, optional):
+            tiling_min:
                 The lower limit on the number of meshgrid points in a
                 region before that region is subdivided into tiles.
-            ignore_shadows (bool, optional):
+            ignore_shadows:
                 True to ignore any mask constraints applicable to
                 shadowing or to the sunlit faces of surfaces.
-            start_index (int, optional): Index to use for first subregion. Default 1.
-            allow_zero_rows (bool, optional):
+            start_index: Index to use for first subregion. Default 1.
+            allow_zero_rows:
                 True to allow the function to return no rows. If False,
                 a row filled with null values will be returned if
                 necessary.
-            no_mask (bool, optional): True to suppress the use of a mask.
-            no_body (bool, optional): True to suppress body prefixes.
+            no_mask: True to suppress the use of a mask.
+            no_body: True to suppress body prefixes.
+
+        Returns:
+            The formatted output rows.
         """
         if tiles is None:
             tiles = []
@@ -290,7 +301,7 @@ class Record:
 #        self.overrides += overrides  ## this is for future development
 
         # Postprocess the rows and append to the output
-        lines = []
+        lines: list[str] = []
         for columns in rows:
             row = self.postprocess(columns, qualifier)
             lines.append(','.join(row))

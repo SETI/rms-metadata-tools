@@ -4,20 +4,25 @@
 # Config-free: depends only on oops and numpy so it can be unit-tested without
 # the host geometry_config plugin.
 ################################################################################
+from typing import Any
+
 import numpy as np
+import numpy.typing as npt
 import oops
 
 
 #===============================================================================
-def construct_excluded_mask(backplane, target, primary, mask_desc, *,
-                            blocker=None, ignore_shadows=True):
+def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
+                            mask_desc: tuple[str, str, str], *,
+                            blocker: str | None = None,
+                            ignore_shadows: bool = True) -> npt.NDArray[np.bool_] | bool:
     """Return a mask using the specified target, maskers and shadowers to
     indicate excluded pixels.
 
     Args:
-        backplane (oops.Backplne): The backplane defining the target surface.
-        target (str): The name of the target surface.
-        primary (str): Name of primary, e.g., "SATURN".
+        backplane: The backplane defining the target surface.
+        target: The name of the target surface.
+        primary: Name of primary, e.g., "SATURN".
         mask_desc (masker, shadower, face), where:
             Masker      a string identifying what surfaces can obscure the
             target. It is a concatenation of:
@@ -34,15 +39,15 @@ def construct_excluded_mask(backplane, target, primary, mask_desc, *,
             "D" to include only the day side of the target;
             "N" to include only the night side of the target;
             ""  to include both faces of the target.
-        blocker (str, optional):
+        blocker:
             Optionally, the name of the body to use for any "M"
             codes that appear in the mask_desc.
-        ignore_shadows (bool, optional):
+        ignore_shadows:
             True to ignore any shadower or face constraints; default
             is False.
 
     Returns:
-        numpy.array: Boolean bitmask containing the mask.
+        Boolean bitmask containing the mask.
     """
 
     # Do not let a body block itself

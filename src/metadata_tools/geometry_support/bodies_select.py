@@ -6,6 +6,7 @@
 # SPICE-backed Record.
 ################################################################################
 import re
+from typing import TYPE_CHECKING, Any, cast
 
 import geometry_config as config
 import oops
@@ -14,14 +15,17 @@ import metadata_tools.columns as col
 import metadata_tools.common as com
 import metadata_tools.util as util
 
+if TYPE_CHECKING:
+    from metadata_tools.geometry_support.record import Record
+
 
 #===============================================================================
-def inventory(record, bodies):
+def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]:
     """Obtain image inventory if possible.
 
     Args:
-        record (Record): The geometry record.
-        bodies (list): Bodies to test.
+        record: The geometry record.
+        bodies: Bodies to test.
 
     Returns:
         List of inventory bodies.
@@ -31,7 +35,7 @@ def inventory(record, bodies):
     # Attempt to obtain inventory
     try:
         inventory = record.observation.inventory(bodies, expand=config.EXPAND, cache=False)
-        return inventory
+        return cast(list[str], inventory)
 
     # A RuntimeError is probably caused by missing spice data. There is
     # probably nothing we can do.
@@ -55,7 +59,7 @@ def inventory(record, bodies):
         return []
 
 #===============================================================================
-def select_bodies(record, bodies):
+def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
     """Select all bodies to include in this record according to the following rules:
 
        1. The primary and secondary bodies are always included.
@@ -68,8 +72,8 @@ def select_bodies(record, bodies):
           primary.
 
     Args:
-        record (Record): The geometry record.
-        bodies (list): All bodies.
+        record: The geometry record.
+        bodies: All bodies.
 
     Returns:
         List of selected bodies.
@@ -115,18 +119,18 @@ def select_bodies(record, bodies):
     return [body_name for body_name in body_names if oops.Body.exists(body_name)]
 
 #===============================================================================
-def get_system(body):
+def get_system(body: str) -> str | None:
     """Looks up the system for a body.
 
     Args:
-        body (str): Body for which to determine the system.  For a satellite, the
-                    system is the parent.  For planet, the system is itself.
+        body: Body for which to determine the system.  For a satellite, the
+              system is the parent.  For planet, the system is itself.
 
     Returns:
-        str: Name of system, body.
+        Name of system, body, or None if the body is not registered.
     """
     if body in oops.Body.BODY_REGISTRY:
-        parent = oops.Body.BODY_REGISTRY[body].parent.name
+        parent = cast(str, oops.Body.BODY_REGISTRY[body].parent.name)
     else:
         return None
     if parent != 'SUN':
@@ -134,16 +138,16 @@ def get_system(body):
     return body
 
 #===============================================================================
-def obs_excluded(record, exceptions):
+def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
     """Use converted default bodies table to determine the primary for a given
        spacecraft clock count.
 
     Args:
-        record (Record): The geometry record.
-        exceptions (list): List of regular expressions to test against the observation ID.
+        record: The geometry record.
+        exceptions: List of regular expressions to test against the observation ID.
 
     Returns:
-        bool: True if the observation is excluded.
+        True if the observation is excluded.
     """
     if not exceptions:
         return False
@@ -163,26 +167,25 @@ def obs_excluded(record, exceptions):
     return False
 
 #===============================================================================
-def get_primary(record, table, sclk):
+def get_primary(record: 'Record', table: list[Any],
+                sclk: str) -> tuple[str, list[str], list[str], list[str]]:
     """Use converted default bodies table to determine the primary for a given
        spacecraft clock count.
 
     Args:
-        record (Record): The geometry record.
-        table (list):
+        record: The geometry record.
+        table:
             Converted default bodies table containing sclk ticks instead of strings.
-        sclk (str): Spacecraft clock string corresponding to the observation time.
+        sclk: Spacecraft clock string corresponding to the observation time.
 
     Returns:
-        NamedTuple (primary (str), secondaries (list), selections (list),
-                    additions (list)):
+        A tuple (primary, secondaries, selections, additions), where:
             primary: Name of the primary corresponding to the given SCLK value.
-            secondaries:
-                Names of any secondaries.
-            selections:
-                Names of any selected bodies.
+            secondaries: Names of any secondaries.
+            selections: Names of any selected bodies.
+            additions: Names of any added bodies.
     """
-    fail = ('', [], [], [])
+    fail: tuple[str, list[str], list[str], list[str]] = ('', [], [], [])
     sclk_ticks = util.sclk_to_ticks(sclk, config.SC)
     for row in table:
         if obs_excluded(record, row[1]):

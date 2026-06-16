@@ -11,6 +11,7 @@ from typing import Any
 
 import cspyce
 import numpy as np
+import numpy.typing as npt
 import pdstable
 from filecache import FCPath
 
@@ -18,11 +19,11 @@ import metadata_tools.defs as defs
 
 
 #===============================================================================
-def dbprint(message):
+def dbprint(message: str) -> None:
     """Print a message to stderr with time stamp for debugging.
 
     Args:
-        message (str): Message to write.
+        message: Message to write.
 
     Returns: None
     """
@@ -31,47 +32,47 @@ def dbprint(message):
     print(f'{time} - {message}', file=sys.stderr, flush=True)
 
 #===============================================================================
-def pds_table(label_path):
+def pds_table(label_path: FCPath) -> pdstable.PdsTable:
     """read a pds3table from an FCPath object.  To be replaced whenever pdstable is
        upgraded to use filecache.
 
     Args:
-        label_path (str, Path, or FCPath): Path to the label file.
+        label_path: Path to the label file.
 
     Returns:
-        pdstable.PdsTable: Table associated with the given label.
+        Table associated with the given label.
     """
     local_label_path = label_path.retrieve()
     _local_table_path = label_path.with_suffix('.tab').retrieve() # Retrieve table as well
     return pdstable.PdsTable(local_label_path)
 
 #===============================================================================
-def select_dir(tree, col, vol):
+def select_dir(tree: FCPath, col: str, vol: str) -> FCPath:
     """Determine the template directory for a given collection and volume.
 
     Args:
-        tree (FCPath): Base tree path.
-        col (str): Collection name.
-        vol (str): Volume name.
+        tree: Base tree path.
+        col: Collection name.
+        vol: Volume name.
 
     Returns:
-        FCPath: Directory path.
+        Directory path.
     """
     if tree.parts[-1] != col:
         return tree / col / vol
     return tree / vol
 
 #===============================================================================
-def get_index_name(tree, vol_id, index_type):
+def get_index_name(tree: FCPath, vol_id: str, index_type: str) -> str:
     """Determine the name of the index file.
 
     Args:
-        tree (str): Top dir for volume.
-        vol_id (str): Volume ID.
-        index_type (str): Index type.
+        tree: Top dir for volume.
+        vol_id: Volume ID.
+        index_type: Index type.
 
     Returns:
-        str: Index name.
+        Index name.
     """
 
     # Name starts with volume id
@@ -87,20 +88,22 @@ def get_index_name(tree, vol_id, index_type):
     return name
 
 #===============================================================================
-def get_template_name(filename, volume_id, code_dir):
+def get_template_name(filename: str, volume_id: str, code_dir: FCPath) -> str:
     """Determine the name of the label template.
 
     Args:
-        filename (str): Name of table or label file.
+        filename: Name of table or label file.
+        volume_id: Volume ID to be replaced by the collection name.
+        code_dir: Directory whose name is the collection name.
 
     Returns:
-        str: Index name.
+        Index name.
     """
     collection = code_dir.name
     return filename.replace(volume_id, collection).split('.')[0]
 
 #===============================================================================
-def parse_template_name(template_name):
+def parse_template_name(template_name: str) -> tuple[str, str, FCPath]:
     """Determine host and index type from template name of the form:
 
         <host>_<index type>_index
@@ -108,11 +111,10 @@ def parse_template_name(template_name):
     index_type cannot contain undescores.
 
     Args:
-        template_name (str): Name of template file.
+        template_name: Name of template file.
 
     Returns:
-        str: Host name.
-        str: index type.
+        Tuple of host name, index type, and the template directory.
     """
     base = template_name.split('_index')[0]
     parts = base.split('_')
@@ -123,61 +125,62 @@ def parse_template_name(template_name):
     return (host, index_type, template_dir)
 
 #===============================================================================
-def pm(x):               ### move to utilities, why is this not in numpy?
+### move to utilities, why is this not in numpy?
+def pm(x: float) -> npt.NDArray[np.float64]:
     """Return plus/minus the input.
 
     Args:
-        x (numpy scalar): Data to smooth.
+        x: Data to smooth.
 
     Returns:
-        numpy.ndarray: Plus and minus values.
+        Plus and minus values.
     """
 
     return np.array([x,-x])
 
 #===============================================================================
-def smooth(data, width):               ### move to utilities, why is this not in numpy?
+### move to utilities, why is this not in numpy?
+def smooth(data: npt.NDArray[np.float64], width: int) -> npt.NDArray[np.float64]:
     """Smooth a curve using a moving box.
 
     Args:
-        data (numpy.ndarray): Data to smooth.
-        width (int): Width of smoothing box.
+        data: Data to smooth.
+        width: Width of smoothing box.
 
     Returns:
-        numpy.ndarray: Smoothed data.
+        Smoothed data.
     """
     kernel = np.ones(width)/width
     return np.convolve(data, kernel, mode='same')
 
 #===============================================================================
-def splitpath(path: str, string: str):               ### move to utilities
+### move to utilities
+def splitpath(path: FCPath, string: str) -> tuple[FCPath, FCPath]:
     """Split a path at a given string.
 
     Args:
-        path (str, Path, or FCPath): Path to split.
-        string (str):
+        path: Path to split.
+        string:
             Search string. The path is split at the first occurrence and the search
             string is omitted.
 
     Returns:
-        NamedTuple (lines (list), lnum (int)):
-            lines: Lines comprising the output label.
-            lnum: Line number in output label at which processing
-                        is to continue.
+        Tuple of the path portion before the search string and the portion after it.
     """
     parts = path.parts
     i = parts.index(string)
     return (FCPath('').joinpath(*parts[0:i]), FCPath('').joinpath(*parts[i+1:]))
 
 #===============================================================================
-def get_volume_subdir(path, volume_id):
+def get_volume_subdir(path: FCPath, volume_id: str) -> FCPath:
     """Determine the Subdirectory of an input file relative to the volume dir.
 
     Args:
-        path (str, Path, or FCPath): Input path or directory.
+        path: Input path or directory.
+        volume_id: Volume ID at which to split the path.
 
     Returns:
-        str: Final directory in tree.
+        Final directory in tree.
     """
     return splitpath(path, volume_id)[-1]
 #    return path.split(volume_id)[-1]  ## not currently supprted by filecache
@@ -189,12 +192,12 @@ def replace(tree: list[Any], placeholder: str, name: str) -> Any:
     detected, then it is evaluated.
 
     Args:
-        tree (list): List containing the tree.
-        placeholder (str): Placeholder to replace
-        name (str): Replacement string.
+        tree: List containing the tree.
+        placeholder: Placeholder to replace
+        name: Replacement string.
 
     Returns:
-        list: New tree with placeholder replaced by name.
+        New tree with placeholder replaced by name.
 
     """
 
@@ -234,12 +237,12 @@ def replacement_dict(tree: list[Any], placeholder: str, names: list[str]) -> dic
     tree using that name as the replacement.
 
     Args:
-        tree (list): List containing the tree.
-        placeholder (str): Placeholder to replace
-        name (list): List of replacement strings.
+        tree: List containing the tree.
+        placeholder: Placeholder to replace
+        names: List of replacement strings.
 
     Returns:
-        dict: New dictionary.
+        New dictionary.
 
     """
 
@@ -254,24 +257,24 @@ def replacement_fn(dict_name: str, name: str) -> str:
     """Create a replacement-able dictionary reference.
 
     Args:
-        dict_name (str): Name of dictionary.
-        name (str): Dictionary key, which could be a placeholder string.
+        dict_name: Name of dictionary.
+        name: Dictionary key, which could be a placeholder string.
 
     Returns:
-        str: Dictionary reference keyed by possible placeholder name.
+        Dictionary reference keyed by possible placeholder name.
 
     """
     return dict_name + '["' + name + '"]'
 
 #===============================================================================
-def get_volume_glob(col):
+def get_volume_glob(col: str) -> str:
     """Build a glob string to match all volumes in a collection.
 
     Args:
-        col (str): Collection name, e.g., GO_xxxx.
+        col: Collection name, e.g., GO_xxxx.
 
     Returns:
-        str: Glob string.
+        Glob string.
 
     """
     parts = col.rsplit('_', 1)
@@ -282,16 +285,17 @@ def get_volume_glob(col):
     return volume_glob
 
 #===============================================================================
-def add_by_base(x_digits, y_digits, bases):           ### move to utilities
+def add_by_base(x_digits: list[int], y_digits: list[int],
+                bases: list[int]) -> list[int]:           ### move to utilities
     """Add numbers represented using the specified bases.
 
     Args:
-        x_digits (list): Digits (int) representing the first operand.
-        y_digits (list): Digits (int) representing the second operand.
-        bases (list): Bases (int) for each position.
+        x_digits: Digits (int) representing the first operand.
+        y_digits: Digits (int) representing the second operand.
+        bases: Bases (int) for each position.
 
     Returns:
-        list: Digits (int) representing the result.
+        Digits (int) representing the result.
 
     """
     result = [0]*(len(bases)+1)
@@ -305,14 +309,14 @@ def add_by_base(x_digits, y_digits, bases):           ### move to utilities
     return list(reversed(result))
 
 #===============================================================================
-def expandvars(filespec):           ### add to FCPath?
+def expandvars(filespec: str | Path | FCPath) -> str | Path | FCPath:           ### add to FCPath?
     """Expand environment variables in path.
 
     Args:
-        filespec (str, Path, or FCPath): Path to expand.
+        filespec: Path to expand.
 
     Returns:
-        str, Path, or FCPath: Expanded path.
+        Expanded path.
 
     """
     result = filespec
@@ -330,60 +334,57 @@ def expandvars(filespec):           ### add to FCPath?
     return Path(result)
 
 #===============================================================================
-def read_txt_file(filespec, as_string=False, terminator='\r\n'):    ### move to utilities
+def read_txt_file(filespec: str | Path | FCPath, as_string: bool = False,
+                  terminator: str = '\r\n') -> str | list[str]:    ### move to utilities
     """Read a text file, with some options.
 
     Args:
-        filespec (str, Path, or FCPath):
+        filespec:
             Path to the file to read.  Environment variables are expanded.
-        as_string (bool, optional):
+        as_string:
             If True, the result is returned as a string using the specified
             terminator.
-        terminator (str): Terminator to use for string return.
+        terminator: Terminator to use for string return.
 
     Returns:
-        list (as_string==False): Lines of the file with no terminators.
-        str (as_string==True): Lines of the file concatenated using the specified
-        terminator.
+        If as_string is False, the lines of the file with no terminators; if True,
+        the lines of the file concatenated using the specified terminator.
 
     """
-    filespec = FCPath(filespec)
-
     # Expand environment variables and resolve to absolute path
-    filespec = expandvars(filespec)
+    path = FCPath(expandvars(FCPath(filespec)))
 
     # Read the file
-    content = filespec.read_text(encoding='utf-8', newline=terminator)
+    content = path.read_text(encoding='utf-8', newline=terminator)
     if as_string:
         return content
 
     # Split into list of lines with no terminator
-    content = content.split('\n')
-    if content[-1] == '':
-        content = content[:-1]
-    content = [c.rstrip('\r\n') for c in content]
+    lines = content.split('\n')
+    if lines[-1] == '':
+        lines = lines[:-1]
+    lines = [c.rstrip('\r\n') for c in lines]
 
-    return content
+    return lines
 
 #===============================================================================
-def write_txt_file(filespec, content, terminator='\r\n'):    ### move to utilities
+def write_txt_file(filespec: str | Path | FCPath, content: str | list[str],
+                   terminator: str | None = '\r\n') -> None:    ### move to utilities
     """Write a text file, with some options.
 
     Args:
-        filespec (str, Path, or FCPath): Path to the file to write.
-        content (str or list):
+        filespec: Path to the file to write.
+        content:
             Text to write.  If list, each element is a line that will be terminated
             using the specified terminator.  If string, existing terminators are
             replaced with the specified terminator.
-        terminator (str): Desired line terminator.
+        terminator: Desired line terminator.
 
     Returns:
         None
     """
-    filespec = FCPath(filespec)
-
     # Expand environment variables and resolve to absolute path
-    filespec = expandvars(filespec)
+    path = FCPath(expandvars(FCPath(filespec)))
 
     # Determine terminator
     if terminator is None:
@@ -394,39 +395,37 @@ def write_txt_file(filespec, content, terminator='\r\n'):    ### move to utiliti
         terminator = '\r\n' if crlf else '\n'
 
     # Split into list of lines with no terminator
-    if not isinstance(content, list):
-        content = content.split('\n')
-    content = [c.rstrip('\r\n') for c in content]
+    lines = content.split('\n') if not isinstance(content, list) else content
+    lines = [c.rstrip('\r\n') for c in lines]
 
     # Reconstitute with correct terminator
-    content = terminator.join(content) + terminator
+    text = terminator.join(lines) + terminator
 
     # Write file
-    filespec.write_text(content, encoding='utf-8')
+    path.write_text(text, encoding='utf-8')
 
 #===============================================================================
-def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilities
+def append_txt_file(filespec: str | Path | FCPath, content: str | list[str],
+                    terminator: str | None = '\r\n') -> None:    ### move to utilities
     """Append text to a file, with some options.
 
     Args:
-        filespec (str, Path, or FCPath): Path to the file to write.
-        content (str or list):
+        filespec: Path to the file to write.
+        content:
             Text to write.  If list, each element is a line that will be terminated
             using the specified terminator.  If string, existing terminators are
             replaced with the specified terminator.
-        terminator (str): Desired line terminator.
+        terminator: Desired line terminator.
 
     Returns:
         None
     """
-    filespec = FCPath(filespec)
-
     # Expand environment variables and resolve to absolute path
-    filespec = expandvars(filespec)
+    path = FCPath(expandvars(FCPath(filespec)))
 
     # If no file, just run write_txt_file().
-    if not filespec.exists():
-        write_txt_file(filespec, content, terminator=terminator)
+    if not path.exists():
+        write_txt_file(path, content, terminator=terminator)
         return
 
     # Determine terminator
@@ -438,31 +437,29 @@ def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilit
         terminator = '\r\n' if crlf else '\n'
 
     # Split into list of lines with no terminator
-    if not isinstance(content, list):
-        content = content.split('\n')
-    content = [c.rstrip('\r\n') for c in content]
+    lines = content.split('\n') if not isinstance(content, list) else content
+    lines = [c.rstrip('\r\n') for c in lines]
 
     # Reconstitute with correct terminator
-    content = terminator.join(content) + terminator
+    text = terminator.join(lines) + terminator
 
     # Write file
-    with open(Path(filespec.as_posix()), "a", encoding="utf-8") as file:
-        file.write(content)
+    with open(Path(path.as_posix()), "a", encoding="utf-8") as file:
+        file.write(text)
 
 #===============================================================================
-def rebase(x, bases, ceil=False):    ### move to utilities
+### move to utilities
+def rebase(x: int, bases: list[int], ceil: bool = False) -> tuple[list[int], int]:
     """Convert a decimal number to a different base.
 
     Args:
-        x (int): Number to convert.
-        bases (list): Base (int) to use for each decimal place.
+        x: Number to convert.
+        bases: Base (int) to use for each decimal place.
+        ceil: If True, round each digit up rather than truncating.
 
     Returns:
-        NamedTuple (digits (list), over (int)):
-            digits: Digits (int) in the new base.
-            overflow:
-                Remaining quantity, if any, exceeding the maximum value that can be
-                represented by the given bases.
+        Tuple of the digits (int) in the new base and the remaining quantity, if any,
+        exceeding the maximum value that can be represented by the given bases.
     """
     digits = []
     for base in reversed(bases):
@@ -477,18 +474,18 @@ def rebase(x, bases, ceil=False):    ### move to utilities
     return (list(reversed(digits)), x)
 
 #===============================================================================
-def sclk_split_count(count, delim=None):
+def sclk_split_count(count: str, delim: str | None = None) -> list[int]:
     """Parse a spacecraft clock count into a list.
 
     Args:
-        count (str): Number to convert.
-        delim (str):
+        count: Number to convert.
+        delim:
             Field delimiter to use. If None, all non-alphanumeric characters are
             treated as delimiters.
 
 
     Returns:
-        list: Fields (int) of the given spacecraft clock count.
+        Fields (int) of the given spacecraft clock count.
     """
 
     # Replace all non-alphanumerics with default delimiter if non given
@@ -505,18 +502,18 @@ def sclk_split_count(count, delim=None):
     return fields[0:4]
 
 #===============================================================================
-def sclk_format_count(fields, fmt):
+def sclk_format_count(fields: list[int], fmt: str) -> str:
     """Construct a spacecraft clock count from a list of fields.
 
     Args:
-        fields (list): Fields (int) the spacecraft clock count.
-        fmt (str):
+        fields: Fields (int) the spacecraft clock count.
+        fmt:
             Template indicating the fields widths and delimiters.  Alphanumeric
             characters indicate field digits, non-alphanumeric characters indicate
             field delimiters. Example: 'nnnnnnnn:nn:n.n'.
 
     Returns:
-        str: Spacecraft clock count, zero-padded and delimited per the format.
+        Spacecraft clock count, zero-padded and delimited per the format.
     """
 
     # Get delimiters
@@ -536,42 +533,42 @@ def sclk_format_count(fields, fmt):
     return count
 
 #===============================================================================
-def sclk_to_ticks(sclk, sc):
+def sclk_to_ticks(sclk: str, sc: int) -> Any:
     """Convert spacecraft clock count string to ticks.
 
     Args:
-        sclk (list): Spacecraft clock count string.
-        sc (int): NAIF spacecraft identifier.
+        sclk: Spacecraft clock count string.
+        sc: NAIF spacecraft identifier.
 
     Returns:
-        int: Spacecraft clock ticks.
+        Spacecraft clock ticks.
     """
     return cspyce.sctiks_alias(sc, sclk)
 
 #===============================================================================
-def get_observation_id(observation):
+def get_observation_id(observation: Any) -> str:
     """Utility function to determine the observation ID for an observation.
 
     Args:
-        observation (oops.Observation): Observation object.
+        observation: Observation object.
 
     Returns:
-        str: Observation ID.
+        Observation ID.
     """
     return str(observation.subfields['dict']['OBSERVATION_ID'])
 
 #===============================================================================
-def convert_mission_table(table, sc):
+def convert_mission_table(table: list[Any], sc: int) -> list[Any]:
     """Convert mission table SCLK count string to ticks using sclk_to_ticks().
 
     Args:
-        table (list): Systems table.
-        sc (int): NAIF spacecraft identifier.
+        table: Systems table.
+        sc: NAIF spacecraft identifier.
 
     Returns:
-        list: Converted mission table containing ticks instead of strings.
+        Converted mission table containing ticks instead of strings.
     """
-    new_table = []
+    new_table: list[Any] = []
     for item in table:
         new_table.append(
             ((sclk_to_ticks(item[1][0], sc),
@@ -581,7 +578,7 @@ def convert_mission_table(table, sc):
     return new_table
 
 #===============================================================================
-def range_of_n_angles(n, prob=0.1, tests=100000):
+def range_of_n_angles(n: int, prob: float = 0.1, tests: int = 100000) -> np.float64:
     """Used to study the statistics of n randomly chosen angles. This function
     was used to compute the NINETY_PERCENT_RANGE_DEGREES table below.
 
@@ -590,11 +587,11 @@ def range_of_n_angles(n, prob=0.1, tests=100000):
     given probability. Base this on the specified number of tests.
 
     Args:
-        n (int): Number of random samples to analyze.
-        prob (float, optional): Probability criterion.
-        tests (int, optional): Number of tests to perform.
+        n: Number of random samples to analyze.
+        prob: Probability criterion.
+        tests: Number of tests to perform.
     Returns:
-        numpy.float64: Angular interval in degrees.
+        Angular interval in degrees.
     """
     max_diffs = []
     for _k in range(tests):
@@ -605,9 +602,9 @@ def range_of_n_angles(n, prob=0.1, tests=100000):
         diffs[-1]  = values[0] + 360. - values[-1]
         max_diffs.append(diffs.max())
 
-    max_diffs = np.sort(max_diffs)
+    sorted_diffs = np.sort(max_diffs)
     cutoff = int((1.-prob) * tests + 0.5)
-    return 360. - max_diffs[cutoff]
+    return np.float64(360. - sorted_diffs[cutoff])
 
 
 ################################################################################
@@ -719,42 +716,44 @@ NINETY_PERCENT_RANGE_DEGREES = np.array([
 ])
 
 #===============================================================================
-def _ninety_percent_gap_degrees(n, scale=1.):
+def _ninety_percent_gap_degrees(n: int, scale: float = 1.) -> float:
     """For n samples, determine the approximate number of degrees for the largest
     gap in coverage providing 90% confidence that the angular coverage is not
     actually complete.
 
     Args:
-        n (int): Number of samples.
-        scale (float): Scale factor for result.
+        n: Number of samples.
+        scale: Scale factor for result.
 
     Returns:
-        float: Estimated number of degrees.
+        Estimated number of degrees.
     """
 
     # Below 1000, use the tabulation
     if n < 1000:
-        return (360. - NINETY_PERCENT_RANGE_DEGREES[n]) * scale
+        return float((360. - NINETY_PERCENT_RANGE_DEGREES[n]) * scale)
 
     # Otherwise, this empirical fit does a good job
-    return (1808. * n**(-0.912)) * scale
+    return float((1808. * n**(-0.912)) * scale)
 
 #===============================================================================
-def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
+def _get_range_mod360(values: list[float] | npt.NDArray[np.float64],
+                      alt_format: str | None = None, width: int = 0,
+                      diffmin: float = 0) -> list[float]:
     """Determines the minimum and maximum values in the array, allowing for the
     possibility that the numeric range wraps around from 360 to 0.
 
     Args:
-        values (list or np.array): The set of values for which to determine the range.
-        alt_format (str, optional):
+        values: The set of values for which to determine the range.
+        alt_format:
             "-180" to return values in the range (-180,180) rather
             than (0,360).
-        width (int): If given, smoothing width for diffs.
-        diffmin (float): Minimum diff to consider.  If the maximum diff is below this value,
-                         then full coverage is assumed, unless the span of the given angles
-                         is smaller.
+        width: If given, smoothing width for diffs.
+        diffmin: Minimum diff to consider.  If the maximum diff is below this value,
+                 then full coverage is assumed, unless the span of the given angles
+                 is smaller.
     Returns:
-        list: Minimum and maximum values in the cyclic array.
+        Minimum and maximum values in the cyclic array.
     """
 
     # Check for use of negative values
