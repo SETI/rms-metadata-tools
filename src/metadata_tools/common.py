@@ -106,7 +106,7 @@ class PathAction(argparse.Action):
     def __call__(self, parser: argparse.ArgumentParser,
                  namespace: argparse.Namespace,
                  values: Any,
-                 option_string: str | None = None) -> None:
+                 _option_string: str | None = None) -> None:
         if isinstance(values, list):
             values = values[0]
         vals = re.sub('://', '<<token>>', values)
@@ -238,7 +238,7 @@ class Table:
         # Write label
         table_type = self.qualifier
         if self.level:
-            assert table_type is not None
+            assert table_type is not None  # nosec B101 - type-narrowing invariant, not validation
             table_type += '_' + self.level
         lab.create(self.filename, self.template_path,
                    table_type=table_type, use_global_template=self.use_global_template)

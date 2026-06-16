@@ -76,7 +76,7 @@ async def main() -> None:
 
     # set up the task file containing one entry per volume
     args = worker._data.args
-    assert args is not None
+    assert args is not None  # nosec B101 - type-narrowing invariant, not validation
     process_tables(hconf.template_name,
                    glob=config.glob,
                    index_glob=config.index_glob,

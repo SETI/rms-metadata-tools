@@ -39,6 +39,14 @@ jobs:
         run: |
           mypy src tests
 
+      - name: Bandit (security)
+        run: |
+          bandit -c pyproject.toml -r src -q
+
+      - name: Vulture (dead code)
+        run: |
+          vulture src tests
+
       - name: Sphinx
         run: |
           sphinx-build -W -b html docs docs/_build

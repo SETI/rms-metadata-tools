@@ -197,7 +197,7 @@ def replace(tree: list[Any], placeholder: str, name: str) -> Any:
             lrep = list(replacement)
             for i in range(len(lrep)):
                 if isinstance(lrep[i], str) and '[' in lrep[i]:
-                    lrep[i] = eval(lrep[i])
+                    lrep[i] = eval(lrep[i])  # nosec B307 - eval of column refs; tracked by issue #110
             replacement = tuple(lrep)
 
             new_tree.append(replacement)
