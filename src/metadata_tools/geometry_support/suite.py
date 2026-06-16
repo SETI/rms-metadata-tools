@@ -78,7 +78,7 @@ class Suite(object):
         com.init_logger(input_dir, 'geometry')
         logger = com.get_logger()
 
-        logger.info('New geometry index for %s.' % self.volume_id)
+        logger.info('New geometry index for %s.', self.volume_id)
 
         # Get observations
         try:
@@ -262,7 +262,7 @@ class Suite(object):
                     continue
 
                 # Print a log of progress
-                logger.info("%s  %s %4d/%4d" % (self.volume_id, file, i+1, nobs))
+                logger.info("%s  %s %4d/%4d", self.volume_id, file, i+1, nobs)
 
                 # Construct the record for this observation
                 records = self.make_records(i)

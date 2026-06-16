@@ -35,7 +35,7 @@ def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
     ext = '.csv' if table_type == 'inventory' else '.tab'
 
     # Walk the input tree, adding lines for each found volume
-    logger.info('Building Cumulative %s table' % table_type)
+    logger.info('Building Cumulative %s table', table_type)
     content = []
     for root, dirs, files in volume_tree.walk(top_down=True):
         # __skip directory will not be scanned, so it's safe for test results
@@ -70,21 +70,21 @@ def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
                     volume_id = hconf.get_volume_id(root)
                     cumulative_id = hconf.get_volume_id(cumulative_dir)
 
-                    # Check existence of table
+                    # Read the table file; skip this volume if it has none
+                    table_file = root / ('%s_%s' % (vol, table_type) + ext)
                     try:
-                        table_file = list(root.glob('%s_%s' % (vol, table_type)+ext))[0]
-                    except IndexError:
+                        lines = util.read_txt_file(table_file)
+                    except FileNotFoundError:
                         continue
 
                     # Copy table file to cumulative index
                     cumulative_file = \
                         FCPath(table_file.as_posix().replace(volume_id, cumulative_id))
-                    lines = util.read_txt_file(table_file)
                     content += lines
 
     # Write table and label
     if content:
-        logger.info('Writing cumulative file %s.' % cumulative_file)
+        logger.info('Writing cumulative file %s.', cumulative_file)
         util.write_txt_file(cumulative_file, content)
     
         logger.info('Writing cumulative label.')
@@ -149,7 +149,7 @@ def create_cumulative_indexes(template_name,
 
     # Set logger
     logger = com.get_logger()
-    logger.info('New cumulative indexes for %s.' % volume_tree.name)
+    logger.info('New cumulative indexes for %s.', volume_tree.name)
 
     # Build volume glob
     volume_glob = util.get_volume_glob(volume_tree.name)

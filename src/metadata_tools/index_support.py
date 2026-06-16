@@ -91,7 +91,7 @@ class IndexTable(com.Table):
         logger = com.get_logger()
 
         s = ' '+qualifier if qualifier else ' primary'
-        logger.info('New%s index for %s.' % (s, self.volume_id))
+        logger.info('New%s index for %s.', s, self.volume_id)
 
         # Extract relevent fields from the template
         label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
@@ -139,7 +139,7 @@ class IndexTable(com.Table):
 
                 # Log volume ID and subpath
                 subdir = util.get_volume_subdir(root, hconf.get_volume_id(root))
-                logger.info('%s %4d/%4d  %s' % (self.volume_id, i+1, n, subdir/name))
+                logger.info('%s %4d/%4d  %s', self.volume_id, i+1, n, subdir/name)
 
                 # Make the index for this file
                 self.add(root, file)
@@ -399,17 +399,17 @@ class IndexTable(com.Table):
         try:
             result = IndexTable._format_value(value, format)
         except TypeError:
-            logger.warning("Invalid format: %s %s %s" % (name, value, format))
+            logger.warning("Invalid format: %s %s %s", name, value, format)
             result = width * "*"
 
         if len(result) > width:
-            logger.warning("No second format: %s %s %s %s" % (name, value, format, result))
+            logger.warning("No second format: %s %s %s %s", name, value, format, result)
 
         # Validate the formatted value
         try:
             _ = ast.literal_eval(result)
         except (ValueError, SyntaxError):
-            logger.warning('Format error for %s: %s' % (name, value))
+            logger.warning('Format error for %s: %s', name, value)
 
         return result
 

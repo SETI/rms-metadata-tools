@@ -35,7 +35,7 @@ def init_logger(dir, type):
     
     _LOGGER.add_handler(pdslogger.file_handler(path, level='normal'))
     _LOGGER.add_handler(pdslogger.STDOUT_HANDLER)
-    _LOGGER.log('header', 'Initialized %s log for %s' % (type, dir.name))
+    _LOGGER.log('header', 'Initialized %s log for %s', type, dir.name)
 
 #=========================================================================================
 
@@ -70,7 +70,7 @@ def add_task(volume_id, index_type):
         None
     """
     logger = get_logger()
-    logger.info('Adding task for %s.' % volume_id)
+    logger.info('Adding task for %s.', volume_id)
 
     task_id = index_type + '-task-' + volume_id
     task_args = {'volume_id' : volume_id}

@@ -178,7 +178,12 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "A", "N", "PT", "RUF"]
 # PT011 - pytest.raises is too broad.
 # SIM105 - Use contextlib.suppress for suppressions.
 # SIM108 - Use ternary operator for simple if/else.
-extend-ignore = ["PT011", "SIM105", "SIM108"]
+# RUF005 - Prefer iterable unpacking over concatenation.
+# B028 - warnings.warn without stacklevel; irrelevant with no external callers.
+# SIM102 - Use a single if instead of nested ifs.
+# N999 - Invalid module name; host scripts use the PDS volume-set ID (e.g. GO_0xxx_index).
+# UP031 - Use format specifiers instead of percent format.
+extend-ignore = ["PT011", "SIM105", "SIM108", "RUF005", "B028", "SIM102", "N999", "UP031"]
 
 [tool.ruff.lint.per-file-ignores]
 #"TODO" = ["TODO"]
