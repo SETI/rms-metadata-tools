@@ -6,7 +6,7 @@
 ##########################################################################################
 import oops
 import oops.hosts.galileo.ssi as ssi
-import metadata_tools.util as util
+import metadata_tools.hosts.GO_0xxx.host_config as host_config
 import metadata_tools.hosts.GO_0xxx.host_init
 
 
@@ -118,21 +118,21 @@ from_index = ssi.from_index
 # Meshgrid functions (required)
 ##########################################################################################
 
+MODE_SIZES = {"FULL": 1,
+              "NONE":  1,
+              "HMA":  1,
+              "HIM":  1,
+              "IM8":  1,
+              "HCA":  1,
+              "IM4":  1,
+              "XCM":  1,
+              "HCM":  1,
+              "HCJ":  1,
+              "HIS":  2,
+              "AI8":  2}
+
 #=========================================================================================
 def meshgrids(sampling):
-
-    MODE_SIZES  = {"FULL": 1,
-                   "NONE":  1,
-                   "HMA":  1,
-                   "HIM":  1,
-                   "IM8":  1,
-                   "HCA":  1,
-                   "IM4":  1,
-                   "XCM":  1,
-                   "HCM":  1,
-                   "HCJ":  1,
-                   "HIS":  2,
-                   "AI8":  2}
 
     meshgrids = {}
     for mode in MODE_SIZES.keys():
@@ -174,18 +174,8 @@ def meshgrid(meshgrids, snapshot):
 ##########################################################################################
 
 #=========================================================================================
-def get_volume_id(label_path):
-    """Utility function to determine the volume ID for this collection using the label
-       path when there is no observation or label available.
-
-    Args:
-        label_path (str): Path to the PDS label.
-
-    Returns:
-        None.
-    """
-    top = 'GO_0xxx'
-    return util.splitpath(label_path, top)[1].parts[0]
+# Defined once in host_config and re-exported here so both configs stay in sync.
+get_volume_id = host_config.get_volume_id
 
 
 ##########################################################################################

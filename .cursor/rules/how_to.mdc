@@ -30,7 +30,7 @@ alwaysApply: false
 
 ## Prerequisites
 
-- Python >= 3.10
+- Python >= 3.11
 - `pip install rms-<package>`
 - [Any required data, environment variables, or configuration]
 

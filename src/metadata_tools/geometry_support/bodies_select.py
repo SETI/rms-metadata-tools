@@ -109,7 +109,7 @@ def select_bodies(record, bodies):
     # Cull duplicate bodies and verify all bodies are in the registry
     body_names = list(dict.fromkeys(body_names))
 
-    # Sort bodies based on occurence in BODIES list
+    # Sort bodies based on occurrence in BODIES list
     body_names.sort(key=lambda name : list(col.BODIES.keys()).index(name))
 
     return [body_name for body_name in body_names if oops.Body.exists(body_name)]
@@ -143,7 +143,7 @@ def obs_excluded(record, exceptions):
         exceptions (list): List of regular expressions to test against the observation ID.
 
     Returns:
-        bool: True if the observation is exluded.
+        bool: True if the observation is excluded.
     """
     if not exceptions:
         return False

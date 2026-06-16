@@ -3,6 +3,7 @@
 ################################################################################
 import os
 import re
+import math
 import numpy as np
 import cspyce
 import datetime as dt
@@ -18,10 +19,10 @@ import metadata_tools.defs as defs
 
 #===============================================================================
 def dbprint(message):
-    """Print a messaage to stderr with time stamp for degugging.
+    """Print a message to stderr with time stamp for debugging.
 
     Args:
-        message (str): Mesaage to write.
+        message (str): Message to write.
 
     Returns: None
     """
@@ -445,7 +446,7 @@ def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilit
     content = terminator.join(content) + terminator
 
     # Write file
-    with open(Path(filespec.as_posix()), "a") as file:
+    with open(Path(filespec.as_posix()), "a", encoding="utf-8") as file:
         file.write(content)
 
 #===============================================================================
@@ -463,8 +464,6 @@ def rebase(x, bases, ceil=False):    ### move to utilities
                 Remaining quantity, if any, exceeding the maximum value that can be
                 represented by the given bases.
     """
-    import math
-
     digits = []
     for base in reversed(bases):
         digit = x % base

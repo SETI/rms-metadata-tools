@@ -155,29 +155,18 @@ def create_cumulative_indexes(template_name,
     volume_glob = util.get_volume_glob(volume_tree.name)
 
     # Build the cumulative tables
-    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-              geom.SkyTable(level='summary'),
-              exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-              geom.SkyTable(level='detailed'),
-              exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-              geom.BodyTable(level='summary'),
-              exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-              geom.BodyTable(level='detailed'),
-              exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-              geom.RingTable(level='summary'),
-              exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-              geom.RingTable(level='detailed'),
-              exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-              geom.InventoryTable(),
-              exclude=exclude, volumes=volumes)
-    _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-              idx.IndexTable(qualifier='supplemental'),
-              exclude=exclude, volumes=volumes)
+    tables = [
+        geom.SkyTable(level='summary'),
+        geom.SkyTable(level='detailed'),
+        geom.BodyTable(level='summary'),
+        geom.BodyTable(level='detailed'),
+        geom.RingTable(level='summary'),
+        geom.RingTable(level='detailed'),
+        geom.InventoryTable(),
+        idx.IndexTable(qualifier='supplemental'),
+    ]
+    for table in tables:
+        _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
+                  table, exclude=exclude, volumes=volumes)
 
 ################################################################################

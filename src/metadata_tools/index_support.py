@@ -323,7 +323,7 @@ class IndexTable(com.Table):
     #===========================================================================
     @staticmethod
     def _format_parms(format):
-        """Determine len and type corresopnding to a given FORTRAN format code..
+        """Determine len and type corresponding to a given FORTRAN format code..
 
         Args:
             format (str): FORTRAN_style format code.
@@ -376,7 +376,10 @@ class IndexTable(com.Table):
         if count > 1:
             if not isinstance(value, (list, tuple)):
                 value = count * [value]
-            assert len(value) == count
+            if len(value) != count:
+                raise ValueError(
+                    'column %s: expected %d values but got %d'
+                    % (name, count, len(value)))
 
             fmt_list = []
             for item in value:

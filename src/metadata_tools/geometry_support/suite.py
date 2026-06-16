@@ -64,7 +64,7 @@ class Suite(object):
         if len(index_filenames) == 0:
             return
         if len(index_filenames) > 1:
-            raise RuntimeError('Mulitple index files found in %s.' % self.input_dir)
+            raise RuntimeError('Multiple index files found in %s.' % self.input_dir)
 
         index_filename = index_filenames[0]
         ext = index_filename.suffix
@@ -97,7 +97,7 @@ class Suite(object):
     #===========================================================================
     @staticmethod
     def get_override(record, qualifier, name=None):
-        """Buld a dicstionary of column overrides.
+        """Build a dictionary of column overrides.
 
         Args:
             record (Record): Any Record.
@@ -134,7 +134,7 @@ class Suite(object):
     #===========================================================================
     @staticmethod
     def get_overrides(record):
-        """Buld a dicstionary of column overrides.
+        """Build a dictionary of column overrides.
 
         Args:
             record (Record): Any Record.
