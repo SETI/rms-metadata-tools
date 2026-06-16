@@ -50,7 +50,11 @@ def _columns_all() -> set[str]:
             isinstance(t, ast.Name) and t.id == '__all__' for t in node.targets
         ):
             assert isinstance(node.value, (ast.List, ast.Tuple))
-            return {elt.value for elt in node.value.elts if isinstance(elt, ast.Constant)}
+            return {
+                elt.value
+                for elt in node.value.elts
+                if isinstance(elt, ast.Constant) and isinstance(elt.value, str)
+            }
     raise AssertionError('columns/__init__.py defines no __all__')
 
 

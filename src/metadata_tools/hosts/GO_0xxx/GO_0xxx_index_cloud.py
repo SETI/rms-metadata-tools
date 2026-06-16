@@ -51,7 +51,7 @@ def process_task(_task_id: str,
     return False, None
 
 #========================================================================================
-async def main():
+async def main() -> None:
     # These command line arguments are used to override environment variables when
     # specifying the behavior of the worker process manager. They are optional
     # and most useful when running the worker locally.
@@ -67,11 +67,13 @@ async def main():
                     argparser=parser)
 
     # set up the task file containing one entry per volume
+    args = worker._data.args
+    assert args is not None
     process_index(hconf.template_name,
                   glob=config.glob,
-                  args=worker._data.args,
+                  args=args,
                   task_list_only=True,
-                  task_file=worker._data.args.task_file)
+                  task_file=args.task_file)
 
     # queue the processing
     await worker.start()

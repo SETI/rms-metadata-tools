@@ -2,12 +2,17 @@
 # tests/test_label_support.py: label_support.create paths.
 ################################################################################
 
+from pathlib import Path
+from typing import Any
+
+import pytest
 from filecache import FCPath
 
 import metadata_tools.label_support as lab
 
 
-def test_create_returns_for_missing_file(monkeypatch, tmp_path):
+def test_create_returns_for_missing_file(monkeypatch: pytest.MonkeyPatch,
+                                         tmp_path: Path) -> None:
     # A non-existent table file -> create() returns before any template work.
     made = []
     monkeypatch.setattr(lab, 'PdsTemplate',
@@ -17,15 +22,15 @@ def test_create_returns_for_missing_file(monkeypatch, tmp_path):
     assert made == []
 
 
-def _capture_template(monkeypatch):
-    captured = {}
+def _capture_template(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    captured: dict[str, Any] = {}
 
     class FakeTemplate:
-        def __init__(self, template_path, **kwargs):
+        def __init__(self, template_path: Any, **kwargs: Any) -> None:
             captured['template_path'] = template_path
             captured['kwargs'] = kwargs
 
-        def write(self, fields, label_path=None, mode=None):
+        def write(self, fields: Any, label_path: Any = None, mode: Any = None) -> None:
             captured['fields'] = fields
             captured['label_path'] = label_path
 
@@ -33,7 +38,8 @@ def _capture_template(monkeypatch):
     return captured
 
 
-def test_create_global_template_path(monkeypatch, tmp_path):
+def test_create_global_template_path(monkeypatch: pytest.MonkeyPatch,
+                                     tmp_path: Path) -> None:
     captured = _capture_template(monkeypatch)
     host_template = tmp_path / 'host' / 'GO_0xxx_body_summary.lbl'
     host_template.parent.mkdir(parents=True)
@@ -47,7 +53,8 @@ def test_create_global_template_path(monkeypatch, tmp_path):
     assert captured['fields']['TABLE_TYPE'] == 'BODY_SUMMARY'
 
 
-def test_create_host_template_path(monkeypatch, tmp_path):
+def test_create_host_template_path(monkeypatch: pytest.MonkeyPatch,
+                                   tmp_path: Path) -> None:
     captured = _capture_template(monkeypatch)
     host_dir = tmp_path / 'GO_0xxx' / 'templates'
     host_dir.mkdir(parents=True)
@@ -59,7 +66,8 @@ def test_create_host_template_path(monkeypatch, tmp_path):
     assert captured['template_path'].name == 'GO_0xxx_supplemental_index.lbl'
 
 
-def test_create_inventory_disables_preprocessor(monkeypatch, tmp_path):
+def test_create_inventory_disables_preprocessor(monkeypatch: pytest.MonkeyPatch,
+                                                tmp_path: Path) -> None:
     captured = _capture_template(monkeypatch)
     host_dir = tmp_path / 'GO_0xxx' / 'templates'
     host_dir.mkdir(parents=True)

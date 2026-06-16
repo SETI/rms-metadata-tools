@@ -15,14 +15,18 @@ import metadata_tools.util as util
 
 def test_replace_substitutes_placeholder_in_flat_tuple() -> None:
     """A placeholder string in a flat tuple is replaced by the name."""
-    result = util.replace(('latitude', 'bodyx', 'centric'), 'bodyx', 'JUPITER')
+    # replace() is annotated list[Any] but also recurses through tuples at
+    # runtime; this test deliberately exercises the tuple branch.
+    result = util.replace(
+        ('latitude', 'bodyx', 'centric'), 'bodyx', 'JUPITER')  # type: ignore[arg-type]
     assert result == ('latitude', 'JUPITER', 'centric')
 
 
 def test_replace_recurses_into_nested_tuples() -> None:
     """Replacement descends into nested tuples and preserves structure."""
     tree = (('latitude', 'bodyx'), ('PM', 'P', ''))
-    result = util.replace(tree, 'bodyx', 'SATURN')
+    # Tuple input deliberately exercises the recursive tuple branch.
+    result = util.replace(tree, 'bodyx', 'SATURN')  # type: ignore[arg-type]
     assert result == (('latitude', 'SATURN'), ('PM', 'P', ''))
 
 
@@ -40,7 +44,9 @@ def test_replace_returns_list_instance_for_list_input() -> None:
 
 def test_replace_passes_through_non_string_leaves() -> None:
     """Numbers and booleans are carried through unchanged."""
-    result = util.replace(('limb_altitude', 'bodyx', -0.01, 3, True), 'bodyx', 'IO')
+    # Tuple input deliberately exercises the recursive tuple branch.
+    result = util.replace(
+        ('limb_altitude', 'bodyx', -0.01, 3, True), 'bodyx', 'IO')  # type: ignore[arg-type]
     assert result == ('limb_altitude', 'IO', -0.01, 3, True)
 
 

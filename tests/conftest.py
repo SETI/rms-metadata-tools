@@ -17,9 +17,14 @@
 ################################################################################
 import sys
 import types
+from collections.abc import Callable, Sequence
+from pathlib import Path
+from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import pytest
+from filecache import FCPath
 
 
 def _install_fakes() -> None:
@@ -28,11 +33,12 @@ def _install_fakes() -> None:
                   'URANUS', 'NEPTUNE', 'PLUTO', 'IO', 'EUROPA', 'GANYMEDE',
                   'CALLISTO', 'METIS', 'ADRASTEA', 'AMALTHEA', 'THEBE', 'MOON']
     fb = types.ModuleType('metadata_tools.bodies')
-    fb.BODIES = {n: object() for n in body_names}
-    fb.get_bodies = lambda names: {n: object() for n in names}
+    # Attributes are attached to a stub module, so types must be loosened.
+    fb.BODIES = {n: object() for n in body_names}  # type: ignore[attr-defined]
+    fb.get_bodies = lambda names: {n: object() for n in names}  # type: ignore[attr-defined]
     sys.modules.setdefault('metadata_tools.bodies', fb)
 
-    for name, attrs in [
+    attr_table: list[tuple[str, dict[str, Any]]] = [
         ('host_config',     {'get_volume_id': lambda p: 'GO_0001',
                              'SCLK_BASES': [16777215, 91, 10, 8],
                              'template_name': 'GO_0xxx_supplemental_index'}),
@@ -40,7 +46,8 @@ def _install_fakes() -> None:
         ('geometry_config', {'MISSION_TABLE': [], 'SC': -77, 'EXPAND': 0.00015,
                              'target_name': lambda d: d.get('TARGET_NAME', 'SKY'),
                              'cleanup': lambda: None}),
-    ]:
+    ]
+    for name, attrs in attr_table:
         m = types.ModuleType(name)
         for k, v in attrs.items():
             setattr(m, k, v)
@@ -57,7 +64,7 @@ _install_fakes()
 class FakeWhere:
     """Stand-in for an oops boolean backplane result exposing ``.vals``."""
 
-    def __init__(self, vals):
+    def __init__(self, vals: npt.NDArray[np.bool_]) -> None:
         self.vals = vals
 
 
@@ -69,33 +76,33 @@ class FakeBackplane:
     geometry logic runs without SPICE.
     """
 
-    def __init__(self, shape=(4, 4)):
+    def __init__(self, shape: tuple[int, ...] = (4, 4)) -> None:
         self.shape = shape
         self._false = np.zeros(shape, dtype=bool)
         # Per-method override registries keyed by the body-name arguments.
-        self.in_back = {}
-        self.inside_shadow = {}
-        self.antisunward = {}
-        self.sunward = {}
+        self.in_back: dict[tuple[str, str], npt.NDArray[np.bool_]] = {}
+        self.inside_shadow: dict[tuple[str, str], npt.NDArray[np.bool_]] = {}
+        self.antisunward: dict[str, npt.NDArray[np.bool_]] = {}
+        self.sunward: dict[str, npt.NDArray[np.bool_]] = {}
         # evaluate() override registry keyed by the backplane key (tuple).
-        self.evaluations = {}
+        self.evaluations: dict[tuple[Any, ...], Any] = {}
 
-    def _lookup(self, registry, key):
+    def _lookup(self, registry: dict[Any, npt.NDArray[np.bool_]], key: Any) -> FakeWhere:
         return FakeWhere(registry.get(key, self._false))
 
-    def where_in_back(self, target, obscurer):
+    def where_in_back(self, target: str, obscurer: str) -> FakeWhere:
         return self._lookup(self.in_back, (target, obscurer))
 
-    def where_inside_shadow(self, target, shadower):
+    def where_inside_shadow(self, target: str, shadower: str) -> FakeWhere:
         return self._lookup(self.inside_shadow, (target, shadower))
 
-    def where_antisunward(self, target):
+    def where_antisunward(self, target: str) -> FakeWhere:
         return self._lookup(self.antisunward, target)
 
-    def where_sunward(self, target):
+    def where_sunward(self, target: str) -> FakeWhere:
         return self._lookup(self.sunward, target)
 
-    def evaluate(self, key):
+    def evaluate(self, key: tuple[Any, ...]) -> Any:
         import oops
         if key in self.evaluations:
             return self.evaluations[key]
@@ -104,24 +111,24 @@ class FakeBackplane:
 
 
 @pytest.fixture
-def fake_backplane():
+def fake_backplane() -> FakeBackplane:
     """A fresh FakeBackplane for each test."""
     return FakeBackplane()
 
 
 @pytest.fixture
-def make_scalar():
+def make_scalar() -> Callable[..., Any]:
     """Factory building oops.Scalar values with an optional mask."""
     import oops
 
-    def _make(values, mask=False):
+    def _make(values: Any, mask: Any = False) -> Any:
         return oops.Scalar(np.asarray(values, dtype=float), mask)
 
     return _make
 
 
 @pytest.fixture
-def record_stub():
+def record_stub() -> Callable[..., Any]:
     """Factory building a bare Record via __new__ with chosen attributes.
 
     The geometry Record.__init__ walks the SPICE inventory/backplane path. For
@@ -130,7 +137,7 @@ def record_stub():
     """
     from metadata_tools.geometry_support.record import Record
 
-    def _make(**attrs):
+    def _make(**attrs: Any) -> Record:
         record = Record.__new__(Record)
         for key, value in attrs.items():
             setattr(record, key, value)
@@ -140,16 +147,16 @@ def record_stub():
 
 
 @pytest.fixture
-def tmp_volume_tree(tmp_path):
+def tmp_volume_tree(tmp_path: Path) -> Callable[..., FCPath]:
     """Build a tiny on-disk GO_0xxx/<volume>/... tree of stub files.
 
     Returns the collection root (the directory whose name is the collection,
     e.g. 'GO_0xxx', containing volume subdirectories). Each volume gets the
     requested table/label stub files.
     """
-    from filecache import FCPath
-
-    def _make(collection='GO_0xxx', volumes=('GO_0001', 'GO_0002'), files=None):
+    def _make(collection: str = 'GO_0xxx',
+              volumes: Sequence[str] = ('GO_0001', 'GO_0002'),
+              files: dict[str, Sequence[str]] | None = None) -> FCPath:
         if files is None:
             files = {}
         root = tmp_path / collection

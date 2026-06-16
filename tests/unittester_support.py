@@ -3,6 +3,8 @@
 ################################################################################
 import glob
 import os
+import unittest
+from typing import Any
 
 import numpy as np
 
@@ -14,7 +16,7 @@ VOLUMES = os.environ.get('RMS_VOLUMES')
 
 #===============================================================================
 # get summary filenames  ### LIB
-def match(tree, pattern):
+def match(tree: str, pattern: str) -> list[str]:
     """Walk a directory tree and find all files matching a given pattern.
 
     Args:
@@ -24,14 +26,14 @@ def match(tree, pattern):
     Returns:
         list: List of filenames matching the given pattern.
     """
-    all_files = []
+    all_files: list[str] = []
     for root, _dirs, _files in os.walk(tree):
         all_files += glob.glob(os.path.join(root, pattern))
     return all_files
 
 #===============================================================================
 # exclude test files  ### LIB
-def exclude(files, *patterns):
+def exclude(files: list[str], *patterns: str) -> list[str]:
     """Exclude files matching given patterns.
 
     Args:
@@ -41,7 +43,7 @@ def exclude(files, *patterns):
     Returns:
         list: List of filenames that did not match any of the given patterns.
     """
-    result = []
+    result: list[str] = []
     for i in range(len(files)):
         keep = True
         for pattern in patterns:
@@ -52,7 +54,8 @@ def exclude(files, *patterns):
     return result
 
 #===========================================================================
-def bounds(test, file, table, key, min_val=0, max_val=360, minmax=True):
+def bounds(test: unittest.TestCase, file: str, table: Any, key: str,
+           min_val: float = 0, max_val: float = 360, minmax: bool = True) -> None:
     """Test whether values exeed given minimum and maximum bounds.
 
     Args:

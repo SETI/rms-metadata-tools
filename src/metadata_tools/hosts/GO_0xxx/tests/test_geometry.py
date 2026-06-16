@@ -16,10 +16,10 @@ class TestGeometryGOSSI(unittest.TestCase):
 
     #===========================================================================
     # test geometry common fields
-    def test_geometry_common(self):
+    def test_geometry_common(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*_summary.lbl')
+        files = unit.match(unit.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/', 'GO_0999/')
 
         # Test labels
@@ -34,10 +34,10 @@ class TestGeometryGOSSI(unittest.TestCase):
 
     #===========================================================================
     # test geometry body fields
-    def test_geometry_body(self):
+    def test_geometry_body(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*_summary.lbl')
+        files = unit.match(unit.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/', '_ring_', '_sky_', 'GO_0999/')
 
         # Test labels, 'GO_0999/
@@ -63,10 +63,10 @@ class TestGeometryGOSSI(unittest.TestCase):
 
     #===========================================================================
     # test geometry ring fields
-    def test_geometry_ring(self):
+    def test_geometry_ring(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*ring_summary.lbl')
+        files = unit.match(unit.METADATA, '*ring_summary.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/', '_body_', '_sky_', 'GO_0999/')
 
         # Test labels

@@ -76,7 +76,7 @@ where = ["src"]
 # py.typed is intentionally NOT declared: the package is not yet fully annotated, so
 # advertising it as typed would mislead downstream type checkers.
 [tool.setuptools.package-data]
-"metadata_tools" = ["templates/*.lbl"]
+"metadata_tools" = ["py.typed", "templates/*.lbl"]
 "metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
 
 [tool.setuptools_scm]

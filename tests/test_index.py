@@ -19,10 +19,10 @@ class TestIndexCommon(unittest.TestCase):
 
     #===========================================================================
     # test cumulative file
-    def test_supplemental_index__cumulative(self):
+    def test_supplemental_index__cumulative(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*_0999_supplemental_index.lbl')
+        files = unit.match(unit.METADATA, '*_0999_supplemental_index.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/')
 
         # Test labels
@@ -33,10 +33,10 @@ class TestIndexCommon(unittest.TestCase):
 
     #===========================================================================
     # test supplemental index common fields
-    def test_supplemental_index_common(self):
+    def test_supplemental_index_common(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*_supplemental_index.lbl')
+        files = unit.match(unit.METADATA, '*_supplemental_index.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/')
 
         # Test labels

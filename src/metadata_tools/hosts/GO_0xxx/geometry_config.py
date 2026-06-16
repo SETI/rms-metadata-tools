@@ -4,6 +4,8 @@
 #  Host-specific definitions and utilites for geometry file generation.
 #
 ##########################################################################################
+from typing import Any, cast
+
 import oops
 import oops.hosts.galileo.ssi as ssi
 
@@ -13,11 +15,11 @@ import metadata_tools.hosts.GO_0xxx.host_init  # noqa: F401  (side-effect import
 ##########################################################################################
 # GO_0xxx arguments
 ##########################################################################################
-SC = -77
-index_glob = 'GO_????_index.lbl'
-selection = "S"
-exclude = ['GO_0999']
-glob = 'C0*.LBL'
+SC: int = -77
+index_glob: str = 'GO_????_index.lbl'
+selection: str = "S"
+exclude: list[str] = ['GO_0999']
+glob: str = 'C0*.LBL'
 #glob = 'C0*[!G].LBL'
 
 
@@ -43,7 +45,7 @@ glob = 'C0*.LBL'
 #   6. Additions are included whenever they intersect the FOV, regardless of the primary.
 #
 ##########################################################################################
-EXCEPTIONS = [r'.*XCAL',
+EXCEPTIONS: list[str] = [r'.*XCAL',
               r'.*LCAL',
               r'.*GOPX',
               r'.*_CALIB',
@@ -51,7 +53,7 @@ EXCEPTIONS = [r'.*XCAL',
               r'PHOCAL.*',
               r'STRCAL.*',
               r'.*CHECKOUT']
-MISSION_TABLE = [
+MISSION_TABLE: list[Any] = [
 #   PHASE   |   SCLK_STARTs  |  EXCEPTIONS | PRIMARY | SECONDARIES | SELECTIONS | ADDITIONS
 #--------------------------------------------------------------------------------------------------------------
   ('VENUS   ', ('00180626.00',
@@ -93,14 +95,14 @@ MISSION_TABLE = [
 ##########################################################################################
 
 #=========================================================================================
-def except_test(observation):
+def except_test(observation: Any) -> bool:
     """Mission table exception function template.
 
     Args:
-        observation (oops.Observation): OOPS Observation object.
+        observation: OOPS Observation object.
 
     Returns:
-        bool: True if the observation should be an exception.
+        True if the observation should be an exception.
     """
     return False
 
@@ -108,9 +110,9 @@ def except_test(observation):
 ##########################################################################################
 # Mission-specific data (required)
 ##########################################################################################
-BORDER = 25                  # in units of full-size SSI pixels
-NAC_PIXEL = 6.0e-6           # approximate full-size SSI pixel in units of radians
-EXPAND = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians
+BORDER: int = 25             # in units of full-size SSI pixels
+NAC_PIXEL: float = 6.0e-6    # approximate full-size SSI pixel in units of radians
+EXPAND: float = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians
 from_index = ssi.from_index
 
 
@@ -118,7 +120,7 @@ from_index = ssi.from_index
 # Meshgrid functions (required)
 ##########################################################################################
 
-MODE_SIZES = {"FULL": 1,
+MODE_SIZES: dict[str, int] = {"FULL": 1,
               "NONE":  1,
               "HMA":  1,
               "HIM":  1,
@@ -132,9 +134,9 @@ MODE_SIZES = {"FULL": 1,
               "AI8":  2}
 
 #=========================================================================================
-def meshgrids(sampling):
+def meshgrids(sampling: float) -> dict[str, Any]:
 
-    meshgrids = {}
+    meshgrids: dict[str, Any] = {}
     for mode in MODE_SIZES:
         pixel_wrt_full = MODE_SIZES[mode]
         pixels = 800 / MODE_SIZES[mode]
@@ -156,15 +158,15 @@ def meshgrids(sampling):
     return meshgrids
 
 #=========================================================================================
-def meshgrid(meshgrids, snapshot):
+def meshgrid(meshgrids: dict[str, Any], snapshot: Any) -> Any:
     """Determines the meshgrid given the dictionary derived from the SSI index file.
 
     Args:
-        snapshot (oops.Observation): Observation object a GOSSI image.
-        meshgrids (oops.Meshgrid): Meshgrid objects to choose from.
+        meshgrids: Meshgrid objects to choose from.
+        snapshot: Observation object a GOSSI image.
 
     Returns:
-        None.
+        The selected meshgrid for this observation.
     """
     return meshgrids[snapshot.dict['TELEMETRY_FORMAT_ID']]
 
@@ -183,18 +185,18 @@ get_volume_id = host_config.get_volume_id
 ##########################################################################################
 
 #=========================================================================================
-def target_name(snapshot):
+def target_name(snapshot: dict[str, Any]) -> str:
     """Determines the target name from the snapshot's dictionary. If the given name is
        "SKY", it checks the CIMS ID and the TARGET_DESC for something different.
 
     Args:
-        snapshot (dict): Snapshot observation dictionary.
+        snapshot: Snapshot observation dictionary.
 
     Returns:
-        str: Target name.
+        Target name.
     """
 
-    return snapshot["TARGET_NAME"]
+    return cast(str, snapshot["TARGET_NAME"])
 
 # Leaving this here for when we implemnt Cassini ISS metadata....
 #    target = dict["TARGET_NAME"]
@@ -215,7 +217,7 @@ def target_name(snapshot):
 #        return target
 
 #=========================================================================================
-def cleanup():
+def cleanup() -> None:
     """Cleanup function for geometry code.  This function is called after the geometry
        table and labels are written, before exiting.
 

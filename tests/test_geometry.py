@@ -20,10 +20,10 @@ class TestGeometry(unittest.TestCase):
 
     #===========================================================================
     # test inventory file
-    def test_inventory(self):
+    def test_inventory(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*_inventory.lbl')
+        files = unit.match(unit.METADATA, '*_inventory.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/')
 
         # Test labels
@@ -34,7 +34,7 @@ class TestGeometry(unittest.TestCase):
 
     #===========================================================================
     # test cumulative geometry file
-    def test_geometry_cumulative(self):
+    def test_geometry_cumulative(self) -> None:
         return
         # Get labels to test
 ##### this needs to be changed to match cumulative files
@@ -49,10 +49,10 @@ class TestGeometry(unittest.TestCase):
 
     #===========================================================================
     # test geometry common fields
-    def test_geometry_common(self):
+    def test_geometry_common(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*_summary.lbl')
+        files = unit.match(unit.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/')
 
         # Test labels
@@ -71,10 +71,10 @@ class TestGeometry(unittest.TestCase):
 
     #===========================================================================
     # test geometry body fields
-    def test_geometry_body(self):
+    def test_geometry_body(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*_summary.lbl')
+        files = unit.match(unit.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/', '_ring_', '_sky_')
 
         # Test labels
@@ -109,10 +109,10 @@ class TestGeometry(unittest.TestCase):
 
     #===========================================================================
     # test geometry ring fields
-    def test_geometry_ring(self):
+    def test_geometry_ring(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*ring_summary.lbl')
+        files = unit.match(unit.METADATA, '*ring_summary.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/')
 
         # Test labels
@@ -151,10 +151,10 @@ class TestGeometry(unittest.TestCase):
 
     #===========================================================================
     # test geometry sky fields
-    def test_geometry_sky(self):
+    def test_geometry_sky(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*sky_summary.lbl')
+        files = unit.match(unit.METADATA, '*sky_summary.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/', '__skip/')
 
         # Test labels

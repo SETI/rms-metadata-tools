@@ -45,7 +45,7 @@ def process_task(_task_id: str,
     return False, None
 
 #========================================================================================
-async def main():
+async def main() -> None:
     # These command line arguments are used to override environment variables when
     # specifying the behavior of the worker process manager. They are optional
     # and most useful when running the worker locally.

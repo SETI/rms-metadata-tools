@@ -13,10 +13,10 @@ class TestIndexGOSSI(unittest.TestCase):
 
     #===========================================================================
     # test supplemental index fields
-    def test_supplemental_index_gossi(self):
+    def test_supplemental_index_gossi(self) -> None:
 
         # Get labels to test
-        files = unit.match(unit.METADATA, '*_supplemental_index.lbl')
+        files = unit.match(unit.METADATA, '*_supplemental_index.lbl')  # type: ignore[arg-type]
         files = unit.exclude(files, 'templates/', 'old/')
 
         # Test labels

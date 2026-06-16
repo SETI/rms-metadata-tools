@@ -5,6 +5,8 @@
 #
 ##########################################################################################
 import warnings
+from pathlib import Path
+from typing import Any, cast
 
 import host_config as hconf
 import julian
@@ -16,14 +18,16 @@ import metadata_tools.util as util
 ##########################################################################################
 # GO_0xxx arguments
 ##########################################################################################
-glob = 'C0*.LBL'
+glob: str = 'C0*.LBL'
 
 ##########################################################################################
 # Key functions (optional)
 ##########################################################################################
 
 #=========================================================================================
-def _event_tai(label_path, label_dict, stop=False):
+def _event_tai(label_path: str | Path | FCPath,
+               label_dict: dict[str, Any],
+               stop: bool = False) -> float | str:
     """Utility function for start/stop times.  FOR GOSSI, IMAGE_TIME refers to the center
        of the exposure.
 
@@ -33,12 +37,12 @@ def _event_tai(label_path, label_dict, stop=False):
         stop              If False, the start time is returned.
 
     Returns:
-        float: The requested TAI time.
+        The requested TAI time, or the NULL value passed through.
     """
     # get IMAGE_TIME; pass though any NULL value
     image_time = label_dict['IMAGE_TIME']
     if image_time == 'UNK':
-        return image_time
+        return cast(str, image_time)
     image_tai = julian.tai_from_iso(image_time)
 
     # compute offset from IMAGE_TIME
@@ -46,25 +50,25 @@ def _event_tai(label_path, label_dict, stop=False):
     sign = 2*(int(stop)-0.5)
 
     # offset to requested time
-    return image_tai + sign*0.5*exposure
+    return float(image_tai + sign*0.5*exposure)
 
 #=========================================================================================
-def _spacecraft_clock_start_count_from_label(label_dict):
+def _spacecraft_clock_start_count_from_label(label_dict: dict[str, Any]) -> str:
     """Function for SPACECRAFT_CLOCK_START_COUNT using the SPACECRAFT_CLOCK_START_COUNT
        field.
 
     Args:
-        label_dict (dict):  Dictionary containing the PDS label fields.
+        label_dict:  Dictionary containing the PDS label fields.
 
     Returns:
-        str: SCLK start count.
+        SCLK start count.
     """
     start_count = label_dict['SPACECRAFT_CLOCK_START_COUNT']
     start_fields = util.sclk_split_count(start_count)
     return util.sclk_format_count(start_fields, 'nnnnnnnn:nn:n:n')
 
 #=========================================================================================
-def _spacecraft_clock_stop_count_from_label(label_dict):
+def _spacecraft_clock_stop_count_from_label(label_dict: dict[str, Any]) -> str:
     """Function for SPACECRAFT_CLOCK_STOP_COUNT using the SPACECRAFT_CLOCK_START_COUNT
 
        The stop count is computed by adding the exposure time (in ticks) to the
@@ -75,7 +79,7 @@ def _spacecraft_clock_stop_count_from_label(label_dict):
         label_dict        dictionary containing the PDS label fields.
 
     Returns:
-        str: SCLK start count.
+        SCLK start count.
     """
     start_count = label_dict['SPACECRAFT_CLOCK_START_COUNT']
     start_fields = util.sclk_split_count(start_count)
@@ -88,15 +92,16 @@ def _spacecraft_clock_stop_count_from_label(label_dict):
     return util.sclk_format_count(stop_fields[1:], 'nnnnnnnn:nn:n:n')
 
 #=========================================================================================
-def key__product_creation_time(label_path, label_dict):
+def key__product_creation_time(label_path: str | Path | FCPath,
+                               label_dict: dict[str, Any]) -> str | None:
     """Key function for PRODUCT_CREATION_TIME.
 
     Args:
-        label_path  (str, Path, or FCPath): Path to the PDS label.
-        label_dict (dict): Dictionary containing the PDS label fields.
+        label_path: Path to the PDS label.
+        label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        str: Value to write in the index file under PRODUCT_CREATION_TIME.
+        Value to write in the index file under PRODUCT_CREATION_TIME.
     """
     # Get path for VICAR image
     label_path = FCPath(label_path)
@@ -119,21 +124,22 @@ def key__product_creation_time(label_path, label_dict):
     # Convert to ISO format
     pct = pct[20:] + pct[3:20]
 
-    return julian.iso_from_tai(
+    return str(julian.iso_from_tai(
                 julian.tai_from_day_sec(
-                *julian.day_sec_in_strings(pct, first=True)), digits=3, suffix='Z')
+                *julian.day_sec_in_strings(pct, first=True)), digits=3, suffix='Z'))
 
 #=========================================================================================
-def key__start_time(label_path, label_dict):
+def key__start_time(label_path: str | Path | FCPath,
+                    label_dict: dict[str, Any]) -> str:
     """Key function for START_TIME.  For GOSSI, IMAGE_TIME refers to the center of the
        exposure.
 
     Args:
-        label_path  (str, Path, or FCPath): Path to the PDS label.
-        label_dict (dict): Dictionary containing the PDS label fields.
+        label_path: Path to the PDS label.
+        label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        str: Value to write in the index file under START_TIME.
+        Value to write in the index file under START_TIME.
     """
     label_path = FCPath(label_path)
 
@@ -141,21 +147,22 @@ def key__start_time(label_path, label_dict):
     start_tai = _event_tai(label_path, label_dict)
     if start_tai == 'UNK':
         return start_tai
-    start_time = julian.iso_from_tai(start_tai, digits=6, suffix='Z')
+    start_time = str(julian.iso_from_tai(start_tai, digits=6, suffix='Z'))
 
     return start_time
 
 #=========================================================================================
-def key__stop_time(label_path, label_dict):
+def key__stop_time(label_path: str | Path | FCPath,
+                   label_dict: dict[str, Any]) -> str:
     """Key function for STOP_TIME.  For GOSSI, IMAGE_TIME refers to the center of the
        exposure.
 
     Args:
-        label_path  (str, Path, or FCPath): Path to the PDS label.
-        label_dict (dict): Dictionary containing the PDS label fields.
+        label_path: Path to the PDS label.
+        label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        str: Value to write in the index file under STOP_TIME.
+        Value to write in the index file under STOP_TIME.
     """
     label_path = FCPath(label_path)
 
@@ -163,47 +170,50 @@ def key__stop_time(label_path, label_dict):
     stop_tai = _event_tai(label_path, label_dict, stop=True)
     if stop_tai == 'UNK':
         return stop_tai
-    stop_time = julian.iso_from_tai(stop_tai, digits=6, suffix='Z')
+    stop_time = str(julian.iso_from_tai(stop_tai, digits=6, suffix='Z'))
 
     return stop_time
 
 #=========================================================================================
-def key__spacecraft_clock_start_count(label_path, label_dict):
+def key__spacecraft_clock_start_count(label_path: str | Path | FCPath,
+                                      label_dict: dict[str, Any]) -> str:
     """Key function for SPACECRAFT_CLOCK_START_COUNT.  Note this definition supercedes
        that in the default index file.
 
     Args:
-        label_path  (str, Path, or FCPath): Path to the PDS label.
-        label_dict (dict): Dictionary containing the PDS label fields.
+        label_path: Path to the PDS label.
+        label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        str: Value to write in the index file under SPACECRAFT_CLOCK_START_COUNT.
+        Value to write in the index file under SPACECRAFT_CLOCK_START_COUNT.
     """
     return _spacecraft_clock_start_count_from_label(label_dict)
 
 #=========================================================================================
-def key__spacecraft_clock_stop_count(label_path, label_dict):
+def key__spacecraft_clock_stop_count(label_path: str | Path | FCPath,
+                                     label_dict: dict[str, Any]) -> str:
     """Key function for SPACECRAFT_CLOCK_STOP_COUNT.
 
     Args:
-        label_path  (str, Path, or FCPath): Path to the PDS label.
-        label_dict (dict): Dictionary containing the PDS label fields.
+        label_path: Path to the PDS label.
+        label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        str: Value to write in the index file under SPACECRAFT_CLOCK_STOP_COUNT.
+        Value to write in the index file under SPACECRAFT_CLOCK_STOP_COUNT.
     """
     return _spacecraft_clock_stop_count_from_label(label_dict)
 
 #=========================================================================================
-def key__on_chip_mosaic_flag(label_path, label_dict):
+def key__on_chip_mosaic_flag(label_path: str | Path | FCPath,
+                             label_dict: dict[str, Any]) -> str | None:
     """Key function for SPACECRAFT_CLOCK_STOP_COUNT.
 
     Args:
-        label_path  (str, Path, or FCPath): Path to the PDS label.
-        label_dict (dict): Dictionary containing the PDS label fields.
+        label_path: Path to the PDS label.
+        label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        str: Value to write in the index file under SPACECRAFT_CLOCK_STOP_COUNT.
+        Value to write in the index file under SPACECRAFT_CLOCK_STOP_COUNT.
     """
     # Return Y for all SL9 images
     image_time = label_dict['IMAGE_TIME']
@@ -223,21 +233,22 @@ def key__on_chip_mosaic_flag(label_path, label_dict):
         return None
 
     # Return value if keyword present
-    return label_dict['ON_CHIP_MOSAIC_FLAG']
+    return cast(str, label_dict['ON_CHIP_MOSAIC_FLAG'])
 
 #=========================================================================================
-def key__compression_quantization_table_id(label_path, label_dict):
+def key__compression_quantization_table_id(label_path: str | Path | FCPath,
+                                            label_dict: dict[str, Any]) -> str | None:
     """Key function for CMPRS_QUANTZ_TBL_ID.
 
     Args:
-        label_path  (str, Path, or FCPath): Path to the PDS label.
-        label_dict (dict): Dictionary containing the PDS label fields.
+        label_path: Path to the PDS label.
+        label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        str: Value to write in the index file under SPACECRAFT_CLOCK_STOP_COUNT.
+        Value to write in the index file under SPACECRAFT_CLOCK_STOP_COUNT.
     """
 #    if not 'CMPRS_QUANTZ_TBL_ID' in label_dict:
     if 'CMPRS_QUANTZ_TBL_ID' not in label_dict:
         return None
-    return label_dict['CMPRS_QUANTZ_TBL_ID']
+    return cast(str, label_dict['CMPRS_QUANTZ_TBL_ID'])
 ##########################################################################################
