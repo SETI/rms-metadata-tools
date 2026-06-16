@@ -1,5 +1,5 @@
 ################################################################################
-# Global metadata unit test functions
+# Shared helpers for the $RMS_METADATA archive-backed tests
 ################################################################################
 import glob
 import os

@@ -5,7 +5,7 @@ import numpy as np
 import pdstable
 import pytest
 
-import tests.unittester_support as unit
+import tests.archive_support as support
 
 # These tests read pre-generated tables/labels from the $RMS_METADATA holdings
 # tree; they are excluded from the default run (see the requires_archive marker
@@ -18,8 +18,8 @@ pytestmark = pytest.mark.requires_archive
 def test_supplemental_index__cumulative() -> None:
 
     # Get labels to test
-    files = unit.match(unit.METADATA, '*_0999_supplemental_index.lbl')  # type: ignore[arg-type]
-    files = unit.exclude(files, 'templates/', 'old/', '__skip/')
+    files = support.match(support.METADATA, '*_0999_supplemental_index.lbl')  # type: ignore[arg-type]
+    files = support.exclude(files, 'templates/', 'old/', '__skip/')
 
     # Test labels
     for file in files:
@@ -33,8 +33,8 @@ def test_supplemental_index__cumulative() -> None:
 def test_supplemental_index_common() -> None:
 
     # Get labels to test
-    files = unit.match(unit.METADATA, '*_supplemental_index.lbl')  # type: ignore[arg-type]
-    files = unit.exclude(files, 'templates/', 'old/', '__skip/')
+    files = support.match(support.METADATA, '*_supplemental_index.lbl')  # type: ignore[arg-type]
+    files = support.exclude(files, 'templates/', 'old/', '__skip/')
 
     # Test labels
     print()

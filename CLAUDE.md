@@ -53,7 +53,7 @@ scripts/read-docs.sh                      # build docs (warnings = errors) and o
 
 **Tests require environment variables** `RMS_METADATA` and `RMS_VOLUMES` (paths to metadata
 and volume trees); the top-level `tests/` suite reads them at import time via
-`tests/unittester_support.py` and will fail to collect without them. Host-specific tests
+`tests/archive_support.py` and will fail to collect without them. Host-specific tests
 live under `tests/hosts/<HOST>/` (e.g. `tests/hosts/GO_0xxx/`); like the holdings-backed
 top-level tests they carry the `requires_archive` marker and are excluded from the default run.
 
