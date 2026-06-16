@@ -229,7 +229,10 @@ class IndexTable(com.Table):
         if value is None:
             value = nullval
 
-        assert value is not None, 'Null constant needed for %s.' % column_stub['NAME']
+        # A real check (not an assert, which `python -O` strips): if no null
+        # constant is defined, a None value cannot be represented in the table.
+        if value is None:
+            raise ValueError('Null constant needed for %s.' % column_stub['NAME'])
 
         # If valid value, mark this column as used
         if value != nullval:
@@ -286,11 +289,11 @@ class IndexTable(com.Table):
                     'MISSING_CONSTANT',
                     'NOT_APPLICABLE_CONSTANT']
 
-        # Check for a known null key in column stub
+        # Check for a known null key in column stub, in priority order.
         nullval = None
         for key in nullkeys:
             if nullval := pds3_table.old_lookup(key, colnum):
-                continue
+                break
 
         return nullval
 
@@ -518,6 +521,9 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
     # Build volume glob
     vol_glob = util.get_volume_glob(volume_tree.name)
 
+    # Accumulate the columns that are unused across every processed volume.
+    unused = None
+
     # Walk the input tree, making indexes for each found volume
     for root, dirs, _files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
@@ -533,7 +539,6 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         col = parts[-2]
         vol = parts[-1]
 
-        unused = None
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
@@ -559,14 +564,14 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
                     index.create(labels_only=labels_only, pattern=pattern)
                     unused = index.unused if not unused else unused & index.unused
 
-        # Write the task file
-        if task_list_only:
-            com.write_task_file(task_file)
+    # Write the task file
+    if task_list_only:
+        com.write_task_file(task_file)
 
-        # Log a warning for any columns that never had non-null values
-        if unused:
-            logger.warning('Unused columns: %s', unused)
-        logger.close(force=True)
+    # Log a warning for any columns that never had non-null values in any volume
+    if unused:
+        logger.warning('Unused columns: %s', unused)
+    logger.close(force=True)
 
 #===============================================================================
 def process_index(template_name,

@@ -104,10 +104,12 @@ class Record(object):
         """Extract the backplane key from the column description.
 
         Args:
-            column_desc (dict or list): .
+            column_desc (list): A column description; its first element is the
+                event key (a tuple whose first element is the backplane key, or
+                the backplane key itself).
 
         Returns:
-            None
+            str: The backplane key.
         """
 
         event_key = column_desc[0]

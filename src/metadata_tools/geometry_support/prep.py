@@ -88,10 +88,12 @@ def prep_row(record, prefixes, backplane, blocker, column_descs, *,
         overrides = []
         local_index = start_index
         for tile in tiles:
-            new_rows, new_overrides = prep_row(record, prefixes, backplane, blocker, column_descs,
-                                        primary, target, name_length,
-                                        tile, tiling_min, ignore_shadows,
-                                        local_index, allow_zero_rows=True)
+            new_rows, new_overrides = prep_row(
+                record, prefixes, backplane, blocker, column_descs,
+                primary=primary, target=target, name_length=name_length,
+                tiles=tile, tiling_min=tiling_min, ignore_shadows=ignore_shadows,
+                start_index=local_index, allow_zero_rows=True,
+                no_mask=no_mask, no_body=no_body)
             rows += new_rows
             overrides += new_overrides
             local_index += len(tile) - 1
@@ -99,10 +101,12 @@ def prep_row(record, prefixes, backplane, blocker, column_descs, *,
         if rows or allow_zero_rows:
             return (rows, overrides)
 
-        return prep_row(record, prefixes, backplane, blocker, column_descs,
-                                primary, target, name_length,
-                                [], tiling_min, ignore_shadows,
-                                start_index, allow_zero_rows=False)
+        return prep_row(
+            record, prefixes, backplane, blocker, column_descs,
+            primary=primary, target=target, name_length=name_length,
+            tiles=[], tiling_min=tiling_min, ignore_shadows=ignore_shadows,
+            start_index=start_index, allow_zero_rows=False,
+            no_mask=no_mask, no_body=no_body)
 
     # Handle a single set of tiles
     if tiles:
@@ -169,6 +173,7 @@ def prep_row(record, prefixes, backplane, blocker, column_descs, *,
 
         # Append the backplane columns
         data_columns = []
+        row_overrides = []
         nothing_found = True
 
         # For each column...
@@ -187,10 +192,11 @@ def prep_row(record, prefixes, backplane, blocker, column_descs, *,
                     values = oops.Scalar(0., True)
                     null_flag = True
 
-            # Make a shallow copy and apply the new masks
+            # Make a shallow copy and apply the new masks. Use a column-local
+            # target so the function's `target` parameter is not clobbered.
             if excluded_mask_dict != {}:
-                target = event_key[1]
-                excluded = excluded_mask_dict[(target,) + mask_desc]
+                col_target = event_key[1]
+                excluded = excluded_mask_dict[(col_target,) + mask_desc]
                 values = values.mask_where(excluded)
                 if len(subregion_masks) > 1:
                     values = values.mask_where(subregion_masks[indx])
@@ -214,11 +220,10 @@ def prep_row(record, prefixes, backplane, blocker, column_descs, *,
                     values = oops.Scalar(null_value, False)
             data_columns.append(formatting.formatted_column(values, fmt, record.sampling))
 
-        # Save label overrides for this row
-        override = {'NULL_VALUE': null_value,
-                    'VALID_MINIMUM': valid_minimum,
-                    'VALID_MAXIMUM': valid_maximum,
-                    }
+            # Save this column's label override.
+            row_overrides.append({'NULL_VALUE': null_value,
+                                  'VALID_MINIMUM': valid_minimum,
+                                  'VALID_MAXIMUM': valid_maximum})
 
         # Save the row if it was completed
         if len(data_columns) < len(column_descs):
@@ -226,16 +231,18 @@ def prep_row(record, prefixes, backplane, blocker, column_descs, *,
         if nothing_found and (indx > 0 or allow_zero_rows):
             continue
         rows.append(prefix_columns + data_columns)
-        overrides.append(override)
+        overrides.append(row_overrides)
 
     # Return something if we can
     if rows or allow_zero_rows:
         return (rows, overrides)
 
-    return prep_row(record, prefixes, backplane, blocker, column_descs,
-                          primary, target, name_length,
-                          [], 0, ignore_shadows, start_index,
-                          allow_zero_rows=False)
+    return prep_row(
+        record, prefixes, backplane, blocker, column_descs,
+        primary=primary, target=target, name_length=name_length,
+        tiles=[], tiling_min=0, ignore_shadows=ignore_shadows,
+        start_index=start_index, allow_zero_rows=False,
+        no_mask=no_mask, no_body=no_body)
 
 #===============================================================================
 def append_body_prefix(prefix_columns, body, length):

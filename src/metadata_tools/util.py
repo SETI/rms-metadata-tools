@@ -294,10 +294,13 @@ def add_by_base(x_digits, y_digits, bases):           ### move to utilities
 
     """
     result = [0]*(len(bases)+1)
+    carry = 0
     for i, (x_digit, y_digit, base) in \
       enumerate(zip(reversed(x_digits), reversed(y_digits), reversed(bases))):
-        result[i] += (x_digit + y_digit) % base
-        result[i+1] += (x_digit + y_digit) // base
+        total = x_digit + y_digit + carry
+        result[i] = total % base
+        carry = total // base
+    result[len(bases)] = carry
     return list(reversed(result))
 
 #===============================================================================
@@ -423,6 +426,7 @@ def append_txt_file(filespec, content, terminator='\r\n'):    ### move to utilit
     # If no file, just run write_txt_file().
     if not filespec.exists():
         write_txt_file(filespec, content, terminator=terminator)
+        return
 
     # Determine terminator
     if terminator is None:
@@ -513,7 +517,7 @@ def sclk_format_count(fields, format):
             field delimiters. Example: 'nnnnnnnn:nn:n.n'.
 
     Returns:
-        int: Spacecraft clock count.
+        str: Spacecraft clock count, zero-padded and delimited per the format.
     """
 
     # Get delimiters
@@ -762,8 +766,12 @@ def _get_range_mod360(values, alt_format=None, width=0, diffmin=0):
     # Flatten the set of values
     values = np.asarray(values).flatten()
 
+    # With no values, nothing constrains the range; report full coverage.
+    if values.size == 0:
+        return complete_coverage
+
     # With only one value, we know nothing
-    if values.size <= 1:
+    if values.size == 1:
         return [values[0], values[0]]
 
     # Locate the largest gap in coverage

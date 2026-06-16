@@ -56,22 +56,30 @@ def test_format_parms_integer():
 
 
 #===============================================================================
-# _get_null_value  [BUG]
+# _get_null_value
 #===============================================================================
-def test_get_null_value_returns_last_present_key():
-    # Current behavior: the lowest-priority key present wins (the loop uses
-    # `continue` where it means `break`).
+def test_get_null_value_prefers_highest_priority_key():
+    # When several null keywords are present, the highest-priority one wins.
     table = FakePds3Table([{'NULL_CONSTANT': '-999',
                             'NOT_APPLICABLE_CONSTANT': 'N/A'}])
+    assert IndexTable._get_null_value(table, 1) == '-999'
+
+
+def test_get_null_value_single_key():
+    # A column with only one null keyword present returns that value.
+    table = FakePds3Table([{'NULL_CONSTANT': '-999'}])
+    assert IndexTable._get_null_value(table, 1) == '-999'
+
+
+def test_get_null_value_lower_priority_key_when_only_one_present():
+    # When only a lower-priority keyword is set, it is used.
+    table = FakePds3Table([{'NOT_APPLICABLE_CONSTANT': 'N/A'}])
     assert IndexTable._get_null_value(table, 1) == 'N/A'
 
 
-@pytest.mark.xfail(strict=True, reason='BUG: _get_null_value uses continue '
-                   'instead of break, so the highest-priority null keyword is '
-                   'not returned; a column with only NULL_CONSTANT set yields None.')
-def test_get_null_value_prefers_highest_priority_key():
-    table = FakePds3Table([{'NULL_CONSTANT': '-999'}])
-    assert IndexTable._get_null_value(table, 1) == '-999'
+def test_get_null_value_none_when_no_keys():
+    table = FakePds3Table([{}])
+    assert IndexTable._get_null_value(table, 1) is None
 
 
 #===============================================================================
@@ -160,6 +168,17 @@ def test_index_one_value_none_result_becomes_null(monkeypatch):
     assert value == 'NULLVAL'
 
 
+def test_index_one_value_none_without_null_constant_raises(monkeypatch):
+    # A key function returning None with no null constant cannot be represented;
+    # a ValueError is raised (not a -O-stripped assert).
+    table = _table_with_stub(None)
+    stub = {'NAME': 'SPECIAL', 'NULL_CONSTANT': None}
+    monkeypatch.setattr(idx.config, 'key__special',
+                        lambda path, d: None, raising=False)
+    with pytest.raises(ValueError, match='Null constant needed'):
+        table._index_one_value(stub, FCPath('/x/a.lbl'), {})
+
+
 #===============================================================================
 # Built-in key functions
 #===============================================================================
@@ -211,22 +230,32 @@ def test_indextable_without_input_dir_returns_early():
 def test_create_index_processes_each_volume(monkeypatch, tmp_volume_tree):
     tree = tmp_volume_tree(files={'_index.tab': ['x']})
     processed = []
+    # Per-volume "unused" sets; the cross-volume intersection is {'COLA'}.
+    unused_by_volume = {'GO_0001': {'COLA', 'COLB'}, 'GO_0002': {'COLA'}}
 
     class FakeIndexTable:
         def __init__(self, indir, outdir, template_path, metadata_dir, **kwargs):
-            self.unused = {'COLA'}
-            processed.append(kwargs.get('volume_id'))
+            vol = kwargs.get('volume_id')
+            processed.append(vol)
+            self.unused = set(unused_by_volume[vol])
 
         def create(self, labels_only=False, pattern=None):
             pass
 
+    closes = []
+    warnings = []
     monkeypatch.setattr(idx, 'IndexTable', FakeIndexTable)
     monkeypatch.setattr(idx.com, 'get_logger',
                         lambda: types.SimpleNamespace(
-                            info=lambda *a, **k: None, warning=lambda *a, **k: None,
-                            close=lambda **k: None))
+                            info=lambda *a, **k: None,
+                            warning=lambda msg, arg: warnings.append(arg),
+                            close=lambda **k: closes.append(True)))
     idx._create_index(tree, tree, FCPath('/tmpl.lbl'))
     assert sorted(processed) == ['GO_0001', 'GO_0002']
+    # The logger is closed exactly once (after the walk), not once per directory.
+    assert closes == [True]
+    # The unused-columns warning reflects the cross-volume intersection.
+    assert warnings == [{'COLA'}]
 
 
 def test_create_index_task_list_only(monkeypatch, tmp_volume_tree):

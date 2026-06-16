@@ -2,7 +2,6 @@
 # tests/test_util_math.py: Pure numeric helpers in util.py.
 ################################################################################
 import numpy as np
-import pytest
 
 import metadata_tools.util as util
 
@@ -24,11 +23,8 @@ def test_add_by_base_sclk_bases():
     assert util.add_by_base([0, 0, 0, 0], [0, 0, 0, 1], bases) == [0, 0, 0, 0, 1]
 
 
-@pytest.mark.xfail(strict=True, reason='BUG: add_by_base drops a chained carry '
-                   '(carry_in + digit_sum % base == base); returns [0, 10, 0].')
 def test_add_by_base_propagates_chained_carry():
-    # 99 + 01 == 100. Correct base-10 digits are [1, 0, 0]; the implementation
-    # leaves the middle digit equal to the base and never propagates the carry.
+    # 99 + 01 == 100. The carry must propagate through the middle position.
     assert util.add_by_base([9, 9], [0, 1], [10, 10]) == [1, 0, 0]
 
 

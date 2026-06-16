@@ -4,7 +4,6 @@
 import types
 
 import oops
-import pytest
 
 import metadata_tools.util as util
 from metadata_tools.geometry_support import bodies_select
@@ -127,16 +126,22 @@ def test_obs_excluded_identifier_calls_config_function(monkeypatch):
     assert bodies_select.obs_excluded(record, ['always_true_fn']) is True
 
 
-@pytest.mark.xfail(strict=True, reason='BUG: obs_excluded returns the first '
-                   'identifier function result immediately, so a later regex '
-                   'exception is never evaluated.')
 def test_obs_excluded_identifier_then_regex(monkeypatch):
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123CAL')
     import geometry_config as config
     monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
     record = types.SimpleNamespace(observation=object())
-    # The id matches '.*CAL', so the observation should be excluded.
+    # The first (identifier) exception does not match, but a later regex does;
+    # the observation is excluded if *any* exception matches.
     assert bodies_select.obs_excluded(record, ['always_false_fn', '.*CAL']) is True
+
+
+def test_obs_excluded_no_exception_matches(monkeypatch):
+    monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123')
+    import geometry_config as config
+    monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
+    record = types.SimpleNamespace(observation=object())
+    assert bodies_select.obs_excluded(record, ['always_false_fn', '.*CAL']) is False
 
 
 #===============================================================================

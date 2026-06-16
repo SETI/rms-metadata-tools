@@ -3,7 +3,6 @@
 ################################################################################
 from pathlib import Path
 
-import pytest
 from filecache import FCPath
 
 import metadata_tools.util as util
@@ -46,10 +45,8 @@ def test_write_terminator_none_infers_crlf_from_list(tmp_path):
 #===============================================================================
 # append_txt_file
 #===============================================================================
-@pytest.mark.xfail(strict=True, reason='BUG: append_txt_file lacks a return '
-                   'after the write_txt_file shortcut, so a brand-new file gets '
-                   'its content written twice.')
 def test_append_to_new_file_writes_content_once(tmp_path):
+    # Appending to a brand-new file writes its content exactly once.
     path = FCPath(tmp_path / 'new.txt')
     util.append_txt_file(path, ['lineA', 'lineB'])
     assert util.read_txt_file(path) == ['lineA', 'lineB']

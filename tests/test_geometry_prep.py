@@ -98,10 +98,8 @@ def test_excluded_mask_applied_when_not_no_mask(exists_true, record_stub, fake_b
     assert rows == []
 
 
-def test_override_reflects_last_column_only(record_stub, fake_backplane):
-    # [BUG] the override dict is rebuilt from whichever column iterated last,
-    # not per column. With two columns of different formats, the single saved
-    # override carries the *last* column's null/range values.
+def test_override_is_built_per_column(record_stub, fake_backplane):
+    # Each row's overrides hold one dict per column, in column order.
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
         oops.Scalar(np.array([0.5, 1.0]), False)
     fake_backplane.evaluations[('distance', 'IO')] = \
@@ -111,8 +109,9 @@ def test_override_reflects_last_column_only(record_stub, fake_backplane):
     _rows, overrides = prep.prep_row(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
         descs, primary='JUPITER', target='IO', no_mask=True)
-    # distance has VALID_MAXIMUM 0 (the last column); phase_angle's 180 is lost.
-    assert overrides[0]['VALID_MAXIMUM'] == 0
+    # overrides[row][column]; phase_angle keeps VALID_MAXIMUM 180, distance 0.
+    assert overrides[0][0]['VALID_MAXIMUM'] == 180
+    assert overrides[0][1]['VALID_MAXIMUM'] == 0
 
 
 #===============================================================================
@@ -134,18 +133,26 @@ def test_tiling_suppressed_below_min(record_stub, fake_backplane):
     assert len(rows) == 1
 
 
-def test_multiple_tile_sets_tuple_raises_typeerror(record_stub, fake_backplane):
-    # [BUG] When `tiles` is a tuple (multiple tile sets), prep_row recurses
-    # passing primary/target/name_length/... positionally, but those parameters
-    # are keyword-only (after `*`). The call therefore raises TypeError. This
-    # bug predates the package split (the original method had the same shape).
+def test_multiple_tile_sets_tuple_emits_a_row_per_set(record_stub, fake_backplane):
+    # When `tiles` is a tuple (multiple tile sets), prep_row recurses once per
+    # set; the recursion now passes the keyword-only arguments by keyword, so it
+    # no longer raises TypeError.
+    big = np.ones((4, 4), dtype=bool)
+    t1 = np.zeros((4, 4), dtype=bool)
+    t1[0, :] = True
+    t2 = np.zeros((4, 4), dtype=bool)
+    t2[1, :] = True
+    fake_backplane.evaluations['global'] = oops.Scalar(big, False)
+    fake_backplane.evaluations['t1'] = oops.Scalar(t1, False)
+    fake_backplane.evaluations['t2'] = oops.Scalar(t2, False)
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
-        oops.Scalar(np.zeros((4, 4)), True)
-    with pytest.raises(TypeError, match='positional argument'):
-        prep.prep_row(
-            _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-            _phase_desc(), primary='JUPITER', target='IO',
-            tiles=(['g', 't1'], ['g', 't2']), no_mask=True)
+        oops.Scalar(np.full((4, 4), 0.5), False)
+    rows, _ = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        _phase_desc(), primary='JUPITER', target='IO',
+        tiles=(['global', 't1'], ['global', 't2']), tiling_min=1, no_mask=True)
+    # One non-empty subregion per tile set -> two rows.
+    assert len(rows) == 2
 
 
 def test_detailed_subregions_emit_rows(record_stub, fake_backplane):

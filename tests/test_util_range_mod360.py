@@ -58,8 +58,10 @@ def test_range_confident_gap_returns_arc():
     assert result == [10.0, 20.0]
 
 
-def test_range_empty_raises_indexerror():
-    # The docstring does not promise this; current behavior is an IndexError
-    # because values[0] is accessed on an empty array.
-    with pytest.raises(IndexError):
-        util._get_range_mod360([])
+def test_range_empty_returns_full_coverage():
+    # With no values, nothing constrains the range -> full coverage.
+    assert util._get_range_mod360([]) == [0., 360.]
+
+
+def test_range_empty_minus_180_returns_full_coverage():
+    assert util._get_range_mod360([], alt_format='-180') == [-180., 180.]

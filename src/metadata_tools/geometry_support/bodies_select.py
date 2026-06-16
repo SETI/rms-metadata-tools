@@ -150,13 +150,14 @@ def obs_excluded(record, exceptions):
 
     id = util.get_observation_id(record.observation)
     for exception in exceptions:
-        # check for config function
+        # An identifier names a config predicate function; anything else is a
+        # regex tested against the observation ID. The observation is excluded if
+        # *any* exception matches, so keep checking the remaining exceptions.
         if exception.isidentifier():
             fn = getattr(config, exception)
-            return fn(record.observation)
-
-        # If no config function, treat as regex
-        if re.match(exception, id):
+            if fn(record.observation):
+                return True
+        elif re.match(exception, id):
             return True
 
     return False

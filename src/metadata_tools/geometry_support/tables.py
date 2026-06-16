@@ -6,9 +6,9 @@ import metadata_tools.common as com
 ################################################################################
 # InventoryTable class
 ################################################################################
-"""Class describing an inventory geometry table.
-"""
 class InventoryTable(com.Table):
+    """Class describing an inventory geometry table."""
+
     #===========================================================================
     def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for an InventoryTable object.
@@ -41,9 +41,9 @@ class InventoryTable(com.Table):
 ################################################################################
 # SkyTable class
 ################################################################################
-"""Class describing a sky geometry table.
-"""
 class SkyTable(com.Table):
+    """Class describing a sky geometry table."""
+
     #===========================================================================
     def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for a SkyTable object.
@@ -71,9 +71,9 @@ class SkyTable(com.Table):
 ################################################################################
 # SunTable class
 ################################################################################
-"""Class describing a sun geometry table.
-"""
 class SunTable(com.Table):
+    """Class describing a sun geometry table."""
+
     #===========================================================================
     def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for a SunTable object.
@@ -101,9 +101,9 @@ class SunTable(com.Table):
 ################################################################################
 # RingTable class
 ################################################################################
-"""Class describing a ring geometry table.
-"""
 class RingTable(com.Table):
+    """Class describing a ring geometry table."""
+
     #===========================================================================
     def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for a RingTable object.
@@ -141,9 +141,9 @@ class RingTable(com.Table):
 ################################################################################
 # BodyTable class
 ################################################################################
-"""Class describing a body geometry table.
-"""
 class BodyTable(com.Table):
+    """Class describing a body geometry table."""
+
     #===========================================================================
     def __init__(self, output_dir=None, template_path=None, **kwargs):
         """Constructor for a BodyTable object.
