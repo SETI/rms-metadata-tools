@@ -1,16 +1,17 @@
 ################################################################################
 # cumulative_support.py - Code for cumulative index files
 ################################################################################
-import host_config as hconf
 import fnmatch
 
+import host_config as hconf
+from filecache import FCPath
+
 import metadata_tools.common as com
-import metadata_tools.util as util
-import metadata_tools.label_support as lab
 import metadata_tools.geometry_support as geom
 import metadata_tools.index_support as idx
+import metadata_tools.label_support as lab
+import metadata_tools.util as util
 
-from filecache import FCPath
 
 #===============================================================================
 def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
@@ -37,7 +38,7 @@ def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
     # Walk the input tree, adding lines for each found volume
     logger.info('Building Cumulative %s table', table_type)
     content = []
-    for root, dirs, files in volume_tree.walk(top_down=True):
+    for root, dirs, _files in volume_tree.walk(top_down=True):
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
             continue
@@ -86,7 +87,7 @@ def _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob, table, *,
     if content:
         logger.info('Writing cumulative file %s.', cumulative_file)
         util.write_txt_file(cumulative_file, content)
-    
+
         logger.info('Writing cumulative label.')
         lab.create(cumulative_file, template_path,
                    table_type=table_type.upper(),
@@ -106,8 +107,8 @@ def get_args(host=None, exclude=None):
     """
 
     # Get common args
-    parser = com.get_common_args(host=host, volume_arg=None, 
-                                            metadata_arg=None, 
+    parser = com.get_common_args(host=host, volume_arg=None,
+                                            metadata_arg=None,
                                             output_arg='output_dir')
 
     # Add cumulative args
@@ -121,7 +122,7 @@ def get_args(host=None, exclude=None):
     return parser
 
 #===============================================================================
-def create_cumulative_indexes(template_name, 
+def create_cumulative_indexes(template_name,
                               volumes=None,
                               args=None,
                               exclude=None):

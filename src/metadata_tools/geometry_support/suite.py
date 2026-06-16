@@ -17,7 +17,7 @@ from metadata_tools.geometry_support.tables import BodyTable, InventoryTable, Ri
 ################################################################################
 # Suite class
 ################################################################################
-class Suite(object):
+class Suite:
     """Class describing the suite of geometry tables for a single volume.
     """
 
@@ -117,12 +117,12 @@ class Suite(object):
             # Get format for this column
             event_key = column_desc[0]
             if len(column_desc) > 2:
-                format = formats.ALT_FORMAT_DICT[(event_key[0], column_desc[2])]
+                fmt = formats.ALT_FORMAT_DICT[(event_key[0], column_desc[2])]
             else:
-                format = formats.FORMAT_DICT[event_key[0]]
+                fmt = formats.FORMAT_DICT[event_key[0]]
 
             # Save label overrides for this column
-            (_,_,_,_,_, null_value, valid_minimum, valid_maximum, _, _) = format
+            (_,_,_,_,_, null_value, valid_minimum, valid_maximum, _, _) = fmt
             override = {'NULL_VALUE':    null_value,
                         'VALID_MINIMUM': valid_minimum,
                         'VALID_MAXIMUM': valid_maximum,

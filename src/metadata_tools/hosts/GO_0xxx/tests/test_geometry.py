@@ -2,8 +2,9 @@
 # GOSSI-specific metadata geometry unit tests
 ################################################################################
 import unittest
-import pdstable
+
 import numpy as np
+import pdstable
 
 #metadata_tools.util as util
 #import metadata_tools.hosts.GO_0xxx.host_config as config
@@ -11,7 +12,7 @@ import tests.unittester_support as unit
 
 #SYSTEMS_TABLE = util.convert_systems_table(config.SYSTEMS_TABLE, config.SCLK_BASES)
 
-class Test_Geometry_GOSSI(unittest.TestCase):
+class TestGeometryGOSSI(unittest.TestCase):
 
     #===========================================================================
     # test geometry common fields
@@ -29,7 +30,7 @@ class Test_Geometry_GOSSI(unittest.TestCase):
 
             # validate column values
             volume = file.split('/')[-1][0:7]
-            self.assertFalse(np.any(np.where(table.column_values['VOLUME_ID'] != volume)) == np.True_, file)
+            assert np.any(np.where(table.column_values['VOLUME_ID'] != volume)) != np.True_, file
 
     #===========================================================================
     # test geometry body fields
@@ -51,10 +52,14 @@ class Test_Geometry_GOSSI(unittest.TestCase):
 
             # validate value bounds
 # These bounds only apply to the Jupiter orbits, if any.
-#            unit.bounds(self, file, table, 'SUB_SOLAR_PLANETOCENTRIC_LATITUDE', min=-30, max=30)
-#            unit.bounds(self, file, table, 'SUB_SOLAR_PLANETOGRAPHIC_LATITUDE', min=-30, max=30)
-#            unit.bounds(self, file, table, 'SUB_OBSERVER_PLANETOCENTRIC_LATITUDE', min=-35, max=35)
-#            unit.bounds(self, file, table, 'SUB_OBSERVER_PLANETOGRAPHIC_LATITUDE', min=-35, max=35)
+#            unit.bounds(self, file, table, 'SUB_SOLAR_PLANETOCENTRIC_LATITUDE',
+#                        min_val=-30, max_val=30)
+#            unit.bounds(self, file, table, 'SUB_SOLAR_PLANETOGRAPHIC_LATITUDE',
+#                        min_val=-30, max_val=30)
+#            unit.bounds(self, file, table, 'SUB_OBSERVER_PLANETOCENTRIC_LATITUDE',
+#                        min_val=-35, max_val=35)
+#            unit.bounds(self, file, table, 'SUB_OBSERVER_PLANETOGRAPHIC_LATITUDE',
+#                        min_val=-35, max_val=35)
 
     #===========================================================================
     # test geometry ring fields
@@ -71,17 +76,22 @@ class Test_Geometry_GOSSI(unittest.TestCase):
             table = pdstable.PdsTable(file)
 
             # validate value bounds
-            unit.bounds(self, file, table, 'NORTH_BASED_INCIDENCE_ANGLE', min=35, max=145)
-            unit.bounds(self, file, table, 'SOLAR_RING_ELEVATION', min=-35, max=35)
-            unit.bounds(self, file, table, 'RING_CENTER_INCIDENCE_ANGLE', min=60, max=90)
-            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_INCIDENCE_ANGLE', min=35, max=145)
+            unit.bounds(self, file, table, 'NORTH_BASED_INCIDENCE_ANGLE',
+                        min_val=35, max_val=145)
+            unit.bounds(self, file, table, 'SOLAR_RING_ELEVATION', min_val=-35, max_val=35)
+            unit.bounds(self, file, table, 'RING_CENTER_INCIDENCE_ANGLE', min_val=60, max_val=90)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_INCIDENCE_ANGLE',
+                        min_val=35, max_val=145)
 
             #################### Slightly exceeds 90 deg in GO_0022
-#            unit.bounds(self, file, table, 'RING_CENTER_EMISSION_ANGLE', min=-30, max=30)
+#            unit.bounds(self, file, table, 'RING_CENTER_EMISSION_ANGLE', min_val=-30, max_val=30)
 
-            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_EMISSION_ANGLE', min=35, max=145)
-            unit.bounds(self, file, table, 'SOLAR_RING_CENTER_OPENING_ANGLE', min=-35, max=35)
-            unit.bounds(self, file, table, 'OBSERVER_RING_CENTER_OPENING_ANGLE', min=-30, max=30)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_EMISSION_ANGLE',
+                        min_val=35, max_val=145)
+            unit.bounds(self, file, table, 'SOLAR_RING_CENTER_OPENING_ANGLE',
+                        min_val=-35, max_val=35)
+            unit.bounds(self, file, table, 'OBSERVER_RING_CENTER_OPENING_ANGLE',
+                        min_val=-30, max_val=30)
 
 
 #########################################

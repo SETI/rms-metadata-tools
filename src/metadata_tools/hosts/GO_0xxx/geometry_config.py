@@ -6,9 +6,9 @@
 ##########################################################################################
 import oops
 import oops.hosts.galileo.ssi as ssi
-import metadata_tools.hosts.GO_0xxx.host_config as host_config
-import metadata_tools.hosts.GO_0xxx.host_init
 
+import metadata_tools.hosts.GO_0xxx.host_config as host_config
+import metadata_tools.hosts.GO_0xxx.host_init  # noqa: F401  (side-effect import)
 
 ##########################################################################################
 # GO_0xxx arguments
@@ -135,7 +135,7 @@ MODE_SIZES = {"FULL": 1,
 def meshgrids(sampling):
 
     meshgrids = {}
-    for mode in MODE_SIZES.keys():
+    for mode in MODE_SIZES:
         pixel_wrt_full = MODE_SIZES[mode]
         pixels = 800 / MODE_SIZES[mode]
 
@@ -183,18 +183,18 @@ get_volume_id = host_config.get_volume_id
 ##########################################################################################
 
 #=========================================================================================
-def target_name(dict):
+def target_name(snapshot):
     """Determines the target name from the snapshot's dictionary. If the given name is
        "SKY", it checks the CIMS ID and the TARGET_DESC for something different.
 
     Args:
-        dict (dict): Snapshot observation dictionary.
+        snapshot (dict): Snapshot observation dictionary.
 
     Returns:
         str: Target name.
     """
 
-    return dict["TARGET_NAME"]
+    return snapshot["TARGET_NAME"]
 
 # Leaving this here for when we implemnt Cassini ISS metadata....
 #    target = dict["TARGET_NAME"]

@@ -16,7 +16,7 @@ import tests.unittester_support as unit
 pytestmark = pytest.mark.requires_archive
 
 
-class Test_Geometry(unittest.TestCase):
+class TestGeometry(unittest.TestCase):
 
     #===========================================================================
     # test inventory file
@@ -62,12 +62,12 @@ class Test_Geometry(unittest.TestCase):
             table = pdstable.PdsTable(file)
 
             # verify # rows, columns
-            self.assertEqual(table.info.rows, len(table.column_values['VOLUME_ID']), file)
-            self.assertEqual(table.info.columns, len(table.keys), file)
+            assert table.info.rows == len(table.column_values['VOLUME_ID']), file
+            assert table.info.columns == len(table.keys), file
 
             # validate column types
-            self.assertIsInstance(table.column_values['VOLUME_ID'][0], np.str_, file)
-            self.assertIsInstance(table.column_values['FILE_SPECIFICATION_NAME'][0], np.str_, file)
+            assert isinstance(table.column_values['VOLUME_ID'][0], np.str_), file
+            assert isinstance(table.column_values['FILE_SPECIFICATION_NAME'][0], np.str_), file
 
     #===========================================================================
     # test geometry body fields
@@ -84,24 +84,28 @@ class Test_Geometry(unittest.TestCase):
             table = pdstable.PdsTable(file)
 
             # validate column types
-            self.assertIsInstance(table.column_values['BODY_NAME'][0], np.str_, file)
+            assert isinstance(table.column_values['BODY_NAME'][0], np.str_), file
 
             # validate bounded values
-            unit.bounds(self, file, table, 'PLANETOCENTRIC_LATITUDE', min=-90, max=90)
-            unit.bounds(self, file, table, 'PLANETOGRAPHIC_LATITUDE', min=-90, max=90)
+            unit.bounds(self, file, table, 'PLANETOCENTRIC_LATITUDE', min_val=-90, max_val=90)
+            unit.bounds(self, file, table, 'PLANETOGRAPHIC_LATITUDE', min_val=-90, max_val=90)
             unit.bounds(self, file, table, 'IAU_LONGITUDE')
             unit.bounds(self, file, table, 'LOCAL_HOUR_ANGLE')
-            unit.bounds(self, file, table, 'LONGITUDE_WRT_OBSERVER', min=-180, max=180)
-            unit.bounds(self, file, table, 'PHASE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'INCIDENCE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'EMISSION_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'PLANETOCENTRIC_SUB_SOLAR_LATITUDE', min=-90, max=90)
-            unit.bounds(self, file, table, 'PLANETOGRAPHIC_SUB_SOLAR_LATITUDE', min=-90, max=90)
-            unit.bounds(self, file, table, 'PLANETOCENTRIC_SUB_OBSERVER_LATITUDE', min=-90, max=90)
-            unit.bounds(self, file, table, 'PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE', min=-90, max=90)
+            unit.bounds(self, file, table, 'LONGITUDE_WRT_OBSERVER', min_val=-180, max_val=180)
+            unit.bounds(self, file, table, 'PHASE_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'INCIDENCE_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'EMISSION_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'PLANETOCENTRIC_SUB_SOLAR_LATITUDE',
+                        min_val=-90, max_val=90)
+            unit.bounds(self, file, table, 'PLANETOGRAPHIC_SUB_SOLAR_LATITUDE',
+                        min_val=-90, max_val=90)
+            unit.bounds(self, file, table, 'PLANETOCENTRIC_SUB_OBSERVER_LATITUDE',
+                        min_val=-90, max_val=90)
+            unit.bounds(self, file, table, 'PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE',
+                        min_val=-90, max_val=90)
             unit.bounds(self, file, table, 'SUB_SOLAR_IAU_LONGITUDE')
             unit.bounds(self, file, table, 'SUB_OBSERVER_IAU_LONGITUDE')
-            unit.bounds(self, file, table, 'CENTER_PHASE_ANGLE', min=0, max=180)
+            unit.bounds(self, file, table, 'CENTER_PHASE_ANGLE', min_val=0, max_val=180)
 
     #===========================================================================
     # test geometry ring fields
@@ -120,26 +124,30 @@ class Test_Geometry(unittest.TestCase):
             # validate bounded values
             unit.bounds(self, file, table, 'RING_LONGITUDE')
             unit.bounds(self, file, table, 'SOLAR_HOUR_ANGLE')
-            unit.bounds(self, file, table, 'RING_LONGITUDE_WRT_OBSERVER', min=-180, max=180)
+            unit.bounds(self, file, table, 'RING_LONGITUDE_WRT_OBSERVER', min_val=-180, max_val=180)
             unit.bounds(self, file, table, 'RING_AZIMUTH')
-            unit.bounds(self, file, table, 'RING_PHASE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'RING_INCIDENCE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'NORTH_BASED_INCIDENCE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'RING_EMISSION_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'NORTH_BASED_EMISSION_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'SOLAR_RING_ELEVATION', min=-90, max=90)
-            unit.bounds(self, file, table, 'OBSERVER_RING_ELEVATION', min=-90, max=90)
+            unit.bounds(self, file, table, 'RING_PHASE_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'RING_INCIDENCE_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'NORTH_BASED_INCIDENCE_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'RING_EMISSION_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'NORTH_BASED_EMISSION_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'SOLAR_RING_ELEVATION', min_val=-90, max_val=90)
+            unit.bounds(self, file, table, 'OBSERVER_RING_ELEVATION', min_val=-90, max_val=90)
             unit.bounds(self, file, table, 'EDGE_ON_RING_LONGITUDE')
             unit.bounds(self, file, table, 'EDGE_ON_SOLAR_HOUR_ANGLE')
             unit.bounds(self, file, table, 'SUB_SOLAR_RING_LONGITUDE')
             unit.bounds(self, file, table, 'SUB_OBSERVER_RING_LONGITUDE')
-            unit.bounds(self, file, table, 'RING_CENTER_PHASE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'RING_CENTER_INCIDENCE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_INCIDENCE_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'RING_CENTER_EMISSION_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_EMISSION_ANGLE', min=0, max=180)
-            unit.bounds(self, file, table, 'SOLAR_RING_CENTER_OPENING_ANGLE', min=-90, max=90)
-            unit.bounds(self, file, table, 'OBSERVER_RING_CENTER_OPENING_ANGLE', min=-90, max=90)
+            unit.bounds(self, file, table, 'RING_CENTER_PHASE_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'RING_CENTER_INCIDENCE_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_INCIDENCE_ANGLE',
+                        min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'RING_CENTER_EMISSION_ANGLE', min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'NORTH_BASED_CENTER_EMISSION_ANGLE',
+                        min_val=0, max_val=180)
+            unit.bounds(self, file, table, 'SOLAR_RING_CENTER_OPENING_ANGLE',
+                        min_val=-90, max_val=90)
+            unit.bounds(self, file, table, 'OBSERVER_RING_CENTER_OPENING_ANGLE',
+                        min_val=-90, max_val=90)
 
     #===========================================================================
     # test geometry sky fields
@@ -157,7 +165,7 @@ class Test_Geometry(unittest.TestCase):
 
             # validate bounded values
             unit.bounds(self, file, table, 'RIGHT_ASCENSION')
-            unit.bounds(self, file, table, 'DECLINATION', min=-90, max=90)
+            unit.bounds(self, file, table, 'DECLINATION', min_val=-90, max_val=90)
 
 
 #########################################

@@ -1,15 +1,15 @@
 ##########################################################################################
 # common.py: common classes and functions
 ##########################################################################################
-import re
 import argparse
 import json
+import re
 
-from filecache import FCPath
 import pdslogger
+from filecache import FCPath
 
-import metadata_tools.util as util
 import metadata_tools.label_support as lab
+import metadata_tools.util as util
 
 ##########################################################################################
 # Logger management
@@ -21,21 +21,21 @@ _LOGGER = pdslogger.PdsLogger.get_logger('metadata', digits=0, lognames=False,
 SYSTEM_NULL = "NONE"
 
 #=========================================================================================
-def init_logger(dir, type):
+def init_logger(log_dir, log_type):
     """Initialize logger.
     Args:
-        dir (FCPath): Directory to log.
-        type (str): Type of log to create.
+        log_dir (FCPath): Directory to log.
+        log_type (str): Type of log to create.
     Returns:
         None
     """
-    name = '%s_%s-log.txt' % (dir.name, type)
-    path = dir / name
+    name = '%s_%s-log.txt' % (log_dir.name, log_type)
+    path = log_dir / name
     path.unlink(missing_ok=True)
-    
+
     _LOGGER.add_handler(pdslogger.file_handler(path, level='normal'))
     _LOGGER.add_handler(pdslogger.STDOUT_HANDLER)
-    _LOGGER.log('header', 'Initialized %s log for %s', type, dir.name)
+    _LOGGER.log('header', 'Initialized %s log for %s', log_type, log_dir.name)
 
 #=========================================================================================
 
@@ -82,7 +82,7 @@ def write_task_file(task_file):
     """Write the tasks file.
     Args:
         task_file(str): Name of file to write.
-    Returns: 
+    Returns:
         None
     """
     if not task_file:
@@ -111,8 +111,8 @@ class PathAction(argparse.Action):
 
 #=========================================================================================
 def get_common_args(host=None,
-                    volume_arg='volume_tree', 
-                    metadata_arg='metadata_tree', 
+                    volume_arg='volume_tree',
+                    metadata_arg='metadata_tree',
                     output_arg='output_tree'):
     """Common argument parser for metadata tools.
 

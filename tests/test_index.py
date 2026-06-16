@@ -15,7 +15,7 @@ import tests.unittester_support as unit
 pytestmark = pytest.mark.requires_archive
 
 
-class Test_Index_Common(unittest.TestCase):
+class TestIndexCommon(unittest.TestCase):
 
     #===========================================================================
     # test cumulative file
@@ -46,15 +46,15 @@ class Test_Index_Common(unittest.TestCase):
             table = pdstable.PdsTable(file)
 
             # verify # rows, columns
-            self.assertEqual(table.info.rows, len(table.column_values['VOLUME_ID']), file)
-            self.assertEqual(table.info.columns, len(table.keys), file)
+            assert table.info.rows == len(table.column_values['VOLUME_ID']), file
+            assert table.info.columns == len(table.keys), file
 
             # validate column values
-            self.assertIsInstance(table.column_values['VOLUME_ID'][0], np.str_, file)
-            self.assertIsInstance(table.column_values['FILE_SPECIFICATION_NAME'][0], np.str_, file)
-            self.assertIsInstance(table.column_values['PRODUCT_CREATION_TIME'][0], np.str_, file)
-            self.assertIsInstance(table.column_values['START_TIME'][0], np.str_, file)
-            self.assertIsInstance(table.column_values['STOP_TIME'][0], np.str_, file)
+            assert isinstance(table.column_values['VOLUME_ID'][0], np.str_), file
+            assert isinstance(table.column_values['FILE_SPECIFICATION_NAME'][0], np.str_), file
+            assert isinstance(table.column_values['PRODUCT_CREATION_TIME'][0], np.str_), file
+            assert isinstance(table.column_values['START_TIME'][0], np.str_), file
+            assert isinstance(table.column_values['STOP_TIME'][0], np.str_), file
 
 
 #########################################

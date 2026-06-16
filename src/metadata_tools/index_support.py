@@ -1,19 +1,19 @@
 ################################################################################
 # index_support.py - Tools for generating index files
 ################################################################################
-import fortranformat as ff
-import fnmatch
 import ast
+import fnmatch
+
+import fortranformat as ff
+import host_config as hconf
+import index_config as config
+from filecache import FCPath
+from pdsparser import PdsLabel
+from pdstemplate.pds3table import Pds3Table
 
 import metadata_tools.common as com
 import metadata_tools.util as util
 
-from pdsparser import PdsLabel
-from filecache import FCPath
-from pdstemplate.pds3table import Pds3Table
-
-import host_config as hconf
-import index_config as config
 
 ################################################################################
 # IndexTable class
@@ -73,7 +73,7 @@ class IndexTable(com.Table):
                 raise FileNotFoundError(f'No primary index for {self.volume_id}')
             self.primary_index_path = self.metadata_dir/(primary_index_name + '.tab')
 
-            table = util.PdsTable(self.primary_index_label_path)
+            table = util.pds_table(self.primary_index_label_path)
 
             primary_row_dicts = table.dicts_by_row()
             self.files = [FCPath(primary_row_dict['FILE_SPECIFICATION_NAME'])
@@ -84,7 +84,7 @@ class IndexTable(com.Table):
 
         # Otherwise, build the file list from the directory tree
         else:
-            self.files = [f for f in input_dir.rglob('*.LBL')]
+            self.files = list(input_dir.rglob('*.LBL'))
 
         # Initialize the logger
         com.init_logger(self.output_dir, 'index')
@@ -223,7 +223,7 @@ class IndexTable(com.Table):
 
             # If no key function, just take the value from the label
             except AttributeError:
-                value = label_dict[key] if key in label_dict else nullval
+                value = label_dict.get(key, nullval)
 
         # If a key function returned None, insert a NULL value.
         if value is None:
@@ -299,34 +299,34 @@ class IndexTable(com.Table):
 
     #===========================================================================
     @staticmethod
-    def _format_value(value, format):
+    def _format_value(value, fmt):
         """Format a single value using a Fortran format code.
 
         Args:
             value (str): Value to format.
-            format (str): FORTRAN-style format code.
+            fmt (str): FORTRAN-style format code.
 
         Returns:
             str: formatted value.
         """
 
         # format value
-        line = ff.FortranRecordWriter('(' + format + ')')
+        line = ff.FortranRecordWriter('(' + fmt + ')')
         result = line.write([value])
 
         # add double quotes to string formats
-        if format[0] == 'A':
+        if fmt[0] == 'A':
             result = '"' + result.strip().ljust(len(result)) + '"'
 
         return result
 
     #===========================================================================
     @staticmethod
-    def _format_parms(format):
+    def _format_parms(fmt):
         """Determine len and type corresponding to a given FORTRAN format code..
 
         Args:
-            format (str): FORTRAN_style format code.
+            fmt (str): FORTRAN_style format code.
 
         Returns:
             NamedTuple (width (int), data_type (str)):
@@ -340,12 +340,12 @@ class IndexTable(com.Table):
                       'F': 'ASCII_REAL',
                       'I': 'ASCII_INTEGER'}
         try:
-            f = IndexTable._format_value('0', format)
+            f = IndexTable._format_value('0', fmt)
         except TypeError:
-            f = IndexTable._format_value(0, format)
+            f = IndexTable._format_value(0, fmt)
 
         width = len(f)
-        data_type = data_types[format[0]]
+        data_type = data_types[fmt[0]]
 
         return (width, data_type)
 
@@ -367,8 +367,8 @@ class IndexTable(com.Table):
 
         # Get value parameters
         name = column_stub['NAME']
-        format = column_stub['FORMAT'].strip('"')
-        (width, data_type) = IndexTable._format_parms(format)
+        fmt = column_stub['FORMAT'].strip('"')
+        (width, _data_type) = IndexTable._format_parms(fmt)
         if not count:
             count = column_stub['ITEMS'] if column_stub['ITEMS'] else 1
 
@@ -397,13 +397,13 @@ class IndexTable(com.Table):
 
         # Format the value
         try:
-            result = IndexTable._format_value(value, format)
+            result = IndexTable._format_value(value, fmt)
         except TypeError:
-            logger.warning("Invalid format: %s %s %s", name, value, format)
+            logger.warning("Invalid format: %s %s %s", name, value, fmt)
             result = width * "*"
 
         if len(result) > width:
-            logger.warning("No second format: %s %s %s %s", name, value, format, result)
+            logger.warning("No second format: %s %s %s %s", name, value, fmt, result)
 
         # Validate the formatted value
         try:
@@ -494,7 +494,7 @@ def _create_index(volume_tree, output_tree, template_path, metadata_tree=None,
         volume_tree (str, Path, or FCPath):
             Top of the directory tree containing the volume, specifically the labels.
         output_tree (str, Path, or FCPath):
-            Top of the directory tree in which to to write the new index files. Corrected 
+            Top of the directory tree in which to to write the new index files. Corrected
             index files (e.g., <volume>_index.tab) are assumed to reside here unless
             metadata_tree is given.
         template_path (str, Path, or FCPath): Path to the host template.
@@ -581,7 +581,7 @@ def process_index(template_name,
                   glob=None,
                   volumes=None,
                   args=None,
-                  task_file=None, 
+                  task_file=None,
                   task_list_only=False):
     """Creates index files for a collection of volumes.
 
@@ -590,13 +590,13 @@ def process_index(template_name,
         glob (str, optional): Glob pattern for data files.
         volumes (list, optional): List of volume ids to process.  Overrides args.volumes.
         args (argparse.Namespace): Parsed arguments.
-        task_file (str, optional): 
-            Name of tasks file. This file is overwritten. If not given, tasks are provided 
+        task_file (str, optional):
+            Name of tasks file. This file is overwritten. If not given, tasks are provided
             via the task_source generator.
         task_list_only (bool, optional):
             If True, a task list is created and no processing is performed. If task_file is
             given, then the task list is written to that file. Otherwise, the task list is
-            accessed via the task_source generator. 
+            accessed via the task_source generator.
 
     Returns:
         None.

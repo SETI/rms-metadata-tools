@@ -7,29 +7,35 @@
 # For local runs, the basic usage is identical to GO_0xxx_index.py. In addition, all
 # cloud_tasks arguments are accepted. For example:
 #
-#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
-#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
+#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/
+#       $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
+#   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/
+#       $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
 #
 # For GCP runs, use:
 #   gcloud auth application-default login       # if necessary
 #
-#   python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to index_tasks.json
-#   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json --use-spot   # --total-boot-disk-size 50
+#   python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/
+#       $RMS_METADATA_TEST/GO_0xxx/ -to index_tasks.json
+#   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json --use-spot
+#       # --total-boot-disk-size 50
 #
 #########################################################################################
 import asyncio
 import sys
 from typing import Any
+
 from cloud_tasks.worker import Worker, WorkerData
 
 sys.path.append('')             ### This is needed to get the GCP instance to recognize
                                 ### the metadata_tools module
-import metadata_tools.util as util
-
-import metadata_tools.common as com
 import host_config as hconf
 import index_config as config
-from metadata_tools.index_support import process_index, get_args
+
+import metadata_tools.common as com
+import metadata_tools.util as util
+from metadata_tools.index_support import get_args, process_index
+
 
 #========================================================================================
 def process_task(_task_id: str,

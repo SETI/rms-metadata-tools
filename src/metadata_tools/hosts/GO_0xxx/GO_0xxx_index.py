@@ -24,13 +24,16 @@
 #    Index Arguments:
 #      --type type, -t type  Type of index file to create, e.g., "supplemental".
 #
-#   e.g., python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
-#         python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
+#   e.g., python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/
+#               $RMS_METADATA_TEST/GO_0xxx/
+#         python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/
+#               $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
 #
 ##########################################################################################
-import host_init    # imported for side effects
-import metadata_tools.index_support as idx
+import host_init  # noqa: F401  (imported for side effects)
 import index_config as config
+
+import metadata_tools.index_support as idx
 
 idx.process_index('GO_0xxx_supplemental_index',
                   glob=config.glob)

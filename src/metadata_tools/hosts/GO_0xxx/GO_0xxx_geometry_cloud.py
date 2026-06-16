@@ -7,8 +7,10 @@
 # For local runs, the basic usage is identical to GO_0xxx_geometry.py. In addition, all
 # cloud_tasks arguments are accepted. For example:
 #
-#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
-#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
+#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
+#       --num-simultaneous-tasks 12
+#   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
+#       --num-simultaneous-tasks 12
 #
 # For GCP runs, use:
 #   gcloud auth application-default login       # if necessary
@@ -17,23 +19,26 @@
 #     cloud_tasks run --config gcp_geometry_config.yml --task-file index_tasks.json
 #
 #   - to use a new task file:
-#     python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 -to geometry_tasks.json
+#     python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/
+#         $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 -to geometry_tasks.json
 #     cloud_tasks run --config gcp_geometry_config.yml --task-file geometry_tasks.json --use-spot
 #
 #########################################################################################
 import asyncio
 import sys
 from typing import Any
+
 from cloud_tasks.worker import Worker, WorkerData
 
 sys.path.append('')             ### This is needed to get the GCP instance to recognize
                                 ### the metadata_tools module
-import metadata_tools.util as util
+import geometry_config as config
+import host_config as hconf
 
 import metadata_tools.common as com
-import host_config as hconf
-import geometry_config as config
-from metadata_tools.geometry_support import process_tables, get_args
+import metadata_tools.util as util
+from metadata_tools.geometry_support import get_args, process_tables
+
 
 #========================================================================================
 def process_task(_task_id: str,

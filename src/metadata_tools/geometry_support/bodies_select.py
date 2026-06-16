@@ -82,7 +82,7 @@ def select_bodies(record, bodies):
     if record.primary:
         body_names += [record.primary]
         children = [child.name for child in col.BODIES[record.primary].children
-                        if child.name in bodies.keys()]
+                        if child.name in bodies]
         children = inventory(record, children)
         if record.selections:
             children = list(set(children) & set(record.selections))
@@ -148,7 +148,7 @@ def obs_excluded(record, exceptions):
     if not exceptions:
         return False
 
-    id = util.get_observation_id(record.observation)
+    obs_id = util.get_observation_id(record.observation)
     for exception in exceptions:
         # An identifier names a config predicate function; anything else is a
         # regex tested against the observation ID. The observation is excluded if
@@ -157,7 +157,7 @@ def obs_excluded(record, exceptions):
             fn = getattr(config, exception)
             if fn(record.observation):
                 return True
-        elif re.match(exception, id):
+        elif re.match(exception, obs_id):
             return True
 
     return False

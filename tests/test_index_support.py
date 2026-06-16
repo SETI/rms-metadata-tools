@@ -309,7 +309,7 @@ def test_indextable_init_supplemental_path(monkeypatch, tmp_path):
     outdir = tmp_path / 'out'
     outdir.mkdir()
     _patch_template(monkeypatch)
-    monkeypatch.setattr(idx.util, 'PdsTable', lambda lbl: types.SimpleNamespace(
+    monkeypatch.setattr(idx.util, 'pds_table', lambda lbl: types.SimpleNamespace(
         dicts_by_row=lambda: [{'FILE_SPECIFICATION_NAME': 'data/c0.IMG'}]))
     table = IndexTable(FCPath(indir), FCPath(outdir), FCPath('/tmpl.lbl'),
                        FCPath(meta), qualifier='supplemental', volume_id='GO_0001')

@@ -1,21 +1,21 @@
 ################################################################################
 # util.py: Utility functions
 ################################################################################
+import datetime as dt
+import math
 import os
 import re
-import math
-import numpy as np
-import cspyce
-import datetime as dt
 import sys
+from pathlib import Path
 from typing import Any
 
-
+import cspyce
+import numpy as np
 import pdstable
-from pathlib   import Path
 from filecache import FCPath
 
 import metadata_tools.defs as defs
+
 
 #===============================================================================
 def dbprint(message):
@@ -31,7 +31,7 @@ def dbprint(message):
     print(f'{time} - {message}', file=sys.stderr, flush=True)
 
 #===============================================================================
-def PdsTable(label_path):
+def pds_table(label_path):
     """read a pds3table from an FCPath object.  To be replaced whenever pdstable is
        upgraded to use filecache.
 
@@ -62,25 +62,25 @@ def select_dir(tree, col, vol):
     return tree / vol
 
 #===============================================================================
-def get_index_name(dir, vol_id, type):
+def get_index_name(tree, vol_id, index_type):
     """Determine the name of the index file.
 
     Args:
-        dir (str): Top dir for volume.
+        tree (str): Top dir for volume.
         vol_id (str): Volume ID.
-        type (tstr): Index type.
+        index_type (str): Index type.
 
     Returns:
         str: Index name.
     """
 
     # Name starts with volume id
-    dir = dir.absolute()
+    tree = tree.absolute()
     name = vol_id
 
     # Add type if given
-    if type:
-        name += '_' + type
+    if index_type:
+        name += '_' + index_type
 
     name += '_index'
 
@@ -275,8 +275,8 @@ def get_volume_glob(col):
 
     """
     parts = col.rsplit('_', 1)
-    id = parts[1]
-    id_glob = id.replace('x', '[0-9]')
+    vol_id = parts[1]
+    id_glob = vol_id.replace('x', '[0-9]')
     volume_glob = parts[0] + '_' + id_glob
 
     return volume_glob
@@ -297,7 +297,7 @@ def add_by_base(x_digits, y_digits, bases):           ### move to utilities
     result = [0]*(len(bases)+1)
     carry = 0
     for i, (x_digit, y_digit, base) in \
-      enumerate(zip(reversed(x_digits), reversed(y_digits), reversed(bases))):
+      enumerate(zip(reversed(x_digits), reversed(y_digits), reversed(bases), strict=False)):
         total = x_digit + y_digit + carry
         result[i] = total % base
         carry = total // base
@@ -494,7 +494,7 @@ def sclk_split_count(count, delim=None):
     # Replace all non-alphanumerics with default delimiter if non given
     if delim is None:
         delim = '.'
-        delims = list(set([c for c in count if not c.isalnum()]))
+        delims = list({c for c in count if not c.isalnum()})
         table = {ord(d): ord(delim) for d in delims}
         count = count.translate(table)
 
@@ -505,12 +505,12 @@ def sclk_split_count(count, delim=None):
     return fields[0:4]
 
 #===============================================================================
-def sclk_format_count(fields, format):
+def sclk_format_count(fields, fmt):
     """Construct a spacecraft clock count from a list of fields.
 
     Args:
         fields (list): Fields (int) the spacecraft clock count.
-        format (str):
+        fmt (str):
             Template indicating the fields widths and delimiters.  Alphanumeric
             characters indicate field digits, non-alphanumeric characters indicate
             field delimiters. Example: 'nnnnnnnn:nn:n.n'.
@@ -520,16 +520,16 @@ def sclk_format_count(fields, format):
     """
 
     # Get delimiters
-    delims = [c for c in format if not c.isalnum()] + ['']
+    delims = [c for c in fmt if not c.isalnum()] + ['']
 
     # Get field formats (i.e. field widths)
-    f = "".join([s if s.isalnum() else '/' for s in format])
+    f = "".join([s if s.isalnum() else '/' for s in fmt])
     formats = f.split('/')
     widths = [len(f) for f in formats]
 
     # Build count string
     count = ''
-    for delim, width, field in zip(delims, widths, fields):
+    for delim, width, field in zip(delims, widths, fields, strict=False):
         s = f'{field}'
         count += '0'*(width-len(s)) + s + delim
 
@@ -597,7 +597,7 @@ def range_of_n_angles(n, prob=0.1, tests=100000):
         numpy.float64: Angular interval in degrees.
     """
     max_diffs = []
-    for k in range(tests):
+    for _k in range(tests):
         values = np.random.rand(n) * 360.
         values = np.sort(values % 360)
         diffs = np.empty(values.size)

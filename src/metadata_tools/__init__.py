@@ -46,12 +46,12 @@ Generating New Metadata Tables
 
  The procedure for creating a new host configuration is as follows:
 
- 1. Create a directory for the new host collection under the hosts/ subdirectory, e.g., 
+ 1. Create a directory for the new host collection under the hosts/ subdirectory, e.g.,
     hosts/GO_0xxx/, hosts/COISS_xxxx/, etc.
  2. Copy the python files from an existing host directory and rename them as needed
     for the new collection.
  3. Edit the config and init modules as needed.
- 4. Create a templates/ subdirectory and copy the files from an existing host. Rename 
+ 4. Create a templates/ subdirectory and copy the files from an existing host. Rename
     the files as needed.
  5. Edit host_defs.lbl for the new host.
  6. Edit the descriptions in the summary templates as needed.
@@ -62,15 +62,15 @@ Generating New Metadata Tables
 Modifying table columns
 #######################
 
-The supplemental index table is controlled by the supplemental label template. By default, 
-each column object in the label specifies the name of a PDS label field to add to the table, 
-along with its desired formatting. This behavior may be overridden by adding a key function 
+The supplemental index table is controlled by the supplemental label template. By default,
+each column object in the label specifies the name of a PDS label field to add to the table,
+along with its desired formatting. This behavior may be overridden by adding a key function
 to index_config.py of the form:
 
     key__<NAME>(label_path, label_dict)
 
-where label_path is the path to the PDS label, and label_dict is a dictionary containing the 
-PDS label fields. The returned value is placed in the table. 
+where label_path is the path to the PDS label, and label_dict is a dictionary containing the
+PDS label fields. The returned value is placed in the table.
 
 Modifying the geometry tables requires editing of the column definition and format tables,
 and may require the addition of new backplane functions.

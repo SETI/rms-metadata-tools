@@ -98,6 +98,4 @@ def construct_excluded_mask(backplane, target, primary, mask_desc, *,
 # code fixes that, but the core problem should be fixed before this point.
     if np.any(excluded):
         return excluded
-    if np.all(excluded):
-        return True
-    return False
+    return bool(np.all(excluded))

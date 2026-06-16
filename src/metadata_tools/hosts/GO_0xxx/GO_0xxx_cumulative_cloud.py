@@ -6,29 +6,33 @@
 # For local runs, the basic usage is identical to GO_0xxx_cumulative.py. In addition, all
 # cloud_tasks arguments are accepted. For example:
 #
-#   python GO_0xxx_cumulative_cloud.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json
-#   python GO_0xxx_cumulative_cloud.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json -vv GO_0017
+#   python GO_0xxx_cumulative_cloud.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/
+#       --task-file cumulative_tasks.json
+#   python GO_0xxx_cumulative_cloud.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/
+#       --task-file cumulative_tasks.json -vv GO_0017
 #
 # For GCP runs (not yet working), use:
 #   gcloud auth application-default login       # if necessary
 #
 #   - to use the task file used for the index files:
-#     cloud_tasks run --config gcp_cumulative_config.yml --task-file cumulative_tasks.json --use-spot
+#     cloud_tasks run --config gcp_cumulative_config.yml --task-file cumulative_tasks.json
+#         --use-spot
 #
 #########################################################################################
 import asyncio
 import sys
 from typing import Any
+
 from cloud_tasks.worker import Worker, WorkerData
 
 sys.path.append('')             ### This is needed to get the GCP instance to recognize
                                 ### the metadata_tools module
-import metadata_tools.util as util
-
-import metadata_tools.common as com
+import geometry_config  # noqa: F401  (host plugin side-effect import)
 import host_config as hconf
-import geometry_config
+
+import metadata_tools.util as util
 from metadata_tools.cumulative_support import create_cumulative_indexes, get_args
+
 
 #========================================================================================
 def process_task(_task_id: str,

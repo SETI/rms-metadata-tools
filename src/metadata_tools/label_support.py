@@ -1,16 +1,16 @@
 ################################################################################
 # label_support.py - Tools for generating metadata labels.
 ################################################################################
-from filecache             import FCPath
-from pdstemplate           import PdsTemplate
+from filecache import FCPath
+from pdstemplate import PdsTemplate
 from pdstemplate.pds3table import pds3_table_preprocessor
 
-import metadata_tools as meta
-import metadata_tools.util as util
 import metadata_tools.defs as defs
+import metadata_tools.util as util
+
 
 #===============================================================================
-def create(filepath, host_template_path, 
+def create(filepath, host_template_path,
            system=None,
            *,
            use_global_template=False,
@@ -37,9 +37,9 @@ def create(filepath, host_template_path,
     if not system:
         system = ''
     filename = filepath.name
-    dir = filepath.parent
+    parent_dir = filepath.parent
     body = filepath.stem
-    label_path = dir / (body + '.lbl')
+    label_path = parent_dir / (body + '.lbl')
     host_template_dir = host_template_path.parent
 
     # Get the volume id
@@ -49,7 +49,8 @@ def create(filepath, host_template_path,
     # Default template path
     offset = 0 if not system else len(system) + 1
     if use_global_template:
-        template_path = FCPath(defs.GLOBAL_TEMPLATE_PATH) / FCPath('%s.lbl' % body[underscore+6+offset:])
+        template_path = (FCPath(defs.GLOBAL_TEMPLATE_PATH) /
+                         FCPath('%s.lbl' % body[underscore+6+offset:]))
     else:
         template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
         template_path = host_template_dir / (template_name + '.lbl')
@@ -64,11 +65,11 @@ def create(filepath, host_template_path,
               'TABLE_TYPE'  : table_type}
 
     # Generate label
-    T = PdsTemplate(template_path, crlf=True,
-                    preprocess=preprocess,
-                    includes=[defs.GLOBAL_TEMPLATE_PATH, host_template_dir],
-                    kwargs={'formats':True, 'numbers':True, 'validate':False})
-    T.write(fields, label_path=label_path, mode='repair')
+    template = PdsTemplate(template_path, crlf=True,
+                           preprocess=preprocess,
+                           includes=[defs.GLOBAL_TEMPLATE_PATH, host_template_dir],
+                           kwargs={'formats':True, 'numbers':True, 'validate':False})
+    template.write(fields, label_path=label_path, mode='repair')
 
     return
 ################################################################################

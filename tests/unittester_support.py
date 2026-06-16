@@ -14,18 +14,18 @@ VOLUMES = os.environ.get('RMS_VOLUMES')
 
 #===============================================================================
 # get summary filenames  ### LIB
-def match(dir, pattern):
+def match(tree, pattern):
     """Walk a directory tree and find all files matching a given pattern.
 
     Args:
-        dir (str): Directory to walk.
+        tree (str): Directory to walk.
         pattern (str): glob pattern to match.
 
     Returns:
         list: List of filenames matching the given pattern.
     """
     all_files = []
-    for root, dirs, files in os.walk(dir):
+    for root, _dirs, _files in os.walk(tree):
         all_files += glob.glob(os.path.join(root, pattern))
     return all_files
 
@@ -52,7 +52,7 @@ def exclude(files, *patterns):
     return result
 
 #===========================================================================
-def bounds(test, file, table, key, min=0, max=360, minmax=True):
+def bounds(test, file, table, key, min_val=0, max_val=360, minmax=True):
     """Test whether values exeed given minimum and maximum bounds.
 
     Args:
@@ -63,8 +63,8 @@ def bounds(test, file, table, key, min=0, max=360, minmax=True):
             Name of quantity to test.  If minmax==True, the "MINIMUM_" and
             "MAXIMUM_" prefixes must be omitted, and the function will add them
             and test both keys.
-        min (float): Minimum allowable value.
-        max (float): Maximum allowable value.
+        min_val (float): Minimum allowable value.
+        max_val (float): Maximum allowable value.
         minmax (bool): If set, both the  are "MINIMUM_" and "MAXIMUM_" keys are
                        tested.  In this case, those prefixes must be omitted
                        from the key argument.
@@ -73,8 +73,8 @@ def bounds(test, file, table, key, min=0, max=360, minmax=True):
         None.
     """
     if minmax:
-        bounds(test, file, table, 'MINIMUM_' + key, minmax=False, min=min, max=max)
-        bounds(test, file, table, 'MAXIMUM_' + key, minmax=False, min=min, max=max)
+        bounds(test, file, table, 'MINIMUM_' + key, minmax=False, min_val=min_val, max_val=max_val)
+        bounds(test, file, table, 'MAXIMUM_' + key, minmax=False, min_val=min_val, max_val=max_val)
         return
 
     nullvals = table.info.column_info_dict[key].invalid_values.copy()
@@ -84,7 +84,6 @@ def bounds(test, file, table, key, min=0, max=360, minmax=True):
 
     val = table.column_values[key]
 
-    test.assertFalse(np.any(np.where(
-        np.logical_and(
-            np.logical_or(val < min, val > max), val != nullval))), (key, file))
+    assert not np.any(np.where(np.logical_and(np.logical_or(val < min_val, val > max_val),
+                                              val != nullval))), (key, file)
 ################################################################################

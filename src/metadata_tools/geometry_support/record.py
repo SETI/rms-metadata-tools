@@ -13,7 +13,7 @@ from metadata_tools.geometry_support import bodies_select, formats, prep
 ################################################################################
 # Record class
 ################################################################################
-class Record(object):
+class Record:
     """Class describing a single geometry record, i.e., a single row in a table.
     """
 
@@ -65,7 +65,7 @@ class Record(object):
 
         # Determine target
         self.target = str(config.target_name(observation.dict))
-        if self.target in defs.TRANSLATIONS.keys():
+        if self.target in defs.TRANSLATIONS:
             self.target = defs.TRANSLATIONS[self.target]
 
         # Create the record prefix
@@ -90,7 +90,7 @@ class Record(object):
                 self.blocker = blocker[0]
 
         # Add a targeted irregular moon to the dictionaries if present
-        if self.target in self.bodies and self.target not in self.dicts['body'].keys():
+        if self.target in self.bodies and self.target not in self.dicts['body']:
             self.dicts['body'][self.target] = \
                 util.replace(col.BODY_SUMMARY_COLUMNS,
                                 defs.BODYX, self.target)
@@ -190,8 +190,8 @@ class Record(object):
         # Build link dictionary
         links = {}
         for key in backplane_keys:
-            format = formats.FORMAT_DICT[key]
-            (_,_,_,_,_, null_value, _, _, link_id, link) = format
+            fmt = formats.FORMAT_DICT[key]
+            (_,_,_,_,_, null_value, _, _, link_id, link) = fmt
             if link_id:
                 links[link] = {'backplane_key' : key,
                                'null_value'    : null_value}
@@ -279,7 +279,7 @@ class Record(object):
             column_descs = column_descs[name]
 
         # Prepare the rows
-        rows, overrides = prep.prep_row(self, self.prefixes, self.backplane, self.blocker,
+        rows, _overrides = prep.prep_row(self, self.prefixes, self.backplane, self.blocker,
                                 column_descs,
                                 primary=self.primary, target=target,
                                 tiles=tiles, tiling_min=tiling_min,

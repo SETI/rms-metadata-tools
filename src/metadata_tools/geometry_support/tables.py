@@ -3,6 +3,7 @@
 ################################################################################
 import metadata_tools.common as com
 
+
 ################################################################################
 # InventoryTable class
 ################################################################################
@@ -53,7 +54,8 @@ class SkyTable(com.Table):
                 Directory in which to write the geometry files.
             template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sky', **kwargs)
+        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sky',
+                         **kwargs)
 
     #===============================================================================
     def add(self, record):
@@ -83,7 +85,8 @@ class SunTable(com.Table):
                 Directory in which to write the geometry files.
             template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sun', **kwargs)
+        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sun',
+                         **kwargs)
 
     #===========================================================================
     def add(self, record):
@@ -113,7 +116,8 @@ class RingTable(com.Table):
                 Directory in which to write the geometry files.
             template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='ring', **kwargs)
+        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='ring',
+                         **kwargs)
 
     #===========================================================================
     def add(self, record):
@@ -153,7 +157,8 @@ class BodyTable(com.Table):
                 Directory in which to write the geometry files.
             template_path (str, Path, or FCPath): Path to the host template.
         """
-        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='body', **kwargs)
+        super().__init__(output_dir=output_dir, template_path=template_path, qualifier='body',
+                         **kwargs)
 
     #===========================================================================
     def add(self, record):

@@ -4,15 +4,14 @@
 #  Host-specific utilites and key functions for index file generation.
 #
 ##########################################################################################
-import julian
-import vicar
 import warnings
 
+import host_config as hconf
+import julian
+import vicar
 from filecache import FCPath
 
 import metadata_tools.util as util
-import host_config as hconf
-
 
 ##########################################################################################
 # GO_0xxx arguments
@@ -83,7 +82,7 @@ def _spacecraft_clock_stop_count_from_label(label_dict):
 
     exposure = label_dict['EXPOSURE_DURATION'] / 1000
     exposure_ticks = exposure*120
-    exposure_fields, over = util.rebase(exposure_ticks, hconf.SCLK_BASES, ceil=True)
+    exposure_fields, _over = util.rebase(exposure_ticks, hconf.SCLK_BASES, ceil=True)
 
     stop_fields = util.add_by_base(start_fields, exposure_fields, hconf.SCLK_BASES)
     return util.sclk_format_count(stop_fields[1:], 'nnnnnnnn:nn:n:n')
