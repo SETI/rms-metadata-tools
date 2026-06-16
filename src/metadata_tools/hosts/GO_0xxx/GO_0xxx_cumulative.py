@@ -1,30 +1,15 @@
 #!/usr/bin/env python
-##########################################################################################
-# GO_0xxx_cumulative.py: Generate cumulative files and labels for Galileo SSI.
-#
-# Usage:
-#    GO_0xxx_cumulative.py [-h] [--labels [labels ...]] [--volumes [volumes ...]
-#                          [--exclude [exclude ...]]
-#                          output_dir
-#
-#    options:
-#      -h, --help            show this help message and exit
-#
-#    Common Arguments:
-#      output_dir            Directory in which to place the cumulative files.
-#      --volumes [volumes, ...], -vv [volumes, ...]
-#                            If given, only these volumes are processed.
-#      --labels [labels ...], -l [labels ...]
-#                            If given, labels are generated for existing files.
-#
-#    Cumulative Arguments:
-#      --exclude [exclude ...], -e [exclude ...]
-#                            List of volumes to exclude.
-#
-#   e.g., python3 GO_0xxx_cumulative.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/
-#         python3 GO_0xxx_cumulative.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/ -vv GO_0017
-#
-##########################################################################################
+"""Generate cumulative tables and labels for Galileo SSI.
+
+Concatenates the per-volume tables across the whole volume tree. Run this script from
+inside its host directory (hosts/GO_0xxx), because it does top-level
+``import host_config`` which only resolves when the host directory is on sys.path.
+
+Example:
+    python3 GO_0xxx_cumulative.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/
+
+The full list of command-line options is documented in the user guide.
+"""
 import host_init  # noqa: F401  (imported for side effects)
 
 import metadata_tools.cumulative_support as cml

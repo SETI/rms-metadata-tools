@@ -1,6 +1,11 @@
 ##########################################################################################
 # common.py: common classes and functions
 ##########################################################################################
+"""Common classes and functions shared across the metadata tools.
+
+Provides the global ``PdsLogger``, cloud-task plumbing, the shared argument parser,
+and the ``Table`` base class used by the index and geometry table generators.
+"""
 import argparse
 import json
 import re
@@ -25,12 +30,11 @@ SYSTEM_NULL = "NONE"
 
 #=========================================================================================
 def init_logger(log_dir: FCPath, log_type: str) -> None:
-    """Initialize logger.
-    Args:
+    """Initialize the global logger with file and stdout handlers.
+
+    Parameters:
         log_dir: Directory to log.
         log_type: Type of log to create.
-    Returns:
-        None
     """
     name = '%s_%s-log.txt' % (log_dir.name, log_type)
     path = log_dir / name
@@ -55,22 +59,19 @@ task_list: list[dict[str, Any]] = []
 #==========================================================================
 def task_source() -> Iterator[dict[str, Any]]:
     """Task source generator for cloud_tasks.
-    Args:
-        None.
-    Returns:
-        None
+
+    Yields:
+        Each task dictionary from the accumulated task list.
     """
     yield from task_list
 
 #==========================================================================
 def add_task(volume_id: str, index_type: str) -> None:
     """Add a task to the task list.
-    Args:
+
+    Parameters:
         volume_id: ID of volume to add.
         index_type: 'index' or 'geometry'.
-
-    Returns:
-        None
     """
     logger = get_logger()
     logger.info('Adding task for %s.', volume_id)
@@ -83,10 +84,9 @@ def add_task(volume_id: str, index_type: str) -> None:
 #==========================================================================
 def write_task_file(task_file: str | None) -> None:
     """Write the tasks file.
-    Args:
+
+    Parameters:
         task_file: Name of file to write.
-    Returns:
-        None
     """
     if not task_file:
         return
@@ -101,12 +101,19 @@ def write_task_file(task_file: str | None) -> None:
 # PathAction class
 ##########################################################################################
 class PathAction(argparse.Action):
-    """Action method for path arguments.
-    """
+    """argparse action that normalizes redundant slashes in path arguments."""
     def __call__(self, parser: argparse.ArgumentParser,
                  namespace: argparse.Namespace,
                  values: Any,
                  _option_string: str | None = None) -> None:
+        """Normalize the path value and store it on the namespace.
+
+        Parameters:
+            parser: The argument parser invoking this action.
+            namespace: Namespace on which to store the normalized value.
+            values: The raw argument value, or a list whose first element is used.
+            _option_string: The option string that triggered this action, if any.
+        """
         if isinstance(values, list):
             values = values[0]
         vals = re.sub('://', '<<token>>', values)
@@ -121,15 +128,15 @@ def get_common_args(host: str | None = None,
                     output_arg: str | None = 'output_tree') -> argparse.ArgumentParser:
     """Common argument parser for metadata tools.
 
-        Args:
-            host: Host name, e.g. 'GOISS'.
-            volume_arg: Name of volume_tree arg or None to skip this argument.
-            metadata_arg: Name of volume_tree arg or None to skip this argument.
-            output_arg: Name of volume_tree arg or None to skip this argument.
+    Parameters:
+        host: Host name, e.g. 'GOISS'.
+        volume_arg: Name of volume_tree arg or None to skip this argument.
+        metadata_arg: Name of metadata_tree arg or None to skip this argument.
+        output_arg: Name of output_tree arg or None to skip this argument.
 
-         Returns:
-            Parser containing the common argument specifications.
-   """
+    Returns:
+        Parser containing the common argument specifications.
+    """
 
     # Define parser
     parser = argparse.ArgumentParser(
@@ -167,8 +174,7 @@ def get_common_args(host: str | None = None,
 # Table class
 ##########################################################################################
 class Table:
-    """Class describing a single table for a single volume.
-    """
+    """Base class describing a single metadata table for a single volume."""
 
     #=====================================================================================
     def __init__(self, output_dir: str | Path | FCPath | None = None,
@@ -178,21 +184,17 @@ class Table:
                  suffix: str | None = None, use_global_template: bool = False) -> None:
         """Constructor for a table object.
 
-        Args:
-            output_dir:
-                Directory in which to write the index files.
+        Parameters:
+            output_dir: Directory in which to write the index files.
             template_path: Path to the host template.
             volume_id: Volume ID.
-            level:
-                Processing level: "summary", "detailed", or "index".
-            qualifier:
-                "sky", "sun", "ring", "body", "inventory", or "supplemental".
+            level: Processing level: "summary", "detailed", or "index".
+            qualifier: "sky", "sun", "ring", "body", "inventory", or
+                "supplemental".
             prefix: File path prefix.
             suffix: File name suffix.
-            use_global_template:
-                If True, the label template is to be found in the global
-                template directory.
-
+            use_global_template: If True, the label template is to be found in the
+                global template directory.
         """
         self.template_path: FCPath | None = None
         if template_path:
@@ -217,13 +219,9 @@ class Table:
     def write(self, labels_only: bool = False) -> None:
         """Write a table and its label.
 
-        Args:
-            labels_only:
-                If True, labels are generated for any existing geometry
+        Parameters:
+            labels_only: If True, labels are generated for any existing geometry
                 tables.
-
-        Returns:
-            None.
         """
         logger = get_logger()
 

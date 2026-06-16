@@ -15,17 +15,17 @@ configuration function in the host_config.py for the specific host.
 
 Raw index files are provided by each project, with varying levels of
 compliance. The project-supplied index files are modified to produce the
-corrected index  files that can be used with the host from_index() method.
+corrected index files that can be used with the host from_index() method.
 The ``metadata-tools`` package is intended to produce supplemental index
 files, which add columns to the corrected index file. Supplemental index
 files are identical in structure to index files, so this package can
-generate any kind of index file. Supplemental index files can be provded as
+generate any kind of index file. Supplemental index files can be provided as
 arguments to from_index() to create a merged dictionary.
 
 Supplemental index files are used as input to OPUS, and are available via
 viewmaster to be downloaded by PDS users.
 
-Geometry files tabulate the values of geometrc quantites for each data file,
+Geometry files tabulate the values of geometric quantities for each data file,
 which are derived from SPICE using the information in the index file or from
 the PDS3 label using OOPS.  The purpose of the geometry files is to provide
 input to OPUS.

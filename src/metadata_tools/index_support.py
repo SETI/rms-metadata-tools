@@ -1,6 +1,7 @@
 ################################################################################
 # index_support.py - Tools for generating index files
 ################################################################################
+"""Tools for generating supplemental index tables and their PDS3 labels."""
 import argparse
 import ast
 import fnmatch
@@ -22,8 +23,7 @@ import metadata_tools.util as util
 # IndexTable class
 ################################################################################
 class IndexTable(com.Table):
-    """Class describing an index table for a single volume.
-    """
+    """Class describing an index table for a single volume."""
 
     #===========================================================================
     def __init__(self,
@@ -36,18 +36,20 @@ class IndexTable(com.Table):
                  **kwargs: Any) -> None:
         """Constructor for an IndexTable object.
 
-        Args:
-            input_dir:
-                Directory containing the volume, specifically the data labels.
-            output_dir:
-                Directory in which to write the new index files.
+        Parameters:
+            input_dir: Directory containing the volume, specifically the data
+                labels.
+            output_dir: Directory in which to write the new index files.
             template_path: Path to the host template.
-            metadata_dir:
-                Directory in which to find the "updated" index file (e.g., <volume>_index.tab).
-            qualifier:
-                Qualifying string identifying the type of index file to create,
-                e.g., 'supplemental'.
+            metadata_dir: Directory in which to find the "updated" index file
+                (e.g., <volume>_index.tab).
+            qualifier: Qualifying string identifying the type of index file to
+                create, e.g., 'supplemental'.
             glob: Glob pattern for data files.
+
+        Raises:
+            FileNotFoundError: If a primary index is required but its label is
+                not found.
         """
 
         # Initialize table, return if specific paths not given
@@ -103,7 +105,7 @@ class IndexTable(com.Table):
         s = ' '+qualifier if qualifier else ' primary'
         logger.info('New%s index for %s.', s, self.volume_id)
 
-        # Extract relevent fields from the template
+        # Extract relevant fields from the template
         label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
         label_path = self.output_dir / FCPath(label_name + '.lbl')
 
@@ -118,13 +120,10 @@ class IndexTable(com.Table):
     def create(self, labels_only: bool = False, pattern: str | None = None) -> None:
         """Create the index file for a single volume.
 
-        Args:
-            labels_only:
-                If True, labels are generated for any existing geometry tables.
+        Parameters:
+            labels_only: If True, labels are generated for any existing geometry
+                tables.
             pattern: Glob pattern for sub-selecting files to process.
-
-        Returns:
-            None.
         """
         if not hasattr(self, 'files'):
             return
@@ -168,12 +167,9 @@ class IndexTable(com.Table):
     def add(self, root: FCPath, name: str) -> None:
         """Write a single index file entry.
 
-        Args:
+        Parameters:
             root: Top of the directory tree containing the volume.
             name: Name of PDS label.
-
-        Returns:
-            None.
         """
 
         # Read the PDS3 label
@@ -213,13 +209,17 @@ class IndexTable(com.Table):
                          label_dict: dict[str, Any]) -> Any:
         """Determine value for one row of one column.
 
-        Args:
+        Parameters:
             column_stub: Column stub dictionary.
             label_path: Path to the PDS label.
             label_dict: Dictionary containing the PDS label fields.
 
         Returns:
             Determined value.
+
+        Raises:
+            ValueError: If the value is None and no null constant is defined for
+                the column.
         """
         nullval = column_stub['NULL_CONSTANT']
 
@@ -259,7 +259,7 @@ class IndexTable(com.Table):
     def _get_column_values(pds3_table: Pds3Table) -> list[dict[str, Any]]:
         """Build a list of column stubs.
 
-        Args:
+        Parameters:
             pds3_table: Object defining the table.
 
         Returns:
@@ -288,7 +288,7 @@ class IndexTable(com.Table):
     def _get_null_value(pds3_table: Pds3Table, colnum: int) -> Any:
         """Determine the null value for a column.
 
-        Args:
+        Parameters:
             pds3_table: Object defining the table.
             colnum: Column number.
 
@@ -316,12 +316,12 @@ class IndexTable(com.Table):
     def _format_value(value: Any, fmt: str) -> str:
         """Format a single value using a Fortran format code.
 
-        Args:
+        Parameters:
             value: Value to format.
             fmt: FORTRAN-style format code.
 
         Returns:
-            formatted value.
+            Formatted value.
         """
 
         # format value
@@ -337,15 +337,15 @@ class IndexTable(com.Table):
     #===========================================================================
     @staticmethod
     def _format_parms(fmt: str) -> tuple[int, str]:
-        """Determine len and type corresponding to a given FORTRAN format code..
+        """Determine len and type corresponding to a given FORTRAN format code.
 
-        Args:
-            fmt: FORTRAN_style format code.
+        Parameters:
+            fmt: FORTRAN-style format code.
 
         Returns:
             A tuple (width, data_type):
-                width: Number of bytes required for a formatted value,
-                       including any quotes.
+                width: Number of bytes required for a formatted value, including
+                       any quotes.
                 data_type: Data type corresponding to the format code.
         """
 
@@ -370,14 +370,18 @@ class IndexTable(com.Table):
                        count: int | None = None) -> str:
         """Format a column.
 
-        Args:
+        Parameters:
             column_stub: Preprocessed column stub.
             value: Value to format.
             count: Number of items to process. If not given, the 'ITEMS' entry is
-                   used.
+                used.
 
         Returns:
             Formatted value.
+
+        Raises:
+            ValueError: If count is greater than 1 and the number of supplied
+                values does not match count.
         """
         logger = com.get_logger()
 
@@ -440,12 +444,12 @@ def key__volume_id(label_path: str | Path | FCPath,
     """Key function for VOLUME_ID. The return value will appear in the index
     file under VOLUME_ID.
 
-    Args:
+    Parameters:
         label_path: Path to the PDS label.
         label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        Volume ID
+        Volume ID.
     """
     return cast(str, hconf.get_volume_id(label_path))
 
@@ -455,7 +459,7 @@ def key__file_specification_name(label_path: str | Path | FCPath,
     """Key function for FILE_SPECIFICATION_NAME.  The return value will appear in
     the index file under FILE_SPECIFICATION_NAME.
 
-    Args:
+    Parameters:
         label_path: Path to the PDS label.
         label_dict: Dictionary containing the PDS label fields.
 
@@ -475,15 +479,14 @@ def get_args(host: str | None = None,
              index_type: str | None = None) -> argparse.ArgumentParser:
     """Argument parser for index files.
 
-    Args:
+    Parameters:
         host: Host name e.g. 'GOISS'.
-        index_type:
-            Qualifying string identifying the type of index file
-            to create, e.g., 'supplemental'.
+        index_type: Qualifying string identifying the type of index file to
+            create, e.g., 'supplemental'.
 
-     Returns:
+    Returns:
         Parser containing the argument specifications.
-   """
+    """
 
     # Get common args
     parser = com.get_common_args(host=host)
@@ -510,31 +513,26 @@ def _create_index(volume_tree: FCPath,
                   pattern: str | None = None,
                   task_file: str | None = None,
                   task_list_only: bool = False) -> None:
-    """Creates index files for a collection of volumes.
+    """Create index files for a collection of volumes.
 
-    Args:
-        volume_tree:
-            Top of the directory tree containing the volume, specifically the labels.
-        output_tree:
-            Top of the directory tree in which to to write the new index files. Corrected
-            index files (e.g., <volume>_index.tab) are assumed to reside here unless
-            metadata_tree is given.
+    Parameters:
+        volume_tree: Top of the directory tree containing the volume, specifically
+            the labels.
+        output_tree: Top of the directory tree in which to write the new index
+            files. Corrected index files (e.g., <volume>_index.tab) are assumed to
+            reside here unless metadata_tree is given.
         template_path: Path to the host template.
-        metadata_tree:
-            Top of the directory tree in which to find the corrected index file (e.g.,
-            <volume>_index.tab).
+        metadata_tree: Top of the directory tree in which to find the corrected
+            index file (e.g., <volume>_index.tab).
         volumes: List of volume ids to process.  Overrides args.volumes.
-        qualifier:
-            Qualifying string identifying the type of index file to create, e.g.,
-            'supplemental'.
+        labels_only: If True, labels are generated for any existing tables.
+        qualifier: Qualifying string identifying the type of index file to create,
+            e.g., 'supplemental'.
         glob: Glob pattern for data files.
         pattern: Glob pattern for sub-selecting files to process.
         task_file: Name of tasks file.
-        task_list_only:
-            If True, a tasks file is created and no processing is performed.
-
-    Returns:
-        None.
+        task_list_only: If True, a tasks file is created and no processing is
+            performed.
     """
     logger = com.get_logger()
 
@@ -577,7 +575,7 @@ def _create_index(volume_tree: FCPath,
                 if task_list_only:
                     com.add_task(vol, col)
 
-                # ... or process this volumne
+                # ... or process this volume
                 else:
                     # Process this volume if possible
                     try:
@@ -605,23 +603,19 @@ def process_index(template_name: str,
                   args: argparse.Namespace | None = None,
                   task_file: str | None = None,
                   task_list_only: bool = False) -> None:
-    """Creates index files for a collection of volumes.
+    """Create index files for a collection of volumes.
 
-    Args:
+    Parameters:
         template_name: Name of input template.
         glob: Glob pattern for data files.
         volumes: List of volume ids to process.  Overrides args.volumes.
         args: Parsed arguments.
-        task_file:
-            Name of tasks file. This file is overwritten. If not given, tasks are provided
-            via the task_source generator.
-        task_list_only:
-            If True, a task list is created and no processing is performed. If task_file is
-            given, then the task list is written to that file. Otherwise, the task list is
-            accessed via the task_source generator.
-
-    Returns:
-        None.
+        task_file: Name of tasks file. This file is overwritten. If not given,
+            tasks are provided via the task_source generator.
+        task_list_only: If True, a task list is created and no processing is
+            performed. If task_file is given, then the task list is written to that
+            file. Otherwise, the task list is accessed via the task_source
+            generator.
     """
 
     # Parse arguments

@@ -1,7 +1,5 @@
 # rms-metadata-tools
 
-<!-- pyml disable MD025 -->
-
 [![GitHub release; latest by date](https://img.shields.io/github/v/release/SETI/rms-metadata-tools)](https://github.com/SETI/rms-metadata-tools/releases)
 [![GitHub Release Date](https://img.shields.io/github/release-date/SETI/rms-metadata-tools)](https://github.com/SETI/rms-metadata-tools/releases)
 [![Test Status](https://img.shields.io/github/actions/workflow/status/SETI/rms-metadata-tools/run-tests.yml?branch=main)](https://github.com/SETI/rms-metadata-tools/actions)
@@ -28,119 +26,120 @@
 [![DOI](https://zenodo.org/badge/rms-metadata-tools.svg)](https://zenodo.org/badge/latestdoi/rms-metadata-tools)
 <!-- start-after-point -->
 
-# Features
+## Introduction
 
-`rms-metadata-tools` is TODO
+`rms-metadata-tools` (the importable package `metadata_tools`) generates PDS3
+**index**, **geometry**, and **cumulative** metadata tables, and their PDS3
+labels, for planetary science data collections. Each row of a table holds the
+metadata for a single data product, such as one image.
 
-# Introduction
+The Planetary Data System (PDS) distributes data as collections of volumes.
+Alongside the data, each collection ships flat ASCII metadata tables that
+summarize every product: observation times, instrument settings, and the
+geometry of what was observed. These tables feed the
+[OPUS](https://opus.pds-rings.seti.org) search service and are downloaded
+directly by PDS users. Producing them by hand is tedious and error-prone;
+`rms-metadata-tools` generates them, and their validated labels, for a whole
+volume tree from a small per-collection configuration.
 
-`metadata-tools` is a Python module that generates index and geometry metadata tables
-and their corresponding PDS3 labels. Each line of the table contains metadata for a single
-data file (e.g. image).
+`rms-metadata-tools` is a product of the
+[PDS Ring-Moon Systems Node](https://pds-rings.seti.org) at the SETI Institute.
 
-Index files contain descriptive information about the data product, like observation
-times, exposures, instrument modes and settings, etc. Index file entries are taken from
-the label for the data product by default, but may instead be derived from label
-quantities by defining the appropriate configuration function in the host_config.py
-for the specific host.
+## Features
 
-Raw index files are provided by each project, with varying levels of compliance. The
-project-supplied index files are modified to produce the corrected index  files that
-can be used with the host from_index() method. The ``metadata-tools`` package is intended
-to produce supplemental index files, which add columns to the corrected index file.
-Supplemental index files are identical in structure to index files, so this package can
-generate any kind of index file. Supplemental index files can be provided as arguments to
-from_index() to create a merged dictionary.
+- **Three table kinds.** Generates supplemental **index** tables (extra columns
+  from PDS3 labels), **geometry** tables (body, ring, sky, and Sun quantities
+  computed from SPICE through `oops`), and **cumulative** tables that span a
+  whole collection.
+- **PDS3 labels included.** Writes a validated `.lbl` label for every table from
+  reusable templates.
+- **Engine plus per-host configuration.** A host-agnostic engine does the work;
+  each collection plugs in through a small configuration package, so adding a new
+  collection means writing config, not engine code.
+- **Local or cloud.** Run on one machine, or distribute per-volume work across
+  Google Cloud with the included `rms-cloud-tasks` workers.
+- **Local and remote storage.** Reads and writes through `rms-filecache`, so
+  local paths and `gs://` / `s3://` URIs are interchangeable.
 
-Supplemental index files are used as input to OPUS, and are available via viewmaster to be
-downloaded by PDS users.
+## Installation
 
-Geometry files tabulate the values of geometric quantities for each data file, which are
-derived from SPICE using the information in the index file or from the PDS3 label using
-OOPS.  The purpose of the geometry files is to provide input to OPUS.
+`rms-metadata-tools` requires **Python 3.11 or later** and is tested on Python
+3.11, 3.12, and 3.13. Generating geometry tables additionally requires the SPICE
+kernels for your collection, installed where `oops` can find them.
 
-`metadata-tools` is a product of the [PDS Ring-Moon Systems Node](https://pds-rings.seti.org).
-
-# Installation
-
-<!--
-The `metadata-tools` module is available via the `rms-metadata-tools`[![image](https://raw.githubusercontent.com/SETI/rms-metadata-tools/main/icons/link.png)](https://pypi.org/project/rms-metadata-tools)
-package on PyPI and can be installed with:
+Install from PyPI:
 
 ```sh
 pip install rms-metadata-tools
 ```
--->
 
-Clone the rms-metadata-tools repo, activate the venv, and install the dependencies:
+To work from a checkout (recommended when adding or modifying a host
+configuration, since the runnable host scripts live in the source tree):
 
 ```sh
-% git clone https://github.com/SETI/rms-metadata-tools.git
-% activate
-% pip install -r requirements.txt
+git clone https://github.com/SETI/rms-metadata-tools.git
+cd rms-metadata-tools
+python -m venv venv
+source venv/bin/activate
+pip install -e ".[dev]"
 ```
 
-# Getting Started
+The optional extras are `dev` (linting, type-checking, tests, docs), `docs`
+(Sphinx), and `cloud` (the GCP workers).
 
-The procedure for generating metadata tables for a given collection is as follows:
+## Quick Start
 
- 1. Create the supplemental index using \<collection\>_index.py.
- 2. Create the geometry tables using \<collection\>_geometry.py.
- 3. Generate the cumulative tables using \<collection\>_cumulative.py.
+Each supported collection ("host") has its own runnable programs in its
+directory under `src/metadata_tools/hosts/<HOST>/`. They import their
+configuration as top-level modules, so run them from inside the host directory.
+The three stages, for the Galileo SSI host, are:
 
+```sh
+cd src/metadata_tools/hosts/GO_0xxx
 
-# Generating New Metadata Tables
+# 1. Supplemental index tables (extra columns from the PDS3 labels)
+python GO_0xxx_index.py "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
+    "$RMS_METADATA_TEST/GO_0xxx/"
 
-The procedure for creating a new host configuration is as follows:
+# 2. Geometry tables (body/ring/sky/Sun quantities from SPICE)
+python GO_0xxx_geometry.py "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/"
 
- 1. Create a directory for the new host collection under the hosts/ subdirectory, e.g.,
-    hosts/GO_0xxx/, hosts/COISS_xxxx/, etc.
- 2. Copy the python files from an existing host directory and rename them as needed
-    for the new collection.
- 3. Edit the config and init modules as needed.
- 4. Create a templates/ subdirectory and copy the files from an existing host. Rename
-    the files as needed.
- 5. Edit host_defs.lbl for the new host.
- 6. Edit the descriptions in the summary templates as needed.
- 7. Edit the supplemental template to define the supplemental metadata for the new host.
-
-
-# Modifying table columns
-
-The supplemental index table is controlled by the supplemental label template. By default,
-each column object in the label specifies the name of a PDS label field to add to the table,
-along with its desired formatting. This behavior may be overridden by adding a key function
-to index_config.py of the form:
-
-```python
-key__<NAME>(label_path, label_dict)
+# 3. Cumulative tables across the whole collection
+python GO_0xxx_cumulative.py "$RMS_METADATA_TEST/GO_0xxx/GO_0999/"
 ```
 
-where label_path is the path to the PDS label, and label_dict is a dictionary containing the
-PDS label fields. The returned value is placed in the index file.
+Path arguments are expanded for environment variables. Restrict a run to one
+volume with `-vv GO_0017`, or to a few images with `--first 5`. See the
+[user guide](https://rms-metadata-tools.readthedocs.io/en/latest/user_guide/user_guide.html)
+for the full list of programs and options.
 
-Modifying the geometry tables requires editing of the column definition and format tables,
-and may require the addition of new backplane functions.
+## Documentation
 
-To add a new geometry column:
-   1. Add a column definition to the column definition file, e.g. COLUMNS_BODY.py.
-   2. Add a corresponding function to appropriate backplane module.
-   3. Add a row to the format dictionary in geometry_support.py.
-   4. Add column description(s) to the label template, e.g., body_summary.lbl.
+Full documentation is hosted on
+[ReadTheDocs](https://rms-metadata-tools.readthedocs.io). It includes a user
+guide (installation, configuration, and a reference for every command-line
+program) and a developer guide (architecture, per-subsystem internals, how to
+add a new collection or geometry column, and the API reference).
 
+To build the documentation locally:
 
-# Contributing
+```sh
+scripts/read-docs.sh
+```
+
+## Contributing
 
 Information on contributing to this package can be found in the
 [Contributing Guide](https://github.com/SETI/rms-metadata-tools/blob/main/CONTRIBUTING.md).
 
-# Links
+## Links
 
 - [Documentation](https://rms-metadata-tools.readthedocs.io)
 - [Repository](https://github.com/SETI/rms-metadata-tools)
 - [Issue tracker](https://github.com/SETI/rms-metadata-tools/issues)
-<!--  - [PyPi](https://pypi.org/project/rms-metadata-tools)  -->
+- [PyPI](https://pypi.org/project/rms-metadata-tools)
 
-# Licensing
+## Licensing
 
-This code is licensed under the [Apache License v2.0](https://github.com/SETI/rms-metadata-tools/blob/main/LICENSE).
+This code is licensed under the
+[Apache License v2.0](https://github.com/SETI/rms-metadata-tools/blob/main/LICENSE).

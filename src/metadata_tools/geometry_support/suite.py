@@ -30,23 +30,24 @@ class Suite:
                        selection: str = '', glob: str | None = None,
                        index_glob: str | None = None, first: int | None = None,
                        sampling: int = 8) -> None:
-        """Constructor for a geometry Suite object.
+        """Construct a geometry Suite object.
 
-        Args:
+        Parameters:
             input_dir: Directory containing the volume.
-            output_dir:
-                Directory in which to write the geometry files.
+            output_dir: Directory in which to write the geometry files.
             template_path: Path to the host template.
             metadata_dir: Directory containing the metadata files.
-            selection:
-                A string containing...
-                "S" to generate summary files;
-                "D" to generate detailed files.
+            selection: A string containing "S" to generate summary files and "D"
+                to generate detailed files.
             glob: Glob pattern for data files.
             index_glob: Glob pattern for index files.
-            first:
-                If given, at most this many files are processed in each volume.
+            first: If given, at most this many files are processed in each
+                volume.
             sampling: Pixel sampling density.
+
+        Raises:
+            RuntimeError: If more than one index file is found in the metadata
+                directory.
         """
         # Save inputs
         self.input_dir = FCPath(input_dir)
@@ -108,7 +109,7 @@ class Suite:
                      name: str | None = None) -> list[dict[str, Any]]:
         """Build a dictionary of column overrides.
 
-        Args:
+        Parameters:
             record: Any Record.
             qualifier: 'sky', 'sun', 'ring', or 'body'.
             name: Name identifying a specific column description.
@@ -143,13 +144,14 @@ class Suite:
     #===========================================================================
     @staticmethod
     def get_overrides(record: Record) -> dict[str, list[dict[str, Any]]]:
-        """Build a dictionary of column overrides.
+        """Build a dictionary of column overrides keyed by qualifier.
 
-        Args:
+        Parameters:
             record: Any Record.
 
         Returns:
-            Dicts containing override names and values for each column, keyed by qualifier.
+            Dicts containing override names and values for each column, keyed by
+            qualifier.
         """
         overrides: dict[str, list[dict[str, Any]]] = {}
 
@@ -164,9 +166,8 @@ class Suite:
     def add_tables(self, output_dir: str | Path | FCPath, level: str) -> None:
         """Add a set of tables.
 
-        Args:
-            output_dir:
-                Directory in which to write the geometry files.
+        Parameters:
+            output_dir: Directory in which to write the geometry files.
             level: 'summary' or 'detailed'.
         """
         self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = [
@@ -181,7 +182,7 @@ class Suite:
     def make_records(self, index: int) -> list[Record]:
         """Add a record for each processing level.
 
-        Args:
+        Parameters:
             index: Row index.
 
         Returns:
@@ -201,9 +202,9 @@ class Suite:
     def add(self, records: list[Record]) -> None:
         """Add a row to all tables.
 
-        Args:
-            records:
-                Records describing the rows to add, one for each processing level.
+        Parameters:
+            records: Records describing the rows to add, one for each processing
+                level.
         """
         for table in self.tables:
             for record in records:
@@ -214,9 +215,9 @@ class Suite:
     def write(self, labels_only: bool = False) -> None:
         """Write all tables and their labels.
 
-        Args:
-            labels_only:
-                If True, labels are generated for any existing geometry tables.
+        Parameters:
+            labels_only: If True, labels are generated for any existing geometry
+                tables.
         """
         for table in self.tables:
             table.write(labels_only=labels_only)
@@ -225,9 +226,9 @@ class Suite:
     def create(self, labels_only: bool = False, pattern: str | None = None) -> None:
         """Process the volume and write a suite of geometry files.
 
-        Args:
-            labels_only:
-                If True, labels are generated for any existing geometry tables.
+        Parameters:
+            labels_only: If True, labels are generated for any existing geometry
+                tables.
             pattern: Glob pattern for sub-selecting files to process.
         """
         logger = com.get_logger()
@@ -247,7 +248,7 @@ class Suite:
                     logger.warning("Skipping %s; pattern mismatch.", name)
                     continue
 
-                # Match the glob patternname
+                # Match the glob pattern
                 match = fnmatch.filter([name], self.glob)
                 if match == []:
                     logger.warning("Skipping %s; glob mismatch.", name)

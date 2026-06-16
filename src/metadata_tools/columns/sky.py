@@ -1,6 +1,13 @@
-################################################################################
-# sky.py: Column definitions for sky geometry tables
-################################################################################
+"""Column definitions for sky geometry tables.
+
+This module defines the backplane columns describing the inertial pointing of
+each pixel on the sky (right ascension and declination) in SKY_COLUMNS, plus
+the declination-banded tiling used for detailed tabulations.
+
+These definitions are gathered and re-exported by ``columns/__init__.py`` and
+consumed by the geometry Record/prep code, which evaluates each backplane key
+and formats the result via FORMAT_DICT in ``geometry_support.py``.
+"""
 import oops
 
 ################################################################################

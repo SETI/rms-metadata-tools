@@ -22,9 +22,9 @@ class Record:
     #===========================================================================
     def __init__(self, observation: Any, volume_id: str, meshgrids: dict[str, Any],
                  sampling: int, level: str) -> None:
-        """Constructor for a geometry record.
+        """Construct a geometry record.
 
-        Args:
+        Parameters:
             observation: OOPS Observation object.
             volume_id: Volume ID.
             meshgrids: All meshgrids associated with this host.
@@ -106,10 +106,10 @@ class Record:
     def get_backplane_key(column_desc: Any) -> str:
         """Extract the backplane key from the column description.
 
-        Args:
-            column_desc: A column description; its first element is the
-                event key (a tuple whose first element is the backplane key, or
-                the backplane key itself).
+        Parameters:
+            column_desc: A column description; its first element is the event key
+                (a tuple whose first element is the backplane key, or the
+                backplane key itself).
 
         Returns:
             The backplane key.
@@ -124,7 +124,7 @@ class Record:
                     qualifier: str) -> tuple[list[Any], list[str]]:
         """Construct the mapping between backplane keys and column values.
 
-        Args:
+        Parameters:
             columns: One str for each column.
             qualifier: 'sky', 'sun', 'ring', or 'body'.
 
@@ -156,7 +156,7 @@ class Record:
     def postprocess(self, columns: list[str], qualifier: str) -> list[str]:
         """Process the completed record.
 
-        Args:
+        Parameters:
             columns: One str for each column.
             qualifier: 'sky', 'sun', 'ring', or 'body'.
 
@@ -168,10 +168,10 @@ class Record:
                       data_columns: list[str]) -> list[str]:
             """Enter null value for all linked columns if any of them are null.
 
-            Args:
-                link: Defines the link:
-                          backplane_key : Linked backplane key.
-                          null_value    : Null value for this key.
+            Parameters:
+                link: Defines the link, with key 'backplane_key' giving the
+                    linked backplane key and key 'null_value' giving the null
+                    value for this key.
                 backplane_keys: All backplane keys.
                 data_columns: Column values for each backplane key.
 
@@ -215,9 +215,9 @@ class Record:
 
     #===============================================================================
     def _meshgrid(self, observation: Any, meshgrids: dict[str, Any]) -> Any:
-        """Looks up the meshgrid for an observation.
+        """Look up the meshgrid for an observation.
 
-        Args:
+        Parameters:
             observation: OOPS Observation object.
             meshgrids: All meshgrids associated with this host.
 
@@ -233,7 +233,7 @@ class Record:
                   ignore_shadows: bool = False, start_index: int = 1,
                   allow_zero_rows: bool = True, no_mask: bool = False,
                   no_body: bool = False) -> list[str]:
-        """Generates the geometry for one row, given a list of column descriptions.
+        """Generate the geometry for one row, given a list of column descriptions.
 
         The tiles argument supports detailed listings where a geometric region is
         broken down into separate subregions. If the tiles argument is empty (which
@@ -256,24 +256,20 @@ class Record:
         values are null. In a detailed listing, only records associated with
         non-empty regions of the meshgrid are written.
 
-        Args:
+        Parameters:
             qualifier: 'sky', 'sun', 'ring', or 'body'.
             name: Name identifying a specific column description.
             target: Optionally, the target name to write into the record.
-            tiles:
-                An optional list of boolean backplane keys, used to
-                support the generation of detailed tabulations instead
-                of summary tabulations. See details above.
-            tiling_min:
-                The lower limit on the number of meshgrid points in a
+            tiles: An optional list of boolean backplane keys, used to support
+                the generation of detailed tabulations instead of summary
+                tabulations. See details above.
+            tiling_min: The lower limit on the number of meshgrid points in a
                 region before that region is subdivided into tiles.
-            ignore_shadows:
-                True to ignore any mask constraints applicable to
+            ignore_shadows: True to ignore any mask constraints applicable to
                 shadowing or to the sunlit faces of surfaces.
             start_index: Index to use for first subregion. Default 1.
-            allow_zero_rows:
-                True to allow the function to return no rows. If False,
-                a row filled with null values will be returned if
+            allow_zero_rows: True to allow the function to return no rows. If
+                False, a row filled with null values will be returned if
                 necessary.
             no_mask: True to suppress the use of a mask.
             no_body: True to suppress body prefixes.

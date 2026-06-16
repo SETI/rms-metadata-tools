@@ -1,6 +1,7 @@
 ################################################################################
 # bodies.py: Build the oops Body registry used by the geometry column tables
 ################################################################################
+"""Build the oops ``Body`` registry used by the geometry column tables."""
 from typing import Any
 
 import oops
@@ -32,3 +33,4 @@ def get_bodies(body_names: list[str]) -> dict[str, Any]:
 # initialized (e.g. ssi.initialize() in host_init.py), because oops.Body.lookup
 # requires the planetary bodies to be registered first.
 BODIES = get_bodies(defs.BODY_NAMES)
+"""Mapping from body name to its oops ``Body`` object, built once on import."""

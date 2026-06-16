@@ -12,6 +12,25 @@ is insufficient, the code is consulted only to learn shape. Crucially, tests ass
 **intended** behavior; where the implementation contradicts the docstring/name, the test is
 written to the intent and is **expected to fail**, flagging a bug. No production code is changed.
 
+## Status: Completed
+
+This plan has been executed. The hermetic unit layer exists under `tests/` (with the
+`conftest.py` import shim from §1) and runs with no `$RMS_METADATA`/`$RMS_VOLUMES` and no
+SPICE; the default `pytest` run is hermetic and the suite meets the `fail_under = 90`
+coverage gate enforced in CI. The archive-reading tests are marked `requires_archive` and
+the host-specific tests now live under `tests/hosts/GO_0xxx/`, all excluded from the
+default run.
+
+The bugs catalogued in §6 served their purpose as a behavior fence and were then **fixed**
+in follow-up commits rather than left as permanent xfails, so no `xfail` markers remain.
+A few specifics in the original plan have since changed during execution: the archive
+helper `unittester_support.py` was renamed to `archive_support.py`, the `dbprint` debug
+call was removed from library code (so its characterization test no longer applies), and
+the host key-function tests live under `tests/hosts/` rather than a single
+`test_config_keys.py`.
+
+The remainder of this document is retained as the record of the plan and its final report.
+
 ---
 
 ## 1. The keystone: a hermetic import shim (proven to work)

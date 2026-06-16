@@ -22,11 +22,12 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
              ignore_shadows: bool = False, start_index: int = 1,
              allow_zero_rows: bool = True, no_mask: bool = False,
              no_body: bool = False) -> tuple[list[list[str]], list[list[dict[str, Any]]]]:
-    """Generates the geometry and returns a list of lists of strings. The inner
-    list contains string representations for each column in one row of the
-    output file. These will be concatenated with commas between them and written
-    to the file. The outer list contains one list for each output row. The
-    number of output rows can be zero or more.
+    """Generate the geometry and return a list of lists of strings.
+
+    The inner list contains string representations for each column in one row of
+    the output file. These will be concatenated with commas between them and
+    written to the file. The outer list contains one list for each output row.
+    The number of output rows can be zero or more.
 
     The tiles argument supports detailed listings where a geometric region is
     broken down into separate subregions. If the tiles argument is empty (which
@@ -46,46 +47,37 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     values are null. In a detailed listing, only records associated with
     non-empty regions of the meshgrid are written.
 
-    Args:
+    Parameters:
         record: The geometry record.
-        prefixes:
-            A list of the strings to appear at the beginning of the
-            line, up to and including the file specification name. Each
-            individual string should already be enclosed in quotes.
+        prefixes: A list of the strings to appear at the beginning of the line,
+            up to and including the file specification name. Each individual
+            string should already be enclosed in quotes.
         backplane: Backplane for the observation.
-        blocker:
-            The name of one body that may be able to block or shadow
-            other bodies.
+        blocker: The name of one body that may be able to block or shadow other
+            bodies.
         column_descs: A list of column descriptions.
         primary: Name of primary body, uppercase, e.g., "SATURN".
         target: Optionally, the target name to write into the record.
-        name_length:
-            The character width of a column to contain body names.
-            If zero (which is the default), then no name is
-            written into the record.
-        tiles:
-            An optional list of boolean backplane keys, used to
-            support the generation of detailed tabulations instead
-            of summary tabulations. See details above.
-        tiling_min:
-            The lower limit on the number of meshgrid points in a
-            region before that region is subdivided into tiles.
-        ignore_shadows:
-            True to ignore any mask constraints applicable to
+        name_length: The character width of a column to contain body names. If
+            zero (which is the default), then no name is written into the
+            record.
+        tiles: An optional list of boolean backplane keys, used to support the
+            generation of detailed tabulations instead of summary tabulations.
+            See details above.
+        tiling_min: The lower limit on the number of meshgrid points in a region
+            before that region is subdivided into tiles.
+        ignore_shadows: True to ignore any mask constraints applicable to
             shadowing or to the sunlit faces of surfaces.
         start_index: Index to use for first subregion. Default 1.
-        allow_zero_rows:
-            True to allow the function to return no rows. If False,
-            a row filled with null values will be returned if
-            necessary.
+        allow_zero_rows: True to allow the function to return no rows. If False,
+            a row filled with null values will be returned if necessary.
         no_mask: True to suppress the use of a mask.
         no_body: True to suppress body prefixes.
 
     Returns:
-        A tuple (rows, overrides), where:
-            rows: Strings comprising the resulting rows.
-            overrides: Dicts of column entries to override in label. One dict for
-                       each column, not including prefix columns.
+        A tuple (rows, overrides), where rows holds the strings comprising the
+        resulting rows, and overrides holds dicts of column entries to override
+        in the label, one dict for each column, not including prefix columns.
     """
     if tiles is None:
         tiles = []
@@ -258,14 +250,12 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
 def append_body_prefix(prefix_columns: list[str], body: str | None, length: int) -> None:
     """Append a body name to the column prefixes.
 
-    Args:
-        prefix_columns:
-            A list of the strings to appear at the beginning of the
-            row, up to and including the file specification name. Each
-            individual string should already be enclosed in quotes.
+    Parameters:
+        prefix_columns: A list of the strings to appear at the beginning of the
+            row, up to and including the file specification name. Each individual
+            string should already be enclosed in quotes.
         body: Body name to append.
-        length:
-            The character width of a column to contain body names.
+        length: The character width of a column to contain body names.
     """
     if body is None:
         entry = '"' + length * ' ' + '"'

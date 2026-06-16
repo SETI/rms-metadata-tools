@@ -1,9 +1,8 @@
-##########################################################################################
-# geometry_config.py for GLL SSI
-#
-#  Host-specific definitions and utilites for geometry file generation.
-#
-##########################################################################################
+"""Host-specific definitions and utilities for Galileo SSI (GLL SSI) geometry generation.
+
+This module defines the mission table, meshgrid construction, target-name resolution,
+and other settings used to compute geometry tables for the GO_0xxx collection.
+"""
 from typing import Any, cast
 
 import oops
@@ -98,7 +97,7 @@ MISSION_TABLE: list[Any] = [
 def except_test(observation: Any) -> bool:
     """Mission table exception function template.
 
-    Args:
+    Parameters:
         observation: OOPS Observation object.
 
     Returns:
@@ -135,7 +134,14 @@ MODE_SIZES: dict[str, int] = {"FULL": 1,
 
 #=========================================================================================
 def meshgrids(sampling: float) -> dict[str, Any]:
+    """Build a meshgrid for each SSI telemetry mode at the given pixel sampling.
 
+    Parameters:
+        sampling: Pixel sampling density.
+
+    Returns:
+        Mapping from telemetry mode name to its meshgrid object.
+    """
     meshgrids: dict[str, Any] = {}
     for mode in MODE_SIZES:
         pixel_wrt_full = MODE_SIZES[mode]
@@ -159,11 +165,11 @@ def meshgrids(sampling: float) -> dict[str, Any]:
 
 #=========================================================================================
 def meshgrid(meshgrids: dict[str, Any], snapshot: Any) -> Any:
-    """Determines the meshgrid given the dictionary derived from the SSI index file.
+    """Determine the meshgrid given the dictionary derived from the SSI index file.
 
-    Args:
+    Parameters:
         meshgrids: Meshgrid objects to choose from.
-        snapshot: Observation object a GOSSI image.
+        snapshot: Observation object for a GOSSI image.
 
     Returns:
         The selected meshgrid for this observation.
@@ -186,10 +192,12 @@ get_volume_id = host_config.get_volume_id
 
 #=========================================================================================
 def target_name(snapshot: dict[str, Any]) -> str:
-    """Determines the target name from the snapshot's dictionary. If the given name is
-       "SKY", it checks the CIMS ID and the TARGET_DESC for something different.
+    """Determine the target name from the snapshot's dictionary.
 
-    Args:
+    If the given name is "SKY", it checks the CIMS ID and the TARGET_DESC for
+    something different.
+
+    Parameters:
         snapshot: Snapshot observation dictionary.
 
     Returns:
@@ -198,7 +206,7 @@ def target_name(snapshot: dict[str, Any]) -> str:
 
     return cast(str, snapshot["TARGET_NAME"])
 
-# Leaving this here for when we implemnt Cassini ISS metadata....
+# Leaving this here for when we implement Cassini ISS metadata....
 #    target = dict["TARGET_NAME"]
 #    if target != "SKY":
 #        return target
@@ -218,10 +226,5 @@ def target_name(snapshot: dict[str, Any]) -> str:
 
 #=========================================================================================
 def cleanup() -> None:
-    """Cleanup function for geometry code.  This function is called after the geometry
-       table and labels are written, before exiting.
-
-        Args: None
-        Returns: None.
-    """
+    """Clean up after geometry generation, called after tables and labels are written."""
     pass

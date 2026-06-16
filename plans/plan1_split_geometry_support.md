@@ -4,8 +4,21 @@
 is **1654 lines**; split it so every resulting file is **< 500 lines**, with **no change to
 observable table/label output** and **no change to the public import surface**.
 
-**Status of the target today:** still a single 1654-line module (listed as "Still open" in the
-critique's 2026-06-15 status update).
+## Status: Completed
+
+This plan has been executed. `geometry_support.py` is now the package
+`src/metadata_tools/geometry_support/` with the layout in §3, and every file is well
+under 500 lines (largest is `record.py` at ~305). The public import surface is preserved
+(`import metadata_tools.geometry_support as geom` still exposes `FORMAT_DICT`,
+`ALT_FORMAT_DICT`, `MISSION_TABLE`, `Record`, `Suite`, the five table classes,
+`get_args`, and `process_tables`); `FORMAT_DICT` still has 52 entries. The pure helpers
+(`masks.construct_excluded_mask`, `formatting.formatted_column`, `prep.prep_row`, the
+`bodies_select` cluster) became free functions, exactly as proposed, which is what makes
+the hermetic unit tests in Plan 2 possible. The structural move landed without behavior
+changes; the latent bugs called out below were fixed separately, after the Plan 2 tests
+pinned the original behavior.
+
+The remainder of this document is retained as the record of the plan as designed.
 
 ---
 

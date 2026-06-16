@@ -1,7 +1,8 @@
 .. rms-metadata-tools documentation master file
 
-Welcome to the Documentation for rms-metadata-tools!
-==========================================
+====================================================
+Documentation for rms-metadata-tools
+====================================================
 
 .. include:: ../README.md
    :parser: myst_parser.sphinx_
@@ -9,9 +10,22 @@ Welcome to the Documentation for rms-metadata-tools!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User Guide
 
-   module
+   user_guide/user_guide
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Guide
+
+   dev_guide/dev_guide
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Project
+
+   contributing
+   code_of_conduct
 
 Indices and tables
 ==================

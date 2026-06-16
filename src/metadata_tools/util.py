@@ -1,6 +1,7 @@
 ################################################################################
 # util.py: Utility functions
 ################################################################################
+"""Utility functions for path handling, file I/O, and metadata computations."""
 import math
 import os
 import re
@@ -18,10 +19,9 @@ import metadata_tools.defs as defs
 
 #===============================================================================
 def pds_table(label_path: FCPath) -> pdstable.PdsTable:
-    """read a pds3table from an FCPath object.  To be replaced whenever pdstable is
-       upgraded to use filecache.
+    """Read a PdsTable from an FCPath object.
 
-    Args:
+    Parameters:
         label_path: Path to the label file.
 
     Returns:
@@ -35,7 +35,7 @@ def pds_table(label_path: FCPath) -> pdstable.PdsTable:
 def select_dir(tree: FCPath, col: str, vol: str) -> FCPath:
     """Determine the template directory for a given collection and volume.
 
-    Args:
+    Parameters:
         tree: Base tree path.
         col: Collection name.
         vol: Volume name.
@@ -51,7 +51,7 @@ def select_dir(tree: FCPath, col: str, vol: str) -> FCPath:
 def get_index_name(tree: FCPath, vol_id: str, index_type: str) -> str:
     """Determine the name of the index file.
 
-    Args:
+    Parameters:
         tree: Top dir for volume.
         vol_id: Volume ID.
         index_type: Index type.
@@ -76,7 +76,7 @@ def get_index_name(tree: FCPath, vol_id: str, index_type: str) -> str:
 def get_template_name(filename: str, volume_id: str, code_dir: FCPath) -> str:
     """Determine the name of the label template.
 
-    Args:
+    Parameters:
         filename: Name of table or label file.
         volume_id: Volume ID to be replaced by the collection name.
         code_dir: Directory whose name is the collection name.
@@ -93,9 +93,9 @@ def parse_template_name(template_name: str) -> tuple[str, str, FCPath]:
 
         <host>_<index type>_index
 
-    index_type cannot contain undescores.
+    index_type cannot contain underscores.
 
-    Args:
+    Parameters:
         template_name: Name of template file.
 
     Returns:
@@ -114,8 +114,8 @@ def parse_template_name(template_name: str) -> tuple[str, str, FCPath]:
 def pm(x: float) -> npt.NDArray[np.float64]:
     """Return plus/minus the input.
 
-    Args:
-        x: Data to smooth.
+    Parameters:
+        x: Value to negate.
 
     Returns:
         Plus and minus values.
@@ -128,7 +128,7 @@ def pm(x: float) -> npt.NDArray[np.float64]:
 def smooth(data: npt.NDArray[np.float64], width: int) -> npt.NDArray[np.float64]:
     """Smooth a curve using a moving box.
 
-    Args:
+    Parameters:
         data: Data to smooth.
         width: Width of smoothing box.
 
@@ -143,11 +143,10 @@ def smooth(data: npt.NDArray[np.float64], width: int) -> npt.NDArray[np.float64]
 def splitpath(path: FCPath, string: str) -> tuple[FCPath, FCPath]:
     """Split a path at a given string.
 
-    Args:
+    Parameters:
         path: Path to split.
-        string:
-            Search string. The path is split at the first occurrence and the search
-            string is omitted.
+        string: Search string. The path is split at the first occurrence and the
+            search string is omitted.
 
     Returns:
         Tuple of the path portion before the search string and the portion after it.
@@ -158,17 +157,17 @@ def splitpath(path: FCPath, string: str) -> tuple[FCPath, FCPath]:
 
 #===============================================================================
 def get_volume_subdir(path: FCPath, volume_id: str) -> FCPath:
-    """Determine the Subdirectory of an input file relative to the volume dir.
+    """Determine the subdirectory of an input file relative to the volume dir.
 
-    Args:
+    Parameters:
         path: Input path or directory.
         volume_id: Volume ID at which to split the path.
 
     Returns:
-        Final directory in tree.
+        Final directory in the tree.
     """
     return splitpath(path, volume_id)[-1]
-#    return path.split(volume_id)[-1]  ## not currently supprted by filecache
+#    return path.split(volume_id)[-1]  ## not currently supported by filecache
 
 #===============================================================================
 def replace(tree: list[Any], placeholder: str, name: str) -> Any:
@@ -176,19 +175,18 @@ def replace(tree: list[Any], placeholder: str, name: str) -> Any:
     placeholder string replaced by the given name.  If a dictionary reference is
     detected, then it is evaluated.
 
-    Args:
+    Parameters:
         tree: List containing the tree.
-        placeholder: Placeholder to replace
+        placeholder: Placeholder to replace.
         name: Replacement string.
 
     Returns:
         New tree with placeholder replaced by name.
-
     """
 
     new_tree: list[Any] = []
     for leaf in tree:
-        # Main entries: replace placeholder and evaulate dict references
+        # Main entries: replace placeholder and evaluate dict references
         if type(leaf) in (tuple, list):
             # replace placeholder
             replacement = replace(leaf, placeholder, name)
@@ -221,14 +219,13 @@ def replacement_dict(tree: list[Any], placeholder: str, names: list[str]) -> dic
     dictionary entry is keyed by a name in the list and returns a copy of the
     tree using that name as the replacement.
 
-    Args:
+    Parameters:
         tree: List containing the tree.
-        placeholder: Placeholder to replace
+        placeholder: Placeholder to replace.
         names: List of replacement strings.
 
     Returns:
         New dictionary.
-
     """
 
     result: dict[str, Any] = {}
@@ -241,13 +238,12 @@ def replacement_dict(tree: list[Any], placeholder: str, names: list[str]) -> dic
 def replacement_fn(dict_name: str, name: str) -> str:
     """Create a replacement-able dictionary reference.
 
-    Args:
+    Parameters:
         dict_name: Name of dictionary.
         name: Dictionary key, which could be a placeholder string.
 
     Returns:
         Dictionary reference keyed by possible placeholder name.
-
     """
     return dict_name + '["' + name + '"]'
 
@@ -255,12 +251,11 @@ def replacement_fn(dict_name: str, name: str) -> str:
 def get_volume_glob(col: str) -> str:
     """Build a glob string to match all volumes in a collection.
 
-    Args:
+    Parameters:
         col: Collection name, e.g., GO_xxxx.
 
     Returns:
         Glob string.
-
     """
     parts = col.rsplit('_', 1)
     vol_id = parts[1]
@@ -274,14 +269,13 @@ def add_by_base(x_digits: list[int], y_digits: list[int],
                 bases: list[int]) -> list[int]:           ### move to utilities
     """Add numbers represented using the specified bases.
 
-    Args:
+    Parameters:
         x_digits: Digits (int) representing the first operand.
         y_digits: Digits (int) representing the second operand.
         bases: Bases (int) for each position.
 
     Returns:
         Digits (int) representing the result.
-
     """
     result = [0]*(len(bases)+1)
     carry = 0
@@ -297,12 +291,11 @@ def add_by_base(x_digits: list[int], y_digits: list[int],
 def expandvars(filespec: str | Path | FCPath) -> str | Path | FCPath:           ### add to FCPath?
     """Expand environment variables in path.
 
-    Args:
+    Parameters:
         filespec: Path to expand.
 
     Returns:
         Expanded path.
-
     """
     result = filespec
     if not isinstance(result, str):
@@ -323,18 +316,15 @@ def read_txt_file(filespec: str | Path | FCPath, as_string: bool = False,
                   terminator: str = '\r\n') -> str | list[str]:    ### move to utilities
     """Read a text file, with some options.
 
-    Args:
-        filespec:
-            Path to the file to read.  Environment variables are expanded.
-        as_string:
-            If True, the result is returned as a string using the specified
+    Parameters:
+        filespec: Path to the file to read.  Environment variables are expanded.
+        as_string: If True, the result is returned as a string using the specified
             terminator.
         terminator: Terminator to use for string return.
 
     Returns:
         If as_string is False, the lines of the file with no terminators; if True,
         the lines of the file concatenated using the specified terminator.
-
     """
     # Expand environment variables and resolve to absolute path
     path = FCPath(expandvars(FCPath(filespec)))
@@ -357,16 +347,12 @@ def write_txt_file(filespec: str | Path | FCPath, content: str | list[str],
                    terminator: str | None = '\r\n') -> None:    ### move to utilities
     """Write a text file, with some options.
 
-    Args:
+    Parameters:
         filespec: Path to the file to write.
-        content:
-            Text to write.  If list, each element is a line that will be terminated
-            using the specified terminator.  If string, existing terminators are
-            replaced with the specified terminator.
+        content: Text to write.  If list, each element is a line that will be
+            terminated using the specified terminator.  If string, existing
+            terminators are replaced with the specified terminator.
         terminator: Desired line terminator.
-
-    Returns:
-        None
     """
     # Expand environment variables and resolve to absolute path
     path = FCPath(expandvars(FCPath(filespec)))
@@ -394,16 +380,12 @@ def append_txt_file(filespec: str | Path | FCPath, content: str | list[str],
                     terminator: str | None = '\r\n') -> None:    ### move to utilities
     """Append text to a file, with some options.
 
-    Args:
+    Parameters:
         filespec: Path to the file to write.
-        content:
-            Text to write.  If list, each element is a line that will be terminated
-            using the specified terminator.  If string, existing terminators are
-            replaced with the specified terminator.
+        content: Text to write.  If list, each element is a line that will be
+            terminated using the specified terminator.  If string, existing
+            terminators are replaced with the specified terminator.
         terminator: Desired line terminator.
-
-    Returns:
-        None
     """
     # Expand environment variables and resolve to absolute path
     path = FCPath(expandvars(FCPath(filespec)))
@@ -438,7 +420,7 @@ def append_txt_file(filespec: str | Path | FCPath, content: str | list[str],
 def rebase(x: int, bases: list[int], ceil: bool = False) -> tuple[list[int], int]:
     """Convert a decimal number to a different base.
 
-    Args:
+    Parameters:
         x: Number to convert.
         bases: Base (int) to use for each decimal place.
         ceil: If True, round each digit up rather than truncating.
@@ -463,12 +445,10 @@ def rebase(x: int, bases: list[int], ceil: bool = False) -> tuple[list[int], int
 def sclk_split_count(count: str, delim: str | None = None) -> list[int]:
     """Parse a spacecraft clock count into a list.
 
-    Args:
+    Parameters:
         count: Number to convert.
-        delim:
-            Field delimiter to use. If None, all non-alphanumeric characters are
+        delim: Field delimiter to use. If None, all non-alphanumeric characters are
             treated as delimiters.
-
 
     Returns:
         Fields (int) of the given spacecraft clock count.
@@ -491,10 +471,9 @@ def sclk_split_count(count: str, delim: str | None = None) -> list[int]:
 def sclk_format_count(fields: list[int], fmt: str) -> str:
     """Construct a spacecraft clock count from a list of fields.
 
-    Args:
-        fields: Fields (int) the spacecraft clock count.
-        fmt:
-            Template indicating the fields widths and delimiters.  Alphanumeric
+    Parameters:
+        fields: Fields (int) of the spacecraft clock count.
+        fmt: Template indicating the field widths and delimiters.  Alphanumeric
             characters indicate field digits, non-alphanumeric characters indicate
             field delimiters. Example: 'nnnnnnnn:nn:n.n'.
 
@@ -522,7 +501,7 @@ def sclk_format_count(fields: list[int], fmt: str) -> str:
 def sclk_to_ticks(sclk: str, sc: int) -> Any:
     """Convert spacecraft clock count string to ticks.
 
-    Args:
+    Parameters:
         sclk: Spacecraft clock count string.
         sc: NAIF spacecraft identifier.
 
@@ -533,9 +512,9 @@ def sclk_to_ticks(sclk: str, sc: int) -> Any:
 
 #===============================================================================
 def get_observation_id(observation: Any) -> str:
-    """Utility function to determine the observation ID for an observation.
+    """Determine the observation ID for an observation.
 
-    Args:
+    Parameters:
         observation: Observation object.
 
     Returns:
@@ -547,7 +526,7 @@ def get_observation_id(observation: Any) -> str:
 def convert_mission_table(table: list[Any], sc: int) -> list[Any]:
     """Convert mission table SCLK count string to ticks using sclk_to_ticks().
 
-    Args:
+    Parameters:
         table: Systems table.
         sc: NAIF spacecraft identifier.
 
@@ -565,17 +544,18 @@ def convert_mission_table(table: list[Any], sc: int) -> list[Any]:
 
 #===============================================================================
 def range_of_n_angles(n: int, prob: float = 0.1, tests: int = 100000) -> np.float64:
-    """Used to study the statistics of n randomly chosen angles. This function
-    was used to compute the NINETY_PERCENT_RANGE_DEGREES table below.
+    """Study the statistics of n randomly chosen angles.
 
-    For a set of n randomly chosen angles 0-360, return the interval such that the
-    likelihood of all n angles falling within this interval of one another has the
-    given probability. Base this on the specified number of tests.
+    Used to compute the NINETY_PERCENT_RANGE_DEGREES table below. For a set of n
+    randomly chosen angles 0-360, return the interval such that the likelihood of
+    all n angles falling within this interval of one another has the given
+    probability. Base this on the specified number of tests.
 
-    Args:
+    Parameters:
         n: Number of random samples to analyze.
         prob: Probability criterion.
         tests: Number of tests to perform.
+
     Returns:
         Angular interval in degrees.
     """
@@ -707,7 +687,7 @@ def _ninety_percent_gap_degrees(n: int, scale: float = 1.) -> float:
     gap in coverage providing 90% confidence that the angular coverage is not
     actually complete.
 
-    Args:
+    Parameters:
         n: Number of samples.
         scale: Scale factor for result.
 
@@ -726,18 +706,18 @@ def _ninety_percent_gap_degrees(n: int, scale: float = 1.) -> float:
 def _get_range_mod360(values: list[float] | npt.NDArray[np.float64],
                       alt_format: str | None = None, width: int = 0,
                       diffmin: float = 0) -> list[float]:
-    """Determines the minimum and maximum values in the array, allowing for the
+    """Determine the minimum and maximum values in the array, allowing for the
     possibility that the numeric range wraps around from 360 to 0.
 
-    Args:
+    Parameters:
         values: The set of values for which to determine the range.
-        alt_format:
-            "-180" to return values in the range (-180,180) rather
-            than (0,360).
+        alt_format: "-180" to return values in the range (-180,180) rather than
+            (0,360).
         width: If given, smoothing width for diffs.
         diffmin: Minimum diff to consider.  If the maximum diff is below this value,
-                 then full coverage is assumed, unless the span of the given angles
-                 is smaller.
+            then full coverage is assumed, unless the span of the given angles is
+            smaller.
+
     Returns:
         Minimum and maximum values in the cyclic array.
     """
@@ -765,7 +745,7 @@ def _get_range_mod360(values: list[float] | npt.NDArray[np.float64],
     diffs[-1] = values[0] + 360. - values[-1]
     span = 360 - diffs[-1]
 
-    # Smooth the diffs to remove noise from subsamping.
+    # Smooth the diffs to remove noise from subsampling.
     wdiffs = diffs
     if width > 1:
         wdiffs = smooth(diffs, width)

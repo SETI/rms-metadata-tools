@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]:
     """Obtain image inventory if possible.
 
-    Args:
+    Parameters:
         record: The geometry record.
         bodies: Bodies to test.
 
@@ -60,18 +60,21 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
 
 #===============================================================================
 def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
-    """Select all bodies to include in this record according to the following rules:
+    """Select all bodies to include in this record.
+
+    The selection follows these rules:
 
        1. The primary and secondary bodies are always included.
-       2. Children of the primary are included if they intersect the FOV. If there are
-          selections, then only the selected children are considered.
-       3. If there is no primary, all selections that intersect the FOV are included.
+       2. Children of the primary are included if they intersect the FOV. If
+          there are selections, then only the selected children are considered.
+       3. If there is no primary, all selections that intersect the FOV are
+          included.
        4. The target is always included.
        5. If the target is a satellite, the parent is included.
-       6. Additions are included whenever they intersect the FOV, regardless of the
-          primary.
+       6. Additions are included whenever they intersect the FOV, regardless of
+          the primary.
 
-    Args:
+    Parameters:
         record: The geometry record.
         bodies: All bodies.
 
@@ -120,11 +123,11 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
 
 #===============================================================================
 def get_system(body: str) -> str | None:
-    """Looks up the system for a body.
+    """Look up the system for a body.
 
-    Args:
-        body: Body for which to determine the system.  For a satellite, the
-              system is the parent.  For planet, the system is itself.
+    Parameters:
+        body: Body for which to determine the system. For a satellite, the system
+            is the parent. For a planet, the system is itself.
 
     Returns:
         Name of system, body, or None if the body is not registered.
@@ -139,12 +142,12 @@ def get_system(body: str) -> str | None:
 
 #===============================================================================
 def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
-    """Use converted default bodies table to determine the primary for a given
-       spacecraft clock count.
+    """Determine whether an observation is excluded.
 
-    Args:
+    Parameters:
         record: The geometry record.
-        exceptions: List of regular expressions to test against the observation ID.
+        exceptions: List of regular expressions to test against the observation
+            ID.
 
     Returns:
         True if the observation is excluded.
@@ -169,21 +172,23 @@ def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
 #===============================================================================
 def get_primary(record: 'Record', table: list[Any],
                 sclk: str) -> tuple[str, list[str], list[str], list[str]]:
-    """Use converted default bodies table to determine the primary for a given
-       spacecraft clock count.
+    """Determine the primary for a given spacecraft clock count.
 
-    Args:
+    Uses the converted default bodies table, which contains sclk ticks instead
+    of strings.
+
+    Parameters:
         record: The geometry record.
-        table:
-            Converted default bodies table containing sclk ticks instead of strings.
+        table: Converted default bodies table containing sclk ticks instead of
+            strings.
         sclk: Spacecraft clock string corresponding to the observation time.
 
     Returns:
-        A tuple (primary, secondaries, selections, additions), where:
-            primary: Name of the primary corresponding to the given SCLK value.
-            secondaries: Names of any secondaries.
-            selections: Names of any selected bodies.
-            additions: Names of any added bodies.
+        A tuple (primary, secondaries, selections, additions), where primary is
+        the name of the primary corresponding to the given SCLK value,
+        secondaries holds the names of any secondaries, selections holds the
+        names of any selected bodies, and additions holds the names of any added
+        bodies.
     """
     fail: tuple[str, list[str], list[str], list[str]] = ('', [], [], [])
     sclk_ticks = util.sclk_to_ticks(sclk, config.SC)

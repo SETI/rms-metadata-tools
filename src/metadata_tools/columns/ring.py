@@ -1,6 +1,16 @@
-################################################################################
-# ring.py: Column definitions for ring geometry tables
-################################################################################
+"""Column definitions for ring geometry tables.
+
+This module defines the backplane columns describing ring-plane and ansa
+geometry: per-pixel ring quantities (RING_COLUMNS), ansa quantities
+(ANSA_COLUMNS), gridless whole-ring quantities (RING_GRIDLESS_COLUMNS), and the
+summary/detailed column lists assembled from them. It also builds the per-body
+replacement dictionaries and the azimuth-banded tiling (inner and outer ring)
+used for detailed tabulations.
+
+These definitions are gathered and re-exported by ``columns/__init__.py`` and
+consumed by the geometry Record/prep code, which evaluates each backplane key
+and formats the result via FORMAT_DICT in ``geometry_support.py``.
+"""
 import numpy as np
 
 import metadata_tools.defs as defs

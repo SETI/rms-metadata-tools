@@ -24,9 +24,8 @@ class InventoryTable(com.Table):
                  **kwargs: Any) -> None:
         """Constructor for an InventoryTable object.
 
-        Args:
-            output_dir:
-                Directory in which to write the geometry files.
+        Parameters:
+            output_dir: Directory in which to write the geometry files.
             template_path: Path to the host template.
             kwargs: Additional keyword arguments forwarded to the base class.
         """
@@ -40,7 +39,7 @@ class InventoryTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add an Inventory row.
 
-        Args:
+        Parameters:
             record: Record describing the row to add.
         """
         line = ",".join(record.prefixes) + ',"' + ",".join(record.inventory) + '"'
@@ -59,9 +58,8 @@ class SkyTable(com.Table):
                  **kwargs: Any) -> None:
         """Constructor for a SkyTable object.
 
-        Args:
-            output_dir:
-                Directory in which to write the geometry files.
+        Parameters:
+            output_dir: Directory in which to write the geometry files.
             template_path: Path to the host template.
             kwargs: Additional keyword arguments forwarded to the base class.
         """
@@ -72,7 +70,7 @@ class SkyTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a Sky row.
 
-        Args:
+        Parameters:
             record: Record describing the row to add.
         """
         self.rows += record.add(cast(str, self.qualifier), no_body=True)
@@ -90,9 +88,8 @@ class SunTable(com.Table):
                  **kwargs: Any) -> None:
         """Constructor for a SunTable object.
 
-        Args:
-            output_dir:
-                Directory in which to write the geometry files.
+        Parameters:
+            output_dir: Directory in which to write the geometry files.
             template_path: Path to the host template.
             kwargs: Additional keyword arguments forwarded to the base class.
         """
@@ -103,7 +100,7 @@ class SunTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a Sun row.
 
-        Args:
+        Parameters:
             record: Record describing the row to add.
         """
         self.rows += record.add(cast(str, self.qualifier))
@@ -121,9 +118,8 @@ class RingTable(com.Table):
                  **kwargs: Any) -> None:
         """Constructor for a RingTable object.
 
-        Args:
-            output_dir:
-                Directory in which to write the geometry files.
+        Parameters:
+            output_dir: Directory in which to write the geometry files.
             template_path: Path to the host template.
             kwargs: Additional keyword arguments forwarded to the base class.
         """
@@ -134,7 +130,7 @@ class RingTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a Ring row.
 
-        Args:
+        Parameters:
             record: Record describing the row to add.
         """
 
@@ -162,9 +158,8 @@ class BodyTable(com.Table):
                  **kwargs: Any) -> None:
         """Constructor for a BodyTable object.
 
-        Args:
-            output_dir:
-                Directory in which to write the geometry files.
+        Parameters:
+            output_dir: Directory in which to write the geometry files.
             template_path: Path to the host template.
             kwargs: Additional keyword arguments forwarded to the base class.
         """
@@ -175,7 +170,7 @@ class BodyTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a Body row.
 
-        Args:
+        Parameters:
             record: Record describing the row to add.
         """
         for name in record.bodies:

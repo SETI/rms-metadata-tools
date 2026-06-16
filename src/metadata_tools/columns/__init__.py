@@ -1,11 +1,12 @@
-################################################################################
-# columns/__init__.py: Assemble the geometry column definitions
-#
-# Replaces the former exec()-based loader in columns.py. Each COLUMNS_* file is
-# now a real, importable submodule (body/ring/sky/sun), and the names they
-# define are re-exported here so callers can keep using
-# `import metadata_tools.columns as col`.
-################################################################################
+"""Assemble and re-export the geometry column definitions.
+
+This package gathers the body, ring, sky, and sun geometry column definitions
+from its submodules (``body``, ``ring``, ``sky``, ``sun``) and re-exports them,
+along with the body list, under a single namespace. Callers import it as
+``import metadata_tools.columns as col`` and reference the assembled column
+lists, replacement dictionaries, and tile definitions used to build the
+geometry tables.
+"""
 from metadata_tools.bodies import BODIES
 from metadata_tools.columns.body import (
     BODY_COLUMNS,

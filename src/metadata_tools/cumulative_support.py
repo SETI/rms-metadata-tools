@@ -1,6 +1,7 @@
 ################################################################################
 # cumulative_support.py - Code for cumulative index files
 ################################################################################
+"""Tools for concatenating per-volume tables into cumulative tables."""
 import argparse
 import fnmatch
 from pathlib import Path
@@ -25,12 +26,11 @@ def _cat_rows(volume_tree: FCPath,
               *,
               exclude: list[str] | None = None,
               volumes: list[str] | None = None) -> None:
-    """Creates the cumulative files for a collection of volumes.
+    """Create the cumulative files for a collection of volumes.
 
-    Args:
+    Parameters:
         volume_tree: Root of the tree containing the volumes.
-        cumulative_dir:
-            Directory in which the cumulative files will reside.
+        cumulative_dir: Directory in which the cumulative files will reside.
         template_path: Path to the host template.
         volume_glob: Glob pattern for volume identification.
         table: Table object.
@@ -109,11 +109,11 @@ def get_args(host: str | None = None,
              exclude: list[str] | None = None) -> argparse.ArgumentParser:
     """Argument parser for cumulative metadata.
 
-    Args:
+    Parameters:
         host: Host name, e.g. 'GOISS'.
         exclude: List of volumes to exclude.
 
-     Returns:
+    Returns:
         Parser containing the argument specifications.
     """
 
@@ -137,9 +137,9 @@ def create_cumulative_indexes(template_name: str,
                               volumes: list[str] | None = None,
                               args: argparse.Namespace | None = None,
                               exclude: list[str] | None = None) -> None:
-    """Creates the cumulative files for a collection of volumes.
+    """Create the cumulative files for a collection of volumes.
 
-    Args:
+    Parameters:
         template_name: Name of index template.
         volumes: List of volume ids to process.  Overrides args.volumes.
         args: Parsed arguments.

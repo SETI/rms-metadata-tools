@@ -1,6 +1,7 @@
 ################################################################################
 # label_support.py - Tools for generating metadata labels.
 ################################################################################
+"""Tools for generating PDS3 metadata labels from templates."""
 from collections.abc import Callable
 from pathlib import Path
 
@@ -19,18 +20,15 @@ def create(filepath: str | Path | FCPath,
            *,
            use_global_template: bool = False,
            table_type: str | None = '') -> None:
-    """Creates a label for a given geometry table.
+    """Create a label for a given geometry table.
 
-    Args:
+    Parameters:
         filepath: Path to the local or remote table.
         host_template_path: Path to the host template.
         system: Name of system, for rings and moons.
-        use_global_template:
-            If True, the label template is to be found in the global template directory.
+        use_global_template: If True, the label template is to be found in the
+            global template directory.
         table_type: BODY, RING, SKY, SUPPLEMENTAL_INDEX, INVENTORY.
-
-    Returns:
-        None.
     """
     filepath = FCPath(filepath)
     if not filepath.exists():

@@ -110,6 +110,8 @@ FORMAT_DICT: dict[str, FormatTuple] = {
     "where_in_front"            : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
     "where_in_back"             : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
     "where_antisunward"         : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, '')}
+"""Maps each geometry column name to its ten-element format tuple of formatting,
+units, null value, valid range, and null-link metadata."""
 
 ALT_FORMAT_DICT: dict[tuple[str, str], FormatTuple] = {
     ("ring_angular_resolution", "km")
@@ -117,6 +119,8 @@ ALT_FORMAT_DICT: dict[tuple[str, str], FormatTuple] = {
     ("longitude",      "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, ''),
     ("ring_longitude", "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, ''),
     ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, '')}
+"""Alternate format entries keyed by ``(column_name, alt_format_tag)``."""
 
 MISSION_TABLE: list[Any] = \
     util.convert_mission_table(config.MISSION_TABLE, config.SC)
+"""Host mission table with spacecraft-clock strings converted to ticks."""

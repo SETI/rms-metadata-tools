@@ -19,14 +19,14 @@ from metadata_tools.geometry_support.formats import FormatTuple
 #===============================================================================
 def circle_coverage(angles: Any, null_value: float | str, sampling: int,
                     flag: str | None = None) -> list[Any]:
-    """Returns inferred angular coverage, accounting for the mask.
+    """Return inferred angular coverage, accounting for the mask.
 
-    Args:
+    Parameters:
         angles: Angles in deg, as a list, np.array, or Scalar.
         null_value: Value to return when fully masked.
         sampling: Pixel sampling density.
-        flag:
-            "-180" to return values in the range (-180,180) rather than (0,360).
+        flag: "-180" to return values in the range (-180,180) rather than
+            (0,360).
 
     Returns:
         Minimum and maximum values in the cyclic array.
@@ -51,9 +51,9 @@ def circle_coverage(angles: Any, null_value: float | str, sampling: int,
 
 #===============================================================================
 def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
-    """Returns one formatted column (or a pair of columns) as a string.
+    """Return one formatted column (or a pair of columns) as a string.
 
-    Args:
+    Parameters:
         values: A Scalar of values with its applied mask (or a string).
         fmt: Format tuple from FORMAT_DICT/ALT_FORMAT_DICT.
         sampling: Pixel sampling density.

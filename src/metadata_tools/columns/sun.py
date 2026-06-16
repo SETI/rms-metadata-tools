@@ -1,6 +1,14 @@
-################################################################################
-# sun.py: Column definitions for sun geometry tables
-################################################################################
+"""Column definitions for sun geometry tables.
+
+This module defines the backplane columns describing the geometry of the Sun as
+seen in each observation: per-pixel solar surface quantities (SUN_COLUMNS),
+gridless whole-disk quantities (SUN_GRIDLESS_COLUMNS), and the summary/detailed
+column lists assembled from them.
+
+These definitions are gathered and re-exported by ``columns/__init__.py`` and
+consumed by the geometry Record/prep code, which evaluates each backplane key
+and formats the result via FORMAT_DICT in ``geometry_support.py``.
+"""
 
 ################################################################################
 # *COLUMN description tuples are

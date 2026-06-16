@@ -1,10 +1,10 @@
 ################################################################################
 # geometry_support package - Tools for generating geometry tables.
 #
-# This package was split out of the former single-file geometry_support.py
-# module (see plans/plan1_split_geometry_support.md). The public import surface
-# is preserved: `import metadata_tools.geometry_support as geom` exposes the
-# same names it always did.
+# Generates PDS3 geometry metadata tables (sky, ring, body, sun, inventory) and
+# their labels from SPICE-derived backplanes. This module re-exports the public
+# API: the format dictionaries, the Record and Suite classes, the table classes,
+# and the process entry points.
 ################################################################################
 from metadata_tools.geometry_support.formats import ALT_FORMAT_DICT, FORMAT_DICT, MISSION_TABLE
 from metadata_tools.geometry_support.process import get_args, process_tables

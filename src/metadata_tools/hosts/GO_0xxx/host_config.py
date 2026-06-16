@@ -1,9 +1,8 @@
-################################################################################
-# host_config.py for GLL SSI
-#
-#  General host-specific definitions and utilites.
-#
-################################################################################
+"""General host-specific definitions and utilities for Galileo SSI (GLL SSI).
+
+This module holds settings and helpers shared across the index, geometry, and
+cumulative generators for the GO_0xxx collection.
+"""
 from pathlib import Path
 
 from filecache import FCPath
@@ -24,10 +23,11 @@ SCLK_BASES: list[int] = [16777215, 91, 10, 8]
 
 #===============================================================================
 def get_volume_id(label_path: str | Path | FCPath) -> str:
-    """Utility function to determine the volume ID for this collection
-       using the label path when there is no observation or label available.
+    """Determine the volume ID for this collection from the label path.
 
-    Args:
+    Used when there is no observation or loaded label available.
+
+    Parameters:
         label_path: Path to the PDS label.
 
     Returns:

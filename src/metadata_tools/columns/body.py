@@ -1,6 +1,15 @@
-################################################################################
-# body.py: Column definitions for body geometry tables
-################################################################################
+"""Column definitions for body geometry tables.
+
+This module defines the backplane columns describing the geometry of a body's
+surface (moons and the planet): per-pixel quantities (BODY_COLUMNS), gridless
+whole-body quantities (BODY_GRIDLESS_COLUMNS), and the summary/detailed column
+lists assembled from them. It also builds the per-body replacement dictionaries
+and the latitude-banded tiling used for detailed tabulations.
+
+These definitions are gathered and re-exported by ``columns/__init__.py`` and
+consumed by the geometry Record/prep code, which evaluates each backplane key
+and formats the result via FORMAT_DICT in ``geometry_support.py``.
+"""
 import oops
 
 import metadata_tools.defs as defs

@@ -15,18 +15,16 @@ from metadata_tools.geometry_support.suite import Suite
 def get_args(host: str | None = None, selection: str | None = None,
              exclude: list[str] | None = None,
              sampling: int = 8) -> argparse.ArgumentParser:
-    """Argument parser for geometric metadata.
+    """Build the argument parser for geometric metadata.
 
-    Args:
+    Parameters:
         host: Host name, e.g. 'GOISS'.
-        selection:
-            A string containing...
-            "S" to generate summary files;
-            "D" to generate detailed files.
+        selection: A string containing "S" to generate summary files and "D" to
+            generate detailed files.
         exclude: List of volumes to exclude.
         sampling: Pixel sampling density.
 
-     Returns:
+    Returns:
         Parser containing the argument specifications.
     """
 
@@ -69,25 +67,22 @@ def process_tables(template_name: str,
                    task_list_only: bool = False) -> None:
     """Create geometry tables for a collection of volumes.
 
-    Args:
+    Parameters:
         template_name: Name of index template.
         volumes: List of volume ids to process. Overrides args.volumes.
-        selection:
-            A string containing...
-            "S" to generate summary files;
-            "D" to generate detailed files.
+        selection: A string containing "S" to generate summary files and "D" to
+            generate detailed files.
         exclude: List of volumes to exclude.
         sampling: Pixel sampling density.
         glob: Glob pattern for data files.
         index_glob: Glob pattern for index files.
         args: Parsed arguments.
-        task_file:
-            Name of tasks file. This file is overwritten. If not given, tasks are provided
-            via the task_source generator.
-        task_list_only:
-            If True, a task list is created and no processing is performed. If task_file is
-            given, then the task list is written to that file. Otherwise, the task list is
-            accessed via the task_source generator.
+        task_file: Name of tasks file. This file is overwritten. If not given,
+            tasks are provided via the task_source generator.
+        task_list_only: If True, a task list is created and no processing is
+            performed. If task_file is given, then the task list is written to
+            that file. Otherwise, the task list is accessed via the task_source
+            generator.
     """
 
     # Parse arguments
