@@ -223,22 +223,21 @@ class IndexTable(com.Table):
         """
         nullval = column_stub['NULL_CONSTANT']
 
-        # Check for built-in key function
+        # Resolve the key function: a built-in `key__<name>` takes priority over
+        # one defined in the index_config module. If neither exists, the value is
+        # taken straight from the label. Look the function up explicitly (rather
+        # than catching KeyError/AttributeError) so that an error raised *inside*
+        # a key function propagates instead of being silently swallowed.
         key = column_stub['NAME']
         fn_name = 'key__' + key.lower()
-        try:
-            fn = globals()[fn_name]
+        fn = globals().get(fn_name)
+        if fn is None:
+            fn = getattr(config, fn_name, None)
+
+        if fn is not None:
             value = fn(label_path, label_dict)
-
-        # Check for key function in index_config module
-        except KeyError:
-            try:
-                fn = getattr(config, fn_name)
-                value = fn(label_path, label_dict)
-
-            # If no key function, just take the value from the label
-            except AttributeError:
-                value = label_dict.get(key, nullval)
+        else:
+            value = label_dict.get(key, nullval)
 
         # If a key function returned None, insert a NULL value.
         if value is None:
