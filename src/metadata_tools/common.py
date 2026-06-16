@@ -90,8 +90,7 @@ def write_task_file(task_file: str | None) -> None:
     """
     if not task_file:
         return
-    with open(task_file, "w", encoding="utf-8") as file:
-        json.dump(task_list, file, indent=2)
+    FCPath(task_file).write_text(json.dumps(task_list, indent=2), encoding="utf-8")
 
 
 ##########################################################################################

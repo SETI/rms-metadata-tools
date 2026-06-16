@@ -408,11 +408,6 @@ def append_txt_file(filespec: str | Path | FCPath, content: str | list[str],
     # Expand environment variables and resolve to absolute path
     path = FCPath(expandvars(FCPath(filespec)))
 
-    # If no file, just run write_txt_file().
-    if not path.exists():
-        write_txt_file(path, content, terminator=terminator)
-        return
-
     # Determine terminator
     if terminator is None:
         if isinstance(content, list):
@@ -428,9 +423,15 @@ def append_txt_file(filespec: str | Path | FCPath, content: str | list[str],
     # Reconstitute with correct terminator
     text = terminator.join(lines) + terminator
 
-    # Write file
-    with open(Path(path.as_posix()), "a", encoding="utf-8") as file:
-        file.write(text)
+    # Append by rewriting through FCPath: read any existing content, then write it
+    # back with the new text appended. Going via read_text/write_text (rather than a
+    # downcast to a local Path opened in append mode) keeps remote paths (gs://,
+    # s3://, ...) working, where streaming append is unsupported.
+    try:
+        existing = path.read_text(encoding='utf-8')
+    except FileNotFoundError:
+        existing = ''
+    path.write_text(existing + text, encoding='utf-8')
 
 #===============================================================================
 ### move to utilities
