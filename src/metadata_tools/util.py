@@ -1,11 +1,9 @@
 ################################################################################
 # util.py: Utility functions
 ################################################################################
-import datetime as dt
 import math
 import os
 import re
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -17,19 +15,6 @@ from filecache import FCPath
 
 import metadata_tools.defs as defs
 
-
-#===============================================================================
-def dbprint(message: str) -> None:
-    """Print a message to stderr with time stamp for debugging.
-
-    Args:
-        message: Message to write.
-
-    Returns: None
-    """
-#    return
-    time = dt.datetime.now()#.strftime('%Y-%m-%d %H:%M:%S')
-    print(f'{time} - {message}', file=sys.stderr, flush=True)
 
 #===============================================================================
 def pds_table(label_path: FCPath) -> pdstable.PdsTable:

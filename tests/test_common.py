@@ -66,7 +66,6 @@ def test_write_table_and_label(monkeypatch: pytest.MonkeyPatch,
     calls = []
     monkeypatch.setattr(util, 'write_txt_file',
                         lambda path, rows: calls.append(('write', rows)))
-    monkeypatch.setattr(util, 'dbprint', lambda msg: calls.append(('db', msg)))
     monkeypatch.setattr(lab, 'create',
                         lambda *a, **k: calls.append(('label', k.get('table_type'))))
     table.rows = ['row1']

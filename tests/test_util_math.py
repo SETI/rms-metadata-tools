@@ -124,12 +124,3 @@ def test_smooth_moving_box() -> None:
 def test_range_of_n_angles_is_bounded() -> None:
     result = util.range_of_n_angles(5, tests=200)
     assert 0.0 <= result <= 360.0
-
-
-#===============================================================================
-# dbprint (debug helper; exercised for coverage)
-#===============================================================================
-def test_dbprint_writes_to_stderr(capsys: pytest.CaptureFixture[str]) -> None:
-    util.dbprint('hello-debug')
-    captured = capsys.readouterr()
-    assert 'hello-debug' in captured.err
