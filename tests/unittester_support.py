@@ -3,7 +3,6 @@
 ################################################################################
 import glob
 import os
-import unittest
 from typing import Any
 
 import numpy as np
@@ -54,12 +53,11 @@ def exclude(files: list[str], *patterns: str) -> list[str]:
     return result
 
 #===========================================================================
-def bounds(test: unittest.TestCase, file: str, table: Any, key: str,
+def bounds(file: str, table: Any, key: str,
            min_val: float = 0, max_val: float = 360, minmax: bool = True) -> None:
     """Test whether values exeed given minimum and maximum bounds.
 
     Args:
-        test (unittest.TestCase): Test case to evaluate against.
         file (str): Name of data file.
         table (pdsTable): PdsTable object containing the data table.
         key (tstr):
@@ -76,8 +74,8 @@ def bounds(test: unittest.TestCase, file: str, table: Any, key: str,
         None.
     """
     if minmax:
-        bounds(test, file, table, 'MINIMUM_' + key, minmax=False, min_val=min_val, max_val=max_val)
-        bounds(test, file, table, 'MAXIMUM_' + key, minmax=False, min_val=min_val, max_val=max_val)
+        bounds(file, table, 'MINIMUM_' + key, minmax=False, min_val=min_val, max_val=max_val)
+        bounds(file, table, 'MAXIMUM_' + key, minmax=False, min_val=min_val, max_val=max_val)
         return
 
     nullvals = table.info.column_info_dict[key].invalid_values.copy()
