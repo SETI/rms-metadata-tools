@@ -5,39 +5,47 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rms-metadata-tools"
 dynamic = ["version"]
-description = "Tools for metadata file creation"
+description = "Generate PDS3 index, geometry, and cumulative metadata tables and labels for planetary science data collections"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
-    "IPython",
-    "coverage",
-    "flake8",
-    "pytest",
-    "numpy",
-    "rms-oops",
-    "rms-filecache>=2.3.0",
-    "rms-pdslogger>=3.0.0",
-    "rms-julian",
-    "rms-pdstable",
-    "rms-vicar",
-    "fortranformat"
+  "numpy>=2.3.0",
+  "rms-oops>=0.2.0",
+  "rms-filecache>=3.1.0",
+  "rms-pdslogger>=3.0.0",
+  "rms-julian>=3.0.1",
+  "rms-pdsparser>=2.0.0",
+  "rms-pdstable>=1.0.3",
+  "rms-vicar>=1.2.1",
+  "rms-pdstemplate>=2.4.0",
+  "rms-textkernel>=1.1.1",
+  "fortranformat>=2.0.3",
 ]
 license = {text = "Apache-2.0"}
-maintainers = [
-  {name = "Joseph N. Spitale", email = "jspitale@seti.org"}
+authors = [
+  {name = "Joe Spitale", email = "jspitale@seti.org"}
 ]
-keywords = ["metadata"]
+maintainers = [
+  {name = "Joe Spitale", email = "jspitale@seti.org"}
+]
+keywords = [
+  "pds", "pds3", "planetary science", "metadata", "geometry",
+  "spice", "ring-moon systems", "astronomy",
+]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 5 - Production/Stable",
   "Natural Language :: English",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Astronomy",
-  "Topic :: Scientific/Engineering :: Image Processing",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Utilities",
   "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Operating System :: POSIX :: Linux"
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: Microsoft :: Windows"
 ]
 
 [project.urls]
@@ -47,9 +55,172 @@ Repository = "https://github.com/SETI/rms-metadata-tools"
 Source = "https://github.com/SETI/rms-metadata-tools"
 Issues = "https://github.com/SETI/rms-metadata-tools/issues"
 
+[tool.pytest.ini_options]
+pythonpath = [
+  "src"
+]
+testpaths = ["tests"]
+# TODO Update desired parallelism
+addopts = ["-n", "auto", "--cov=src", "--strict-markers", "--strict-config", "-m", "not integration and not requires_archive"]
+markers = [
+  "integration: requires oops/SPICE host initialization (excluded by default)",
+  "requires_archive: requires the $RMS_METADATA holdings tree (excluded by default)",
+]
+
 [tool.setuptools]
-packages = ["metadata_tools"]
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# PDS3 label templates are read at runtime (see defs.GLOBAL_TEMPLATE_PATH and the
+# per-host templates/ directories); they must ship in the wheel.
+# py.typed is intentionally NOT declared: the package is not yet fully annotated, so
+# advertising it as typed would mislead downstream type checkers.
+[tool.setuptools.package-data]
+"metadata_tools" = ["py.typed", "templates/*.lbl"]
+"metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
-write_to = "metadata_tools/_version.py"
+write_to = "src/metadata_tools/_version.py"
+
+[project.optional-dependencies]
+dev = [
+  "coverage>=7.0",
+  "mypy>=1.0",
+  "pymarkdownlnt>=0.9.35",
+  "pytest>=7.0",
+  "pytest-cov>=4.0",
+  "pytest-xdist>=3.8.0",
+  "ruff>=0.8",
+  "bandit[toml]>=1.8",
+  "pyroma>=4.2",
+  "vulture>=2.14",
+  "rms-metadata-tools[docs]",
+]
+docs = [
+  "myst-parser",
+  "sphinx>=7",
+  "sphinxcontrib-mermaid",
+  "sphinx-rtd-theme",
+]
+# Extra dependencies for distributing table generation across GCP via
+# rms-cloud-tasks (the hosts/<HOST>/*_cloud.py workers).
+cloud = [
+  "rms-cloud-tasks>=0.2.0",
+  "json-stream>=2.3.3",
+]
+
+[project.scripts]
+#TODO = "main.metadata_tools:main"
+
+# Tool configuration
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["metadata_tools"]
+# The default test run is hermetic (no SPICE kernels, no $RMS_METADATA holdings).
+# Coverage therefore measures the host-agnostic engine. The following are
+# excluded from the denominator because they cannot run without SPICE/GCP:
+#   - hosts/*       per-host plugin config, runnable entry scripts, cloud
+#                   workers, and host-local tests; these import host_config /
+#                   geometry_config as top-level modules (CWD-dependent) and
+#                   drive oops/SPICE or rms-cloud-tasks.
+#   - bodies.py     builds the oops Body registry via oops.Body.lookup(), which
+#                   needs the kernels; the engine tests stub it (see
+#                   tests/conftest.py).
+# Any other SPICE-only seam is excluded with a targeted, commented
+# `# pragma: no cover` at the call site, never a blanket file omit.
+omit = [
+  "tests/*",
+  "*/_version.py",
+  "*/metadata_tools/bodies.py",
+  "*/metadata_tools/hosts/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "def __repr__",
+  "raise NotImplementedError",
+]
+fail_under = 90
+
+[tool.mypy]
+strict = true
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = "metadata_tools._version"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Third-party runtime deps that ship no type stubs or py.typed marker.
+module = [
+    "oops.*",
+    "polymath.*",
+    "cspyce.*",
+    "fortranformat.*",
+    "julian.*",
+    "pdslogger.*",
+    "pdsparser.*",
+    "pdstable.*",
+    "pdstemplate.*",
+    "vicar.*",
+    "textkernel.*",
+    "json_stream.*",
+    "cloud_tasks.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Host config/init modules are imported as top-level names (the plugin pattern,
+# resolvable only when CWD is the host dir), so mypy cannot follow them.
+module = ["host_config", "host_init", "index_config", "geometry_config"]
+ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+exclude = [
+#  "TODO"
+]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+# Explicit rule set (recommended for library projects). Categories:
+# E, W = pycodestyle errors/warnings; F = Pyflakes; I = isort; UP = pyupgrade;
+# B = bugbear; SIM = simplify; C4 = comprehensions; A = builtins (no shadowing);
+# N = pep8-naming; PT = pytest-style; RUF = Ruff-specific (e.g. unused noqa).
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "A", "N", "PT", "RUF"]
+# PT011 - pytest.raises is too broad.
+# SIM105 - Use contextlib.suppress for suppressions.
+# SIM108 - Use ternary operator for simple if/else.
+# RUF005 - Prefer iterable unpacking over concatenation.
+# B028 - warnings.warn without stacklevel; irrelevant with no external callers.
+# SIM102 - Use a single if instead of nested ifs.
+# N999 - Invalid module name; host scripts use the PDS volume-set ID (e.g. GO_0xxx_index).
+# UP031 - Use format specifiers instead of percent format.
+extend-ignore = ["PT011", "SIM105", "SIM108", "RUF005", "B028", "SIM102", "N999", "UP031"]
+
+[tool.ruff.lint.per-file-ignores]
+#"TODO" = ["TODO"]
+
+[tool.pymarkdown.plugins.md013]
+# Line length (disable so README/CONTRIBUTING can use longer lines).
+enabled = false
+
+[tool.pymarkdown.plugins.md033]
+# Inline HTML (e.g. <br>) allowed in Markdown.
+enabled = false
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+targets = ["src"]
+
+[tool.vulture]
+paths = ["src"]
+exclude = ["tests/"]
+min_confidence = 70

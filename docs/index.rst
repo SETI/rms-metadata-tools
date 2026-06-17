@@ -1,21 +1,31 @@
-.. metadata_tools documentation master file, created by
-   sphinx-quickstart on Fri May 24 12:58:54 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. rms-metadata-tools documentation master file
 
-Welcome to ``metadata_tools``' documentation!
-=============================================
+====================================================
+Documentation for rms-metadata-tools
+====================================================
 
 .. include:: ../README.md
    :parser: myst_parser.sphinx_
-   :start-after: forks/SETI/rms-metadata-tools)
+   :start-after: <!-- start-after-point -->
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User Guide
 
-   module
+   user_guide/user_guide
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Developer Guide
+
+   dev_guide/dev_guide
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Project
+
+   contributing
+   code_of_conduct
 
 Indices and tables
 ==================

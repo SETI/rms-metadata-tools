@@ -1,0 +1,53 @@
+################################################################################
+# GOSSI-specific metadata index unit tests
+################################################################################
+import numpy as np
+import pdstable
+import pytest
+
+import tests.archive_support as support
+
+# These tests read pre-generated tables/labels from the $RMS_METADATA holdings
+# tree; they are excluded from the default run (see the requires_archive marker
+# in pyproject.toml and scripts/run-all-checks.sh --integration).
+pytestmark = pytest.mark.requires_archive
+
+
+#===============================================================================
+# test supplemental index fields
+def test_supplemental_index_gossi() -> None:
+
+    # Get labels to test
+    files = support.match(support.METADATA, '*_supplemental_index.lbl')  # type: ignore[arg-type]
+    files = support.exclude(files, 'templates/', 'old/')
+
+    # Test labels
+    print()
+    for file in files:
+        print('Reading', file)
+        table = pdstable.PdsTable(file)
+
+        # validate column values
+        assert isinstance(table.column_values['TELEMETRY_FORMAT_ID'][0], np.str_), file
+        assert isinstance(table.column_values['CUT_OUT_WINDOW'][0][0], np.int_), file
+        assert len(table.column_values['CUT_OUT_WINDOW'][0]) == 4, file
+        assert isinstance(table.column_values['TRUTH_WINDOW'][0][0], np.int_), file
+        assert len(table.column_values['TRUTH_WINDOW'][0]) == 4, file
+        assert isinstance(table.column_values['LIGHT_FLOOD_STATE_FLAG'][0], np.str_), file
+        assert isinstance(table.column_values['EXPOSURE_TYPE'][0], np.str_), file
+        assert isinstance(table.column_values['INVERTED_CLOCK_STATE_FLAG'][0], np.str_), file
+        assert isinstance(table.column_values['ON_CHIP_MOSAIC_FLAG'][0], np.str_), file
+        assert isinstance(table.column_values['INSTRUMENT_MODE_ID'][0], np.str_), file
+        assert isinstance(table.column_values['HUFFMAN_TABLE_TYPE'][0], np.str_), file
+        assert isinstance(table.column_values['ICT_DESPIKE_THRESHOLD'][0], np.int_), file
+        assert isinstance(table.column_values['PRODUCT_VERSION_ID'][0], np.int_), file
+        assert isinstance(table.column_values['ICT_QUANTIZATION_STEP_SIZE'][0], np.int_), file
+        assert isinstance(table.column_values['ICT_ZIGZAG_PATTERN'][0], np.str_), file
+        assert isinstance(table.column_values['COMPRESSION_QUANTIZATION_TABLE_ID'][0],
+                          np.str_), file
+        assert isinstance(table.column_values['ENTROPY'][0], np.float64), file
+        assert isinstance(table.column_values['START_TIME'][0], np.str_), file
+        assert isinstance(table.column_values['STOP_TIME'][0], np.str_), file
+        assert isinstance(table.column_values['SPACECRAFT_CLOCK_START_COUNT'][0], np.str_), file
+        assert isinstance(table.column_values['SPACECRAFT_CLOCK_STOP_COUNT'][0], np.str_), file
+################################################################################
