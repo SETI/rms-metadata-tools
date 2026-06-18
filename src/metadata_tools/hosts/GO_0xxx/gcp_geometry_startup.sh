@@ -1,5 +1,6 @@
 #!/bin/bash
 
+######################### common code ####################################################
 # Mount OOPS-Resources
 export INSTANCE_NAME=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/name)
 gcloud compute instances attach-disk $INSTANCE_NAME --disk=standard-oops-resources-central1-a-1 --zone=us-central1-a --device-name=nav-resources --mode ro
@@ -8,8 +9,6 @@ sudo mkdir -p /mnt/nav-resources
 sudo mount -o ro /dev/disk/by-id/google-nav-resources-part1 /mnt/nav-resources
 export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
 
-
-######## index / geometry common code ####################################################
 # sudo needed for manual paste into instance terminal..
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
@@ -35,7 +34,7 @@ pip install -r requirements.txt
 export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
 
 # Run the geometry code
-python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
+python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py \
                 gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
                 gs://rms-metadata-jspitale/metadata_test/GO_0xxx/
 

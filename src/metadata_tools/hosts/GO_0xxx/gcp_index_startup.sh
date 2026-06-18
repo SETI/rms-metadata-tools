@@ -9,7 +9,6 @@ sudo mkdir -p /mnt/nav-resources
 sudo mount -o ro /dev/disk/by-id/google-nav-resources-part1 /mnt/nav-resources
 export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
 
-
 # sudo needed for manual paste into instance terminal..
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
@@ -24,7 +23,7 @@ pip install -r requirements.txt
 ##########################################################################################
 
 # Run the index code
-python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
+python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
                 gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
                 gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
                 gs://rms-metadata-jspitale/metadata_test/GO_0xxx/
