@@ -7,9 +7,19 @@ and all cloud_tasks arguments are also accepted. Run this script from inside its
 directory (hosts/GO_0xxx), because it does top-level ``import host_config`` /
 ``import index_config`` which only resolve when the host directory is on sys.path.
 
-Example (local):
-    python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ \\
-        $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
+Examples:
+ For local runs, the basic usage is identical to GO_0xxx_index.py. In addition, all
+ cloud_tasks arguments are accepted. For example:
+
+   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
+   python GO_0xxx_index_cloud.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
+
+ For GCP runs (not yet working), use:
+   gcloud auth application-default login       # if necessary
+
+   python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to index_tasks.json
+   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json --use-spot   # --total-boot-disk-size 50
+
 
 The full list of command-line options is documented in the user guide.
 """

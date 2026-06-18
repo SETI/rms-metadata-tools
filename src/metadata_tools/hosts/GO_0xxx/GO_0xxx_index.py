@@ -5,9 +5,9 @@ Run this script from inside its host directory (hosts/GO_0xxx), because it does
 top-level ``import host_config`` / ``import index_config`` which only resolve when the
 host directory is on sys.path.
 
-Example:
-    python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ \\
-        $RMS_METADATA_TEST/GO_0xxx/
+Examples:
+    python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
+    python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
 
 The full list of command-line options is documented in the user guide.
 """

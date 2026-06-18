@@ -7,9 +7,18 @@ matches GO_0xxx_cumulative.py, and all cloud_tasks arguments are also accepted. 
 script from inside its host directory (hosts/GO_0xxx), because it does top-level
 ``import host_config`` which only resolves when the host directory is on sys.path.
 
-Example (local):
-    python GO_0xxx_cumulative_cloud.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/ \\
-        --task-file cumulative_tasks.json
+Examples:
+ For local runs, the basic usage is identical to GO_0xxx_cumulative.py. In addition, all
+ cloud_tasks arguments are accepted. For example:
+
+   python GO_0xxx_cumulative_cloud.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json
+   python GO_0xxx_cumulative_cloud.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json -vv GO_0017
+
+ For GCP runs, use:
+   gcloud auth application-default login       # if necessary
+
+   - to use the task file used for the index files:
+     cloud_tasks run --config gcp_cumulative_config.yml --task-file cumulative_tasks.json --use-spot
 
 The full list of command-line options is documented in the user guide.
 """

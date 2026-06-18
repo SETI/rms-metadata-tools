@@ -5,8 +5,10 @@ Run this script from inside its host directory (hosts/GO_0xxx), because it does
 top-level ``import host_config`` / ``import geometry_config`` which only resolve when
 the host directory is on sys.path.
 
-Example:
+Examples:
     python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
+    python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
+    python3 GO_0xxx_geometry.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -p *C0349605600R*
 
 The full list of command-line options is documented in the user guide.
 """

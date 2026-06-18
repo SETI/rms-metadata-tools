@@ -5,8 +5,9 @@ Concatenates the per-volume tables across the whole volume tree. Run this script
 inside its host directory (hosts/GO_0xxx), because it does top-level
 ``import host_config`` which only resolves when the host directory is on sys.path.
 
-Example:
+Examples:
     python3 GO_0xxx_cumulative.py $RMS_METADATA_TEST/GO_0xxx/GO_0999/
+    python3 GO_0xxx_cumulative.py $RMS_METADATA/GO_0xxx/GO_0999/ -vv GO_0017
 
 The full list of command-line options is documented in the user guide.
 """
