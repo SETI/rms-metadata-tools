@@ -33,7 +33,7 @@ python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
 ##  Manual paste into instance..
 : <<'COMMENT_BLOCK'
 gcloud auth application-default login
-python3 metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
+python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
                 gs://rms-metadata-jspitale/metadata_test/GO_0xxx/G0_0999/ \
                 --task-file metadata_tools/hosts/GO_0xxx/cumulative_tasks.json
 COMMENT_BLOCK

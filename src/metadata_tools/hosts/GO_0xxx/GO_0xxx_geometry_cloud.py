@@ -7,9 +7,20 @@ and all cloud_tasks arguments are also accepted. Run this script from inside its
 directory (hosts/GO_0xxx), because it does top-level ``import host_config`` /
 ``import geometry_config`` which only resolve when the host directory is on sys.path.
 
-Example (local):
-    python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ \\
-        --num-simultaneous-tasks 12
+Examples:
+ For local runs, the basic usage is identical to GO_0xxx_geometry.py. In addition, all
+ cloud_tasks arguments are accepted. For example:
+
+   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
+   python GO_0xxx_geometry_cloud.py $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
+
+ For GCP runs:
+   - to use the task file used for the index files:
+     cloud_tasks run --config gcp_geometry_config.yml --task-file index_tasks.json
+
+   - to use a new task file:
+     python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 -to geometry_tasks.json
+     cloud_tasks run --config gcp_geometry_config.yml --task-file geometry_tasks.json --use-spot
 
 The full list of command-line options is documented in the user guide.
 """
