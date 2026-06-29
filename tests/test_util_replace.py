@@ -50,12 +50,12 @@ def test_replace_passes_through_non_string_leaves() -> None:
     assert result == ('limb_altitude', 'IO', -0.01, 3, True)
 
 
-def test_replace_evaluates_embedded_dict_reference() -> None:
-    """A nested dict-reference string is evaluated after substitution.
+def test_replace_resolves_embedded_dict_reference() -> None:
+    """A nested dict-reference string is resolved after placeholder substitution.
 
     This is the mechanism behind ``body_diameter_in_pixels``: a column tuple
     carries the string ``defs.RING_SYSTEM_RADII["bodyx"]`` which, once the
-    placeholder is replaced, is ``eval``'d to the actual ring-system radius.
+    placeholder is replaced, is looked up in ``defs.RING_SYSTEM_RADII``.
     """
     ref = util.replacement_fn('defs.RING_SYSTEM_RADII', defs.BODYX)
     tree = [('body_diameter_in_pixels', 'JUPITER:RING', ref)]
@@ -63,6 +63,20 @@ def test_replace_evaluates_embedded_dict_reference() -> None:
     assert result == [
         ('body_diameter_in_pixels', 'JUPITER:RING', defs.RING_SYSTEM_RADII['JUPITER'])
     ]
+
+
+def test_resolve_dict_ref_rejects_unknown_module() -> None:
+    """``_resolve_dict_ref`` raises ValueError for non-defs module references."""
+    import pytest
+    with pytest.raises(ValueError, match='Unknown module'):
+        util._resolve_dict_ref('os.environ["PATH"]')
+
+
+def test_resolve_dict_ref_rejects_unrecognized_pattern() -> None:
+    """``_resolve_dict_ref`` raises ValueError for strings that don't match the pattern."""
+    import pytest
+    with pytest.raises(ValueError, match='Unrecognized column reference'):
+        util._resolve_dict_ref('defs.RING_SYSTEM_RADII[SATURN]')
 
 
 def test_replacement_dict_keys_each_tree_by_name() -> None:

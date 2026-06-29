@@ -1,8 +1,817 @@
-# Codebase analysis: rms-metadata-tools
+# Code Critique: rms-metadata-tools
 
-**Generated:** 2026-06-15
-**Scope:** entire repository — all of `src/metadata_tools/` (core engine, `column/`, `hosts/GO_0xxx/`), packaging/config files, CI workflows, and GCP/cloud scripts. Every Python source file was read in full; `.lbl` templates, `*.db`, `*_tasks.json`, `cprofile.txt`, and `log.txt` were inspected as committed artifacts.
-**Authoritative rules:** `.cursor/rules/python.mdc`, `filecache.mdc`, `logging.mdc`, `dependency_management.mdc`, `environment.mdc`, `security.mdc`, `git_workflow.mdc`.
+Generated after reading every file in the repository, including all source modules,
+tests, CI workflows, GCP startup scripts, PDS3 label templates, and configuration
+files. Findings are grouped by severity and type. Each item includes a precise
+location, the problem, and complete instructions for fixing it.
+
+**Authoritative rules:** `.cursor/rules/python.mdc`, `filecache.mdc`, `logging.mdc`, `dependency_management.mdc`, `environment.mdc`, `security.mdc`, `git_workflow.mdc`
+
+---
+
+## 1. Critical Bugs
+
+### 1.1 Broken shell command in `gcp_cumulative_startup.sh` — RESOLVED (2026-06-29)
+
+**File:** `src/metadata_tools/hosts/GO_0xxx/gcp_cumulative_startup.sh`, lines 26–28
+
+**Problem:** The `--task-file` argument is on its own line without a `\` continuation.
+Bash treats it as a separate command (`--task-file ...`), which fails silently or with
+a "command not found" error; the cumulative cloud worker is invoked without its task file.
+
+```bash
+# CURRENT (broken):
+python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/GO_0999/
+                --task-file src/metadata_tools/hosts/GO_0xxx/cumulative_tasks.json
+```
+
+**Fix:** Add the missing `\` at the end of the GCS path line:
+
+```bash
+python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/GO_0999/ \
+                --task-file src/metadata_tools/hosts/GO_0xxx/cumulative_tasks.json
+```
+
+---
+
+### 1.2 Template variable inconsistency in `GO_0xxx_ring_summary.lbl` — RESOLVED (2026-06-29)
+
+**File:** `src/metadata_tools/hosts/GO_0xxx/templates/GO_0xxx_ring_summary.lbl`, line 37
+
+**Problem:** The ring summary template uses `$IF(TABLE_TYPE == 'CUMULATIVE')` but the
+body summary template (`GO_0xxx_body_summary.lbl`, line 40) uses `$IF(index_type ==
+'CUMULATIVE')`. `TABLE_TYPE` is a template field injected by `label_support.create()`
+(passed as `table_type`), whereas `index_type` is a locally-scoped `$ONCE` variable.
+These check different values and will produce different behavior, meaning one of the
+two templates generates the wrong description text.
+
+**Fix:** Verify which variable is intended (the `$ONCE` local `index_type` is defined
+at the top of the ring template on line 14, so it should be used):
+
+In `GO_0xxx_ring_summary.lbl`, replace:
+```
+$IF(TABLE_TYPE == 'CUMULATIVE')
+```
+with:
+```
+$IF(index_type == 'CUMULATIVE')
+```
+
+---
+
+### 1.3 Silent loss of `self.observations` after logging an error — RESOLVED (2026-06-29)
+
+**File:** `src/metadata_tools/geometry_support/suite.py`, lines 93–97
+
+**Problem:** When `config.from_index()` raises `FileNotFoundError`, the code logs the
+traceback but does not raise, return, or set `self.observations` to an empty list.
+Execution continues to `add_tables()` and `meshgrids()` on lines 100–104. Later,
+`self.create()` accesses `self.observations` (line 242), but the attribute was never
+assigned, causing an `AttributeError` at runtime instead of a clean error.
+
+**Fix applied:** Replaced `logger.error(traceback.format_exc())` with
+`logger.exception('Index file not found for %s', self.volume_id)` (per `logging.mdc`)
+and added `return` to halt `__init__` on missing index. Removed unused `import traceback`.
+
+---
+
+## 2. Standards Violations (`.cursor/rules/`)
+
+### 2.1 `filecache.mdc` — `.exists()` used as pre-flight check
+
+**Rule:** Never use `fcpath.exists()` as a pre-flight check; use try/except
+`FileNotFoundError` (EAFP pattern).
+
+**Location 1:** `src/metadata_tools/label_support.py`, line 34
+
+```python
+if not filepath.exists():
+    return
+```
+
+**Fix:** Replace with:
+
+```python
+try:
+    # proceed with template work
+except FileNotFoundError:
+    return
+```
+
+Concretely, wrap the `PdsTemplate()` construction and `template.write()` call in the
+try block and catch `FileNotFoundError` rather than pre-checking.
+
+**Location 2:** `src/metadata_tools/index_support.py`, line 83
+
+```python
+if not self.primary_index_label_path.exists():
+```
+
+**Fix:** Replace the exists() check with a try/except around the code that reads the
+primary index label path, catching `FileNotFoundError`.
+
+---
+
+### 2.2 `logging.mdc` — `logger.error(traceback.format_exc())` instead of `logger.exception()`
+
+**File:** `src/metadata_tools/geometry_support/suite.py`, line 97
+
+**Rule:** Inside an `except` block, use `logger.exception()` which automatically
+captures the current exception and traceback. Never use `logger.error(traceback.format_exc())`.
+
+**Fix:**
+```python
+# BEFORE:
+import traceback
+...
+except FileNotFoundError:
+    logger.error(traceback.format_exc())
+
+# AFTER (also remove `import traceback` at line 5 if no other usage):
+except FileNotFoundError:
+    logger.exception('Failed to load index for %s', self.volume_id)
+    return
+```
+
+---
+
+### 2.3 `python.mdc` — Mutable module-level globals
+
+**Location 1:** `src/metadata_tools/common.py`
+
+```python
+task_list: list[dict[str, Any]] = []
+```
+
+This mutable list is a module-level singleton. Under `pytest-xdist` parallel workers
+or any multi-threaded use, concurrent `add_task()` / `task_list.clear()` calls are
+not thread-safe. The `python.mdc` rule prohibits mutable globals.
+
+**Fix:** Encapsulate task state in a class or use a context-local object. At minimum,
+document the single-threaded requirement and add a threading lock if the module is ever
+used concurrently:
+
+```python
+import threading
+_task_list_lock = threading.Lock()
+task_list: list[dict[str, Any]] = []
+```
+
+Or redesign `add_task` / `task_source` / `write_task_file` to accept an explicit list
+parameter rather than mutating the global.
+
+**Location 2:** `src/metadata_tools/defs.py`
+
+```python
+TRANSLATIONS: dict[str, str] = {}
+```
+
+This empty mutable dict is populated by callers. Document who owns it and when it is
+populated, or replace it with an immutable default and a function-level parameter.
+
+---
+
+### 2.4 `python.mdc` — `assert` in library code
+
+**File:** `src/metadata_tools/common.py`, line 239
+
+```python
+assert table_type is not None  # nosec B101 - type-narrowing invariant, not validation
+```
+
+The `nosec B101` suppressor and the comment explain the intent, but `assert` is stripped
+by Python's optimizer (`-O` flag). In library code called from cloud workers, use an
+explicit `if/raise` guard instead:
+
+```python
+if table_type is None:
+    raise ValueError('table_type must not be None')
+```
+
+---
+
+### 2.5 `python.mdc` — Functions with more than 3 positional parameters
+
+The following functions exceed the 3-positional-argument limit from `python.mdc`:
+
+| Function | File | Approx. param count |
+|---|---|---|
+| `IndexTable.__init__` | `index_support.py` | ~10 |
+| `_create_index()` | `index_support.py` | ~10 |
+| `process_index()` | `index_support.py` | ~8 |
+| `prep_row()` | `geometry_support/prep.py` | ~12 |
+| `create` (of various Table classes) | multiple | varies |
+
+**Fix for each:** Introduce a dataclass or keyword-only parameters (`*` separator) to
+force callers to name arguments and reduce accidental positional mismatches:
+
+```python
+# Example for _create_index:
+def _create_index(
+    volume_tree: FCPath,
+    output_tree: FCPath,
+    template_path: FCPath,
+    *,
+    qualifier: str = '',
+    volumes: list[str] | None = None,
+    ...
+) -> None:
+```
+
+---
+
+### 2.6 `python.mdc` — `locals()` dictionary for dynamic attribute lookup
+
+**File:** `src/metadata_tools/geometry_support/record.py`, line ~207
+
+```python
+locals()['link_' + link]
+```
+
+**Problem:** `locals()` is not guaranteed to reflect the actual local scope in all
+Python implementations; it creates a hidden coupling between a variable name and string
+concatenation. This is fragile and mypy cannot type-check it.
+
+**Fix:** Replace with an explicit dict:
+
+```python
+_link_handlers = {
+    'ring': link_ring,
+    'body': link_body,
+    # etc.
+}
+_link_handlers[link](...)
+```
+
+---
+
+### 2.7 `filecache.mdc` — Multiple `from pathlib import Path` imports in library code
+
+The following library source files import `pathlib.Path` instead of using `FCPath`
+exclusively:
+
+- `src/metadata_tools/util.py` (line 8)
+- `src/metadata_tools/index_support.py` (line 8)
+- `src/metadata_tools/label_support.py` (line 6)
+- `src/metadata_tools/common.py` (line 13)
+- `src/metadata_tools/cumulative_support.py` (line 7)
+- `src/metadata_tools/geometry_support/suite.py` (line 6)
+- `src/metadata_tools/geometry_support/tables.py` (line 4)
+- `src/metadata_tools/hosts/GO_0xxx/host_config.py` (line 6)
+- `src/metadata_tools/hosts/GO_0xxx/index_config.py` (line 7)
+
+In each case, review whether the `Path` usage could be replaced with `FCPath`. Where
+`Path` is needed for a third-party API that does not accept `FCPath`, use
+`fcpath.get_local_path()` to get a real local path and `fcpath.upload()` afterwards.
+At the very least, never downcast an `FCPath` to a plain `Path` or `str`.
+
+---
+
+### 2.8 `python.mdc` — Weak type annotation `dict[str, object]`
+
+**File:** `src/metadata_tools/columns/body.py`
+
+```python
+BODY_TILE_DICT: dict[str, object] = {}
+```
+
+`object` is the root type and carries no useful information for type checkers or readers.
+
+**Fix:** Determine the actual value type. If the values are tile-list structures, annotate
+them precisely:
+
+```python
+from metadata_tools.geometry_support.tiles import TileList  # or whatever the type is
+BODY_TILE_DICT: dict[str, TileList] = {}
+```
+
+---
+
+## 3. Architecture / Import Issues
+
+### 3.1 Module-level SPICE-dependent code
+
+**Files:**
+- `src/metadata_tools/bodies.py`: `BODIES = get_bodies(defs.BODY_NAMES)` — runs on import
+- `src/metadata_tools/columns/body.py`: `BODY_SUMMARY_DICT` and `BODY_TILE_DICT` built at
+  module level in for-loops over `BODIES` — runs on import, SPICE-dependent
+
+**Problem:** Any test or tool that imports these modules (even transitively) triggers
+the SPICE body registry, which fails without a fully-initialized `oops` host. The
+`conftest.py` works around this with a fake `metadata_tools.bodies` stub, but the
+stub must be kept in sync with the real module's interface by hand.
+
+**Fix:** Lazy initialization. Replace module-level execution with a
+`get_bodies()` / `get_body_summary_dict()` function that is called once and cached:
+
+```python
+# bodies.py
+_BODIES: dict[str, Any] | None = None
+
+def get_bodies_registry() -> dict[str, Any]:
+    global _BODIES
+    if _BODIES is None:
+        _BODIES = get_bodies(defs.BODY_NAMES)
+    return _BODIES
+```
+
+This removes the import-time side effect and makes the stub in `conftest.py` unnecessary.
+
+---
+
+### 3.2 `sys.path.append('')` security concern
+
+**Files:**
+- `src/metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py`, line 32
+- `src/metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py`, line 33
+- `src/metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py`, line 31
+- `src/metadata_tools/hosts/GO_0xxx/host_init.py`, line 12
+
+**Problem:** `sys.path.append('')` inserts the current working directory at the end of
+`sys.path`. On a GCP instance this is intentional (needed to resolve the CWD-based
+host plugin imports). However, this is a security risk: any file named the same as a
+standard library module in the CWD would shadow it.
+
+**Better approach:** Explicitly append the host directory path rather than `''`:
+
+```python
+import pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+```
+
+Or better still, reorganize host plugins as proper package-qualified imports so
+`sys.path` manipulation is not needed.
+
+---
+
+### 3.3 `eval()` on column definition strings — RESOLVED (2026-06-29)
+
+**File:** `src/metadata_tools/util.py`
+
+**Problem:** `eval()` executes arbitrary Python. The `nosec` suppressor acknowledged
+the risk and issue #110 tracked a fix. The strings evaluated are column-definition
+references like `defs.RING_SYSTEM_RADII["bodyx"]`.
+
+**Fix applied:** Replaced `eval(lrep[i])` with `_resolve_dict_ref(lrep[i])`, a private
+function that parses the `defs.<ATTR>["<key>"]` pattern with a compiled regex and
+performs a safe `getattr(defs, attr_name)[key]` lookup. Only `defs` is accessible;
+any other module name raises `ValueError`. The `nosec B307` suppressor is removed.
+
+---
+
+## 4. Code Quality Issues
+
+### 4.1 O(n²) body sort in `bodies_select.py`
+
+**File:** `src/metadata_tools/geometry_support/bodies_select.py`
+
+```python
+body_names.sort(key=lambda name: list(col.BODIES.keys()).index(name))
+```
+
+**Problem:** `list(col.BODIES.keys())` is rebuilt on every comparison. For N bodies
+this is O(N²).
+
+**Fix:** Build the lookup once before sorting:
+
+```python
+bodies_order = {name: i for i, name in enumerate(col.BODIES.keys())}
+body_names.sort(key=lambda name: bodies_order.get(name, len(bodies_order)))
+```
+
+---
+
+### 4.2 Commented-out code that should be removed or resolved
+
+All of the following commented-out blocks violate the convention of keeping the
+codebase clean. Each should either be removed (if abandoned) or completed and
+uncommented (if needed):
+
+| File | Description |
+|---|---|
+| `geometry_support/suite.py` | `# SunTable` commented out in `add_tables()`; sun geometry is disabled but still tested in `test_geometry_tables.py` via `SunTable` |
+| `geometry_support/suite.py` | `# Run post-processor` and `# self.post()` |
+| `geometry_support/suite.py` | `# Build overrides dict` block |
+| `geometry_support/record.py` | `self.overrides += overrides  ## this is for future development` |
+| `hosts/GO_0xxx/geometry_config.py` | legacy MISSION_TABLE entries (large block) |
+| `hosts/GO_0xxx/gcp_geometry_startup.sh` | `### modified unmerged oops branch (TBR)` |
+| `tests/hosts/GO_0xxx/test_geometry.py` | Commented-out import and test body code |
+
+**Fix:** For each block, make a decision: remove it (preferred) or create a GitHub
+issue tracking the future work and reference it in a single-line comment.
+
+---
+
+### 4.3 `util.py` is too large and has unfulfilled refactor comments
+
+**File:** `src/metadata_tools/util.py` (~775 lines)
+
+Multiple `### move to utilities` comments appear inside the file, indicating planned
+refactoring that was never completed. The module mixes SCLK arithmetic, path helpers,
+text-file I/O, column-reference evaluation, and statistical range utilities.
+
+**Fix:** Split into focused modules:
+- `util_sclk.py` — SCLK tick arithmetic (`add_by_base`, `rebase`, `sclk_split_count`, etc.)
+- `util_path.py` — path helpers (`select_dir`, `splitpath`, `get_volume_subdir`, etc.)
+- `util_io.py` — text-file helpers (`read_txt_file`, `write_txt_file`, `append_txt_file`)
+- Keep `util.py` as a re-export shim while the migration happens
+
+Remove the `### move to utilities` comments as each section is moved.
+
+---
+
+### 4.4 `prep_row()` is too long
+
+**File:** `src/metadata_tools/geometry_support/prep.py`
+
+`prep_row()` is >160 lines and handles summary rows, detailed rows, multiple tile sets,
+body prefixes, masking, overrides, and edge cases through a recursive call pattern.
+
+**Fix:** Extract the following sub-operations into private functions:
+- `_build_body_prefix_columns(cols, target, primary, no_body, sampling)` 
+- `_evaluate_column(backplane, desc, mask, null_format, fmt)` → `str`
+- `_collapse_tiles(tiles, tiling_min, backplane)` → `list[Any]`
+
+Each sub-function can then be tested in isolation.
+
+---
+
+### 4.5 `test_geometry_cumulative` always returns immediately
+
+**File:** `tests/test_geometry.py`, lines 34–45
+
+```python
+def test_geometry_cumulative() -> None:
+    return   # ← always exits here
+    # Get labels to test
+    ##### this needs to be changed to match cumulative files
+    files = support.match(support.METADATA, '*_summary.lbl')
+    ...
+```
+
+**Problem:** This test never runs its body. The `return` on line 35 means the test
+function is a no-op that always passes. The dead code below is unreachable.
+
+**Fix:** Either fix the glob pattern (update the comment and the pattern) and remove the
+`return`, or skip explicitly:
+
+```python
+def test_geometry_cumulative() -> None:
+    pytest.skip('TODO: update glob to match cumulative geometry files')
+```
+
+---
+
+### 4.6 Duplicate tile in `ring.py` OUTER_RING_TILES for SATURN
+
+**File:** `src/metadata_tools/columns/ring.py`
+
+In `OUTER_RING_TILES['SATURN']`, indices 7 and 8 appear to have overlapping or
+duplicate angular ranges (both around `0.80π` to `1.20π`). Review the tile boundaries
+and confirm whether this is intentional or a copy-paste error.
+
+**Fix:** Print or log the tile boundaries and verify against the physical tile
+definitions. If duplicate, remove the redundant tile.
+
+---
+
+### 4.7 `SKY_TILES` not tested — `###TODO: not tested...` comment
+
+**File:** `src/metadata_tools/columns/sky.py`, line 55
+
+```python
+###TODO: not tested...
+```
+
+**Fix:** Remove the `###TODO` comment. Add a test in `tests/columns/test_sky.py`
+that verifies `SKY_TILES` has the expected structure (at minimum, a list of tile
+descriptors with correct key names), similar to the ring tile tests.
+
+---
+
+### 4.8 `pyproject.toml` missing `filterwarnings = ["error"]`
+
+**File:** `pyproject.toml`, `[tool.pytest.ini_options]` section
+
+**Rule:** `python_testing.mdc` requires `filterwarnings = ["error"]` so that
+`DeprecationWarning` and other warnings are promoted to errors in tests.
+
+**Fix:** Add to `[tool.pytest.ini_options]`:
+
+```toml
+filterwarnings = [
+    "error",
+    # add specific ignores here if needed for third-party noise
+]
+```
+
+---
+
+### 4.9 `CONTRIBUTING.md` commit message example does not follow Conventional Commits
+
+**File:** `CONTRIBUTING.md`, line 49
+
+```bash
+git commit -m "Add feature: description of your changes"
+```
+
+This format ("Add feature: ...") does not match the Conventional Commits format
+required by `git_workflow.mdc` (`feat: imperative summary`).
+
+**Fix:** Replace with:
+
+```bash
+git commit -m "feat: add description of your changes"
+```
+
+And update the adjacent prose to link to `git_workflow.mdc`.
+
+---
+
+## 5. CI/CD Issues
+
+### 5.1 GCP startup scripts clone from `jns-test-gcp` branch
+
+**Files:** `gcp_index_startup.sh`, `gcp_geometry_startup.sh`, `gcp_cumulative_startup.sh`
+
+All three scripts contain:
+```bash
+git clone -b jns-test-gcp --single-branch https://github.com/SETI/rms-metadata-tools.git
+```
+
+This is a development artifact. Production GCP workers should clone from `main` or a
+pinned release tag.
+
+**Fix:** Change to `main` (or a release tag) before deploying to production:
+
+```bash
+git clone --branch main --single-branch https://github.com/SETI/rms-metadata-tools.git
+```
+
+---
+
+### 5.2 GCP startup scripts use `pip install -r requirements.txt` incorrectly
+
+**Files:** All three GCP startup scripts, line ~22
+
+```bash
+pip install -r requirements.txt
+```
+
+`requirements.txt` contains only `-e .[dev,cloud]`. The `-e` (editable) flag requires
+a proper package structure. On GCP instances the correct invocation is:
+
+```bash
+pip install ".[cloud]"
+```
+
+---
+
+### 5.3 `gcp_geometry_startup.sh` has duplicate `export OOPS_RESOURCES=` line
+
+**File:** `src/metadata_tools/hosts/GO_0xxx/gcp_geometry_startup.sh`, lines 10 and 34
+
+Line 10 sets `OOPS_RESOURCES` and line 34 sets it again to the same value.
+
+**Fix:** Remove the duplicate on line 34.
+
+---
+
+### 5.4 PyPI publishing uses API tokens, not Trusted Publishers OIDC
+
+**Files:** `.github/workflows/publish_to_pypi.yml`, `.github/workflows/publish_to_test_pypi.yml`
+
+```yaml
+user: __token__
+password: ${{ secrets.PYPI_API_TOKEN }}
+```
+
+**Problem:** API tokens are long-lived credentials. PyPA's recommended approach is
+Trusted Publishers (OIDC), which uses short-lived tokens with no stored secret.
+
+**Fix:** Configure PyPI Trusted Publisher for SETI/rms-metadata-tools on pypi.org
+and test.pypi.org, then update the workflow:
+
+```yaml
+permissions:
+  id-token: write   # required for Trusted Publisher
+
+- name: Publish package
+  uses: pypa/gh-action-pypi-publish@release/v1
+  # No user/password needed — authentication is automatic via OIDC
+```
+
+---
+
+### 5.5 `publish_to_test_pypi.yml` references non-existent action versions
+
+**File:** `.github/workflows/publish_to_test_pypi.yml`
+
+```yaml
+uses: actions/checkout@v6
+uses: actions/setup-python@v6
+```
+
+`v6` does not exist. Current stable is `v4`.
+
+**Fix:**
+
+```yaml
+uses: actions/checkout@v4
+uses: actions/setup-python@v4
+```
+
+---
+
+### 5.6 Ruff format check excluded from CI
+
+**File:** `scripts/run-all-checks.sh`
+
+`ENABLE_RUFF_FORMAT=false` by default. `ruff format --check` is not run in CI,
+so formatting violations are never caught automatically.
+
+**Fix:** Either change the default to `true` in `run-all-checks.sh`, or add
+`ruff format --check src tests` explicitly to the CI lint job in
+`.github/workflows/run-tests.yml`.
+
+---
+
+### 5.7 Sphinx built with `-W` but not `-n` (nitpicky mode)
+
+**Files:** `scripts/run-all-checks.sh`, `.github/workflows/run-tests.yml`
+
+Sphinx is invoked with `SPHINXOPTS="-W"` (fail on warnings) but not `-n` (nitpicky
+mode, which catches undocumented objects and missing cross-references).
+
+**Fix:** Add `-n` to the Sphinx options in both files:
+
+```
+SPHINXOPTS="-W -n"
+```
+
+---
+
+## 6. pyproject.toml Issues
+
+### 6.1 Entry point placeholder never defined
+
+**File:** `pyproject.toml`, `[project.scripts]` section
+
+```toml
+#TODO = "main.metadata_tools:main"
+```
+
+This line is commented out and the module `main.metadata_tools` does not exist.
+
+**Fix:** Either implement a `metadata_tools.__main__` entry point and uncomment with
+the correct format, or remove this line entirely.
+
+---
+
+### 6.2 `py.typed` vs. comment contradiction
+
+**File:** `pyproject.toml`
+
+`py.typed` appears in `[tool.setuptools.package-data]`, making the package advertise
+PEP 561 type information. However a comment says it is "NOT advertised."
+
+**Fix:** Decide whether the package is typed. If yes, ensure `py.typed` exists in
+`src/metadata_tools/` and remove the contradicting comment. If no, remove the
+`py.typed` entry from `package-data`.
+
+---
+
+## 7. Minor Issues
+
+### 7.1 `archive_support.py` uses `os`/`glob` instead of FCPath
+
+**File:** `tests/archive_support.py`
+
+The helper uses `os.walk`, `glob.glob`, and `os.path.join`. This works for local
+archives but cannot be extended to GCS-backed test archives.
+
+**Fix:** Replace with FCPath-based equivalents if GCS test archive support is needed.
+
+---
+
+### 7.2 `archive_support.py` uses old-style `Args:` docstrings; typo in parameter type
+
+**File:** `tests/archive_support.py`
+
+Docstrings use `Args:` instead of `Parameters:` (the project standard from
+`python.mdc`). The `bounds` docstring also has a typo: `key (tstr):` instead of
+`key (str):`.
+
+**Fix:** Replace all `Args:` with `Parameters:` and fix the `tstr` typo.
+
+---
+
+### 7.3 `__init__.py` module docstring in RST format
+
+**File:** `src/metadata_tools/__init__.py`
+
+The module docstring uses RST-style formatting (`:mod:`, `:func:`) instead of
+Google-style prose (required by `python.mdc`).
+
+**Fix:** Convert to plain Google-style prose without RST directives.
+
+---
+
+### 7.4 `geometry_config.py:except_test()` always returns `False`
+
+**File:** `src/metadata_tools/hosts/GO_0xxx/geometry_config.py`
+
+```python
+def except_test() -> bool:
+    return False
+```
+
+This template stub permanently excludes nothing. If it is only ever `False`,
+referencing it in `exclude` lists adds unnecessary complexity.
+
+**Fix:** If no exceptions are needed for GO_0xxx, remove `except_test` from the
+`exclude` list and document the purpose of this hook in a comment.
+
+---
+
+### 7.5 `GO_0xxx_supplemental_index.lbl` has unquoted `NAME` values for two columns
+
+**File:** `src/metadata_tools/hosts/GO_0xxx/templates/GO_0xxx_supplemental_index.lbl`, lines 159, 186
+
+```
+NAME                        = PRODUCT_VERSION_ID
+NAME                        = COMPRESSION_QUANTIZATION_TABLE_ID
+```
+
+All other `NAME` assignments in the template are quoted strings (e.g.,
+`NAME = "VOLUME_ID"`). The unquoted form is valid PDS3 but inconsistent.
+
+**Fix:** Add quotes for consistency:
+
+```
+NAME                        = "PRODUCT_VERSION_ID"
+NAME                        = "COMPRESSION_QUANTIZATION_TABLE_ID"
+```
+
+---
+
+### 7.6 `geometry_support/masks.py` — `#!!!!` comment signals undocumented known issue
+
+**File:** `src/metadata_tools/geometry_support/masks.py`, line ~95
+
+```python
+#!!!!
+```
+
+**Fix:** Replace with a proper comment explaining the issue and a reference to a
+tracking issue:
+
+```python
+# TODO(#NNN): Gridless backplanes return a scalar mask, incompatible with the
+# array-based masking below. Handle this case separately.
+```
+
+---
+
+## Summary Table
+
+| # | Severity | Category | File(s) |
+|---|---|---|---|
+| 1.1 | **Critical** ✓ | Bug | `gcp_cumulative_startup.sh` |
+| 1.2 | **Critical** ✓ | Bug | `GO_0xxx_ring_summary.lbl` |
+| 1.3 | **Critical** | Bug | `geometry_support/suite.py` |
+| 2.1 | High | Standards (`filecache.mdc`) | `label_support.py`, `index_support.py` |
+| 2.2 | High | Standards (`logging.mdc`) | `geometry_support/suite.py` |
+| 2.3 | High | Standards (`python.mdc`) | `common.py`, `defs.py` |
+| 2.4 | Medium | Standards (`python.mdc`) | `common.py` |
+| 2.5 | Medium | Standards (`python.mdc`) | `index_support.py`, `prep.py` |
+| 2.6 | Medium | Standards (`python.mdc`) | `geometry_support/record.py` |
+| 2.7 | Medium | Standards (`filecache.mdc`) | multiple |
+| 2.8 | Low | Standards (`python.mdc`) | `columns/body.py` |
+| 3.1 | High | Architecture | `bodies.py`, `columns/body.py` |
+| 3.2 | Medium | Security | cloud scripts, `host_init.py` |
+| 3.3 | Medium | Security | `util.py` |
+| 4.1 | Low | Performance | `geometry_support/bodies_select.py` |
+| 4.2 | Medium | Maintainability | multiple |
+| 4.3 | Medium | Maintainability | `util.py` |
+| 4.4 | Medium | Maintainability | `geometry_support/prep.py` |
+| 4.5 | **High** | Test correctness | `tests/test_geometry.py` |
+| 4.6 | Medium | Potential Bug | `columns/ring.py` |
+| 4.7 | Low | Test coverage | `columns/sky.py` |
+| 4.8 | Medium | Standards | `pyproject.toml` |
+| 4.9 | Low | Documentation | `CONTRIBUTING.md` |
+| 5.1 | High | CI/CD | GCP startup scripts |
+| 5.2 | Medium | CI/CD | GCP startup scripts |
+| 5.3 | Low | CI/CD | `gcp_geometry_startup.sh` |
+| 5.4 | Medium | Security/CI | publish workflows |
+| 5.5 | **High** | CI/CD | `publish_to_test_pypi.yml` |
+| 5.6 | Medium | CI/CD | `run-all-checks.sh` |
+| 5.7 | Low | CI/CD | Sphinx invocations |
+| 6.1 | Low | Config | `pyproject.toml` |
+| 6.2 | Low | Config | `pyproject.toml` |
+| 7.1–7.6 | Low | Minor | various |
 
 ## Summary
 
@@ -293,13 +1102,13 @@ The analysis above is the original point-in-time review. Progress since:
 
 ## 6. Maintainability and extensibility
 
-- **[OPEN]** **Finding (High):** Two entry points diverge in behavior. `GO_0xxx_geometry.py:50-54` hardcodes `selection="S", exclude=['GO_0999']` while `GO_0xxx_geometry_cloud.py:44-50` reads `config.selection`/`config.exclude`. **Evidence:** both files vs. `geometry_config.py:18-19`. **Suggestion:** Have the local script read from `config` too, so local and cloud stay consistent.
+- **[RESOLVED]** **Finding (High):** Two entry points diverge in behavior. `GO_0xxx_geometry.py:50-54` hardcodes `selection="S", exclude=['GO_0999']` while `GO_0xxx_geometry_cloud.py:44-50` reads `config.selection`/`config.exclude`. **Evidence:** both files vs. `geometry_config.py:18-19`. **Suggestion:** Have the local script read from `config` too, so local and cloud stay consistent. **Update:** **fixed** (2026-06-29) — `GO_0xxx_geometry.py` now passes `selection=config.selection, exclude=config.exclude`. Behavior is unchanged (the config values were already `"S"` and `['GO_0999']`); local and cloud paths now share a single source of truth.
 - **[DEFERRED — issue #115]** **Finding (Medium):** `*_cloud.py` access the private attribute `worker._data` (`GO_0xxx_index_cloud.py:66-68`, `GO_0xxx_geometry_cloud.py:78-80`). **Suggestion:** Use a public accessor from `rms-cloud-tasks`; relying on `_data` will break on upstream refactors. **Update:** deferred — tracked as **issue #115**. The user identified this as a deeper design flaw: the cloud workers should be driven by the **task queue**, not by command-line arguments. Issue #115 redesigns the worker to take the host type (and paths) from the task data and use no CLI args, which removes the `worker._data` access entirely. Designed jointly with #112/#113/#114.
 - **[RESOLVED]** **Finding (Medium):** Class docstrings are misplaced. In `geometry_support.py:1066-1067, 1101-1102, 1131-1132, 1161-1162, 1201-1202` the `"""..."""` string sits **before** the `class` statement, so it is a no-op expression and the classes (`InventoryTable`, `SkyTable`, `SunTable`, `RingTable`, `BodyTable`) have **no docstring**. **Suggestion:** Move each string to the first line inside the class body. **Update:** fixed in `geometry_support/tables.py` — each string is now the first line of its class body, so all five classes have a real docstring.
 
 ## 7. Security and robustness
 
-- **[DEFERRED — issue #110]** **Finding (High):** `eval()` on template-derived strings. **Evidence:** `util.py:210` (`lrep[i] = eval(lrep[i])` inside `replace()`), reachable from column definitions like `util.replacement_fn("defs.RING_SYSTEM_RADII", defs.BODYX)` (`COLUMNS_RING.py:94-96`). `security.mdc` flags `eval`. **Suggestion:** Replace with an explicit lookup (e.g. resolve `dict_name["key"]` via `getattr(defs, name)[key]`) rather than evaluating arbitrary expressions. **Update:** deferred — tracked as **issue #110**; the fix needs a design decision on the `BODYX` placeholder/replacement mechanism, so it is parked there rather than addressed inline.
+- **[RESOLVED]** **Finding (High):** `eval()` on template-derived strings. **Evidence:** `util.py:210` (`lrep[i] = eval(lrep[i])` inside `replace()`), reachable from column definitions like `util.replacement_fn("defs.RING_SYSTEM_RADII", defs.BODYX)` (`COLUMNS_RING.py:94-96`). `security.mdc` flags `eval`. **Suggestion:** Replace with an explicit lookup (e.g. resolve `dict_name["key"]` via `getattr(defs, name)[key]`) rather than evaluating arbitrary expressions. **Update:** **fixed (2026-06-29)** — `eval()` replaced with `_resolve_dict_ref()`, a private function that parses the `defs.<ATTR>["<key>"]` pattern with a regex and performs a safe `getattr(defs, attr_name)[key]` lookup. Only the `defs` module is accessible; any other module name raises `ValueError`. The `nosec B307` suppressor is gone. Two new error-path tests cover the unknown-module and unrecognized-pattern cases. 226 hermetic tests pass (93.64% cov); `ruff`/`mypy` clean.
 - **[RESOLVED]** **Finding (Medium):** `assert` used for runtime validation (disabled under `python -O`). **Evidence:** `index_support.py:232` (`assert value is not None, ...`) and `index_support.py:376` (`assert len(value) == count`). **Suggestion:** Raise explicit exceptions. Note also that line 232's assert is effectively dead — line 229-230 already replaces `None` with `nullval`. **Update:** **both fixed** — the `_index_one_value` assert (line 232) raises `ValueError` when no null constant is defined, and the `_format_column` `assert len(value) == count` (line 376) now raises a `ValueError` reporting the column name and the expected vs. actual count.
 - **[DEFERRED — issue #114]** **Finding (Low):** GCP startup scripts embed a service-account email and personal bucket paths. **Evidence:** `gcp_index_config.yml:5`, `gcp_index_startup.sh:24-26`. Not secrets, but couples published code to one person's infra. **Suggestion:** Parameterize via env vars. **Update:** deferred — folded into **issue #114** (relocating the GCP/cloud deployment files out of the package), since parameterizing the hardcoded infra is a natural companion to moving those files into a common, non-installed directory.
 

@@ -170,10 +170,30 @@ def get_volume_subdir(path: FCPath, volume_id: str) -> FCPath:
 #    return path.split(volume_id)[-1]  ## not currently supported by filecache
 
 #===============================================================================
+# Matches the only form produced by replacement_fn: "defs.<ATTR>["<key>"]"
+_DICT_REF = re.compile(r'^(\w+)\.(\w+)\["([^"]+)"\]$')
+
+
+def _resolve_dict_ref(ref: str) -> Any:
+    """Resolve a dict-reference string of the form ``defs.<ATTR>["<key>"]``.
+
+    This is the safe, non-eval replacement for evaluating strings produced by
+    :func:`replacement_fn`. Only the ``defs`` module is accessible.
+    """
+    m = _DICT_REF.match(ref)
+    if m is None:
+        raise ValueError(f'Unrecognized column reference: {ref!r}')
+    module_name, attr_name, key = m.groups()
+    if module_name != 'defs':
+        raise ValueError(f'Unknown module in column reference: {module_name!r}')
+    return getattr(defs, attr_name)[key]
+
+
+#===============================================================================
 def replace(tree: list[Any], placeholder: str, name: str) -> Any:
     """Return a copy of the tree of objects, with each occurrence of the
     placeholder string replaced by the given name.  If a dictionary reference is
-    detected, then it is evaluated.
+    detected, it is resolved via an explicit lookup.
 
     Parameters:
         tree: List containing the tree.
@@ -191,11 +211,11 @@ def replace(tree: list[Any], placeholder: str, name: str) -> Any:
             # replace placeholder
             replacement = replace(leaf, placeholder, name)
 
-            # evaluate any dictionary references now that placeholders are resolved
+            # resolve any dictionary references now that placeholders are resolved
             lrep = list(replacement)
             for i in range(len(lrep)):
                 if isinstance(lrep[i], str) and '[' in lrep[i]:
-                    lrep[i] = eval(lrep[i])  # nosec B307 - eval of column refs; tracked by issue #110
+                    lrep[i] = _resolve_dict_ref(lrep[i])
             replacement = tuple(lrep)
 
             new_tree.append(replacement)
