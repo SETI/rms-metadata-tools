@@ -19,11 +19,11 @@ git clone -b jns-test-gcp --single-branch https://github.com/SETI/rms-metadata-t
 cd rms-metadata-tools
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install ".[cloud]"
 ##########################################################################################
 
 # Run the index code
-python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
+metadata-index-cloud GO_0xxx \
                 gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
                 gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
                 gs://rms-metadata-jspitale/metadata_test/GO_0xxx/
@@ -34,7 +34,7 @@ python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py \
 ##  Manual paste into instance..
 : <<'COMMENT_BLOCK'
 gcloud auth application-default login
-python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_index.py \
+metadata-index GO_0xxx \
                 gs://rms-node-holdings/pds3-holdings/volumes/GO_0xxx/ \
                 gs://rms-node-holdings/pds3-holdings/metadata/GO_0xxx/ \
                 gs://rms-metadata-jspitale/metadata_test/GO_0xxx/ -vv GO_0002

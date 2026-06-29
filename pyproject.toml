@@ -111,7 +111,12 @@ cloud = [
 ]
 
 [project.scripts]
-#TODO = "main.metadata_tools:main"
+metadata-index            = "metadata_tools.cli.index:main"
+metadata-geometry         = "metadata_tools.cli.geometry:main"
+metadata-cumulative       = "metadata_tools.cli.cumulative:main"
+metadata-index-cloud      = "metadata_tools.cli.index_cloud:main"
+metadata-geometry-cloud   = "metadata_tools.cli.geometry_cloud:main"
+metadata-cumulative-cloud = "metadata_tools.cli.cumulative_cloud:main"
 
 # Tool configuration
 
@@ -136,6 +141,7 @@ omit = [
   "*/_version.py",
   "*/metadata_tools/bodies.py",
   "*/metadata_tools/hosts/*",
+  "*/metadata_tools/cli/*",
 ]
 
 [tool.coverage.report]

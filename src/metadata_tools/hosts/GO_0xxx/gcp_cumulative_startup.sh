@@ -19,12 +19,12 @@ git clone -b jns-test-gcp --single-branch https://github.com/SETI/rms-metadata-t
 cd rms-metadata-tools
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install ".[cloud]"
 ##########################################################################################
 
 # Run the cumulative code
-python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
-                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/GO_0999/
+metadata-cumulative-cloud GO_0xxx \
+                gs://rms-metadata-jspitale/metadata_test/GO_0xxx/GO_0999/ \
                 --task-file src/metadata_tools/hosts/GO_0xxx/cumulative_tasks.json
 
 
@@ -33,7 +33,7 @@ python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
 ##  Manual paste into instance..
 : <<'COMMENT_BLOCK'
 gcloud auth application-default login
-python3 src/metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py \
+metadata-cumulative-cloud GO_0xxx \
                 gs://rms-metadata-jspitale/metadata_test/GO_0xxx/G0_0999/ \
                 --task-file src/metadata_tools/hosts/GO_0xxx/cumulative_tasks.json
 COMMENT_BLOCK
