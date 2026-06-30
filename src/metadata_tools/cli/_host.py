@@ -44,6 +44,10 @@ def resolve_task_file(host_dir: Path) -> None:
     for i, arg in enumerate(sys.argv[:-1]):
         if arg == '--task-file':
             value = sys.argv[i + 1]
-            if not (Path(value).is_absolute() or '://' in value):
+            p = Path(value)
+            # Only rewrite bare filenames (no directory components, no URL, not absolute).
+            # Paths with directory separators are left to resolve from CWD as the caller
+            # intended (e.g. src/metadata_tools/hosts/GO_0xxx/cumulative_tasks.json on GCP).
+            if not p.is_absolute() and '://' not in value and p.parent == Path('.'):
                 sys.argv[i + 1] = str(host_dir / value)
             break
