@@ -1,95 +1,482 @@
 # Documentation Critique Report
 
-**Generated:** 2026-06-15
-**Scope:** `README.md`, `CONTRIBUTING.md`, `docs/` (`index.rst`, `module.rst`, `contributing.rst`, `code_of_conduct.md`, `conf.py`, `Makefile`, `make.bat`), in-source docstrings, the `AAREADME.txt` archive doc, and Sphinx setup.
-**Rules applied:** `doc_python.mdc`, `doc_readme.mdc`, `doc_user_guide.mdc`, `doc_dev_guide.mdc`, `doc_how_to.mdc` (all present, so all areas critiqued). The build could not be executed here (no Python on PATH); build findings below are determined statically and should be confirmed by running the build.
+**Generated:** 2026-06-29
+**Scope:** `README.md`, `CONTRIBUTING.md`, `docs/` (all RST/MD/conf files), `pyproject.toml`
+documentation-adjacent sections, and all `src/metadata_tools/` module/class/function
+docstrings. Rules applied: `.cursor/rules/doc_python.mdc`, `.cursor/rules/doc_readme.mdc`,
+`.cursor/rules/doc_user_guide.mdc`, `.cursor/rules/doc_dev_guide.mdc`,
+`.cursor/rules/doc_how_to.mdc`, `.cursor/rules/documentation.mdc`.
+
+Verification runs performed:
+- `sphinx-build -W -b html docs /tmp/sphinx-out-W` → **PASSED, zero warnings**
+- `sphinx-build -n -b html docs /tmp/sphinx-out-n` → **PASSED, zero warnings**
+- Grep: `Args:` in docs/src → none (all `Parameters:`)
+- Grep: time-anchored phrases (`currently`, `now`, `recently`) → none
+- Grep: `print(` in `src/metadata_tools/` → none
+
+---
 
 ## Executive summary
 
-The documentation is **skeletal and will not build clean under `-W`**. There is no user guide, no developer guide, and no how-to articles — only a README (with `TODO` placeholders), a near-empty API stub (`module.rst` autodocs only the top-level package docstring), and two include-only pages that are not in any `toctree`. Several issues will hard-fail `sphinx-build -W`:
+The documentation is in excellent shape after the `ai_rewrite` overhaul (PR #116). Both
+Sphinx builds pass with zero warnings. User and developer guides are comprehensive,
+cross-references use correct Sphinx roles throughout, and all engine module docstrings
+follow the `Parameters:` convention. No time-anchored language or stray `print()` calls
+were found.
 
-- **Broken include of a deleted file:** `docs/code_of_conduct.md` and `CONTRIBUTING.md` reference `CODE_OF_CONDUCT.md`, which has been **deleted** from the repo (`git status` shows `D CODE_OF_CONDUCT.md`). The `{include} ../CODE_OF_CONDUCT.md` will fail.
-- **Orphan pages:** `contributing.rst` and `code_of_conduct.md` are in no `toctree` (only `module` is) → "document isn't included in any toctree" warnings.
-- **Short title underlines** in `index.rst` → docutils "Title underline too short" warnings.
-- **Empty API reference:** `module.rst` does not recurse into submodules, so none of the public modules (`util`, `index_support`, `geometry_support`, …) appear in the generated reference.
-- **Content placeholders:** README "Features" says "is TODO"; `pyproject` `description`/`keywords` are `TODO`.
+Ten issues remain, none build-breaking:
 
-Because the package also cannot be installed (`dependencies = ["TODO"]`, see `code_critique.md` §8/§10), ReadTheDocs' `pip install . [docs]` step will itself fail. **Build health: red.**
+- **High (3):** Nine `geometry_support` submodules lack module-level docstrings (autodoc
+  shows blank descriptions); a stale reference in `__init__.py` points to the old
+  monolithic `geometry_support.py`; `SunTable` is documented in the architecture diagram
+  and narrative but is commented out of the live code path.
+- **Medium (4):** `dev_guide_environment.rst` claims CI runs `ruff format --check` (it does
+  not); this directly contradicts `dev_guide_conventions.rst`; CI does not run
+  `sphinx-build -n`; `CONTRIBUTING.md` uses `make html` instead of `scripts/read-docs.sh`
+  and has a non-Conventional-Commits example commit message.
+- **Low (3):** README section title `Licensing` should be `License` per rule; no standalone
+  how-to articles (examples are in the user guide appendix, not a dedicated how-to section);
+  `pyproject.toml` comment says `py.typed` is "NOT declared" but it is shipped.
 
-High-priority: restore/repoint the Code of Conduct include, put every page in a `toctree`, make the API reference recurse, and fix the README placeholders — then make `-W` (and ideally `-n`) pass.
+All fixes are surgical. None require structural changes to the docs.
+
+---
 
 ## 1. Documentation system and build (`doc_python`)
 
-- **Finding (Critical):** Build fails on a missing include. `docs/code_of_conduct.md` does `{include} ../CODE_OF_CONDUCT.md`, and `contributing.rst` slices `CONTRIBUTING.md` around a `CODE_OF_CONDUCT.md` reference, but `CODE_OF_CONDUCT.md` was deleted. **Evidence:** `docs/code_of_conduct.md:3-6`, `contributing.rst:6-15`, `git status: D CODE_OF_CONDUCT.md`. **Fix:** Either restore `CODE_OF_CONDUCT.md` at repo root or remove the Code-of-Conduct page and the `contributing.rst` split that depends on it (and the `## Code of Conduct` section in `CONTRIBUTING.md`).
-- **Finding (High):** Orphan documents. `index.rst:10-14` `toctree` contains only `module`; `contributing` and `code_of_conduct` are never referenced, producing "not included in any toctree" warnings (fatal under `-W`). **Fix:** Add `contributing` and `code_of_conduct` (and future guide pages) to the `toctree`.
-- **Finding (High):** Title-underline warnings. `index.rst` underlines (`====...`) are shorter than their title text on lines 3-4 and 16-17. **Fix:** Extend underlines to at least the title length.
-- **Finding (High):** No `autodoc_mock_imports`. The library modules import heavy/uninstallable deps (`oops`, `cspyce`, `julian`, …) and, worse, import **top-level host modules** (`import host_config`, `import index_config`, `import geometry_config`) that are not importable from the package root. If `module.rst` is ever made to autodoc submodules, autodoc will raise `ImportError`. **Evidence:** `conf.py` (no `autodoc_mock_imports`), `index_support.py:15-16`, `geometry_support.py:20`. **Fix:** Add `autodoc_mock_imports = ["oops","cspyce","julian","polymath","vicar","fortranformat","cloud_tasks","pdstable","pdsparser","pdstemplate","pdslogger","filecache","host_config","index_config","geometry_config"]` (or restructure host imports) before recursing the API ref.
-- **Finding (Medium):** Build is not nitpicky. `doc_python` requires clean under both `-W` and `-n`; CI runs only `sphinx-build -W` (`run-tests.yml`) and `run-all-checks.sh` uses `make html SPHINXOPTS="-W"`. **Fix:** Add `-n` to the doc build (and `nitpick_ignore` only for genuinely external symbols).
-- **Finding (Low):** `suppress_warnings = ['myst.header']` (`conf.py:52`) hides heading-level warnings from the CONTRIBUTING split; once the split is simplified this suppression should be removed so real heading issues surface.
+**PASS — both `-W` and `-n` builds produce zero warnings.** The Sphinx configuration is
+thorough: all required extensions are present (`autodoc`, `napoleon`, `viewcode`,
+`intersphinx`, `myst_parser`, `sphinxcontrib.mermaid`); `napoleon_google_docstring = True`
+and `napoleon_use_param = True` are set; `nitpick_ignore_regex` covers the third-party
+symbols that lack inventories, with implicit justification; the `oops` import shim allows
+headless autodoc builds; and the `<!-- start-after-point -->` marker in `README.md` is
+correctly consumed by `docs/index.rst`.
 
-## 2. Docstrings and API reference (`doc_python`, `doc_dev_guide`)
+**Finding M1 (Medium) — CI does not run `sphinx-build -n`.**
+`doc_python` §2 requires the build to pass both `-W` and `-n`. The CI workflow
+`.github/workflows/run-tests.yml` only runs `sphinx-build -W`. The `-n` (nitpicky)
+pass catches unresolved cross-references that `-W` misses. As of this review the `-n`
+build passes locally, but the gate is not enforced in CI.
 
-- **Finding (High):** The API reference is effectively empty. `module.rst` only does `.. automodule:: metadata_tools` with `:members:`; since `__init__.py` exposes only `__version__`, the reference renders just the package docstring. None of `util`, `common`, `defs`, `columns`, `label_support`, `index_support`, `geometry_support`, `cumulative_support` appear. **Evidence:** `module.rst`, `__init__.py:86-89`. **Fix:** Add per-module `automodule` directives (or `:recursive:` autosummary) for every public module, with `:members: :undoc-members: :show-inheritance:`.
-- **Finding (High):** Docstring format is `Args:`, but `doc_python` mandates Google style with **`Parameters:`**. Every docstring in the codebase uses `Args:`. **Evidence:** e.g. `index_support.py:30`, `util.py:22`, `common.py:26`. **Fix:** Convert `Args:`→`Parameters:` (Napoleon supports it; keep `Returns:`/`Raises:`).
-- **Finding (High):** Many docstrings are wrong/copy-pasted (will mislead generated docs). **Evidence:** `index_support.py:108-115` ("existing geometry tables" inside the *index* `create`); `common.py:122-123` ("Name of volume_tree arg" repeated for metadata/output; "bostrl"); `geometry_config.py:159-168` (`meshgrid` doc lists args in wrong order, says "Returns: None" but returns a meshgrid); `host_config.py`/`geometry_config.py` `get_volume_id` say "Returns: None" but return a str; `index_config.py:199-208, 230-239` describe the wrong field. **Fix:** Rewrite each to match actual behavior so a black-box test could be written from it (`doc_python`).
-- **Finding (Medium):** Missing class docstrings. The geometry table classes have their docstring placed *before* the `class` statement (a no-op), so `InventoryTable`/`SkyTable`/`SunTable`/`RingTable`/`BodyTable` have none. **Evidence:** `geometry_support.py:1066-1067, 1101-1102, …` (also raised in `code_critique.md` §6). **Fix:** Move the string inside the class body.
-- **Finding (Low):** `:special-members:` plus broad `:exclude-members:` in `module.rst` is fragile; prefer documenting only the intended public surface.
+**Fix:** Add `sphinx-build -n -b html docs /tmp/sphinx-out-n` (or `-W -n` combined)
+to the `lint` job in `run-tests.yml`, and add the same flag to `scripts/run-all-checks.sh`.
+
+---
+
+## 2. Docstrings and API reference (`doc_python`)
+
+**Finding H1 (High) — `geometry_support` package `__init__.py` has no module docstring.**
+`src/metadata_tools/geometry_support/__init__.py` contains only a `#`-style banner comment.
+`ast.get_docstring()` returns `None`; autodoc renders a blank description for the
+`metadata_tools.geometry_support` module page.
+
+**Evidence:** `src/metadata_tools/geometry_support/__init__.py:1-3` (only `#` banner,
+no `"""..."""`).
+
+**Fix:** Add a one-paragraph `"""..."""` module docstring immediately below the banner,
+e.g.:
+```python
+"""Geometry table generation for metadata_tools.
+
+Computes geometric quantities (body, ring, sky, sun) from SPICE via ``oops``
+and writes them as PDS3 summary (and optionally detailed) CSV tables.
+"""
+```
+
+**Finding H2 (High) — Nine `geometry_support` submodules lack module-level docstrings.**
+The following files have only `#`-style banner headers; none have a `"""..."""` module
+docstring, so autodoc generates blank module descriptions for all of them:
+
+| File | Banner text |
+|---|---|
+| `geometry_support/bodies_select.py` | Body selection utilities |
+| `geometry_support/masks.py` | Pixel mask construction |
+| `geometry_support/prep.py` | Row preparation |
+| `geometry_support/formatting.py` | Column formatting |
+| `geometry_support/formats.py` | FORMAT_DICT and ALT_FORMAT_DICT |
+| `geometry_support/record.py` | Record class |
+| `geometry_support/tables.py` | Table subclasses |
+| `geometry_support/suite.py` | Suite class |
+| `geometry_support/process.py` | process_geometry() entry point |
+
+**Fix:** Add a one-sentence `"""..."""` module docstring to each file. The existing banner
+text is sufficient starting material. Example for `formats.py`:
+```python
+"""Master format dictionaries (FORMAT_DICT, ALT_FORMAT_DICT) for geometry columns."""
+```
+
+**Finding H3 (High) — `__init__.py` docstring contains a stale module reference.**
+`src/metadata_tools/__init__.py:81` reads:
+
+> "Add a row to the format dictionary in ``geometry_support.py``"
+
+`geometry_support` is now a package; the format dictionary lives in
+`geometry_support/formats.py`. The stale path appears in the public-facing package
+docstring rendered on the API reference page.
+
+**Evidence:** `src/metadata_tools/__init__.py:81`.
+
+**Fix:** Change the reference to `:mod:`metadata_tools.geometry_support.formats`` (or
+``geometry_support/formats.py``).
+
+---
 
 ## 3. Cross-reference completeness (`doc_python`)
 
-- **Finding (Medium):** Narrative prose references code objects as plain text/inline literals rather than Sphinx roles. **Evidence:** README and `__init__.py` docstring mention `from_index()`, `key__<NAME>()`, `index_config.py`, `body_summary.lbl`, `host_config.py` without `:func:`/`:meth:`/`:mod:` roles. **Fix:** Once the API ref exists, use roles (`:func:`, `:meth:`, `:mod:`) so references resolve and link; verify under `-n`.
-- **Finding (Low):** No stale `:doc:`/`:ref:` targets today (few cross-refs exist), but `contributing.rst`'s `:doc:` to `code_of_conduct` will break with the deleted CoC (§1).
+**PASS.** All narrative prose in the user guide and developer guide uses proper Sphinx
+cross-reference roles (`:class:`, `:meth:`, `:func:`, `:mod:`, `:attr:`, `:data:`)
+where API symbols appear. Both `-W` and `-n` builds resolve all references with zero
+warnings. Section titles that include class names (`IndexTable`, `Suite`, `Record and prep`)
+are exempt from the "no bare API symbols in prose" rule per `doc_python` §5.
+
+---
 
 ## 4. README (`doc_readme`)
 
-- **Finding (High):** Placeholder content. `README.md:33` "`rms-metadata-tools` is TODO"; the install section's pip block is commented out; there is no real quickstart with runnable commands. **Evidence:** `README.md:31-33, 64-81`. **Fix:** Write the Features section; provide a runnable quickstart (the three-stage `*_index.py`→`*_geometry.py`→`*_cumulative.py` workflow with example paths and required `RMS_*` env vars).
-- **Finding (Medium):** Metadata claims don't match packaging. The README badges/links advertise PyPI, but `pyproject` `description`/`keywords`/`dependencies` are `TODO` and the package cannot install (`code_critique.md` §8). **Fix:** Reconcile the README with real packaging metadata before publishing.
-- **Finding (Medium):** The README documents the **directory/host-extension procedure** (good) but omits the required environment variables (`RMS_METADATA`, `RMS_VOLUMES`, the `gs://` trees used in the GCP scripts) and the supported Python versions in the install section. **Fix:** Add a prerequisites subsection (Python ≥ the agreed minimum, env vars, expected input/output tree layout).
-- **Finding (Low):** `doc_readme` expects an inclusion marker so host-only badges are excluded from rendered docs; the marker exists (`<!-- start-after-point -->`, used by `index.rst`). Good — keep it.
+**Largely compliant.** The README has all required sections in the required order:
+Title, Badges, Introduction, Features, Installation, Quick Start, Documentation,
+Contributing, Links. Badges are comprehensive. The Quick Start has runnable examples.
+The `<!-- start-after-point -->` marker is correctly placed after the badge block.
+
+**Finding L1 (Low) — Section title `Licensing` should be `License`.**
+`doc_readme` §8 specifies `**License**` as the final section title. The README uses
+`## Licensing`.
+
+**Evidence:** `README.md` (search for `## Licensing`).
+
+**Fix:** Rename `## Licensing` → `## License`.
+
+---
 
 ## 5. User guide (`doc_user_guide`)
 
-- **Finding (High):** **There is no user guide.** `doc_user_guide` expects a `user_guide/` subdirectory with a landing page + `toctree`, a workflow overview, installation/setup (versions, env vars, input/output layout), the full configuration model, and a **per-command-line-program reference**. None exists. **Evidence:** `docs/` contains only `index.rst`, `module.rst`, `contributing.rst`, `code_of_conduct.md`. **Fix:** Create `docs/user_guide/` covering: the index→geometry→cumulative pipeline; setup and `RMS_*` env vars; and a reference for each host CLI (`GO_0xxx_index.py`, `_geometry.py`, `_cumulative.py` and the `_cloud.py` variants) documenting every argument. The argument help already lives in the script header comments and `com.get_common_args`/`get_args` — lift it into the guide and keep it in sync with the parsers.
-- **Finding (Medium):** The argument documentation that does exist (script header comments, e.g. `GO_0xxx_geometry.py:1-43`) is not rendered anywhere in the docs and can drift from the actual `argparse` definitions. **Fix:** Document options from the parsers (`common.py:113-160`, `index_support.get_args`, `geometry_support.get_args`, `cumulative_support.get_args`) including defaults and the structured `*_tasks.json` schema the cloud workers consume.
+**PASS.** The user guide is comprehensive and well-structured. All required sections are
+present:
+
+- `user_guide_overview.rst` — pipeline overview with a Mermaid workflow diagram
+- `user_guide_installation.rst` — setup, env vars (`$RMS_METADATA`, `$RMS_VOLUMES`,
+  `$RMS_METADATA_TEST`), supported Python versions
+- `user_guide_index.rst`, `user_guide_geometry.rst`, `user_guide_cumulative.rst` —
+  per-table-type chapters, each with complete CLI option documentation
+- `user_guide_configuration.rst` — host config model, override hooks
+- `user_guide_cloud.rst` — GCP distribution
+- `user_guide_examples.rst` — end-to-end workflow examples
+- `user_guide_appendix_hosts.rst` — per-host appendix
+
+All cross-references use correct Sphinx roles. Every documented CLI option traces back
+to the argparse definitions.
+
+---
 
 ## 6. Developer guide (`doc_dev_guide`)
 
-- **Finding (High):** **There is no developer guide.** `doc_dev_guide` expects a subdirectory with: repo-layout overview, environment setup (editable install, env vars, running entry points + smoke test, running tests with tiers/parallel/single-test, lint/type/format/docs commands and the `run-all-checks.sh` wrapper, CI/CD, release), an architecture/class diagram, per-subsystem chapters, and an "extending" recipe. None exists. **Evidence:** `docs/`. **Fix:** Create `docs/dev_guide/` with at least: an annotated layout; a class diagram for `Table`→`IndexTable`/`InventoryTable`/`SkyTable`/`SunTable`/`RingTable`/`BodyTable` and `Record`/`Suite`; the `column/` + `FORMAT_DICT` + label-template relationship; and a "How to add a new host" recipe (the README's host steps are a good seed). Document the critical CWD/`host_config` import convention.
-- **Finding (Medium):** No class diagrams anywhere though `sphinxcontrib.mermaid` is enabled (`conf.py:38, 103`). **Fix:** Add at least one Mermaid class diagram in the dev guide.
+**Largely compliant.** Architecture, class diagram (Mermaid), per-subsystem chapters,
+and an "extending" recipe are all present.
+
+**Finding H4 (High) — `SunTable` documented but commented out of the live code path.**
+`docs/dev_guide/dev_guide_architecture.rst` includes `SunTable` in:
+- The Mermaid class diagram (lines 53, 80)
+- The narrative prose (line 120)
+
+But `src/metadata_tools/geometry_support/suite.py:176` has `#SunTable(...)` commented
+out, and `src/metadata_tools/cumulative_support.py` does not include `SunTable` in its
+`tables` list.
+
+Readers who follow the dev guide's "how to add a new host" recipe will think `SunTable`
+is an available, tested table type.
+
+**Fix (option A — preferred if SunTable is intentionally deferred):** Remove `SunTable`
+from the class diagram and narrative in `dev_guide_architecture.rst`, and add a note
+in the extending chapter that sun-geometry support is planned but not yet implemented.
+
+**Fix (option B — if SunTable is ready but accidentally disabled):** Uncomment
+`SunTable(...)` in `suite.py:176` and add it to `cumulative_support.py`'s `tables` list,
+then update and validate tests.
+
+**Finding M2 (Medium) — `dev_guide_environment.rst` claims `ruff format --check` runs in CI.**
+`docs/dev_guide/dev_guide_environment.rst:123` lists the CI lint checks as including
+`ruff format --check`. The actual CI workflow (`.github/workflows/run-tests.yml`) does
+**not** run `ruff format --check` — the lint job runs only `ruff check`, `mypy`, `bandit`,
+`vulture`, `sphinx-build -W`, and `pymarkdown`.
+
+This contradicts `docs/dev_guide/dev_guide_conventions.rst:32-33`, which correctly states:
+"The project does not run `ruff format` as a gate; `ruff check` is the linter."
+
+**Evidence:** `.github/workflows/run-tests.yml` (lint job steps) vs.
+`dev_guide_environment.rst:123` vs. `dev_guide_conventions.rst:32-33`.
+
+**Fix:** Remove `ruff format --check` from the CI check list in
+`dev_guide_environment.rst:123` so that it matches both the actual CI configuration and
+the conventions chapter. (Alternatively, add `ruff format --check` to CI and to
+`scripts/run-all-checks.sh` if the team wants to enforce formatting as a gate — in that
+case update `dev_guide_conventions.rst:32-33` to match.)
+
+---
 
 ## 7. How-to articles (`doc_how_to`)
 
-- **Finding (Medium):** **No how-to articles exist.** `doc_how_to` expects task-focused articles (title, intro, prerequisites, numbered steps with commands and observed results, troubleshooting, links). **Evidence:** `docs/`. **Fix:** Add at least: "Generate a supplemental index for one volume," "Generate geometry tables," and "Run the pipeline on GCP with cloud_tasks" (the `*_cloud.py` headers and `gcp_*` files provide the raw material). Keep them consistent with the user guide and cross-link.
+**Finding L2 (Low) — No standalone how-to articles.**
+`doc_how_to` expects standalone, task-focused articles with action-oriented titles,
+prerequisites, numbered steps, expected results, and troubleshooting. The user guide
+appendix (`user_guide_examples.rst`) covers end-to-end workflows, but these are embedded
+in the user guide rather than structured as independent how-to articles with the required
+sections.
 
-## 8. Diagrams and figures (`doc_how_to`, `doc_dev_guide`)
+This is a minor gap — the material exists, just not in the prescribed form.
 
-- **Finding (Medium):** No diagrams, despite the pipeline and class hierarchy being prime candidates and Mermaid being configured. **Fix:** Add a pipeline flow diagram (index→geometry→cumulative) and the class diagram from §6; verify they render in the build.
+**Fix:** Optionally extract 2–3 key workflows from `user_guide_examples.rst` into a
+dedicated `docs/how_to/` directory with the `doc_how_to`-required structure:
+- `how_to_generate_supplemental_index.rst`
+- `how_to_generate_geometry_tables.rst`
+- `how_to_run_gcp_pipeline.rst`
+
+Or, if the team prefers, add a how-to landing page that cross-links to the relevant
+sections of the user guide, satisfying the navigational intent of the rule.
+
+---
+
+## 8. Diagrams and figures
+
+**PASS.** A Mermaid workflow diagram appears in `user_guide_overview.rst` and a Mermaid
+class diagram appears in `dev_guide_architecture.rst`. Both render in the Sphinx build
+(verified — zero warnings). The `sphinxcontrib.mermaid` extension is correctly configured.
+
+**Note:** The class diagram needs updating per Finding H4 (remove or mark `SunTable`
+as unimplemented).
+
+---
 
 ## 9. Change discipline and consistency (`doc_python`)
 
-- **Finding (High):** Docs/metadata disagree with the code and with each other. README/PyPI claims vs. `TODO` packaging metadata; CoC page/`CONTRIBUTING.md` reference a deleted file; the README "Modifying table columns" steps reference `body_summary.lbl` while the actual templates are `body_summary_columns.lbl`/`GO_0xxx_body_summary.lbl`. **Evidence:** `README.md:126-129`, `src/metadata_tools/templates/`, `git status`. **Fix:** Audit every doc reference against current filenames and packaging; update README, CONTRIBUTING, and `docs/` in the same change.
-- **Finding (Medium):** `CONTRIBUTING.md` contains a generic example function (`calculate_offset`) and a "Code of Conduct" section unrelated to this package; its testing/build instructions don't mention the `RMS_*` env vars or `scripts/run-all-checks.sh` as the canonical gate. **Fix:** Tailor CONTRIBUTING to this repo (point at `run-all-checks.sh`, env vars, the host-extension workflow) and remove the dead CoC reference.
-- **Finding (Low):** Minor content errors in shipped templates that surface in generated labels, e.g. `GO_0xxx_supplemental_index.lbl` VOLUME_ID description "provides a unique for a PDS data volume" (missing word). **Fix:** Correct template prose.
+**Finding M3 (Medium) — `CONTRIBUTING.md` uses `make html` for docs build.**
+`CONTRIBUTING.md` instructs contributors to build docs with `cd docs && make html`.
+The canonical build command documented in `dev_guide_environment.rst` and in
+`scripts/read-docs.sh` is `scripts/read-docs.sh` (which applies `-W` and opens the
+browser). Contributors following `CONTRIBUTING.md` will get a build without `-W` and
+will not catch warnings.
+
+**Evidence:** `CONTRIBUTING.md` (search for `make html`).
+
+**Fix:** Replace `cd docs && make html` with `scripts/read-docs.sh` (or the equivalent
+`sphinx-build -W -b html docs docs/_build`) and add a note that `scripts/run-all-checks.sh`
+runs all gates including docs.
+
+**Finding M4 (Medium) — CONTRIBUTING.md commit message example does not follow Conventional Commits.**
+The project mandates Conventional Commits (`feat:`, `fix:`, `docs:`, etc.) per
+`.cursor/rules/git_workflow.mdc` and `dev_guide_conventions.rst`. `CONTRIBUTING.md`
+shows an example commit message that does not follow this format.
+
+**Fix:** Replace the example with a valid Conventional Commits example, e.g.:
+```
+feat: add ring-plane geometry for GO_0xxx
+```
+And add a brief pointer to the Conventional Commits specification or the
+`dev_guide_conventions.rst` git section.
+
+**Finding L3 (Low) — `pyproject.toml` comment contradicts shipped `py.typed`.**
+`pyproject.toml:76-77` contains the comment:
+
+> "py.typed is intentionally NOT declared"
+
+But `pyproject.toml:79` includes `py.typed` in `package-data`, and the file
+`src/metadata_tools/py.typed` exists. The file will be shipped to PyPI and discovered
+by type checkers (PEP 561). The comment is wrong.
+
+**Evidence:** `pyproject.toml:76-79`, `src/metadata_tools/py.typed`.
+
+**Fix:** Remove the misleading comment. If `py.typed` is intentionally shipped (which
+shipping it in `package-data` implies), the correct note would be:
+```
+# py.typed ships PEP 561 type information to downstream consumers
+```
+
+---
 
 ## Recommended priorities
 
-1. **Make the build pass under `-W`:** restore or remove the Code-of-Conduct include, add `contributing`/`code_of_conduct` (and new guides) to a `toctree`, fix the `index.rst` underlines, and add `autodoc_mock_imports`. (Also unblock ReadTheDocs by fixing `pyproject` `dependencies` — see `code_critique.md`.)
-2. **Make the API reference real:** recurse `automodule` over all public modules, convert `Args:`→`Parameters:`, fix the misplaced class docstrings, and correct the copy-pasted/incorrect docstrings.
-3. **Write the missing guides:** README features/quickstart, a user guide with per-CLI option references, a developer guide with a class diagram and the "add a host" recipe, and 2–3 how-to articles.
+1. **H1–H2 (geometry_support docstrings, ~15 min):** Add one-line `"""..."""` module
+   docstrings to `geometry_support/__init__.py` and its nine submodules. Zero behavior
+   change; instant improvement to generated API reference.
+
+2. **H3 (stale `__init__.py` reference, 2 min):** Change `geometry_support.py` →
+   `geometry_support/formats.py` in `src/metadata_tools/__init__.py:81`.
+
+3. **H4 (SunTable in architecture, 10 min):** Decide intent. If deferred: remove
+   `SunTable` from `dev_guide_architecture.rst` diagram and prose. If ready: uncomment it
+   in `suite.py` and `cumulative_support.py`.
+
+4. **M1–M2 (CI documentation accuracy, 10 min):** Fix `dev_guide_environment.rst:123`
+   to remove `ruff format --check` from the listed CI steps; add `sphinx-build -n` to
+   the CI lint job and to `scripts/run-all-checks.sh`.
+
+5. **M3–M4 (CONTRIBUTING.md, 5 min):** Replace `make html` with `scripts/read-docs.sh`;
+   fix the commit message example to use Conventional Commits format.
+
+6. **L1 (README title, 1 min):** Rename `## Licensing` → `## License`.
+
+7. **L2 (how-to articles, optional):** Extract or restructure workflow examples into
+   `doc_how_to`-compliant standalone articles.
+
+8. **L3 (py.typed comment, 1 min):** Remove or correct the misleading comment in
+   `pyproject.toml:76-77`.
 
 ---
 
 ## Prompt for an AI agent to fix the documentation
 
-> You are fixing the documentation of `rms-metadata-tools` (Sphinx docs under `docs/`, package `metadata_tools` under `src/`; rules in `.cursor/rules/doc_*.mdc`). **Do not change production code behavior.** When you rename or move a page or symbol, update every cross-reference, the README, and the guides in the same change. **Build gate:** the docs must build clean under BOTH `sphinx-build -W -b html docs docs/_build` and `sphinx-build -n -b html docs docs/_build` before you are done. (Note: `pip install .` currently fails because `pyproject.toml` has `dependencies = ["TODO"]`; if you cannot install the package, add `autodoc_mock_imports` and/or coordinate the packaging fix from `critiques/code_critique.md` so the build can run.)
->
-> Tasks:
-> 1. **Unbreak the build.** Decide with the maintainer whether to keep a Code of Conduct. If yes, restore `CODE_OF_CONDUCT.md` at repo root; if no, delete `docs/code_of_conduct.md`, remove the CoC `:doc:` reference and the second `include` slice in `docs/contributing.rst`, and drop the `## Code of Conduct` section from `CONTRIBUTING.md`. Add `contributing` and `code_of_conduct` (if kept) plus all new guide landing pages to the `toctree` in `docs/index.rst`. Lengthen the two short title underlines in `docs/index.rst`.
-> 2. **Sphinx config (`docs/conf.py`).** Add `autodoc_mock_imports` for the heavy/uninstallable and host-level imports: `oops, cspyce, julian, polymath, vicar, fortranformat, cloud_tasks, pdstable, pdsparser, pdstemplate, pdslogger, filecache, host_config, index_config, geometry_config`. Add `-n` (nitpicky) to the documented build commands (and to `scripts/run-all-checks.sh` / `run-tests.yml`), adding `nitpick_ignore` only for genuinely external symbols. Remove `suppress_warnings = ['myst.header']` once the CONTRIBUTING split is simplified.
-> 3. **API reference (`docs/module.rst`).** Replace the single top-level `automodule` with per-module `automodule` directives (or an autosummary with `:recursive:`) for `metadata_tools` and every public submodule (`util`, `common`, `defs`, `columns`, `label_support`, `index_support`, `geometry_support`, `cumulative_support`), each with `:members: :undoc-members: :show-inheritance:`.
-> 4. **Docstrings (source).** Convert all `Args:` sections to `Parameters:` (Google/Napoleon). Fix the incorrect/copy-pasted docstrings called out in this report (`index_support.py` `create`; `common.py` `get_common_args`; `geometry_config.py` `meshgrid`; `get_volume_id` "Returns: None"; `index_config.py` `key__on_chip_mosaic_flag`/`key__compression_quantization_table_id`). Move the misplaced class docstrings in `geometry_support.py` inside their class bodies. (Docstring text only — no behavior change.)
-> 5. **README & CONTRIBUTING.** Replace the `TODO` Features text with a real description; add a runnable Quickstart (index→geometry→cumulative with example paths and the required `RMS_METADATA`/`RMS_VOLUMES` env vars and supported Python versions); fix the "Modifying table columns" filenames to match the actual templates (`*_summary_columns.lbl` / `GO_0xxx_*_summary.lbl`). Tailor CONTRIBUTING to this repo: point to `scripts/run-all-checks.sh` as the gate, list the env vars, and reference the host-extension workflow.
-> 6. **New guides (create under `docs/`).** `user_guide/` (landing + toctree): workflow overview, setup/env vars/input-output layout, configuration model, and a per-CLI reference for `GO_0xxx_index.py`, `_geometry.py`, `_cumulative.py`, and the `_cloud.py` variants documenting every argument (source the options from `common.get_common_args` and each module's `get_args`, plus the `*_tasks.json` schema). `dev_guide/` (landing + toctree): annotated layout, a Mermaid class diagram for `Table`/`Record`/`Suite` and the table subclasses, the `column/`+`FORMAT_DICT`+label-template relationship, the CWD/`host_config` import convention, and a "How to add a new host" recipe. Add 2–3 `how_to/` articles (single-volume index, geometry tables, GCP run) with numbered steps, expected results, and troubleshooting; cross-link them with the user guide.
-> 7. **Diagrams.** Add a pipeline flow diagram and the class diagram using the already-enabled `sphinxcontrib.mermaid`; confirm they render.
->
-> Verify by running both build commands above with zero warnings.
+You are fixing documentation issues in the `rms-metadata-tools` Python package. The
+package lives at `src/metadata_tools/`; Sphinx docs are under `docs/`. Rules are in
+`.cursor/rules/doc_*.mdc`. Do not change any production code behavior — only docstrings,
+documentation files, and CI/script configuration.
+
+**Verification gate:** after all changes, BOTH of these must pass with zero warnings:
+```sh
+sphinx-build -W -b html docs /tmp/sphinx-out-W
+sphinx-build -n -b html docs /tmp/sphinx-out-n
+```
+Run these before reporting success.
+
+**Issue 1 — Add module docstrings to `geometry_support` package (High)**
+
+File: `src/metadata_tools/geometry_support/__init__.py`
+Currently: only a `################################################################################` banner header, no `"""..."""` docstring.
+Fix: Insert a module docstring immediately below the banner:
+```python
+"""Geometry table generation for metadata_tools.
+
+Computes geometric quantities (body, ring, sky, sun) from SPICE via ``oops``
+and writes them as PDS3 summary (and optionally detailed) CSV tables.
+Submodules handle body selection, mask construction, row preparation, column
+formatting, format dictionaries, the :class:`Record` and :class:`Suite`
+classes, table subclasses, and the top-level :func:`process_geometry` entry
+point.
+"""
+```
+
+**Issue 2 — Add module docstrings to nine geometry_support submodules (High)**
+
+Each of the following files has only a `#` banner and no `"""..."""` module docstring.
+Add a single-line (or short) docstring to each:
+
+- `src/metadata_tools/geometry_support/bodies_select.py` →
+  `"""Body and system selection utilities for geometry processing."""`
+- `src/metadata_tools/geometry_support/masks.py` →
+  `"""Pixel mask construction for excluded regions in geometry tables."""`
+- `src/metadata_tools/geometry_support/prep.py` →
+  `"""Row preparation: assembles formatted geometry strings for one observation."""`
+- `src/metadata_tools/geometry_support/formatting.py` →
+  `"""Low-level column formatters that convert backplane values to fixed-width strings."""`
+- `src/metadata_tools/geometry_support/formats.py` →
+  `"""Master format dictionaries (FORMAT_DICT, ALT_FORMAT_DICT) for geometry columns."""`
+- `src/metadata_tools/geometry_support/record.py` →
+  `"""Record class: per-observation state for geometry table generation."""`
+- `src/metadata_tools/geometry_support/tables.py` →
+  `"""Geometry table subclasses (BodyTable, RingTable, SkyTable, InventoryTable)."""`
+- `src/metadata_tools/geometry_support/suite.py` →
+  `"""Suite class: coordinates all geometry tables for one data file."""`
+- `src/metadata_tools/geometry_support/process.py` →
+  `"""Top-level entry point process_geometry() for geometry table generation."""`
+
+Insert each docstring immediately below the existing `#` banner (before the first import).
+
+**Issue 3 — Fix stale reference in `__init__.py` docstring (High)**
+
+File: `src/metadata_tools/__init__.py`, line 81
+Current text: `"Add a row to the format dictionary in ``geometry_support.py``"`
+Problem: `geometry_support` is now a package; the format dict is in `geometry_support/formats.py`.
+Fix: Change to `"Add a row to the format dictionary in ``geometry_support/formats.py``"`
+(or use `:mod:`metadata_tools.geometry_support.formats``).
+
+**Issue 4 — Remove `SunTable` from architecture documentation (High)**
+
+`SunTable` is listed in `docs/dev_guide/dev_guide_architecture.rst` in both the Mermaid
+class diagram and the prose description, but `src/metadata_tools/geometry_support/suite.py:176`
+has `#SunTable(...)` commented out and `src/metadata_tools/cumulative_support.py` does not
+include `SunTable` in its `tables` list.
+
+First, confirm by reading those files that `SunTable` is indeed commented out everywhere.
+
+If confirmed:
+- In `docs/dev_guide/dev_guide_architecture.rst`, find the Mermaid `classDiagram` block
+  (around lines 53 and 80) and remove the `SunTable` node and its inheritance arrow.
+- In the prose narrative (around line 120), remove the mention of `SunTable` from the
+  list of active table classes.
+- Add a note (one sentence) in the "Geometry subsystem" section of the dev guide stating
+  that sun-geometry support (`SunTable`) is planned but not yet implemented in the active
+  code path.
+
+**Issue 5 — Fix `dev_guide_environment.rst` CI step list (Medium)**
+
+File: `docs/dev_guide/dev_guide_environment.rst`, line ~123
+Current text claims CI runs: `ruff check`, `ruff format --check`, `mypy`, `bandit`,
+`vulture`, `sphinx-build -W`, `pymarkdown`.
+Actual CI (`.github/workflows/run-tests.yml` lint job): `ruff check`, `mypy`, `bandit`,
+`vulture`, `sphinx-build -W`, `pymarkdown` — does NOT run `ruff format --check`.
+This directly contradicts `docs/dev_guide/dev_guide_conventions.rst:32-33` which correctly
+says `ruff format` is not a CI gate.
+
+Fix: Remove `ruff format --check` from the listed CI steps in `dev_guide_environment.rst`.
+Do NOT change `dev_guide_conventions.rst` (it is correct).
+
+**Issue 6 — Add `sphinx-build -n` to CI (Medium)**
+
+File: `.github/workflows/run-tests.yml`
+`doc_python` requires clean builds under both `-W` and `-n`. Currently only `-W` runs in CI.
+
+Fix: In the `lint` job, after the `sphinx-build -W` step, add:
+```yaml
+- name: Build docs (nitpicky)
+  run: sphinx-build -n -b html docs /tmp/sphinx-out-n
+```
+
+Also update `scripts/run-all-checks.sh`: wherever `sphinx-build -W` appears, either
+combine the flags (`-W -n`) or add a second sphinx step.
+
+Update `dev_guide_environment.rst` to list `sphinx-build -n` alongside `sphinx-build -W`.
+
+**Issue 7 — Fix CONTRIBUTING.md docs build command (Medium)**
+
+File: `CONTRIBUTING.md`
+Find the line that says `cd docs && make html` and replace it with:
+```sh
+scripts/read-docs.sh
+```
+Add a sentence: "The `scripts/run-all-checks.sh` script runs all quality gates (lint,
+type-check, tests, docs, and markdown) and is the canonical local check before pushing."
+
+**Issue 8 — Fix CONTRIBUTING.md commit message example (Medium)**
+
+File: `CONTRIBUTING.md`
+Find the example commit message and verify it does not follow Conventional Commits format
+(`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
+Replace with a valid example:
+```
+feat: add ring-plane geometry support for GO_0xxx
+```
+Add a note: "Follow the Conventional Commits specification
+(https://www.conventionalcommits.org). See the developer guide conventions chapter for
+this project's commit types and 50-character subject-line rule."
+
+**Issue 9 — Rename README section `Licensing` → `License` (Low)**
+
+File: `README.md`
+Find `## Licensing` and rename to `## License` (per `doc_readme` §8 which specifies
+`**License**` as the section title).
+
+**Issue 10 — Fix misleading `py.typed` comment in `pyproject.toml` (Low)**
+
+File: `pyproject.toml`, lines 76-77
+Current comment: "py.typed is intentionally NOT declared" (or similar)
+Problem: `py.typed` IS included in `package-data` on line ~79 and the file
+`src/metadata_tools/py.typed` exists. The comment is wrong.
+Fix: Replace the comment with:
+```toml
+# py.typed ships PEP 561 inline type information to downstream type-checkers
+```
+
+**After all changes:**
+1. Run `sphinx-build -W -b html docs /tmp/sphinx-out-W` — must pass with zero warnings.
+2. Run `sphinx-build -n -b html docs /tmp/sphinx-out-n` — must pass with zero warnings.
+3. Run `grep -r 'Args:' docs/ src/` — must return no results (all docstrings use `Parameters:`).
+4. Confirm `CONTRIBUTING.md` no longer references `make html`.
+5. Confirm `.github/workflows/run-tests.yml` now includes `sphinx-build -n`.

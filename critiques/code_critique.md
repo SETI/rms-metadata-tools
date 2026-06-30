@@ -103,7 +103,7 @@ except FileNotFoundError:
 Concretely, wrap the `PdsTemplate()` construction and `template.write()` call in the
 try block and catch `FileNotFoundError` rather than pre-checking.
 
-**Location 2:** `src/metadata_tools/index_support.py`, line 83
+**Location 2:** `src/metadata_tools/index_support/table.py` (previously `index_support.py`)
 
 ```python
 if not self.primary_index_label_path.exists():
@@ -198,9 +198,9 @@ The following functions exceed the 3-positional-argument limit from `python.mdc`
 
 | Function | File | Approx. param count |
 |---|---|---|
-| `IndexTable.__init__` | `index_support.py` | ~10 |
-| `_create_index()` | `index_support.py` | ~10 |
-| `process_index()` | `index_support.py` | ~8 |
+| `IndexTable.__init__` | `index_support/table.py` | ~10 |
+| `_create_index()` | `index_support/process.py` | ~10 |
+| `process_index()` | `index_support/process.py` | ~8 |
 | `prep_row()` | `geometry_support/prep.py` | ~12 |
 | `create` (of various Table classes) | multiple | varies |
 
@@ -323,7 +323,11 @@ This removes the import-time side effect and makes the stub in `conftest.py` unn
 
 ### 3.2 `sys.path.append('')` security concern
 
-**Files:**
+**Note (2026-06-30):** The new `src/metadata_tools/cli/` package consolidates the GCP
+cloud worker entry points. The `sys.path.append('')` shim should be addressed there
+rather than in the per-host scripts.
+
+**Files (per-host, superseded by `cli/` for new hosts):**
 - `src/metadata_tools/hosts/GO_0xxx/GO_0xxx_index_cloud.py`, line 32
 - `src/metadata_tools/hosts/GO_0xxx/GO_0xxx_geometry_cloud.py`, line 33
 - `src/metadata_tools/hosts/GO_0xxx/GO_0xxx_cumulative_cloud.py`, line 31
@@ -826,6 +830,21 @@ Top priorities: **fix packaging metadata so the package installs**, **get the li
 Newest first. Each entry is a discrete unit of work landed on `ai_rewrite`; the
 per-finding status tags in §1–§10 are the authoritative detail.
 
+- **2026-06-30 — Added generic host-agnostic `cli/` package.** New
+  `src/metadata_tools/cli/` package provides `index.py`, `geometry.py`,
+  `cumulative.py` (local runners) and `index_cloud.py`, `geometry_cloud.py`,
+  `cumulative_cloud.py` (GCP workers). Each thin wrapper loads the host config
+  via `_host.py` and delegates to the engine, removing the need for per-host
+  entry scripts to duplicate boilerplate. The `sys.path.append('')` shim in each
+  `*_cloud.py` is now in one place (`_host.py` / the cloud wrappers) rather than
+  scattered across every host.
+- **2026-06-30 — Split `index_support.py` into a package.** `index_support.py`
+  (623 lines) → `index_support/` package: `table.py` (435 lines, `IndexTable`),
+  `process.py` (185 lines, `process_index()`), `key_fns.py` (43 lines, key-function
+  helpers), `__init__.py` (27 lines). All files well under the 500-line preferred
+  cap. Public import surface unchanged. Analogous to the 2026-06-15
+  `geometry_support.py` split. (A prior split was reverted on 2026-06-16 at the
+  user's request; this version organises concerns differently.)
 - **2026-06-16 — Retagged stale finding statuses (doc-only).** Reconciled three
   findings whose tags lagged reality: §2 builtin shadowing → **RESOLVED** (`ruff
   --select A001,A002` is clean; renames were done in the ruff backlog pass), §2
@@ -920,7 +939,9 @@ per-finding status tags in §1–§10 are the authoritative detail.
   the helper modules (`util_ranges.py`, `util_textfiles.py`, `index_formats.py`)
   removed; test references and doc notes reverted. Net effect: the geometry split
   and the test suite stand; `util.py` (802) and `index_support.py` (623) are again
-  over 500 lines (still under the 1000-line `python.mdc` cap).
+  over 500 lines (still under the 1000-line `python.mdc` cap). **Note:** The
+  `index_support.py` split was subsequently redone on 2026-06-30 — see completed
+  tasks entry above.
 - **2026-06-15 — Hermetic unit-test suite to 93.1% coverage** (Plan 2). New
   `tests/conftest.py` import shim + 16 test modules exercise the engine with no
   SPICE and no `$RMS_METADATA`; `pytest --cov=src` now genuinely meets
@@ -1065,7 +1086,7 @@ The analysis above is the original point-in-time review. Progress since:
 ## 1. Structure and layout
 
 - **[RESOLVED]** **Finding (High):** The `column/COLUMNS_*.py` files masquerade as importable modules (each has top-of-file `import` statements) but are actually loaded via `exec(open(file).read())` in `columns.py:26-28`. They depend on names injected by the exec'ing namespace (`BODIES`, `np`, `util`) that they never import themselves. **Evidence:** `columns.py:24-28`; `ruff check src/metadata_tools/column --select F821` reports 40 undefined-name errors (`COLUMNS_BODY.py:85 BODIES`, `COLUMNS_RING.py:132 np`, `COLUMNS_RING.py:95 util`). **Suggestion:** Convert these into real modules: add the missing `import numpy as np`, `import metadata_tools.util as util`, and an explicit `from metadata_tools.columns import BODIES` (or pass `BODIES` in as a function argument), then replace the `exec()` loop with normal imports or an explicit registry function. This removes the F821 errors and makes the data analyzable by mypy/ruff.
-- **[RESOLVED]** **Finding (High):** Module size. `geometry_support.py` is 1654 lines, exceeding the 1000-line cap in `python.mdc` §2. **Evidence:** `geometry_support.py`. **Suggestion:** Split into e.g. `geometry/record.py` (the `Record` class), `geometry/tables.py` (`InventoryTable`/`SkyTable`/`SunTable`/`RingTable`/`BodyTable`/`Suite`), and `geometry/formats.py` (`FORMAT_DICT`/`ALT_FORMAT_DICT`). **Update:** done — split into a `geometry_support/` package of 10 modules (< 500 lines each), output and import surface preserved. (`util.py` at 802 and `index_support.py` at 623 also exceed 500 but are under the 1000-line cap; a split of those was made and then reverted on 2026-06-16 at the user's request.)
+- **[RESOLVED]** **Finding (High):** Module size. `geometry_support.py` is 1654 lines, exceeding the 1000-line cap in `python.mdc` §2. **Evidence:** `geometry_support.py`. **Suggestion:** Split into e.g. `geometry/record.py` (the `Record` class), `geometry/tables.py` (`InventoryTable`/`SkyTable`/`SunTable`/`RingTable`/`BodyTable`/`Suite`), and `geometry/formats.py` (`FORMAT_DICT`/`ALT_FORMAT_DICT`). **Update:** done — split into a `geometry_support/` package of 10 modules (< 500 lines each), output and import surface preserved. (`util.py` at 802 also exceeds 500 but is under the 1000-line cap and remains as a single file. `index_support.py` (623 lines) was split and then reverted on 2026-06-16 at the user's request; it has since been re-split into `index_support/` package: `table.py` 435 lines, `process.py` 185 lines, `key_fns.py` 43 lines — 2026-06-30.)
 - **[DEFERRED — issue #112]** **Finding (Medium):** Host config modules are imported as **top-level** modules (`import host_config`, `import index_config`, `import geometry_config`) rather than package-qualified, so code only works when CWD is the host directory. **Evidence:** `index_support.py:11-12`, `cumulative_support.py:9`, `geometry_support/{formats,record,suite,bodies_select}.py`, `GO_0xxx_index.py:34`. **Suggestion:** This is an intentional plugin pattern, but document it explicitly and consider an import shim that adds the host dir to `sys.path` in one place rather than relying on the user's CWD and scattered `sys.path.append('')` calls (`host_init.py:13`, `*_cloud.py`). **Update:** deferred — tracked as **issue #112**. A `pip install`/`pyproject.toml` change alone cannot make `import host_config` resolve (every host defines a same-named module, so they collide as top-level modules); decoupling needs a real mechanism (env-var host selector vs. runtime config registry) and is complicated by `formats.py` building `MISSION_TABLE` from `config` at import time. The separable `sys.path.append('')` GCP shim removal is folded into the same issue. Needs a design decision on the approach before implementation.
 - **[DEFERRED — issue #111]** **Finding (Medium):** Dead/commented-out code throughout. **Evidence:** `geometry_support.py:520, 1191-1196, 1359-1362, 1481-1489`; `geometry_config.py:209-225`; `COLUMNS_*` commented column rows; `index_config.py:109, 222, 240`. **Suggestion:** Delete; rely on git history. `python.mdc` §4 forbids history/cruft comments. **Update:** every block was re-validated against the current tree and catalogued (with code samples) in **issue #111**; the Sun-table lines in `suite.py` are flagged there as a feature-disable decision rather than auto-removable cruft.
 - **[RESOLVED]** **Finding (Medium):** `get_volume_id()` is duplicated verbatim in `host_config.py:22-33` and `geometry_config.py:177-188`. **Evidence:** both files. **Suggestion:** Define once (e.g. in `host_config`) and have `geometry_config` import it (DRY, `python.mdc` §2). **Update:** **fixed** — `geometry_config` now does `get_volume_id = host_config.get_volume_id` (package-qualified import, no CWD dependency); the duplicate body is gone.

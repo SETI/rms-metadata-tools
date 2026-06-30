@@ -2,7 +2,6 @@
 # geometry_support/suite.py - The Suite class (a volume's geometry tables).
 ################################################################################
 import fnmatch
-import traceback
 from pathlib import Path
 from typing import Any, cast
 
@@ -94,7 +93,8 @@ class Suite:
             self.observations = config.from_index(index_filename,
                                                   supplemental_index_filename)
         except FileNotFoundError:
-            logger.error(traceback.format_exc())
+            logger.exception('Index file not found for %s', self.volume_id)
+            return
 
         # Initialize data tables
         for level in self.levels:
