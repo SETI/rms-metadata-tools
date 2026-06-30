@@ -14,8 +14,11 @@ Examples:
  For GCP runs (not yet working), use:
    gcloud auth application-default login       # if necessary
 
-   metadata-index GO_0xxx $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to index_tasks.json
-   cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json --use-spot
+   # Locate the installed host directory (works from any working directory):
+   host_dir=$(python -c "from metadata_tools.cli._host import host_dir_for; print(host_dir_for('GO_0xxx'))")
+
+   metadata-index GO_0xxx $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to $host_dir/index_tasks.json
+   cloud_tasks run --config $host_dir/gcp_index_config.yml --task-file $host_dir/index_tasks.json --use-spot
 
 The full list of command-line options is documented in the user guide.
 """
@@ -23,7 +26,7 @@ import asyncio
 import sys
 from typing import Any
 
-from metadata_tools.cli._host import load_host
+from metadata_tools.cli._host import load_host, resolve_task_file
 
 
 class _IndexTask:
@@ -48,7 +51,8 @@ def main() -> None:
     if len(sys.argv) < 2 or sys.argv[1].startswith('-'):
         sys.exit('Usage: metadata-index-cloud HOST_ID [args...]')
     host_id = sys.argv[1]
-    load_host(host_id)
+    host_dir = load_host(host_id)
+    resolve_task_file(host_dir)
     sys.path.append('')  # needed for GCP worker instances
 
     import host_config as hconf
