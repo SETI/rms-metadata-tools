@@ -2,7 +2,7 @@
 
 Examples:
     metadata-geometry GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
-    metadata-geometry GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
+    metadata-geometry GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --volumes GO_0017
     metadata-geometry GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -p *C0349605600R*
 
 The full list of command-line options is documented in the user guide.

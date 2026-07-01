@@ -94,7 +94,8 @@ Core engine modules:
 as *top-level* modules — `import host_config`, `import index_config`, `import geometry_config`
 — not as package-qualified imports. This only resolves when the **current working directory is
 the host directory** (so it is on `sys.path`). Run host scripts from inside their `hosts/<HOST>/`
-directory. Cloud workers add `sys.path.append('')` so the GCP instance can find `metadata_tools`.
+directory. Cloud workers call `load_host()` (in `cli/_host.py`) which inserts the host directory
+into `sys.path`; `metadata_tools` itself is pip-installed on GCP workers.
 
 **Adding a new host:** copy an existing `hosts/<HOST>/` directory, rename the scripts, and edit
 the config modules and `templates/`. See the README "Generating New Metadata Tables" section.

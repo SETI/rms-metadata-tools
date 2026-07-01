@@ -51,8 +51,7 @@ def _create_index(volume_tree: FCPath,
                   qualifier: str | None = None,
                   glob: str | None = None,
                   pattern: str | None = None,
-                  task_file: str | None = None,
-                  task_list_only: bool = False) -> None:
+                  ) -> None:
     """Create index files for a collection of volumes.
 
     Parameters:
@@ -70,9 +69,6 @@ def _create_index(volume_tree: FCPath,
             e.g., 'supplemental'.
         glob: Glob pattern for data files.
         pattern: Glob pattern for sub-selecting files to process.
-        task_file: Name of tasks file.
-        task_list_only: If True, a tasks file is created and no processing is
-            performed.
     """
     logger = com.get_logger()
 
@@ -111,25 +107,15 @@ def _create_index(volume_tree: FCPath,
                 outdir = util.select_dir(output_tree, col, vol)
                 metadata_dir = util.select_dir(metadata_tree, col, vol)
 
-                # Update the task file...
-                if task_list_only:
-                    com.add_task(vol, col)
+                # Process this volume if possible
+                try:
+                    index = IndexTable(indir, outdir, template_path, metadata_dir,
+                                   qualifier=qualifier or '', volume_id=vol, glob=glob)
+                except FileNotFoundError:
+                    continue
 
-                # ... or process this volume
-                else:
-                    # Process this volume if possible
-                    try:
-                        index = IndexTable(indir, outdir, template_path, metadata_dir,
-                                       qualifier=qualifier or '', volume_id=vol, glob=glob)
-                    except FileNotFoundError:
-                        continue
-
-                    index.create(labels_only=labels_only, pattern=pattern)
-                    unused = index.unused if not unused else unused & index.unused
-
-    # Write the task file
-    if task_list_only:
-        com.write_task_file(task_file)
+                index.create(labels_only=labels_only, pattern=pattern)
+                unused = index.unused if not unused else unused & index.unused
 
     # Log a warning for any columns that never had non-null values in any volume
     if unused:
@@ -140,9 +126,7 @@ def _create_index(volume_tree: FCPath,
 def process_index(template_name: str,
                   glob: str | None = None,
                   volumes: list[str] | None = None,
-                  args: argparse.Namespace | None = None,
-                  task_file: str | None = None,
-                  task_list_only: bool = False) -> None:
+                  args: argparse.Namespace | None = None) -> None:
     """Create index files for a collection of volumes.
 
     Parameters:
@@ -150,12 +134,6 @@ def process_index(template_name: str,
         glob: Glob pattern for data files.
         volumes: List of volume ids to process.  Overrides args.volumes.
         args: Parsed arguments.
-        task_file: Name of tasks file. This file is overwritten. If not given,
-            tasks are provided via the task_source generator.
-        task_list_only: If True, a task list is created and no processing is
-            performed. If task_file is given, then the task list is written to that
-            file. Otherwise, the task list is accessed via the task_source
-            generator.
     """
 
     # Parse arguments
@@ -169,10 +147,6 @@ def process_index(template_name: str,
     if not volumes:
         volumes = args.volumes
 
-    if args.task_output:
-        task_list_only = True
-        task_file = args.task_output
-
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
                   metadata_tree=args.metadata_tree,
@@ -180,6 +154,4 @@ def process_index(template_name: str,
                   labels_only=args.labels is not False,
                   qualifier=args.type,
                   glob=glob,
-                  pattern=args.pattern,
-                  task_file=task_file,
-                  task_list_only=task_list_only)
+                  pattern=args.pattern)

@@ -10,7 +10,7 @@ Examples:
  resolved relative to the installed host directory, so the command can be run from any directory:
 
    metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json
-   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json -vv GO_0017
+   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json --volumes GO_0017
 
  For GCP runs, use:
    gcloud auth application-default login       # if necessary

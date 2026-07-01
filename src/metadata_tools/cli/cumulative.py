@@ -2,7 +2,7 @@
 
 Examples:
     metadata-cumulative GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/
-    metadata-cumulative GO_0xxx $RMS_METADATA/GO_0xxx/GO_0999/ -vv GO_0017
+    metadata-cumulative GO_0xxx $RMS_METADATA/GO_0xxx/GO_0999/ --volumes GO_0017
 
 The full list of command-line options is documented in the user guide.
 """

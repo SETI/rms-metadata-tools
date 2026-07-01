@@ -117,6 +117,7 @@ metadata-cumulative       = "metadata_tools.cli.cumulative:main"
 metadata-index-cloud      = "metadata_tools.cli.index_cloud:main"
 metadata-geometry-cloud   = "metadata_tools.cli.geometry_cloud:main"
 metadata-cumulative-cloud = "metadata_tools.cli.cumulative_cloud:main"
+metadata-task-list        = "metadata_tools.cli.task_list:main"
 
 # Tool configuration
 

@@ -7,9 +7,7 @@ Provides the global ``PdsLogger``, cloud-task plumbing, the shared argument pars
 and the ``Table`` base class used by the index and geometry table generators.
 """
 import argparse
-import json
 import re
-from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -49,48 +47,6 @@ def init_logger(log_dir: FCPath, log_type: str) -> None:
 def get_logger() -> pdslogger.PdsLogger:
     """The global PdsLogger for the metadata tools."""
     return _LOGGER
-
-
-##########################################################################################
-# Cloud task management
-##########################################################################################
-task_list: list[dict[str, Any]] = []
-
-#==========================================================================
-def task_source() -> Iterator[dict[str, Any]]:
-    """Task source generator for cloud_tasks.
-
-    Yields:
-        Each task dictionary from the accumulated task list.
-    """
-    yield from task_list
-
-#==========================================================================
-def add_task(volume_id: str, index_type: str) -> None:
-    """Add a task to the task list.
-
-    Parameters:
-        volume_id: ID of volume to add.
-        index_type: 'index' or 'geometry'.
-    """
-    logger = get_logger()
-    logger.info('Adding task for %s.', volume_id)
-
-    task_id = index_type + '-task-' + volume_id
-    task_args = {'volume_id' : volume_id}
-
-    task_list.append({'task_id':task_id, 'data':task_args})
-
-#==========================================================================
-def write_task_file(task_file: str | None) -> None:
-    """Write the tasks file.
-
-    Parameters:
-        task_file: Name of file to write.
-    """
-    if not task_file:
-        return
-    FCPath(task_file).write_text(json.dumps(task_list, indent=2), encoding="utf-8")
 
 
 ##########################################################################################
@@ -158,14 +114,13 @@ def get_common_args(host: str | None = None,
                         help='''Path to the top of the tree in which to place the
                                 new files.''', action=PathAction)
 
-    gr.add_argument('--volumes', '-vv', type=str, metavar='volumes', nargs='*',
-                    help='''If given, only these volumes are processed.''')
+    gr.add_argument('--volumes', type=str, metavar='volumes', nargs='*',
+                    help='''If given, only these volumes are processed. In cloud CLIs,
+                            also used as the task source for Worker/GCP runs.''')
     gr.add_argument('--labels', '-l', action='store_true',
                     help='''If given, labels are generated for existing files.''')
     gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
                     help='''Glob pattern to select files.''')
-    gr.add_argument('--task-output', '-to', type=str, metavar='task_output',
-                    help='''If given, a task file is written and no processing is performed.''')
 
     # Return parser
     return parser

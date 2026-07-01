@@ -5,24 +5,30 @@ distributed across workers. For local runs the basic usage matches ``metadata-ge
 and all cloud_tasks arguments are also accepted.
 
 Examples:
- For local runs, the basic usage is identical to metadata-geometry. In addition, all
- cloud_tasks arguments are accepted. For example:
+ For local runs with explicit volumes via the task source:
 
-   metadata-geometry-cloud GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ --num-simultaneous-tasks 12
-   metadata-geometry-cloud GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
+   metadata-geometry-cloud GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ \\
+       --volumes GO_0017 GO_0018 --num-simultaneous-tasks 12
 
- For GCP runs:
-   - to use the task file used for the index files:
-     metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml --task-file index_tasks.json
+ For GCP runs, first generate a task file:
 
-   - to use a new task file:
-     metadata-index-cloud GO_0xxx $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to geometry_tasks.json
-     metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml --task-file geometry_tasks.json --use-spot
+   metadata-task-list GO_0xxx $RMS_METADATA/GO_0xxx/ --output geo_tasks.json
+
+ Then dispatch:
+
+   metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml \\
+       --task-file geo_tasks.json --use-spot
+
+ Or dispatch directly from a volume list (task file is generated automatically):
+
+   metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml --volumes GO_0017 GO_0018
 
 The full list of command-line options is documented in the user guide.
 """
 import asyncio
 import sys
+import tempfile
+from collections.abc import Iterator
 from typing import Any
 
 from metadata_tools.cli._host import dispatch_cloud_run_if_config, load_host, resolve_host_paths
@@ -61,36 +67,51 @@ def main() -> None:
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir)
+
+    # When --volumes is combined with --config (GCP dispatch), cloud_tasks run
+    # does not understand --volumes. Materialise the volume list into a temp task
+    # file and substitute --task-file so dispatch proceeds normally.
+    if '--volumes' in sys.argv and '--config' in sys.argv:
+        from metadata_tools import task_list_support as tl
+        idx = sys.argv.index('--volumes')
+        vols = [v for v in sys.argv[idx + 1:] if not v.startswith('-')]
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=False, mode='w') as tmp:
+            tmp_name = tmp.name
+        tl.write_task_file(vols, tmp_name)
+        sys.argv = [a for a in sys.argv if a not in (['--volumes'] + vols)]
+        sys.argv += ['--task-file', tmp_name]
+
     dispatch_cloud_run_if_config()
 
     import geometry_config as config
     import host_config as hconf
     from cloud_tasks.worker import Worker
 
-    import metadata_tools.common as com
     import metadata_tools.util as util
-    from metadata_tools.geometry_support import get_args, process_tables
+    from metadata_tools.geometry_support import get_args
 
     async def _run() -> None:
         host, _, _ = util.parse_template_name(hconf.template_name)
         parser = get_args(host=host,
                           selection=config.selection,
                           exclude=config.exclude)
+
+        # Pre-parse to read --volumes before Worker construction.
+        pre_args, _ = parser.parse_known_args(sys.argv[1:])
+
+        task_src = None
+        if pre_args.volumes:
+            from metadata_tools import task_list_support as tl
+            tasks = list(tl.task_generator(pre_args.volumes))
+
+            def task_src() -> Iterator[dict[str, Any]]:
+                return iter(tasks)
+
         worker = Worker(_GeometryTask(host_id, hconf.template_name, config.glob,
                                       config.index_glob, config.selection, config.exclude),
-                        task_source=com.task_source,
+                        task_source=task_src,
                         args=sys.argv[1:],
                         argparser=parser)
-        args = worker._data.args
-        assert args is not None  # nosec B101
-        process_tables(hconf.template_name,
-                       glob=config.glob,
-                       index_glob=config.index_glob,
-                       selection=config.selection,
-                       exclude=config.exclude,
-                       args=args,
-                       task_list_only=True,
-                       task_file=args.task_file)
         await worker.start()
 
     asyncio.run(_run())

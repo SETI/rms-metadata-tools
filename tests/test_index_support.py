@@ -272,20 +272,6 @@ def test_create_index_processes_each_volume(
     assert warnings == [{'COLA'}]
 
 
-def test_create_index_task_list_only(
-        monkeypatch: pytest.MonkeyPatch,
-        tmp_volume_tree: Callable[..., FCPath]) -> None:
-    tree = tmp_volume_tree(files={'_index.tab': ['x']})
-    added: list[Any] = []
-    monkeypatch.setattr(com, 'add_task', lambda vol, col: added.append(vol))
-    monkeypatch.setattr(com, 'write_task_file', lambda f: None)
-    monkeypatch.setattr(com, 'get_logger',
-                        lambda: types.SimpleNamespace(
-                            info=lambda *a, **k: None, warning=lambda *a, **k: None,
-                            close=lambda **k: None))
-    idx._create_index(tree, tree, FCPath('/tmpl.lbl'),
-                      task_list_only=True, task_file='tasks.json')
-    assert sorted(added) == ['GO_0001', 'GO_0002']
 
 
 #===============================================================================
@@ -393,22 +379,6 @@ def test_get_args_parses_type() -> None:
 #===============================================================================
 # process_index wiring
 #===============================================================================
-def test_process_index_task_output_sets_task_list(monkeypatch: pytest.MonkeyPatch) -> None:
-    captured: dict[str, Any] = {}
-    monkeypatch.setattr(idx.process, '_create_index', lambda *a, **k: captured.update(k))
-    args = types.SimpleNamespace(volume_tree='/v', output_tree='/o',
-                                 metadata_tree='/m', volumes=None,
-                                 labels=False, type='supplemental',
-                                 pattern=None, task_output='tasks.json')
-    # SimpleNamespace stands in for the argparse.Namespace process_index expects.
-    idx.process_index('GO_0xxx_supplemental_index', args=args)  # type: ignore[arg-type]
-    assert captured['task_list_only'] is True
-    assert captured['task_file'] == 'tasks.json'
-
-
-#===============================================================================
-# process_index wiring (original)
-#===============================================================================
 def test_process_index_invokes_create_index(monkeypatch: pytest.MonkeyPatch) -> None:
     captured: dict[str, Any] = {}
     monkeypatch.setattr(idx.process, '_create_index',
@@ -416,7 +386,7 @@ def test_process_index_invokes_create_index(monkeypatch: pytest.MonkeyPatch) -> 
     args = types.SimpleNamespace(volume_tree='/v', output_tree='/o',
                                  metadata_tree='/m', volumes=['GO_0001'],
                                  labels=False, type='supplemental',
-                                 pattern=None, task_output=None)
+                                 pattern=None)
     # SimpleNamespace stands in for the argparse.Namespace process_index expects.
     idx.process_index('GO_0xxx_supplemental_index', args=args)  # type: ignore[arg-type]
     assert captured['qualifier'] == 'supplemental'

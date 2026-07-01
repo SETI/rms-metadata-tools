@@ -62,9 +62,7 @@ def process_tables(template_name: str,
                    sampling: int = 8,
                    glob: str | None = None,
                    index_glob: str | None = None,
-                   args: argparse.Namespace | None = None,
-                   task_file: str | None = None,
-                   task_list_only: bool = False) -> None:
+                   args: argparse.Namespace | None = None) -> None:
     """Create geometry tables for a collection of volumes.
 
     Parameters:
@@ -77,12 +75,6 @@ def process_tables(template_name: str,
         glob: Glob pattern for data files.
         index_glob: Glob pattern for index files.
         args: Parsed arguments.
-        task_file: Name of tasks file. This file is overwritten. If not given,
-            tasks are provided via the task_source generator.
-        task_list_only: If True, a task list is created and no processing is
-            performed. If task_file is given, then the task list is written to
-            that file. Otherwise, the task list is accessed via the task_source
-            generator.
     """
 
     # Parse arguments
@@ -143,17 +135,7 @@ def process_tables(template_name: str,
                 if new_only and (list(outdir.glob('*_inventory.csv')) != []):
                     continue
 
-                # Update the task file...
-                if task_list_only:
-                    com.add_task(vol, 'geometry')
-
-                # ... or process this volume
-                else:
-                    suite = Suite(indir, outdir, template_path, metadata_dir,
-                                  selection=args.selection, glob=glob, index_glob=index_glob,
-                                  first=args.first, sampling=args.sampling)
-                    suite.create(labels_only=labels_only, pattern=args.pattern)
-
-    # Write the task file
-    if task_list_only:
-        com.write_task_file(task_file)
+                suite = Suite(indir, outdir, template_path, metadata_dir,
+                              selection=args.selection, glob=glob, index_glob=index_glob,
+                              first=args.first, sampling=args.sampling)
+                suite.create(labels_only=labels_only, pattern=args.pattern)
