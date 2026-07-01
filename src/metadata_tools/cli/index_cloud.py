@@ -37,7 +37,6 @@ class _IndexTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         load_host(self._host_id)
-#        sys.path.append('')
         from metadata_tools.index_support import process_index
         process_index(self._template_name, glob=self._glob,
                       args=worker_data.args, volumes=[task_data['volume_id']])
@@ -51,7 +50,6 @@ def main() -> None:
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir)
     dispatch_cloud_run_if_config()
-#    sys.path.append('')  # needed for GCP worker instances
 
     import host_config as hconf
     import index_config as config

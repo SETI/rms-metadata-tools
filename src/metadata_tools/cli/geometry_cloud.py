@@ -44,7 +44,6 @@ class _GeometryTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         load_host(self._host_id)
-        sys.path.append('')
         from metadata_tools.geometry_support import process_tables
         process_tables(self._template_name,
                        glob=self._glob,
@@ -63,7 +62,6 @@ def main() -> None:
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir)
     dispatch_cloud_run_if_config()
-    sys.path.append('')  # needed for GCP worker instances
 
     import geometry_config as config
     import host_config as hconf

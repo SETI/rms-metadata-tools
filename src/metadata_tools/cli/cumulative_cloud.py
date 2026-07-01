@@ -36,7 +36,6 @@ class _CumulativeTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         load_host(self._host_id)
-        sys.path.append('')
         import geometry_config  # noqa: F401  (side effects: column registration)
 
         from metadata_tools.cumulative_support import create_cumulative_indexes
@@ -51,7 +50,6 @@ def main() -> None:
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir)
     dispatch_cloud_run_if_config()
-    sys.path.append('')  # needed for GCP worker instances
 
     import geometry_config  # noqa: F401  (side effects: column registration)
     import host_config as hconf
