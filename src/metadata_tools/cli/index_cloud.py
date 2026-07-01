@@ -51,7 +51,7 @@ def main() -> None:
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir)
     dispatch_cloud_run_if_config()
-    sys.path.append('')  # needed for GCP worker instances
+#    sys.path.append('')  # needed for GCP worker instances
 
     import host_config as hconf
     import index_config as config
