@@ -1,4 +1,5 @@
 """Shared host-directory injection for CLI entry points."""
+import subprocess
 import sys
 from pathlib import Path
 
@@ -32,22 +33,43 @@ def host_dir_for(host_id: str) -> Path:
     return Path(__file__).parent.parent / 'hosts' / host_id
 
 
-def resolve_task_file(host_dir: Path) -> None:
-    """Rewrite a relative --task-file value in sys.argv to an absolute path under host_dir.
+def resolve_host_paths(host_dir: Path) -> None:
+    """Rewrite bare ``--config`` and ``--task-file`` values in sys.argv to absolute paths.
 
-    If the user passes ``--task-file some_name.json`` (a relative path, not an absolute
-    path and not a URL), the bare name is resolved against the host directory so that the
-    CLI can be invoked from any working directory, not just the host directory itself.
-    Absolute paths and cloud URLs (``gs://``, ``s3://``, ``https://``, etc.) are left
+    If the user passes a bare filename (no directory components, not absolute, not a URL)
+    for either ``--config`` or ``--task-file``, it is resolved against *host_dir* so the
+    CLI can be invoked from any working directory.  Absolute paths, paths with directory
+    separators, and cloud URLs (``gs://``, ``s3://``, ``https://``, etc.) are left
     unchanged.
     """
     for i, arg in enumerate(sys.argv[:-1]):
-        if arg == '--task-file':
+        if arg in {'--config', '--task-file'}:
             value = sys.argv[i + 1]
             p = Path(value)
-            # Only rewrite bare filenames (no directory components, no URL, not absolute).
-            # Paths with directory separators are left to resolve from CWD as the caller
-            # intended (e.g. src/metadata_tools/hosts/GO_0xxx/cumulative_tasks.json on GCP).
             if not p.is_absolute() and '://' not in value and p.parent == Path('.'):
                 sys.argv[i + 1] = str(host_dir / value)
-            break
+
+
+def resolve_task_file(host_dir: Path) -> None:
+    """Alias for :func:`resolve_host_paths`; kept for backwards compatibility."""
+    resolve_host_paths(host_dir)
+
+
+def dispatch_cloud_run_if_config() -> None:
+    """Shell out to ``cloud_tasks run`` if ``--config`` is present in sys.argv.
+
+    Must be called after :func:`load_host` and :func:`resolve_host_paths` so that
+    bare ``--config`` and ``--task-file`` filenames have already been resolved to
+    absolute paths under the host directory.
+
+    If ``--config`` is absent, returns immediately and the caller continues with
+    normal local Worker execution.  If ``--config`` is present, invokes::
+
+        cloud_tasks run <sys.argv[1:]>
+
+    as a subprocess and exits with its return code — the function never returns
+    in that case.
+    """
+    if '--config' not in sys.argv:
+        return
+    sys.exit(subprocess.run(['cloud_tasks', 'run'] + sys.argv[1:]).returncode)

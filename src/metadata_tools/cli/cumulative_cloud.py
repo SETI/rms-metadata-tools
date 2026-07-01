@@ -6,8 +6,8 @@ matches ``metadata-cumulative``, and all cloud_tasks arguments are also accepted
 
 Examples:
  For local runs, the basic usage is identical to metadata-cumulative. In addition, all
- cloud_tasks arguments are also accepted. A bare filename for --task-file is resolved
- relative to the installed host directory, so the command can be run from any directory:
+ cloud_tasks arguments are also accepted. Bare filenames for --config and --task-file are
+ resolved relative to the installed host directory, so the command can be run from any directory:
 
    metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json
    metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json -vv GO_0017
@@ -15,11 +15,7 @@ Examples:
  For GCP runs, use:
    gcloud auth application-default login       # if necessary
 
-   # Locate the installed host directory (works from any working directory):
-   host_dir=$(python -c "from metadata_tools.cli._host import host_dir_for; print(host_dir_for('GO_0xxx'))")
-
-   - to use the task file used for the index files:
-     cloud_tasks run --config $host_dir/gcp_cumulative_config.yml --task-file $host_dir/cumulative_tasks.json --use-spot
+   metadata-cumulative-cloud GO_0xxx --config gcp_cumulative_config.yml --task-file cumulative_tasks.json --use-spot
 
 The full list of command-line options is documented in the user guide.
 """
@@ -27,7 +23,7 @@ import asyncio
 import sys
 from typing import Any
 
-from metadata_tools.cli._host import load_host, resolve_task_file
+from metadata_tools.cli._host import dispatch_cloud_run_if_config, load_host, resolve_host_paths
 
 
 class _CumulativeTask:
@@ -53,7 +49,8 @@ def main() -> None:
         sys.exit('Usage: metadata-cumulative-cloud HOST_ID [args...]')
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
-    resolve_task_file(host_dir)
+    resolve_host_paths(host_dir)
+    dispatch_cloud_run_if_config()
     sys.path.append('')  # needed for GCP worker instances
 
     import geometry_config  # noqa: F401  (side effects: column registration)

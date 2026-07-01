@@ -12,15 +12,12 @@ Examples:
    metadata-geometry-cloud GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017 --num-simultaneous-tasks 12
 
  For GCP runs:
-   # Locate the installed host directory (works from any working directory):
-   host_dir=$(python -c "from metadata_tools.cli._host import host_dir_for; print(host_dir_for('GO_0xxx'))")
-
    - to use the task file used for the index files:
-     cloud_tasks run --config $host_dir/gcp_geometry_config.yml --task-file $host_dir/index_tasks.json
+     metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml --task-file index_tasks.json
 
    - to use a new task file:
-     metadata-index GO_0xxx $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to $host_dir/geometry_tasks.json
-     cloud_tasks run --config $host_dir/gcp_geometry_config.yml --task-file $host_dir/geometry_tasks.json --use-spot
+     metadata-index-cloud GO_0xxx $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -to geometry_tasks.json
+     metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml --task-file geometry_tasks.json --use-spot
 
 The full list of command-line options is documented in the user guide.
 """
@@ -28,7 +25,7 @@ import asyncio
 import sys
 from typing import Any
 
-from metadata_tools.cli._host import load_host, resolve_task_file
+from metadata_tools.cli._host import dispatch_cloud_run_if_config, load_host, resolve_host_paths
 
 
 class _GeometryTask:
@@ -64,7 +61,8 @@ def main() -> None:
         sys.exit('Usage: metadata-geometry-cloud HOST_ID [args...]')
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
-    resolve_task_file(host_dir)
+    resolve_host_paths(host_dir)
+    dispatch_cloud_run_if_config()
     sys.path.append('')  # needed for GCP worker instances
 
     import geometry_config as config
