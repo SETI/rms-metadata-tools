@@ -19,11 +19,15 @@ Examples:
 
 The full list of command-line options is documented in the user guide.
 """
-import asyncio
 import sys
 from typing import Any
 
-from metadata_tools.cli._host import dispatch_cloud_run_if_config, load_host, resolve_host_paths
+from metadata_tools.cli._host import (
+    dispatch_cloud_run_if_config,
+    load_host,
+    resolve_host_paths,
+    run_cloud_worker,
+)
 
 
 class _CumulativeTask:
@@ -53,17 +57,11 @@ def main() -> None:
 
     import geometry_config  # noqa: F401  (side effects: column registration)
     import host_config as hconf
-    from cloud_tasks.worker import Worker
 
     import metadata_tools.util as util
     from metadata_tools.cumulative_support import get_args
 
-    async def _run() -> None:
-        host, _, _ = util.parse_template_name(hconf.template_name)
-        parser = get_args(host=host)
-        worker = Worker(_CumulativeTask(host_id, hconf.template_name),
-                        args=sys.argv[1:],
-                        argparser=parser)
-        await worker.start()
-
-    asyncio.run(_run())
+    host, _, _ = util.parse_template_name(hconf.template_name)
+    parser = get_args(host=host)
+    run_cloud_worker(parser, _CumulativeTask(host_id, hconf.template_name),
+                     supports_volumes=False)

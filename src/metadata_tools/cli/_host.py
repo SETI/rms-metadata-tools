@@ -1,7 +1,12 @@
 """Shared host-directory injection for CLI entry points."""
+import argparse
+import asyncio
 import subprocess
 import sys
+import tempfile
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 
 def load_host(host_id: str) -> Path:
@@ -73,3 +78,59 @@ def dispatch_cloud_run_if_config() -> None:
     if '--config' not in sys.argv:
         return
     sys.exit(subprocess.run(['cloud_tasks', 'run'] + sys.argv[1:]).returncode)
+
+
+def volumes_to_task_file_if_needed() -> None:
+    """Convert ``--volumes`` to a temp task file when ``--config`` is also present.
+
+    ``cloud_tasks run`` does not understand ``--volumes``.  When both flags are
+    present (GCP dispatch with an inline volume list), materialise the volumes
+    into a temporary JSON task file, rewrite sys.argv to use ``--task-file``
+    instead, and drop the ``--volumes`` entries so dispatch proceeds normally.
+    """
+    if '--volumes' not in sys.argv or '--config' not in sys.argv:
+        return
+    from metadata_tools import task_list_support as tl
+    idx = sys.argv.index('--volumes')
+    vols = [v for v in sys.argv[idx + 1:] if not v.startswith('-')]
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=False, mode='w') as tmp:
+        tmp_name = tmp.name
+    tl.write_task_file(vols, tmp_name)
+    sys.argv = [a for a in sys.argv if a not in (['--volumes'] + vols)]
+    sys.argv += ['--task-file', tmp_name]
+
+
+def run_cloud_worker(
+    parser: argparse.ArgumentParser,
+    task: Any,
+    *,
+    supports_volumes: bool = True,
+) -> None:
+    """Run an async cloud Worker with the given task callable.
+
+    Handles pre-parsing ``sys.argv`` for ``--volumes`` to build a task source
+    iterator, then constructs and starts a ``cloud_tasks.worker.Worker``.
+
+    Args:
+        parser: The argparser for the command (passed through to Worker).
+        task: Picklable callable to execute per task (index, geometry, or cumulative).
+        supports_volumes: When False, skip the ``--volumes`` pre-parse step
+            (cumulative tasks do not accept per-volume task sources).
+    """
+    from cloud_tasks.worker import Worker
+
+    async def _run() -> None:
+        task_src: Any = None
+        if supports_volumes:
+            pre_args, _ = parser.parse_known_args(sys.argv[1:])
+            if pre_args.volumes:
+                from metadata_tools import task_list_support as tl
+                tasks = list(tl.task_generator(pre_args.volumes))
+
+                def task_src() -> Iterator[dict[str, Any]]:
+                    return iter(tasks)
+
+        worker = Worker(task, task_source=task_src, args=sys.argv[1:], argparser=parser)
+        await worker.start()
+
+    asyncio.run(_run())

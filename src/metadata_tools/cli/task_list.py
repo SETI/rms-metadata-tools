@@ -5,8 +5,8 @@ Two modes are supported:
 **Scan mode** — HOST_ID and a tree path are given; volumes are discovered by walking
 the tree:
 
-    metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output tasks.json
-    metadata-task-list GO_0xxx $RMS_METADATA/GO_0xxx/ --output geo_tasks.json
+    metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output index_tasks.json
+    metadata-task-list GO_0xxx $RMS_METADATA/GO_0xxx/ --output geometry_tasks.json
 
 **Explicit mode** — no HOST_ID; volumes are specified directly:
 
