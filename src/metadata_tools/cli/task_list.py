@@ -3,17 +3,18 @@
 Two modes are supported:
 
 **Scan mode** — HOST_ID and a tree path are given; volumes are discovered by walking
-the tree:
+the tree (the task file is written to the host directory):
 
-    metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output index_tasks.json
-    metadata-task-list GO_0xxx $RMS_METADATA/GO_0xxx/ --output geometry_tasks.json
+    metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output tasks.json
 
-**Explicit mode** — no HOST_ID; volumes are specified directly:
+**Explicit mode** — no HOST_ID; volumes are specified directly (the task file is written
+to the current working directory):
 
     metadata-task-list --volumes GO_0001 GO_0002 --output tasks.json
 """
 import argparse
 import sys
+from pathlib import Path
 
 from filecache import FCPath
 
@@ -25,7 +26,7 @@ def main() -> None:
     if len(sys.argv) >= 2 and not sys.argv[1].startswith('-'):
         # Scan mode: HOST_ID tree --output FILE
         host_id = sys.argv[1]
-        load_host(host_id)  # removes HOST_ID from sys.argv, adds host dir to sys.path
+        host_dir = load_host(host_id)  # removes HOST_ID from sys.argv, adds host dir to sys.path
 
         parser = argparse.ArgumentParser(
             description='Generate a task list file by scanning a volume tree.')
@@ -34,6 +35,10 @@ def main() -> None:
         parser.add_argument('--output', '-o', type=str, required=True,
                             help='Output JSON task list file path.')
         args = parser.parse_args()
+        output = args.output
+        p = Path(output)
+        if not p.is_absolute() and '://' not in output and p.parent == Path('.'):
+            output = str(host_dir / output)
         volumes = scan_volumes(FCPath(args.tree))
     else:
         # Explicit mode: --volumes V1 V2 ... --output FILE
@@ -46,5 +51,6 @@ def main() -> None:
                             help='Output JSON task list file path.')
         args = parser.parse_args()
         volumes = args.volumes
+        output = args.output
 
-    write_task_file(volumes, args.output)
+    write_task_file(volumes, output)

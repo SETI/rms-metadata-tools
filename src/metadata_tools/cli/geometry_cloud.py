@@ -12,16 +12,15 @@ Examples:
 
  For GCP runs, first generate a task file:
 
-   metadata-task-list GO_0xxx $RMS_METADATA/GO_0xxx/ --output geo_tasks.json
+   metadata-task-list GO_0xxx $RMS_METADATA/GO_0xxx/ --output tasks.json
 
  Then dispatch:
 
-   metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml \\
-       --task-file geo_tasks.json --use-spot
+   metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml --task-file tasks.json --use-spot
 
  Or dispatch directly from a volume list (task file is generated automatically):
 
-   metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml --volumes GO_0017 GO_0018
+   metadata-geometry-cloud GO_0xxx --config gcp_geometry_config.yml --volumes GO_0017 GO_0018 --use-spot
 
 The full list of command-line options is documented in the user guide.
 """
