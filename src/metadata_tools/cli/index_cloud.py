@@ -32,7 +32,7 @@ from metadata_tools.cli._host import (
     load_host,
     resolve_host_paths,
     run_cloud_worker,
-    volumes_to_task_file_if_needed,
+    volumes_as_task_file,
 )
 
 
@@ -59,8 +59,10 @@ def main() -> None:
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir)
-    volumes_to_task_file_if_needed()
-    dispatch_cloud_run_if_config()
+    with volumes_as_task_file():
+        rc = dispatch_cloud_run_if_config()
+    if rc is not None:
+        sys.exit(rc)
 
     import host_config as hconf
     import index_config as config

@@ -1,8 +1,7 @@
 """Shared host-directory injection for CLI entry points."""
 import argparse
 import asyncio
-import atexit
-import os
+import contextlib
 import subprocess
 import sys
 import tempfile
@@ -62,51 +61,54 @@ def resolve_task_file(host_dir: Path) -> None:
     resolve_host_paths(host_dir)
 
 
-def dispatch_cloud_run_if_config() -> None:
+def dispatch_cloud_run_if_config() -> int | None:
     """Shell out to ``cloud_tasks run`` if ``--config`` is present in sys.argv.
 
     Must be called after :func:`load_host` and :func:`resolve_host_paths` so that
     bare ``--config`` and ``--task-file`` filenames have already been resolved to
     absolute paths under the host directory.
 
-    If ``--config`` is absent, returns immediately and the caller continues with
+    If ``--config`` is absent, returns ``None`` and the caller continues with
     normal local Worker execution.  If ``--config`` is present, invokes::
 
         cloud_tasks run <sys.argv[1:]>
 
-    as a subprocess and exits with its return code — the function never returns
-    in that case.
+    as a subprocess, waits for it to finish (including after Ctrl+C), and returns
+    its exit code for the caller to pass to ``sys.exit()``.
     """
     if '--config' not in sys.argv:
-        return
+        return None
     cloud_tasks_bin = Path(sys.executable).parent / 'cloud_tasks'
     proc = subprocess.Popen([str(cloud_tasks_bin), 'run'] + sys.argv[1:])
     try:
         proc.wait()
     except KeyboardInterrupt:
         proc.wait()  # subprocess already got SIGINT; let it finish its own cleanup
-    sys.exit(proc.returncode)
+    return proc.returncode
 
 
-def volumes_to_task_file_if_needed() -> None:
-    """Convert ``--volumes`` to a temp task file when ``--config`` is also present.
+@contextlib.contextmanager
+def volumes_as_task_file() -> Iterator[None]:
+    """Context manager: convert ``--volumes`` to a temp task file when ``--config`` is also present.
 
     ``cloud_tasks run`` does not understand ``--volumes``.  When both flags are
     present (GCP dispatch with an inline volume list), materialise the volumes
     into a temporary JSON task file, rewrite sys.argv to use ``--task-file``
     instead, and drop the ``--volumes`` entries so dispatch proceeds normally.
+    The temp file is deleted automatically when the ``with`` block exits, even
+    on interrupt.
     """
     if '--volumes' not in sys.argv or '--config' not in sys.argv:
+        yield
         return
     from metadata_tools import task_list_support as tl
     idx = sys.argv.index('--volumes')
     vols = [v for v in sys.argv[idx + 1:] if not v.startswith('-')]
-    with tempfile.NamedTemporaryFile(suffix='.json', delete=False, mode='w') as tmp:
-        tmp_name = tmp.name
-    atexit.register(lambda: os.unlink(tmp_name) if os.path.exists(tmp_name) else None)
-    tl.write_task_file(vols, tmp_name)
-    sys.argv = [a for a in sys.argv if a not in (['--volumes'] + vols)]
-    sys.argv += ['--task-file', tmp_name]
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=True, mode='w') as tmp:
+        tl.write_task_file(vols, tmp.name)
+        sys.argv = [a for a in sys.argv if a not in (['--volumes'] + vols)]
+        sys.argv += ['--task-file', tmp.name]
+        yield
 
 
 def run_cloud_worker(

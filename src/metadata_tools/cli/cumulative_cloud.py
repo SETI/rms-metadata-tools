@@ -53,7 +53,9 @@ def main() -> None:
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir)
-    dispatch_cloud_run_if_config()
+    rc = dispatch_cloud_run_if_config()
+    if rc is not None:
+        sys.exit(rc)
 
     import geometry_config  # noqa: F401  (side effects: column registration)
     import host_config as hconf
