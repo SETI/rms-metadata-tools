@@ -77,7 +77,8 @@ def dispatch_cloud_run_if_config() -> None:
     """
     if '--config' not in sys.argv:
         return
-    sys.exit(subprocess.run(['cloud_tasks', 'run'] + sys.argv[1:]).returncode)
+    cloud_tasks_bin = Path(sys.executable).parent / 'cloud_tasks'
+    sys.exit(subprocess.run([str(cloud_tasks_bin), 'run'] + sys.argv[1:]).returncode)
 
 
 def volumes_to_task_file_if_needed() -> None:
