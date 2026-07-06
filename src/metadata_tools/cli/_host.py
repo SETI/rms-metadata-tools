@@ -1,6 +1,8 @@
 """Shared host-directory injection for CLI entry points."""
 import argparse
 import asyncio
+import atexit
+import os
 import subprocess
 import sys
 import tempfile
@@ -78,7 +80,12 @@ def dispatch_cloud_run_if_config() -> None:
     if '--config' not in sys.argv:
         return
     cloud_tasks_bin = Path(sys.executable).parent / 'cloud_tasks'
-    sys.exit(subprocess.run([str(cloud_tasks_bin), 'run'] + sys.argv[1:]).returncode)
+    proc = subprocess.Popen([str(cloud_tasks_bin), 'run'] + sys.argv[1:])
+    try:
+        proc.wait()
+    except KeyboardInterrupt:
+        proc.wait()  # subprocess already got SIGINT; let it finish its own cleanup
+    sys.exit(proc.returncode)
 
 
 def volumes_to_task_file_if_needed() -> None:
@@ -96,6 +103,7 @@ def volumes_to_task_file_if_needed() -> None:
     vols = [v for v in sys.argv[idx + 1:] if not v.startswith('-')]
     with tempfile.NamedTemporaryFile(suffix='.json', delete=False, mode='w') as tmp:
         tmp_name = tmp.name
+    atexit.register(lambda: os.unlink(tmp_name) if os.path.exists(tmp_name) else None)
     tl.write_task_file(vols, tmp_name)
     sys.argv = [a for a in sys.argv if a not in (['--volumes'] + vols)]
     sys.argv += ['--task-file', tmp_name]
@@ -134,4 +142,7 @@ def run_cloud_worker(
         worker = Worker(task, task_source=task_src, args=sys.argv[1:], argparser=parser)
         await worker.start()
 
-    asyncio.run(_run())
+    try:
+        asyncio.run(_run())
+    except KeyboardInterrupt:
+        sys.exit(130)
