@@ -57,7 +57,7 @@ The geometry engine is a package:
      formats.py         # FORMAT_DICT: per-column format/units/null/range metadata
      bodies_select.py   # primary/body selection and field-of-view inventory
 
-A host directory mixes configuration, templates, and runnable scripts:
+A host directory contains configuration, templates, and runnable scripts:
 
 .. code-block:: text
 
@@ -66,10 +66,17 @@ A host directory mixes configuration, templates, and runnable scripts:
      index_config.py           # index glob + key__<NAME> column functions
      geometry_config.py        # SPICE id, mission table, meshgrids, hooks
      host_init.py              # initializes the oops host module (side effects)
-     GO_0xxx_index.py          # local index entry point (argparse CLI)
-     GO_0xxx_geometry.py       # local geometry entry point
-     GO_0xxx_cumulative.py     # local cumulative entry point
      GO_0xxx_*_cloud.py        # rms-cloud-tasks (GCP) counterparts
-     gcp_*_config.yml          # GCP machine/queue configuration
-     gcp_*_startup.sh          # GCP instance start-up scripts
      templates/                # host PDS3 label templates
+
+GCP deployment files live outside the package and are not installed with the wheel:
+
+.. code-block:: text
+
+   cloud/
+     gcp_common_startup.sh     # shared VM bootstrap header
+     generate_startup_scripts.py  # regenerates gcp_*_startup.sh from tail fragments
+     GO_0xxx/
+       gcp_*_config.yml        # GCP machine/queue configuration
+       gcp_*_startup.sh        # GCP instance start-up scripts (generated)
+       gcp_*_startup.tail.sh   # host-specific command fragments (edit these)

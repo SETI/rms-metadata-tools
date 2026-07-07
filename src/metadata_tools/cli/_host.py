@@ -32,28 +32,42 @@ def load_host(host_id: str) -> Path:
 def host_dir_for(host_id: str) -> Path:
     """Return the absolute host directory path without modifying sys.argv or sys.path.
 
-    Useful for shell one-liners that just need the path, e.g.::
+    Useful for resolving the path in a shell script, e.g.::
 
-        host_dir=$(python -c "from metadata_tools.cli._host import host_dir_for; print(host_dir_for('GO_0xxx'))")
+        host_dir=$(python -c "
+            from metadata_tools.cli._host import host_dir_for
+            print(host_dir_for('GO_0xxx'))")
     """
     return Path(__file__).parent.parent / 'hosts' / host_id
 
 
-def resolve_host_paths(host_dir: Path) -> None:
+def cloud_dir_for(host_id: str) -> Path:
+    """Return the absolute cloud deployment directory path for *host_id*.
+
+    Resolves ``cloud/<host_id>/`` relative to the repository root (four levels
+    above this file in an editable install).  Only valid in a development checkout;
+    a regular ``pip install`` lands this file in site-packages where the ``cloud/``
+    tree is not present.
+    """
+    return Path(__file__).parent.parent.parent.parent / 'cloud' / host_id
+
+
+def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
     """Rewrite bare ``--config`` and ``--task-file`` values in sys.argv to absolute paths.
 
     If the user passes a bare filename (no directory components, not absolute, not a URL)
-    for either ``--config`` or ``--task-file``, it is resolved against *host_dir* so the
-    CLI can be invoked from any working directory.  Absolute paths, paths with directory
-    separators, and cloud URLs (``gs://``, ``s3://``, ``https://``, etc.) are left
-    unchanged.
+    for either ``--config`` or ``--task-file``, it is resolved against *cloud_dir* (if
+    provided) or *host_dir* so the CLI can be invoked from any working directory.
+    Absolute paths, paths with directory separators, and cloud URLs (``gs://``,
+    ``s3://``, ``https://``, etc.) are left unchanged.
     """
+    base = cloud_dir if cloud_dir is not None else host_dir
     for i, arg in enumerate(sys.argv[:-1]):
         if arg in {'--config', '--task-file'}:
             value = sys.argv[i + 1]
             p = Path(value)
             if not p.is_absolute() and '://' not in value and p.parent == Path('.'):
-                sys.argv[i + 1] = str(host_dir / value)
+                sys.argv[i + 1] = str(base / value)
 
 
 def resolve_task_file(host_dir: Path) -> None:

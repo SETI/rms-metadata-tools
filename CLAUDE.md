@@ -85,7 +85,7 @@ Core engine modules:
 - `<HOST>_{index,geometry,cumulative}.py` — local entry points (argparse CLIs; see each
   file's header comment for arguments and examples).
 - `<HOST>_{index,geometry,cumulative}_cloud.py` — same work distributed via `rms-cloud-tasks`
-  (GCP); paired with `gcp_*_config.yml` and `gcp_*_startup.sh`.
+  (GCP); paired with `cloud/<HOST>/gcp_*_config.yml` and `cloud/<HOST>/gcp_*_startup.sh`.
 - `templates/` — PDS3 label templates (`host_defs.lbl`, `*_supplemental_index.lbl`,
   `*_{body,ring,sky}_summary.lbl`); shared template fragments are in
   `src/metadata_tools/templates/`.

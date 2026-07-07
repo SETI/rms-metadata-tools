@@ -54,9 +54,9 @@ host's paired configuration:
        "$RMS_METADATA_TEST/GO_0xxx/" -to index_tasks.json
    cloud_tasks run --config gcp_index_config.yml --task-file index_tasks.json --use-spot
 
-Each host directory contains the ``gcp_*_config.yml`` machine/queue
-configuration and the ``gcp_*_startup.sh`` instance start-up script referenced
-above.
+The ``gcp_*_config.yml`` machine/queue configuration and ``gcp_*_startup.sh``
+instance start-up scripts live in ``cloud/<HOST>/`` at the repository root
+(not inside the installed package).
 
 Task file schema
 ================

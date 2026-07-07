@@ -16,11 +16,13 @@ Examples:
 
  Then dispatch:
 
-   metadata-geometry-cloud GO_0xxx --use-spot --config gcp_geometry_config.yml --task-file tasks.json
+   metadata-geometry-cloud GO_0xxx --use-spot \
+       --config cloud/GO_0xxx/gcp_geometry_config.yml --task-file cloud/GO_0xxx/tasks.json
 
  Or dispatch directly from a volume list (task file is generated automatically):
 
-   metadata-geometry-cloud GO_0xxx --use-spot --config gcp_geometry_config.yml --volumes GO_0022 GO_0016
+   metadata-geometry-cloud GO_0xxx --use-spot \
+       --config cloud/GO_0xxx/gcp_geometry_config.yml --volumes GO_0022 GO_0016
 
 The full list of command-line options is documented in the user guide.
 """
@@ -28,6 +30,7 @@ import sys
 from typing import Any
 
 from metadata_tools.cli._host import (
+    cloud_dir_for,
     dispatch_cloud_run_if_config,
     load_host,
     resolve_host_paths,
@@ -68,7 +71,7 @@ def main() -> None:
         sys.exit('Usage: metadata-geometry-cloud HOST_ID [args...]')
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
-    resolve_host_paths(host_dir)
+    resolve_host_paths(host_dir, cloud_dir_for(host_id))
     with volumes_as_task_file():
         rc = dispatch_cloud_run_if_config()
     if rc is not None:

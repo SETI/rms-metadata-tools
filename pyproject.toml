@@ -69,6 +69,9 @@ markers = [
 
 [tool.setuptools]
 [tool.setuptools.packages.find]
+# Only packages under src/ are discovered. The top-level cloud/ deployment tree
+# (GCP config YAMLs, startup scripts) is outside src/ and therefore never ships
+# in the wheel or sdist.
 where = ["src"]
 
 # PDS3 label templates are read at runtime (see defs.GLOBAL_TEMPLATE_PATH and the
