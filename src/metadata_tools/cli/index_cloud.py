@@ -8,7 +8,7 @@ Examples:
  For local runs with explicit volumes via the task source:
 
    metadata-index-cloud GO_0xxx $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ \\
-       $RMS_METADATA_TEST/GO_0xxx/ --volumes GO_0017 GO_0018 --num-simultaneous-tasks 12
+       $RMS_METADATA_TEST/GO_0xxx/ --volumes GO_0022 GO_0016 --num-simultaneous-tasks 12
 
  For GCP runs, first generate a task file:
 
@@ -16,11 +16,11 @@ Examples:
 
  Then dispatch:
 
-   metadata-index-cloud GO_0xxx --config gcp_index_config.yml --task-file tasks.json --use-spot
+   metadata-index-cloud GO_0xxx --use-spot --config gcp_index_config.yml --task-file tasks.json
 
  Or dispatch directly from a volume list (task file is generated automatically):
 
-   metadata-index-cloud GO_0xxx --config gcp_index_config.yml --volumes GO_0017 GO_0018 --use-spot
+   metadata-index-cloud GO_0xxx --use-spot --config gcp_index_config.yml --volumes GO_0022 GO_0016
 
 The full list of command-line options is documented in the user guide.
 """
