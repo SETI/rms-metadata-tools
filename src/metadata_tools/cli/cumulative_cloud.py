@@ -6,16 +6,16 @@ matches ``metadata-cumulative``, and all cloud_tasks arguments are also accepted
 
 Examples:
  For local runs, the basic usage is identical to metadata-cumulative. In addition, all
- cloud_tasks arguments are also accepted. Bare filenames for --config and --task-file are
- resolved relative to the installed host directory, so the command can be run from any directory:
+ cloud_tasks arguments are also accepted. Bare filenames for --config are resolved relative
+ to the installed host directory, so the command can be run from any directory:
 
-   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json
-   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --task-file cumulative_tasks.json --volumes GO_0017
+   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/
+   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --volumes GO_0017
 
  For GCP runs, use:
    gcloud auth application-default login       # if necessary
 
-   metadata-cumulative-cloud GO_0xxx --config gcp_cumulative_config.yml --task-file cumulative_tasks.json --use-spot
+   metadata-cumulative-cloud GO_0xxx --use-spot --config gcp_cumulative_config.yml
 
 The full list of command-line options is documented in the user guide.
 """
@@ -27,6 +27,7 @@ from metadata_tools.cli._host import (
     load_host,
     resolve_host_paths,
     run_cloud_worker,
+    single_task_as_task_file,
 )
 
 
@@ -53,17 +54,18 @@ def main() -> None:
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir)
-    rc = dispatch_cloud_run_if_config()
-    if rc is not None:
-        sys.exit(rc)
+    with single_task_as_task_file():
+        rc = dispatch_cloud_run_if_config()
+        if rc is not None:
+            sys.exit(rc)
 
-    import geometry_config  # noqa: F401  (side effects: column registration)
-    import host_config as hconf
+        import geometry_config  # noqa: F401  (side effects: column registration)
+        import host_config as hconf
 
-    import metadata_tools.util as util
-    from metadata_tools.cumulative_support import get_args
+        import metadata_tools.util as util
+        from metadata_tools.cumulative_support import get_args
 
-    host, _, _ = util.parse_template_name(hconf.template_name)
-    parser = get_args(host=host)
-    run_cloud_worker(parser, _CumulativeTask(host_id, hconf.template_name),
-                     supports_volumes=False)
+        host, _, _ = util.parse_template_name(hconf.template_name)
+        parser = get_args(host=host)
+        run_cloud_worker(parser, _CumulativeTask(host_id, hconf.template_name),
+                         supports_volumes=False)

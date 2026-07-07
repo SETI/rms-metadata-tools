@@ -88,6 +88,27 @@ def dispatch_cloud_run_if_config() -> int | None:
 
 
 @contextlib.contextmanager
+def single_task_as_task_file() -> Iterator[None]:
+    """Context manager: inject a single-task file when ``--task-file`` is absent.
+
+    Cumulative runs always consist of exactly one task.  When ``--task-file`` is
+    not already in sys.argv, write a minimal one-task JSON to a temp file and
+    add ``--task-file <path>`` to sys.argv so the Worker has a task source.
+    The temp file is deleted automatically when the ``with`` block exits.
+    """
+    if '--task-file' in sys.argv:
+        yield
+        return
+    import json
+    task = [{'task_id': 'cumulative', 'data': {}}]
+    with tempfile.NamedTemporaryFile(suffix='.json', delete=True, mode='w') as tmp:
+        tmp.write(json.dumps(task))
+        tmp.flush()
+        sys.argv += ['--task-file', tmp.name]
+        yield
+
+
+@contextlib.contextmanager
 def volumes_as_task_file() -> Iterator[None]:
     """Context manager: convert ``--volumes`` to a temp task file when ``--config`` is also present.
 
