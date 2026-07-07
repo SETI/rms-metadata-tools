@@ -264,15 +264,9 @@ class Suite:
 
                 # Construct the record for this observation
                 records = self.make_records(i)
-#                   # Build overrides dict
-#                   if count == 0:
-#                       overrides = Suite.get_overrides(records[0])
                 # Update the tables
                 self.add(records)
                 count += 1
-
-        # Run post-processor
-#        self.post()
 
         # Write tables and make labels
         self.write(labels_only=labels_only)

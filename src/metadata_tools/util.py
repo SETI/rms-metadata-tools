@@ -167,7 +167,6 @@ def get_volume_subdir(path: FCPath, volume_id: str) -> FCPath:
         Final directory in the tree.
     """
     return splitpath(path, volume_id)[-1]
-#    return path.split(volume_id)[-1]  ## not currently supported by filecache
 
 #===============================================================================
 # Matches the only form produced by replacement_fn: "defs.<ATTR>["<key>"]"

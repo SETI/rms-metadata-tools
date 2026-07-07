@@ -139,12 +139,6 @@ class RingTable(com.Table):
             if record.rings_present:
                 self.rows += record.add(cast(str, self.qualifier), name=record.primary)
 
-#        # Add other rings
-#        for name in record.bodies
-#           if record.rings_present:
-#               self.rows += record.add(self.qualifier, name=name,
-#                                       target=name+'-ring', no_mask=True
-
 
 ################################################################################
 # BodyTable class

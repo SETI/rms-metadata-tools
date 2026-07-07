@@ -294,7 +294,6 @@ class Record:
                                 start_index=start_index, allow_zero_rows=allow_zero_rows,
                                 no_mask=no_mask,
                                 no_body=no_body)
-#        self.overrides += overrides  ## this is for future development
 
         # Postprocess the rows and append to the output
         lines: list[str] = []

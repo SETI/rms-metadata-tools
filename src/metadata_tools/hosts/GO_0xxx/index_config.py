@@ -115,7 +115,6 @@ def key__product_creation_time(label_path: str | Path | FCPath,
     # Read the VICAR label and take the latest DAT_TIM value
     try:
         local_path = image_path.retrieve()
-#        viclab = vicar.VicarLabel.from_file(local_path)
         viclab = vicar.VicarLabel(local_path, strict=False)
     except FileNotFoundError:
         raise FileNotFoundError(image_path) from None
@@ -240,7 +239,6 @@ def key__on_chip_mosaic_flag(label_path: str | Path | FCPath,
             return 'Y'
 
     # Return None if keyword not present
-#    if not 'ON_CHIP_MOSAIC_FLAG' in label_dict:
     if 'ON_CHIP_MOSAIC_FLAG' not in label_dict:
         return None
 
@@ -260,7 +258,6 @@ def key__compression_quantization_table_id(label_path: str | Path | FCPath,
         Value to write in the index file under CMPRS_QUANTZ_TBL_ID, or None if the
         keyword is not present.
     """
-#    if not 'CMPRS_QUANTZ_TBL_ID' in label_dict:
     if 'CMPRS_QUANTZ_TBL_ID' not in label_dict:
         return None
     return cast(str, label_dict['CMPRS_QUANTZ_TBL_ID'])
