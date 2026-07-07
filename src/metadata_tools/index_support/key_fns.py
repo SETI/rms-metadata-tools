@@ -5,10 +5,10 @@
 from pathlib import Path
 from typing import Any, cast
 
-import host_config as hconf
 from filecache import FCPath
 
 import metadata_tools.util as util
+from metadata_tools.config import get_host_config
 
 
 #===============================================================================
@@ -24,7 +24,7 @@ def key__volume_id(label_path: str | Path | FCPath,
     Returns:
         Volume ID.
     """
-    return cast(str, hconf.get_volume_id(label_path))
+    return cast(str, get_host_config().get_volume_id(label_path))
 
 #===============================================================================
 def key__file_specification_name(label_path: str | Path | FCPath,
@@ -40,4 +40,4 @@ def key__file_specification_name(label_path: str | Path | FCPath,
         File Specification name.
     """
     label_path = FCPath(label_path)
-    return util.get_volume_subdir(label_path, hconf.get_volume_id(label_path))
+    return util.get_volume_subdir(label_path, get_host_config().get_volume_id(label_path))

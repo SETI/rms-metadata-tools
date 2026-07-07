@@ -5,16 +5,18 @@ import types
 from collections.abc import Callable
 from typing import Any
 
-import geometry_config as config
 import numpy as np
 import oops
 import pytest
 
 import metadata_tools.common as com
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import suite as suite_mod
 from metadata_tools.geometry_support import tables
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.suite import Suite
+
+config = get_geometry_config()
 
 
 class RecordingRecord:

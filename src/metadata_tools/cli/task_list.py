@@ -26,7 +26,7 @@ def main() -> None:
     if len(sys.argv) >= 2 and not sys.argv[1].startswith('-'):
         # Scan mode: HOST_ID tree --output FILE
         host_id = sys.argv[1]
-        host_dir = load_host(host_id)  # removes HOST_ID from sys.argv, adds host dir to sys.path
+        host_dir = load_host(host_id)  # removes HOST_ID from sys.argv, validates the host dir
 
         parser = argparse.ArgumentParser(
             description='Generate a task list file by scanning a volume tree.')

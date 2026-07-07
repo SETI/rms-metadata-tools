@@ -30,6 +30,7 @@ from metadata_tools.cli._host import (
     run_cloud_worker,
     single_task_as_task_file,
 )
+from metadata_tools.config import get_host_config, set_host
 
 
 class _CumulativeTask:
@@ -42,7 +43,7 @@ class _CumulativeTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         load_host(self._host_id)
-        import geometry_config  # noqa: F401  (side effects: column registration)
+        set_host(self._host_id)  # also registers geometry_config: column registration
 
         from metadata_tools.cumulative_support import create_cumulative_indexes
         create_cumulative_indexes(self._template_name, args=worker_data.args)
@@ -60,8 +61,8 @@ def main() -> None:
         if rc is not None:
             sys.exit(rc)
 
-        import geometry_config  # noqa: F401  (side effects: column registration)
-        import host_config as hconf
+        set_host(host_id)  # also registers geometry_config: column registration
+        hconf = get_host_config()
 
         import metadata_tools.util as util
         from metadata_tools.cumulative_support import get_args

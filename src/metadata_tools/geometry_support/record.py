@@ -3,12 +3,12 @@
 ################################################################################
 from typing import Any, cast
 
-import geometry_config as config
 import oops
 
 import metadata_tools.columns as col
 import metadata_tools.defs as defs
 import metadata_tools.util as util
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select, formats, prep
 
 
@@ -33,11 +33,12 @@ class Record:
         """
         self.observation = observation
         self.backplane_keys: dict[str, list[Any]] = {}
+        config = get_geometry_config()
 
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
         self.primary, self.secondaries, self.selections, self.additions = \
-            bodies_select.get_primary(self, formats.MISSION_TABLE, sclk)
+            bodies_select.get_primary(self, formats.get_mission_table(), sclk)
         self.level = level
         self.sampling = sampling
         self.pointing_available = True
@@ -224,7 +225,7 @@ class Record:
         Returns:
             Meshgrid for the given observation.
         """
-        return config.meshgrid(meshgrids, observation)
+        return get_geometry_config().meshgrid(meshgrids, observation)
 
     #===============================================================================
     def add(self, qualifier: str, *,

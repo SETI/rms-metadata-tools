@@ -7,12 +7,12 @@ import warnings
 from pathlib import Path
 from typing import Any, cast
 
-import host_config as hconf
 import julian
 import vicar
 from filecache import FCPath
 
 import metadata_tools.util as util
+from metadata_tools.hosts.GO_0xxx import host_config as hconf
 
 ##########################################################################################
 # GO_0xxx arguments

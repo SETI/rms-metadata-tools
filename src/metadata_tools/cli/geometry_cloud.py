@@ -37,6 +37,7 @@ from metadata_tools.cli._host import (
     run_cloud_worker,
     volumes_as_task_file,
 )
+from metadata_tools.config import get_geometry_config, get_host_config, set_host
 
 
 class _GeometryTask:
@@ -55,6 +56,7 @@ class _GeometryTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         load_host(self._host_id)
+        set_host(self._host_id)
         from metadata_tools.geometry_support import process_tables
         process_tables(self._template_name,
                        glob=self._glob,
@@ -77,8 +79,9 @@ def main() -> None:
     if rc is not None:
         sys.exit(rc)
 
-    import geometry_config as config
-    import host_config as hconf
+    set_host(host_id)
+    hconf = get_host_config()
+    config = get_geometry_config()
 
     import metadata_tools.util as util
     from metadata_tools.geometry_support import get_args

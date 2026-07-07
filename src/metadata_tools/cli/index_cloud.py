@@ -37,6 +37,7 @@ from metadata_tools.cli._host import (
     run_cloud_worker,
     volumes_as_task_file,
 )
+from metadata_tools.config import get_host_config, get_index_config, set_host
 
 
 class _IndexTask:
@@ -50,6 +51,7 @@ class _IndexTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         load_host(self._host_id)
+        set_host(self._host_id)
         from metadata_tools.index_support import process_index
         process_index(self._template_name, glob=self._glob,
                       args=worker_data.args, volumes=[task_data['volume_id']])
@@ -67,8 +69,9 @@ def main() -> None:
     if rc is not None:
         sys.exit(rc)
 
-    import host_config as hconf
-    import index_config as config
+    set_host(host_id)
+    hconf = get_host_config()
+    config = get_index_config()
 
     import metadata_tools.util as util
     from metadata_tools.index_support import get_args

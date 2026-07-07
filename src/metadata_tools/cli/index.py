@@ -9,16 +9,17 @@ The full list of command-line options is documented in the user guide.
 import sys
 
 from metadata_tools.cli._host import load_host
+from metadata_tools.config import get_host_config, get_index_config, set_host
 
 
 def main() -> None:
     if len(sys.argv) < 2 or sys.argv[1].startswith('-'):
         sys.exit('Usage: metadata-index HOST_ID [args...]')
-    load_host(sys.argv[1])
-
-    import host_config as hconf
-    import host_init  # noqa: F401
-    import index_config as config
+    host_id = sys.argv[1]
+    load_host(host_id)
+    set_host(host_id)
+    hconf = get_host_config()
+    config = get_index_config()
 
     import metadata_tools.index_support as idx
 

@@ -5,7 +5,6 @@ import types
 from pathlib import Path
 from typing import Any
 
-import host_config as hconf
 import pytest
 from filecache import FCPath
 
@@ -14,6 +13,9 @@ import metadata_tools.cumulative_support as cum
 import metadata_tools.geometry_support as geom
 import metadata_tools.label_support as lab
 import metadata_tools.util as util
+from metadata_tools.config import get_host_config
+
+hconf = get_host_config()
 
 
 def _silent_logger(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -6,15 +6,17 @@ import types
 from pathlib import Path
 from typing import Any
 
-import geometry_config as config
 import oops
 import pytest
 
 import metadata_tools.columns as col
 import metadata_tools.common as com
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.suite import Suite
+
+config = get_geometry_config()
 
 
 #===============================================================================

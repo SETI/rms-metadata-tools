@@ -8,14 +8,13 @@ from pathlib import Path
 from typing import Any, cast
 
 import fortranformat as ff
-import host_config as hconf
-import index_config as config
 from filecache import FCPath
 from pdsparser import PdsLabel
 from pdstemplate.pds3table import Pds3Table
 
 import metadata_tools.common as com
 import metadata_tools.util as util
+from metadata_tools.config import get_host_config, get_index_config
 
 from . import key_fns as _key_fns
 
@@ -67,7 +66,7 @@ class IndexTable(com.Table):
         self.unused: set[str] = set()
 
         # Get volume id
-        self.volume_id = hconf.get_volume_id(self.input_dir)
+        self.volume_id = get_host_config().get_volume_id(self.input_dir)
 
         # Get relevant filenames and paths
         primary_index_name = util.get_index_name(self.input_dir, self.volume_id, '')
@@ -130,6 +129,7 @@ class IndexTable(com.Table):
             return
 
         logger = com.get_logger()
+        hconf = get_host_config()
 
         # Build the index
         n = len(self.files)
@@ -233,7 +233,7 @@ class IndexTable(com.Table):
         fn_name = 'key__' + key.lower()
         fn = getattr(_key_fns, fn_name, None)
         if fn is None:
-            fn = getattr(config, fn_name, None)
+            fn = getattr(get_index_config(), fn_name, None)
 
         if fn is not None:
             value = fn(label_path, label_dict)

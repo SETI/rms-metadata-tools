@@ -9,6 +9,7 @@ import oops
 import pytest
 
 import metadata_tools.util as util
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select
 from metadata_tools.geometry_support.record import Record
 
@@ -128,7 +129,7 @@ def test_obs_excluded_regex_match(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_obs_excluded_identifier_calls_config_function(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123')
-    import geometry_config as config
+    config = get_geometry_config()
     monkeypatch.setattr(config, 'always_true_fn', lambda obs: True, raising=False)
     record = types.SimpleNamespace(observation=object())
     assert bodies_select.obs_excluded(
@@ -137,7 +138,7 @@ def test_obs_excluded_identifier_calls_config_function(
 
 def test_obs_excluded_identifier_then_regex(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123CAL')
-    import geometry_config as config
+    config = get_geometry_config()
     monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
     record = types.SimpleNamespace(observation=object())
     # The first (identifier) exception does not match, but a later regex does;
@@ -148,7 +149,7 @@ def test_obs_excluded_identifier_then_regex(monkeypatch: pytest.MonkeyPatch) -> 
 
 def test_obs_excluded_no_exception_matches(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123')
-    import geometry_config as config
+    config = get_geometry_config()
     monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
     record = types.SimpleNamespace(observation=object())
     assert bodies_select.obs_excluded(

@@ -13,6 +13,7 @@ from pdsparser import PdsLabel
 import metadata_tools.common as com
 import metadata_tools.index_support as idx
 import metadata_tools.util as util
+from metadata_tools.config import get_host_config, get_index_config
 
 IndexTable = idx.IndexTable
 
@@ -136,7 +137,7 @@ def _table_with_stub(stub: Any) -> Any:
 def test_index_one_value_builtin_key_function(monkeypatch: pytest.MonkeyPatch) -> None:
     table = _table_with_stub(None)
     stub = {'NAME': 'VOLUME_ID', 'NULL_CONSTANT': '-'}
-    monkeypatch.setattr(idx.table.hconf,  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_host_config(),
                         'get_volume_id', lambda p: 'GO_0042')
     value = table._index_one_value(stub, FCPath('/x/GO_0042/a.lbl'), {})
     assert value == 'GO_0042'
@@ -145,7 +146,7 @@ def test_index_one_value_builtin_key_function(monkeypatch: pytest.MonkeyPatch) -
 def test_index_one_value_config_key_function(monkeypatch: pytest.MonkeyPatch) -> None:
     table = _table_with_stub(None)
     stub = {'NAME': 'SPECIAL', 'NULL_CONSTANT': '-'}
-    monkeypatch.setattr(idx.table.config, 'key__special',  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_index_config(), 'key__special',
                         lambda path, d: 'computed', raising=False)
     value = table._index_one_value(stub, FCPath('/x/a.lbl'), {})
     assert value == 'computed'
@@ -169,7 +170,7 @@ def test_index_one_value_missing_becomes_null() -> None:
 def test_index_one_value_none_result_becomes_null(monkeypatch: pytest.MonkeyPatch) -> None:
     table = _table_with_stub(None)
     stub = {'NAME': 'SPECIAL', 'NULL_CONSTANT': 'NULLVAL'}
-    monkeypatch.setattr(idx.table.config, 'key__special',  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_index_config(), 'key__special',
                         lambda path, d: None, raising=False)
     value = table._index_one_value(stub, FCPath('/x/a.lbl'), {})
     assert value == 'NULLVAL'
@@ -181,7 +182,7 @@ def test_index_one_value_none_without_null_constant_raises(
     # a ValueError is raised (not a -O-stripped assert).
     table = _table_with_stub(None)
     stub = {'NAME': 'SPECIAL', 'NULL_CONSTANT': None}
-    monkeypatch.setattr(idx.table.config, 'key__special',  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_index_config(), 'key__special',
                         lambda path, d: None, raising=False)
     with pytest.raises(ValueError, match='Null constant needed'):
         table._index_one_value(stub, FCPath('/x/a.lbl'), {})
@@ -191,13 +192,13 @@ def test_index_one_value_none_without_null_constant_raises(
 # Built-in key functions
 #===============================================================================
 def test_key_volume_id(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(idx.table.hconf,  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_host_config(),
                         'get_volume_id', lambda p: 'GO_0001')
     assert idx.key__volume_id(FCPath('/x/GO_0001/a.lbl'), {}) == 'GO_0001'
 
 
 def test_key_file_specification_name(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(idx.table.hconf,  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_host_config(),
                         'get_volume_id', lambda p: 'GO_0001')
     result = idx.key__file_specification_name(
         FCPath('/x/GO_0001/data/c0.lbl'), {})
@@ -215,7 +216,7 @@ def test_add_writes_one_row(monkeypatch: pytest.MonkeyPatch) -> None:
         {'NAME': 'VOLUME_ID', 'FORMAT': '"A8"', 'ITEMS': None, 'NULL_CONSTANT': '-'},
         {'NAME': 'EXPOSURE', 'FORMAT': '"F8.3"', 'ITEMS': None, 'NULL_CONSTANT': '-999'},
     ]
-    monkeypatch.setattr(idx.table.hconf,  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_host_config(),
                         'get_volume_id', lambda p: 'GO_0001')
 
     fake_label = types.SimpleNamespace(as_dict=lambda: {'EXPOSURE': 1.5})
@@ -285,7 +286,7 @@ def _patch_template(monkeypatch: pytest.MonkeyPatch) -> None:
                         lambda *a, **k: FakePds3Table([
                             {'NAME': 'VOLUME_ID', 'FORMAT': 'A8', 'ITEMS': None,
                              'NULL_CONSTANT': '-'}]))
-    monkeypatch.setattr(idx.table.hconf,  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_host_config(),
                         'get_volume_id', lambda p: 'GO_0001')
 
 
@@ -327,7 +328,7 @@ def test_indextable_init_supplemental_missing_primary_raises(
     indir.mkdir()
     meta = tmp_path / 'meta'
     meta.mkdir()
-    monkeypatch.setattr(idx.table.hconf,  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_host_config(),
                         'get_volume_id', lambda p: 'GO_0001')
     with pytest.raises(FileNotFoundError):
         IndexTable(FCPath(indir), FCPath(indir), FCPath('/tmpl.lbl'),
@@ -351,7 +352,7 @@ def test_create_iterates_matching_files(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.setattr(IndexTable, 'add',
                         lambda self, root, name: added.append(name))
     monkeypatch.setattr(IndexTable, 'write', lambda self, labels_only=False: None)
-    monkeypatch.setattr(idx.table.hconf,  # type: ignore[attr-defined]
+    monkeypatch.setattr(get_host_config(),
                         'get_volume_id', lambda p: 'GO_0001')
     monkeypatch.setattr(com, 'get_logger',
                         lambda: types.SimpleNamespace(info=lambda *a, **k: None))

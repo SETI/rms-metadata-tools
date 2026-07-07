@@ -8,12 +8,12 @@
 import re
 from typing import TYPE_CHECKING, Any, cast
 
-import geometry_config as config
 import oops
 
 import metadata_tools.columns as col
 import metadata_tools.common as com
 import metadata_tools.util as util
+from metadata_tools.config import get_geometry_config
 
 if TYPE_CHECKING:
     from metadata_tools.geometry_support.record import Record
@@ -34,7 +34,8 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
 
     # Attempt to obtain inventory
     try:
-        inventory = record.observation.inventory(bodies, expand=config.EXPAND, cache=False)
+        inventory = record.observation.inventory(
+            bodies, expand=get_geometry_config().EXPAND, cache=False)
         return cast(list[str], inventory)
 
     # A RuntimeError is probably caused by missing spice data. There is
@@ -161,7 +162,7 @@ def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
         # regex tested against the observation ID. The observation is excluded if
         # *any* exception matches, so keep checking the remaining exceptions.
         if exception.isidentifier():
-            fn = getattr(config, exception)
+            fn = getattr(get_geometry_config(), exception)
             if fn(record.observation):
                 return True
         elif re.match(exception, obs_id):
@@ -191,7 +192,7 @@ def get_primary(record: 'Record', table: list[Any],
         bodies.
     """
     fail: tuple[str, list[str], list[str], list[str]] = ('', [], [], [])
-    sclk_ticks = util.sclk_to_ticks(sclk, config.SC)
+    sclk_ticks = util.sclk_to_ticks(sclk, get_geometry_config().SC)
     for row in table:
         if obs_excluded(record, row[1]):
             return fail

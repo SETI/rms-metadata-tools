@@ -5,11 +5,11 @@ import fnmatch
 from pathlib import Path
 from typing import Any, cast
 
-import geometry_config as config
 from filecache import FCPath
 
 import metadata_tools.common as com
 import metadata_tools.util as util
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import formats
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.tables import BodyTable, InventoryTable, RingTable, SkyTable
@@ -49,6 +49,7 @@ class Suite:
                 directory.
         """
         # Save inputs
+        config = get_geometry_config()
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
         self.metadata_dir = FCPath(metadata_dir)
@@ -272,5 +273,5 @@ class Suite:
         self.write(labels_only=labels_only)
 
         # Clean up
-        config.cleanup()
+        get_geometry_config().cleanup()
         logger.close()
