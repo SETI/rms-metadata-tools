@@ -42,7 +42,6 @@ class _CumulativeTask:
 
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
-        load_host(self._host_id)
         set_host(self._host_id)  # also registers geometry_config: column registration
 
         from metadata_tools.cumulative_support import create_cumulative_indexes

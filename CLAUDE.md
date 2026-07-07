@@ -61,8 +61,7 @@ top-level tests they carry the `requires_archive` marker and are excluded from t
 
 **Generic engine vs. per-host config.** `src/metadata_tools/` holds host-agnostic machinery;
 each supported collection gets a directory under `src/metadata_tools/hosts/<HOST>/` (e.g.
-`GO_0xxx/` for Galileo SSI) containing both its configuration and its runnable entry-point
-scripts.
+`GO_0xxx/` for Galileo SSI) containing its configuration modules and label templates.
 
 Core engine modules:
 
@@ -76,16 +75,25 @@ Core engine modules:
 - `common.py` — `Table` base class, the global `PdsLogger`, and cloud-task plumbing.
 - `util.py`, `defs.py` — utilities and constants (body lists, ring radii, paths).
 
-**Per-host directory** contains config modules + entry scripts + templates:
+**Console entry points** (`src/metadata_tools/cli/`) take `HOST_ID` as the first argument and
+dispatch to the appropriate engine:
+
+- `metadata-index HOST_ID ...` / `metadata-index-cloud HOST_ID ...`
+- `metadata-geometry HOST_ID ...` / `metadata-geometry-cloud HOST_ID ...`
+- `metadata-cumulative HOST_ID ...` / `metadata-cumulative-cloud HOST_ID ...`
+- `metadata-task-list HOST_ID TREE --output FILE`
+
+Each entry point calls `load_host(host_id)` (strips `HOST_ID` from `sys.argv`, validates the
+host directory) and `set_host(host_id)` (registers that host's config modules) before invoking
+the engine. Cloud variants also accept `cloud_tasks` options (`--config`, `--task-file`, etc.);
+GCP dispatch is paired with `cloud/<HOST>/gcp_*_config.yml` and `cloud/<HOST>/gcp_*_startup.sh`.
+
+**Per-host directory** (`src/metadata_tools/hosts/<HOST>/`) contains config modules and templates:
 
 - `host_config.py`, `index_config.py`, `geometry_config.py` — host-specific settings and
   optional override hooks (e.g. `key__<NAME>(label_path, label_dict)` to compute an index
   column; backplane functions for geometry).
 - `host_init.py` — initializes the host's `oops` host module (side-effect import).
-- `<HOST>_{index,geometry,cumulative}.py` — local entry points (argparse CLIs; see each
-  file's header comment for arguments and examples).
-- `<HOST>_{index,geometry,cumulative}_cloud.py` — same work distributed via `rms-cloud-tasks`
-  (GCP); paired with `cloud/<HOST>/gcp_*_config.yml` and `cloud/<HOST>/gcp_*_startup.sh`.
 - `templates/` — PDS3 label templates (`host_defs.lbl`, `*_supplemental_index.lbl`,
   `*_{body,ring,sky}_summary.lbl`); shared template fragments are in
   `src/metadata_tools/templates/`.
@@ -100,8 +108,8 @@ works from any current working directory — no `sys.path` manipulation is invol
 package-qualified or relative import (e.g. `from metadata_tools.hosts.GO_0xxx import
 host_config`), not a bare `import host_config`.
 
-**Adding a new host:** copy an existing `hosts/<HOST>/` directory, rename the scripts, and edit
-the config modules and `templates/`. See the README "Generating New Metadata Tables" section.
+**Adding a new host:** copy an existing `hosts/<HOST>/` directory and edit the config modules
+and `templates/`. See the README "Generating New Metadata Tables" section.
 
 **Adding a geometry column:** (1) add a definition to the relevant `column/COLUMNS_*.py`,
 (2) add the backplane function, (3) add a `FORMAT_DICT` row in `geometry_support.py`, (4) add

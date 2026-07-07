@@ -55,7 +55,6 @@ class _GeometryTask:
 
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
-        load_host(self._host_id)
         set_host(self._host_id)
         from metadata_tools.geometry_support import process_tables
         process_tables(self._template_name,
