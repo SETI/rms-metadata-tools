@@ -5,6 +5,7 @@
 # record's state) so they can be exercised without constructing a full
 # SPICE-backed Record.
 ################################################################################
+"""Body visibility and selection utilities for geometry table generation."""
 import re
 from typing import TYPE_CHECKING, Any, cast
 
@@ -89,7 +90,7 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
     # Add primary body and FOV/selected children
     if record.primary:
         body_names += [record.primary]
-        children = [child.name for child in col.BODIES[record.primary].children
+        children = [child.name for child in col.get_bodies_registry()[record.primary].children
                         if child.name in bodies]
         children = inventory(record, children)
         if record.selections:
@@ -118,7 +119,8 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
     body_names = list(dict.fromkeys(body_names))
 
     # Sort bodies based on occurrence in BODIES list
-    body_names.sort(key=lambda name : list(col.BODIES.keys()).index(name))
+    bodies_order = {name: i for i, name in enumerate(col.get_bodies_registry())}
+    body_names.sort(key=lambda name: bodies_order.get(name, len(bodies_order)))
 
     return [body_name for body_name in body_names if oops.Body.exists(body_name)]
 

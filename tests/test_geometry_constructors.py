@@ -67,7 +67,7 @@ def test_select_bodies_primary_children_and_target(monkeypatch: pytest.MonkeyPat
         'IO': types.SimpleNamespace(children=[]),
         'EUROPA': types.SimpleNamespace(children=[]),
     }
-    monkeypatch.setattr(col, 'BODIES', fake_bodies)
+    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
     monkeypatch.setattr(bodies_select, 'get_system', lambda body: 'JUPITER')
     # inventory keeps every body it is handed.
     monkeypatch.setattr(bodies_select, 'inventory',
@@ -81,7 +81,7 @@ def test_select_bodies_primary_children_and_target(monkeypatch: pytest.MonkeyPat
 def test_select_bodies_no_primary_uses_selections(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     fake_bodies = {'IO': object(), 'EUROPA': object()}
-    monkeypatch.setattr(col, 'BODIES', fake_bodies)
+    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
     monkeypatch.setattr(bodies_select, 'get_system', lambda body: None)
     monkeypatch.setattr(bodies_select, 'inventory',
                         lambda record, bodies: list(bodies))
@@ -109,6 +109,14 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
                         lambda meshgrids, obs: object(), raising=False)
     monkeypatch.setattr(oops.backplane, 'Backplane',
                         lambda obs, meshgrid: 'BACKPLANE')
+    # Body registry and dicts are now lazy (built from SPICE on first call); stub
+    # them out so Record.__init__ can run without a SPICE-initialized host. Use
+    # distinct singleton dicts so identity assertions in callers remain meaningful.
+    _fake_summary: dict[str, Any] = {}
+    _fake_detailed: dict[str, Any] = {}
+    monkeypatch.setattr(col, 'get_bodies_registry', lambda: {})
+    monkeypatch.setattr(col, 'get_body_summary_dict', lambda: _fake_summary)
+    monkeypatch.setattr(col, 'get_body_detailed_dict', lambda: _fake_detailed)
 
 
 def _observation(target: str = 'SKY') -> Any:
@@ -134,14 +142,13 @@ def test_record_init_detailed_selects_detailed_dicts(monkeypatch: pytest.MonkeyP
     _patch_record_spice(monkeypatch, primary='')
     record = Record(_observation(), 'GO_0001', {}, 8, 'detailed')
     assert record.dicts['ring'] is col.RING_DETAILED_DICT
-    assert record.dicts['body'] is col.BODY_DETAILED_DICT
+    assert record.dicts['body'] is col.get_body_detailed_dict()
 
 
 def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) -> None:
     _patch_record_spice(monkeypatch, primary='JUPITER')
-    fake_bodies = dict(col.BODIES)
-    fake_bodies['JUPITER'] = types.SimpleNamespace(ring_frame=object())
-    monkeypatch.setattr(col, 'BODIES', fake_bodies)
+    fake_bodies = {'JUPITER': types.SimpleNamespace(ring_frame=object())}
+    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
     record = Record(_observation(), 'GO_0001', {}, 8, 'summary')
     assert record.rings_present is True
     assert record.primary == 'JUPITER'

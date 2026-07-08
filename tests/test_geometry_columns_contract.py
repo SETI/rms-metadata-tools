@@ -67,9 +67,10 @@ def test_every_col_reference_is_exported() -> None:
 
 
 def test_detailed_path_dicts_are_exported() -> None:
-    """The detailed-geometry path selects real, exported dictionaries."""
+    """The detailed-geometry path selects real, exported callables/dicts."""
     exported = _columns_all()
-    assert {'RING_DETAILED_DICT', 'BODY_DETAILED_DICT'} <= exported
+    assert 'RING_DETAILED_DICT' in exported
+    assert 'get_body_detailed_dict' in exported
 
 
 def test_garbled_summary_detailed_names_are_gone() -> None:

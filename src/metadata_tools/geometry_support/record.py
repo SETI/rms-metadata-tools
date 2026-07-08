@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support/record.py - The Record class (one geometry table row).
 ################################################################################
+"""Geometry record class for accumulating per-row column values."""
 from typing import Any, cast
 
 import oops
@@ -49,13 +50,13 @@ class Record:
             self.dicts |= {
                 'sun'    : col.SUN_SUMMARY_COLUMNS,
                 'ring'   : col.RING_SUMMARY_DICT,
-                'body'   : col.BODY_SUMMARY_DICT,
+                'body'   : col.get_body_summary_dict(),
             }
         else:
             self.dicts |= {
                 'sun'    : col.SUN_DETAILED_COLUMNS,
                 'ring'   : col.RING_DETAILED_DICT,
-                'body'   : col.BODY_DETAILED_DICT
+                'body'   : col.get_body_detailed_dict()
             }
 
         # Set up planet-based geometry
@@ -63,7 +64,8 @@ class Record:
         self.blocker: str | None = None
 
         if self.primary:
-            self.rings_present: bool = col.BODIES[self.primary].ring_frame is not None
+            registry = col.get_bodies_registry()
+            self.rings_present: bool = registry[self.primary].ring_frame is not None
             self.ring_tile_dict: Any = col.RING_TILE_DICT[self.primary]
             self.body_tile_dict: Any = col.BODY_TILE_DICT[self.primary]
 
@@ -82,10 +84,10 @@ class Record:
         self.backplane = oops.backplane.Backplane(observation, meshgrid)
 
         # Get inventory for this record
-        self.inventory = bodies_select.inventory(self, col.BODIES)
+        self.inventory = bodies_select.inventory(self, col.get_bodies_registry())
 
         # Select bodies for this record
-        self.bodies = bodies_select.select_bodies(self, col.BODIES)
+        self.bodies = bodies_select.select_bodies(self, col.get_bodies_registry())
 
         # Define a blocker body, if any
         if self.target in self.bodies:

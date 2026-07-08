@@ -29,8 +29,19 @@ def get_bodies(body_names: list[str]) -> dict[str, Any]:
     return {body.name: body for body in bodies}
 
 
-# Computed once on import. This runs only after the host's oops module has been
-# initialized (e.g. ssi.initialize() in host_init.py), because oops.Body.lookup
-# requires the planetary bodies to be registered first.
-BODIES = get_bodies(defs.BODY_NAMES)
-"""Mapping from body name to its oops ``Body`` object, built once on import."""
+_BODIES: dict[str, Any] | None = None
+
+
+def get_bodies_registry() -> dict[str, Any]:
+    """Return the body registry, building it from SPICE on the first call.
+
+    Requires the host's oops module to have been initialized
+    (e.g. ``ssi.initialize()`` in ``host_init.py``) before the first call.
+
+    Returns:
+        Mapping from body name to its oops ``Body`` object.
+    """
+    global _BODIES
+    if _BODIES is None:
+        _BODIES = get_bodies(defs.BODY_NAMES)
+    return _BODIES

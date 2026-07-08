@@ -7,16 +7,16 @@ along with the body list, under a single namespace. Callers import it as
 lists, replacement dictionaries, and tile definitions used to build the
 geometry tables.
 """
-from metadata_tools.bodies import BODIES
+from metadata_tools.bodies import get_bodies_registry
 from metadata_tools.columns.body import (
     BODY_COLUMNS,
     BODY_DETAILED_COLUMNS,
-    BODY_DETAILED_DICT,
     BODY_GRIDLESS_COLUMNS,
     BODY_SUMMARY_COLUMNS,
-    BODY_SUMMARY_DICT,
     BODY_TILE_DICT,
     BODY_TILES,
+    get_body_detailed_dict,
+    get_body_summary_dict,
 )
 from metadata_tools.columns.ring import (
     ANSA_COLUMNS,
@@ -45,13 +45,10 @@ from metadata_tools.columns.sun import (
 
 __all__ = [
     'ANSA_COLUMNS',
-    'BODIES',
     'BODY_COLUMNS',
     'BODY_DETAILED_COLUMNS',
-    'BODY_DETAILED_DICT',
     'BODY_GRIDLESS_COLUMNS',
     'BODY_SUMMARY_COLUMNS',
-    'BODY_SUMMARY_DICT',
     'BODY_TILES',
     'BODY_TILE_DICT',
     'OUTER_RING_TILES',
@@ -71,4 +68,7 @@ __all__ = [
     'SUN_DETAILED_COLUMNS',
     'SUN_GRIDLESS_COLUMNS',
     'SUN_SUMMARY_COLUMNS',
+    'get_bodies_registry',
+    'get_body_detailed_dict',
+    'get_body_summary_dict',
 ]
