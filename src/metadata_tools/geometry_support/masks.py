@@ -7,15 +7,15 @@
 from typing import Any
 
 import numpy as np
-import numpy.typing as npt
 import oops
+import polymath
 
 
 #===============================================================================
 def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
                             mask_desc: tuple[str, str, str], *,
                             blocker: str | None = None,
-                            ignore_shadows: bool = False) -> npt.NDArray[np.bool_] | bool:
+                            ignore_shadows: bool = False) -> polymath.Boolean:
     """Return a mask of excluded pixels for the given target.
 
     The mask is built from the specified target, maskers and shadowers.
@@ -41,7 +41,8 @@ def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
             is False.
 
     Returns:
-        Boolean bitmask containing the mask.
+        polymath.Boolean mask; scalar True/False for all-excluded/none-excluded,
+        array otherwise.
     """
 
     # Do not let a body block itself
@@ -52,7 +53,7 @@ def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
     if isinstance(target, str):
         primary_name = target.split(':')[0]
         if not oops.Body.exists(primary_name):
-            return True
+            return polymath.Boolean(True)
 
     (masker, shadower, face) = mask_desc
 
@@ -92,9 +93,8 @@ def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
         if "N" in face:
             excluded |= backplane.where_sunward(target).vals
 
-#!!!!
-# This function does not handle gridless backplanes properly. This
-# code fixes that, but the core problem should be fixed before this point.
-    if np.any(excluded):
-        return excluded
-    return bool(np.all(excluded))
+    if not np.any(excluded):
+        return polymath.Boolean(False)
+    if np.all(excluded):
+        return polymath.Boolean(True)
+    return polymath.Boolean(excluded)

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import oops
+import polymath
 
 import metadata_tools.defs as defs
 from metadata_tools.geometry_support import bodies_select, formats, formatting, masks
@@ -128,7 +129,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     overrides = []
 
     # Create all the needed pixel masks
-    excluded_mask_dict: dict[tuple[Any, ...], Any] = {}
+    excluded_mask_dict: dict[tuple[Any, ...], polymath.Boolean] = {}
     if record.pointing_available and not no_mask:
         for column_desc in column_descs:
             event_key = column_desc[0]
