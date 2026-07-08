@@ -2,7 +2,6 @@ provider: gcp
 gcp:
   job_id:                   metadata-index-job
   project_id:               rms-metadata
-  service_account:          rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
   region:                   us-central1
   zone:                     us-central1-a
 

@@ -2,7 +2,7 @@
 import argparse
 import asyncio
 import contextlib
-import subprocess
+import subprocess  # nosec B404 - launches the trusted sibling cloud_tasks console script
 import sys
 import tempfile
 from collections.abc import Iterator
@@ -103,11 +103,21 @@ def dispatch_cloud_run_if_config() -> int | None:
 
     as a subprocess, waits for it to finish (including after Ctrl+C), and returns
     its exit code for the caller to pass to ``sys.exit()``.
+
+    If the ``GCP_SERVICE_ACCOUNT`` environment variable is set and
+    ``--service-account`` is not already in sys.argv, it is appended automatically.
     """
     if '--config' not in sys.argv:
         return None
+    import os
+    extra: list[str] = []
+    sa = os.environ.get('GCP_SERVICE_ACCOUNT')
+    if sa and '--service-account' not in sys.argv:
+        extra = ['--service-account', sa]
     cloud_tasks_bin = Path(sys.executable).parent / 'cloud_tasks'
-    proc = subprocess.Popen([str(cloud_tasks_bin), 'run'] + sys.argv[1:])
+    # shell=False (the default); the executable is resolved from this venv's own
+    # bin directory and the arguments are this process's own argv, not remote input.
+    proc = subprocess.Popen([str(cloud_tasks_bin), 'run'] + sys.argv[1:] + extra)  # nosec B603
     try:
         proc.wait()
     except KeyboardInterrupt:
@@ -171,7 +181,7 @@ def run_cloud_worker(
     Handles pre-parsing ``sys.argv`` for ``--volumes`` to build a task source
     iterator, then constructs and starts a ``cloud_tasks.worker.Worker``.
 
-    Args:
+    Parameters:
         parser: The argparser for the command (passed through to Worker).
         task: Picklable callable to execute per task (index, geometry, or cumulative).
         supports_volumes: When False, skip the ``--volumes`` pre-parse step
