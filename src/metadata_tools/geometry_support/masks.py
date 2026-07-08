@@ -15,7 +15,7 @@ import oops
 def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
                             mask_desc: tuple[str, str, str], *,
                             blocker: str | None = None,
-                            ignore_shadows: bool = True) -> npt.NDArray[np.bool_] | bool:
+                            ignore_shadows: bool = False) -> npt.NDArray[np.bool_] | bool:
     """Return a mask of excluded pixels for the given target.
 
     The mask is built from the specified target, maskers and shadowers.
