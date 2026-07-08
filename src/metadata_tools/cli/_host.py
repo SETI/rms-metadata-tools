@@ -53,21 +53,35 @@ def cloud_dir_for(host_id: str) -> Path:
 
 
 def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
-    """Rewrite bare ``--config`` and ``--task-file`` values in sys.argv to absolute paths.
+    """Rewrite relative ``--config`` and ``--task-file`` values in sys.argv to absolute paths.
 
-    If the user passes a bare filename (no directory components, not absolute, not a URL)
-    for either ``--config`` or ``--task-file``, it is resolved against *cloud_dir* (if
-    provided) or *host_dir* so the CLI can be invoked from any working directory.
-    Absolute paths, paths with directory separators, and cloud URLs (``gs://``,
-    ``s3://``, ``https://``, etc.) are left unchanged.
+    For either ``--config`` or ``--task-file``:
+
+    * **Bare filenames** (no directory components) are resolved against *cloud_dir* (if
+      provided) or *host_dir*.
+    * **Relative paths with directory components** that do not exist from the current working
+      directory are resolved against the repository root (two levels above *cloud_dir*), so
+      paths like ``cloud/GO_0xxx/gcp_cumulative_config.yml`` work regardless of cwd.
+
+    Absolute paths and cloud URLs (``gs://``, ``s3://``, ``https://``, etc.) are left
+    unchanged.
     """
     base = cloud_dir if cloud_dir is not None else host_dir
     for i, arg in enumerate(sys.argv[:-1]):
         if arg in {'--config', '--task-file'}:
             value = sys.argv[i + 1]
             p = Path(value)
-            if not p.is_absolute() and '://' not in value and p.parent == Path('.'):
+            if p.is_absolute() or '://' in value:
+                continue
+            if p.parent == Path('.'):
+                # Bare filename: always resolve against base (cloud dir or host dir).
                 sys.argv[i + 1] = str(base / value)
+            elif not p.exists() and cloud_dir is not None:
+                # Relative path with directory components not found from cwd:
+                # try from the repository root (two levels above cloud_dir).
+                candidate = cloud_dir.parent.parent / value
+                if candidate.exists():
+                    sys.argv[i + 1] = str(candidate)
 
 
 def resolve_task_file(host_dir: Path) -> None:
