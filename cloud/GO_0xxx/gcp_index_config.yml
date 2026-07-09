@@ -27,6 +27,5 @@ gcp:
 ##  boot_disk_types: pd-ssd
 #  boot_disk_types: pd-balanced
 
-  startup_script_file:      gcp_index_startup.sh
 
 

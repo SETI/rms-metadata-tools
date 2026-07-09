@@ -15,6 +15,5 @@ gcp:
   max_cpu:                  4
 
 
-  startup_script_file:      gcp_cumulative_startup.sh
 
 

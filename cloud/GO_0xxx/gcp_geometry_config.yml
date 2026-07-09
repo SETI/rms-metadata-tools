@@ -31,6 +31,5 @@ gcp:
 #  max_total_price_per_hour: 1.00                    # USD/hour
 
 
-  startup_script_file:      gcp_geometry_startup.sh
 
 
