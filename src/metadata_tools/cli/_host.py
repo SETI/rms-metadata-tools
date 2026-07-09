@@ -2,6 +2,8 @@
 import argparse
 import asyncio
 import contextlib
+import os
+import shlex
 import subprocess  # nosec B404 - launches the trusted sibling cloud_tasks console script
 import sys
 import tempfile
@@ -89,40 +91,135 @@ def resolve_task_file(host_dir: Path) -> None:
     resolve_host_paths(host_dir)
 
 
-def dispatch_cloud_run_if_config() -> int | None:
+def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
+    """Remove cloud_args elements from argv in order, returning what remains.
+
+    Walks both lists in tandem, consuming each cloud_args element the first time
+    it appears in argv.  This correctly handles flag+value pairs (e.g.
+    ``['--config', 'foo.yml']``) because argparse returns them as consecutive
+    entries in the extras list and they appear consecutively in argv too.
+    """
+    cloud_iter = iter(cloud_args)
+    next_drop = next(cloud_iter, None)
+    remaining = []
+    for arg in argv:
+        if arg == next_drop:
+            next_drop = next(cloud_iter, None)
+        else:
+            remaining.append(arg)
+    return remaining
+
+
+def dispatch_cloud_run_if_config(host_id: str,
+                                 parser: argparse.ArgumentParser) -> int | None:
     """Shell out to ``cloud_tasks run`` if ``--config`` is present in sys.argv.
 
     Must be called after :func:`load_host` and :func:`resolve_host_paths` so that
     bare ``--config`` and ``--task-file`` filenames have already been resolved to
     absolute paths under the host directory.
 
+    Generates the GCP instance startup script at runtime by combining the common
+    header from ``cloud/gcp_common_startup.sh`` with a worker command reconstructed
+    from the metadata_tools arguments in ``sys.argv``.  The current git branch is
+    detected and injected as ``BRANCH`` so the VM clones the same code that
+    dispatched it.
+
+    The startup script is delivered to cloud_tasks by injecting ``startup_script_file``
+    into a modified copy of the config YAML (written to a temp file) because
+    cloud_tasks reads the startup script from the YAML, not from a CLI flag.
+
     If ``--config`` is absent, returns ``None`` and the caller continues with
     normal local Worker execution.  If ``--config`` is present, invokes::
 
-        cloud_tasks run <sys.argv[1:]>
+        cloud_tasks run <cloud_tasks_args (with --config replaced by temp YAML)>
 
     as a subprocess, waits for it to finish (including after Ctrl+C), and returns
     its exit code for the caller to pass to ``sys.exit()``.
 
     If the ``GCP_SERVICE_ACCOUNT`` environment variable is set and
-    ``--service-account`` is not already in sys.argv, it is appended automatically.
+    ``--service-account`` is not already in the cloud_tasks args, it is appended
+    automatically.
+
+    Args:
+        host_id: The host identifier (e.g. ``'GO_0xxx'``).
+        parser: The argparser for this command; used to separate metadata_tools
+            flags (kept in the startup script worker command) from cloud_tasks
+            flags (passed to ``cloud_tasks run``).
     """
     if '--config' not in sys.argv:
         return None
-    import os
-    extra: list[str] = []
-    sa = os.environ.get('GCP_SERVICE_ACCOUNT')
-    if sa and '--service-account' not in sys.argv:
-        extra = ['--service-account', sa]
-    cloud_tasks_bin = Path(sys.executable).parent / 'cloud_tasks'
-    # shell=False (the default); the executable is resolved from this venv's own
-    # bin directory and the arguments are this process's own argv, not remote input.
-    proc = subprocess.Popen([str(cloud_tasks_bin), 'run'] + sys.argv[1:] + extra)  # nosec B603
+
+    # Split argv into metadata_tools args (→ startup script) and cloud_tasks args (→ dispatch).
+    _ns, cloud_args = parser.parse_known_args(sys.argv[1:])
+    worker_argv = _strip_cloud_args(sys.argv[1:], cloud_args)
+
+    # Reconstruct the worker command for the startup script.
+    cmd_name = Path(sys.argv[0]).name
+    worker_cmd = shlex.join([cmd_name, host_id] + worker_argv)
+
+    # Detect the current git branch so the VM clones the same code that dispatched.
     try:
-        proc.wait()
-    except KeyboardInterrupt:
-        proc.wait()  # subprocess already got SIGINT; let it finish its own cleanup
-    return proc.returncode
+        branch_result = subprocess.run(  # nosec B603 B607
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+            capture_output=True, text=True, check=True,
+        )
+        branch = branch_result.stdout.strip() or 'main'
+    except subprocess.CalledProcessError:
+        branch = 'main'
+
+    # Build startup script: inject BRANCH before the common header.
+    common_sh = cloud_dir_for(host_id).parent / 'gcp_common_startup.sh'
+    branch_line = f'export BRANCH={shlex.quote(branch)}'
+    startup = f'#!/bin/bash\n{branch_line}\n{common_sh.read_text().rstrip()}\n\n{worker_cmd}\n'
+
+    # Write startup script to a temp file; must outlive the subprocess.
+    with tempfile.NamedTemporaryFile(suffix='.sh', delete=False, mode='w') as sh_tmp:
+        sh_tmp.write(startup)
+        sh_tmp_name = sh_tmp.name
+    # sh_tmp is closed (but not deleted); clean up in the outer finally.
+    try:
+        # cloud_tasks reads the startup script from startup_script_file in the config
+        # YAML — passing --startup-script-file on the CLI has no effect.  Inject the
+        # field into a modified copy of the config YAML and swap the --config path.
+        import yaml  # only needed on the GCP dispatch path (cloud extra)
+
+        config_path_idx = next(i for i, a in enumerate(cloud_args) if a == '--config')
+        config_path = cloud_args[config_path_idx + 1]
+        with open(config_path) as cfg_f:
+            config_data: dict[str, object] = yaml.safe_load(cfg_f)
+
+        provider = str(config_data.get('provider', 'gcp')).lower()
+        provider_section = config_data.setdefault(provider, {})
+        if not isinstance(provider_section, dict):
+            raise TypeError(f'Config YAML section {provider!r} is not a mapping')
+        provider_section['startup_script_file'] = sh_tmp_name
+
+        with tempfile.NamedTemporaryFile(suffix='.yml', delete=False, mode='w') as cfg_tmp:
+            yaml.dump(config_data, cfg_tmp, default_flow_style=False)
+            cfg_tmp_name = cfg_tmp.name
+        try:
+            modified_cloud_args = list(cloud_args)
+            modified_cloud_args[config_path_idx + 1] = cfg_tmp_name
+
+            extra: list[str] = []
+            sa = os.environ.get('GCP_SERVICE_ACCOUNT')
+            if sa and '--service-account' not in cloud_args:
+                extra += ['--service-account', sa]
+
+            cloud_tasks_bin = Path(sys.executable).parent / 'cloud_tasks'
+            # shell=False (the default); executable and args come from this process only.
+            proc = subprocess.Popen(  # nosec B603
+                [str(cloud_tasks_bin), 'run'] + modified_cloud_args + extra
+            )
+            try:
+                proc.wait()
+            except KeyboardInterrupt:
+                proc.wait()  # subprocess already got SIGINT; let it finish cleanup
+            return proc.returncode
+        finally:
+            os.unlink(cfg_tmp_name)
+    finally:
+        os.unlink(sh_tmp_name)
 
 
 @contextlib.contextmanager

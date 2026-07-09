@@ -1,19 +1,21 @@
+set -e
+
 # Mount OOPS-Resources
 export INSTANCE_NAME=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/name)
-gcloud compute instances attach-disk $INSTANCE_NAME --disk=standard-oops-resources-central1-a-1 --zone=us-central1-a --device-name=nav-resources --mode ro
+gcloud compute instances attach-disk $INSTANCE_NAME --disk=standard-oops-resources-central1-a-1 --zone=us-central1-a --device-name=nav-resources --mode ro || true
 
 sudo mkdir -p /mnt/nav-resources
-sudo mount -o ro /dev/disk/by-id/google-nav-resources-part1 /mnt/nav-resources
+sudo mount -o ro /dev/disk/by-id/google-nav-resources-part1 /mnt/nav-resources || true
 export OOPS_RESOURCES=/mnt/nav-resources/OOPS-Resources/
 
 # sudo needed for manual paste into instance terminal.
 sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
-cd
+cd /root
 
-#git clone https://github.com/SETI/rms-metadata-tools.git
-git clone -b jns-updates-claude --single-branch https://github.com/SETI/rms-metadata-tools.git
+git clone -b "${BRANCH:-main}" --single-branch https://github.com/SETI/rms-metadata-tools.git
 cd rms-metadata-tools
+REPO_DIR="$(pwd)"
 python3 -m venv venv
-source venv/bin/activate
-pip install ".[cloud]"
+"$REPO_DIR/venv/bin/pip" install ".[cloud]"
+export PATH="$REPO_DIR/venv/bin:$PATH"

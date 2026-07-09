@@ -66,6 +66,9 @@ markers = [
   "integration: requires oops/SPICE host initialization (excluded by default)",
   "requires_archive: requires the $RMS_METADATA holdings tree (excluded by default)",
 ]
+filterwarnings = [
+  "error",
+]
 
 [tool.setuptools]
 [tool.setuptools.packages.find]
@@ -93,8 +96,10 @@ dev = [
   "pymarkdownlnt>=0.9.35",
   "pytest>=7.0",
   "pytest-cov>=4.0",
+  "pytest-randomly>=3.0",
   "pytest-xdist>=3.8.0",
   "ruff>=0.8",
+  "types-PyYAML",
   "bandit[toml]>=1.8",
   "pyroma>=4.2",
   "vulture>=2.14",
