@@ -1,8 +1,8 @@
 """Single cloud entry point for cumulative table generation across all hosts.
 
 This is the rms-cloud-tasks (GCP) counterpart of ``metadata-cumulative``: the same work,
-distributed across workers. GCP runs are not yet working. For local runs the basic usage
-matches ``metadata-cumulative``, and all cloud_tasks arguments are also accepted.
+distributed across workers. For local runs the basic usage matches ``metadata-cumulative``,
+and all cloud_tasks arguments are also accepted.
 
 Examples:
  For local runs, the basic usage is identical to metadata-cumulative. In addition, all
@@ -12,10 +12,11 @@ Examples:
    metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/
    metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --volumes GO_0017
 
- For GCP runs, use:
+ For GCP runs (path args are the same as for local runs; add --config to dispatch to GCP):
    gcloud auth application-default login       # if necessary
 
-   metadata-cumulative-cloud GO_0xxx --use-spot --config cloud/GO_0xxx/gcp_cumulative_config.yml
+   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ \\
+       --use-spot --config cloud/GO_0xxx/gcp_cumulative_config.yml
 
 The full list of command-line options is documented in the user guide.
 """
@@ -50,23 +51,26 @@ class _CumulativeTask:
 
 
 def main() -> None:
+    """Entry point for the ``metadata-cumulative-cloud`` console script."""
     if len(sys.argv) < 2 or sys.argv[1].startswith('-'):
         sys.exit('Usage: metadata-cumulative-cloud HOST_ID [args...]')
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir, cloud_dir_for(host_id))
+
+    set_host(host_id)  # also registers geometry_config: column registration
+    hconf = get_host_config()
+
+    import metadata_tools.util as util
+    from metadata_tools.cumulative_support import get_args
+
+    host, _, _ = util.parse_template_name(hconf.template_name)
+    parser = get_args(host=host)
+
     with single_task_as_task_file():
-        rc = dispatch_cloud_run_if_config()
+        rc = dispatch_cloud_run_if_config(host_id, parser)
         if rc is not None:
             sys.exit(rc)
 
-        set_host(host_id)  # also registers geometry_config: column registration
-        hconf = get_host_config()
-
-        import metadata_tools.util as util
-        from metadata_tools.cumulative_support import get_args
-
-        host, _, _ = util.parse_template_name(hconf.template_name)
-        parser = get_args(host=host)
         run_cloud_worker(parser, _CumulativeTask(host_id, hconf.template_name),
                          supports_volumes=False)

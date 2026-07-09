@@ -12,16 +12,18 @@ Examples:
 
  For GCP runs, first generate a task file:
 
-   metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output tasks.json
+   metadata-task-list GO_0xxx $RMS_VOLUMES_GCP/GO_0xxx/ --output tasks.json
 
- Then dispatch:
+ Then dispatch (path args are the same as for local runs; add --config to dispatch to GCP):
 
-   metadata-index-cloud GO_0xxx --use-spot \
+   metadata-index-cloud GO_0xxx $RMS_VOLUMES_GCP/GO_0xxx/ $RMS_METADATA_GCP/GO_0xxx/ \\
+       $RMS_METADATA_TEST_GCP/GO_0xxx/ --use-spot \\
        --config cloud/GO_0xxx/gcp_index_config.yml --task-file cloud/GO_0xxx/tasks.json
 
  Or dispatch directly from a volume list (task file is generated automatically):
 
-   metadata-index-cloud GO_0xxx --use-spot \
+   metadata-index-cloud GO_0xxx $RMS_VOLUMES_GCP/GO_0xxx/ $RMS_METADATA_GCP/GO_0xxx/ \\
+       $RMS_METADATA_TEST_GCP/GO_0xxx/ --use-spot \\
        --config cloud/GO_0xxx/gcp_index_config.yml --volumes GO_0022 GO_0016
 
 The full list of command-line options is documented in the user guide.
@@ -58,15 +60,12 @@ class _IndexTask:
 
 
 def main() -> None:
+    """Entry point for the ``metadata-index-cloud`` console script."""
     if len(sys.argv) < 2 or sys.argv[1].startswith('-'):
         sys.exit('Usage: metadata-index-cloud HOST_ID [args...]')
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir, cloud_dir_for(host_id))
-    with volumes_as_task_file():
-        rc = dispatch_cloud_run_if_config()
-    if rc is not None:
-        sys.exit(rc)
 
     set_host(host_id)
     hconf = get_host_config()
@@ -77,4 +76,10 @@ def main() -> None:
 
     host, index_type, _ = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host, index_type=index_type)
+
+    with volumes_as_task_file():
+        rc = dispatch_cloud_run_if_config(host_id, parser)
+    if rc is not None:
+        sys.exit(rc)
+
     run_cloud_worker(parser, _IndexTask(host_id, hconf.template_name, config.glob))
