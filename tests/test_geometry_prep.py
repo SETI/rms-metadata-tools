@@ -6,15 +6,9 @@ from typing import Any
 
 import numpy as np
 import oops
-import pytest
 
 from metadata_tools.geometry_support import prep
 from metadata_tools.geometry_support.record import Record
-
-
-@pytest.fixture
-def exists_true(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
 
 
 def _record(record_stub: Callable[..., Record], pointing: bool = True,

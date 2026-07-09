@@ -45,7 +45,7 @@ jobs:
 
       - name: Sphinx
         run: |
-          sphinx-build -W -b html docs docs/_build
+          sphinx-build -W -n -b html docs docs/_build
 
       - name: PyMarkdown
         run: |

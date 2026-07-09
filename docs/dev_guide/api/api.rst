@@ -13,6 +13,8 @@ prose in :doc:`/dev_guide/dev_guide_extending`.
    :maxdepth: 2
 
    core
+   config
+   task_list_support
    index_support
    geometry_support
    cumulative_support

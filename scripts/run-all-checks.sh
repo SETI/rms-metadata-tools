@@ -489,8 +489,8 @@ run_sphinx_build() {
     # shellcheck source=/dev/null
     source "$VENV/bin/activate"
 
-    print_info "Building documentation (warnings treated as errors)..."
-    if (cd docs && make clean && make html SPHINXOPTS="-W"); then
+    print_info "Building documentation (warnings treated as errors, nitpicky mode)..."
+    if (cd docs && make clean && make html SPHINXOPTS="-W -n"); then
         print_success "Sphinx build passed"
         deactivate 2>/dev/null || true
         return 0

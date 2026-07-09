@@ -119,8 +119,11 @@ def test_smooth_moving_box() -> None:
 
 
 #===============================================================================
-# range_of_n_angles (statistical helper; exercised for coverage)
+# range_of_n_angles (statistical helper)
 #===============================================================================
-def test_range_of_n_angles_is_bounded() -> None:
+def test_range_of_n_angles_is_deterministic_when_seeded() -> None:
+    # Seed numpy so the Monte Carlo sampling inside range_of_n_angles is
+    # reproducible; otherwise the result (and this assertion) would be flaky.
+    np.random.seed(0)
     result = util.range_of_n_angles(5, tests=200)
-    assert 0.0 <= result <= 360.0
+    assert result == pytest.approx(125.7494161526109)

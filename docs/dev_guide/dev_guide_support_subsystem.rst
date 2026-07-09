@@ -26,11 +26,22 @@ of utilities.
   ``output_arg`` parameters select which positional path arguments a stage takes,
   and :class:`~metadata_tools.common.PathAction` normalizes path separators while
   preserving URI prefixes.
-- The cloud-task plumbing
-  (:func:`~metadata_tools.common.add_task`,
-  :func:`~metadata_tools.common.write_task_file`,
-  :func:`~metadata_tools.common.task_source`) shared by the ``*_cloud.py``
-  workers.
+- CLI argument helpers shared across all three stages.
+
+``task_list_support`` -- cloud task files
+=========================================
+
+:mod:`metadata_tools.task_list_support` creates and writes the JSON task files
+consumed by ``rms-cloud-tasks`` workers. The four public functions are:
+
+- :func:`~metadata_tools.task_list_support.make_task` -- builds a single task
+  dict for one volume ID.
+- :func:`~metadata_tools.task_list_support.task_generator` -- yields one task
+  dict per volume without touching the filesystem.
+- :func:`~metadata_tools.task_list_support.scan_volumes` -- walks a directory
+  tree and returns the sorted list of volume IDs it contains.
+- :func:`~metadata_tools.task_list_support.write_task_file` -- writes the JSON
+  task list for a volume list to a local or remote path.
 
 ``label_support`` -- PDS3 labels
 ================================
@@ -95,4 +106,4 @@ Invariants
 API reference
 =============
 
-See :doc:`api/core` and :doc:`api/columns`.
+See :doc:`api/core`, :doc:`api/task_list_support`, and :doc:`api/columns`.

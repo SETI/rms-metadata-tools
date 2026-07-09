@@ -23,6 +23,7 @@ from metadata_tools.task_list_support import scan_volumes, write_task_file
 
 
 def main() -> None:
+    """Entry point for the ``metadata-task-list`` console script."""
     if len(sys.argv) >= 2 and not sys.argv[1].startswith('-'):
         # Scan mode: HOST_ID tree --output FILE
         host_id = sys.argv[1]

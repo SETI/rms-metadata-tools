@@ -6,6 +6,7 @@
 # API: the format dictionaries, the Record and Suite classes, the table classes,
 # and the process entry points.
 ################################################################################
+"""Geometry table generation engine: body, ring, sky, sun, and inventory tables."""
 from metadata_tools.geometry_support.formats import (
     ALT_FORMAT_DICT,
     FORMAT_DICT,

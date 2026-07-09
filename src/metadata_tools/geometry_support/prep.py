@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support/prep.py - Row preparation for a geometry record.
 ################################################################################
+"""Row preparation and body-prefix utilities for geometry table generation."""
 from typing import TYPE_CHECKING, Any
 
 import numpy as np

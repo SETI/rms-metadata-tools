@@ -110,6 +110,12 @@ def test_format_column_multi_item_expands_and_joins() -> None:
     assert IndexTable._format_column(stub, ['AB', 'CD']) == '"AB  ","CD  "'
 
 
+def test_format_column_count_mismatch_raises() -> None:
+    stub = {'NAME': 'X', 'FORMAT': '"A4"', 'ITEMS': 3, 'NULL_CONSTANT': '-'}
+    with pytest.raises(ValueError, match='column X: expected 3 values but got 2'):
+        IndexTable._format_column(stub, ['AB', 'CD'])
+
+
 def test_format_column_scrubs_whitespace_and_quotes() -> None:
     stub = {'NAME': 'X', 'FORMAT': '"A8"', 'ITEMS': None, 'NULL_CONSTANT': '-'}
     # Leading/trailing space stripped, newline -> space, doubled space
@@ -330,7 +336,7 @@ def test_indextable_init_supplemental_missing_primary_raises(
     meta.mkdir()
     monkeypatch.setattr(get_host_config(),
                         'get_volume_id', lambda p: 'GO_0001')
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(FileNotFoundError, match='No primary index for GO_0001'):
         IndexTable(FCPath(indir), FCPath(indir), FCPath('/tmpl.lbl'),
                    FCPath(meta), qualifier='supplemental', volume_id='GO_0001')
 

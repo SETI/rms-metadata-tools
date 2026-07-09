@@ -8,7 +8,6 @@ from typing import Any
 import pytest
 from filecache import FCPath
 
-import metadata_tools.common as com
 import metadata_tools.cumulative_support as cum
 import metadata_tools.geometry_support as geom
 import metadata_tools.label_support as lab
@@ -18,17 +17,11 @@ from metadata_tools.config import get_host_config
 hconf = get_host_config()
 
 
-def _silent_logger(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(com, 'get_logger',
-                        lambda: types.SimpleNamespace(info=lambda *a, **k: None))
-
-
 #===============================================================================
 # _cat_rows
 #===============================================================================
 def test_cat_rows_concatenates_volumes(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _silent_logger(monkeypatch)
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
     root = tmp_path / 'GO_0xxx'
     for vol, line in [('GO_0001', 'a'), ('GO_0002', 'b')]:
         vdir = root / vol
@@ -52,8 +45,7 @@ def test_cat_rows_concatenates_volumes(
 
 
 def test_cat_rows_excludes_volume(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _silent_logger(monkeypatch)
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
     root = tmp_path / 'GO_0xxx'
     for vol in ('GO_0001', 'GO_0002'):
         vdir = root / vol
@@ -74,8 +66,7 @@ def test_cat_rows_excludes_volume(
 
 
 def test_cat_rows_inventory_uses_csv(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _silent_logger(monkeypatch)
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
     root = tmp_path / 'GO_0xxx'
     vdir = root / 'GO_0001'
     vdir.mkdir(parents=True)
@@ -93,8 +84,7 @@ def test_cat_rows_inventory_uses_csv(
 
 
 def test_cat_rows_skips_missing_table(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    _silent_logger(monkeypatch)
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
     root = tmp_path / 'GO_0xxx'
     (root / 'GO_0001').mkdir(parents=True)  # no table file present
     cumulative_dir = root / 'GO_0999'
@@ -119,12 +109,10 @@ def test_get_args_parses_exclude() -> None:
 
 
 def test_create_cumulative_indexes_fires_eight_cat_rows(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
     calls: list[Any] = []
     monkeypatch.setattr(cum, '_cat_rows',
                         lambda *a, **k: calls.append((type(a[4]).__name__, a[4].level)))
-    monkeypatch.setattr(com, 'get_logger',
-                        lambda: types.SimpleNamespace(info=lambda *a, **k: None))
     args = types.SimpleNamespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
                                  volumes=None, exclude=None)
     # SimpleNamespace stands in for an argparse.Namespace here.

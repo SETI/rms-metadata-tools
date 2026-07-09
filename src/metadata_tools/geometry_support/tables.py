@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support/tables.py - Geometry table classes.
 ################################################################################
+"""Geometry table classes: InventoryTable and summary table support."""
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 

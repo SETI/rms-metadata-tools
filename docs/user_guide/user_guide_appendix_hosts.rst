@@ -3,13 +3,15 @@ Appendix: Supported hosts
 =========================
 
 A *host* is a supported collection. Each host has its own directory under
-``src/metadata_tools/hosts/<HOST>/`` containing its configuration, its label
-templates, and the runnable ``<HOST>_index.py`` / ``<HOST>_geometry.py`` /
-``<HOST>_cumulative.py`` programs (and their ``*_cloud.py`` counterparts).
+``src/metadata_tools/hosts/<HOST>/`` containing its configuration and label
+templates. The seven console scripts (``metadata-index``,
+``metadata-geometry``, ``metadata-cumulative``, their ``*-cloud`` counterparts,
+and ``metadata-task-list``) work with any installed host; pass the host ID as
+the first positional argument.
 
 The programs and options documented in this guide are the same for every host;
-only the ``<HOST>`` prefix and the host-specific defaults change. To add support
-for a new collection, see :doc:`/dev_guide/dev_guide_extending`.
+only the host ID and its specific defaults change. To add support for a new
+collection, see :doc:`/dev_guide/dev_guide_extending`.
 
 Galileo SSI (``GO_0xxx``)
 =========================

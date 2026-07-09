@@ -18,10 +18,6 @@ def test_make_task_structure() -> None:
     assert task == {'task_id': 'task-GO_0017', 'data': {'volume_id': 'GO_0017'}}
 
 
-def test_make_task_data_volume_id() -> None:
-    assert tl.make_task('GO_0001')['data']['volume_id'] == 'GO_0001'
-
-
 #===============================================================================
 # task_generator
 #===============================================================================

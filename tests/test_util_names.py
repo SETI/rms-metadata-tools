@@ -3,6 +3,7 @@
 ################################################################################
 import types
 
+import pytest
 from filecache import FCPath
 
 import metadata_tools.util as util
@@ -72,6 +73,11 @@ def test_splitpath_splits_around_string() -> None:
     before, after = util.splitpath(FCPath('/a/b/GO_0001/data/img.lbl'), 'GO_0001')
     assert before.as_posix() == '/a/b'
     assert after.as_posix() == 'data/img.lbl'
+
+
+def test_splitpath_raises_when_string_not_in_path() -> None:
+    with pytest.raises(ValueError, match='not in tuple'):
+        util.splitpath(FCPath('/a/b/c.lbl'), 'GO_MISSING')
 
 
 def test_get_volume_subdir_returns_relative_tail() -> None:

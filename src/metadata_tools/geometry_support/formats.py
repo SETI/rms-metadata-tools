@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support/formats.py - Geometry column format dictionaries.
 ################################################################################
+"""Master format dictionaries (FORMAT_DICT, ALT_FORMAT_DICT) for geometry columns."""
 from typing import Any
 
 import metadata_tools.util as util

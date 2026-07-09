@@ -138,7 +138,7 @@ Information on contributing to this package can be found in the
 - [Issue tracker](https://github.com/SETI/rms-metadata-tools/issues)
 - [PyPI](https://pypi.org/project/rms-metadata-tools)
 
-## Licensing
+## License
 
 This code is licensed under the
 [Apache License v2.0](https://github.com/SETI/rms-metadata-tools/blob/main/LICENSE).

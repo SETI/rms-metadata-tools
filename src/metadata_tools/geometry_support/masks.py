@@ -4,6 +4,7 @@
 # Config-free: depends only on oops and numpy so it can be unit-tested without
 # the host geometry_config plugin.
 ################################################################################
+"""Excluded-pixel mask construction for geometry backplane processing."""
 from typing import Any
 
 import numpy as np

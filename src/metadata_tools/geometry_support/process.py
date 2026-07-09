@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support/process.py - Entry points for geometry table generation.
 ################################################################################
+"""Top-level geometry processing: argument parsing and table pipeline."""
 import argparse
 import fnmatch
 

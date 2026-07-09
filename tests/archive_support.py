@@ -18,7 +18,7 @@ VOLUMES = os.environ.get('RMS_VOLUMES')
 def match(tree: str, pattern: str) -> list[str]:
     """Walk a directory tree and find all files matching a given pattern.
 
-    Args:
+    Parameters:
         tree (str): Directory to walk.
         pattern (str): glob pattern to match.
 
@@ -35,7 +35,7 @@ def match(tree: str, pattern: str) -> list[str]:
 def exclude(files: list[str], *patterns: str) -> list[str]:
     """Exclude files matching given patterns.
 
-    Args:
+    Parameters:
         files (list): List of file names to test.
         patterns (str): One or more strings containing forbidden patterns.
 
@@ -55,12 +55,12 @@ def exclude(files: list[str], *patterns: str) -> list[str]:
 #===========================================================================
 def bounds(file: str, table: Any, key: str,
            min_val: float = 0, max_val: float = 360, minmax: bool = True) -> None:
-    """Test whether values exeed given minimum and maximum bounds.
+    """Test whether values exceed given minimum and maximum bounds.
 
-    Args:
+    Parameters:
         file (str): Name of data file.
         table (pdsTable): PdsTable object containing the data table.
-        key (tstr):
+        key (str):
             Name of quantity to test.  If minmax==True, the "MINIMUM_" and
             "MAXIMUM_" prefixes must be omitted, and the function will add them
             and test both keys.

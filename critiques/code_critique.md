@@ -9,6 +9,29 @@ location, the problem, and complete instructions for fixing it.
 
 ---
 
+## Status Update (2026-07-08)
+
+Since the 2026-06-29 snapshot, five commits landed on branch `jns-updates-claude`:
+
+| Commit | Change | Closes |
+|---|---|---|
+| `8d18cba` | Decouple engine from top-level host config imports | #112 |
+| `ac3f854` | Remove redundant `load_host()` calls in cloud task callables | #113 |
+| `f3d5e10` | Align `ignore_shadows` default with caller | #109 |
+| `f428707` | Return `polymath.Boolean` from `construct_excluded_mask` | #109 |
+| `1f334bc` | Repair cumulative-cloud GCP runs that never terminated | — |
+
+**Newly resolved:**
+- **Issue #112** (`[DEFERRED]` in §3.1 below and old §1): The `config` module registry (`set_host`, `get_host_config`, `get_index_config`, `get_geometry_config`) is now the sole channel between engine and host config. No engine module imports host config directly. → **RESOLVED**
+- **Issue #113** (`[DEFERRED]` in §6.1 below and old §6): Console entry points exist in `src/metadata_tools/cli/` and are wired in `pyproject.toml [project.scripts]`. The `cli/` cloud task callables no longer call `load_host()` redundantly. → **RESOLVED**
+- **Issue #109** (`[DEFERRED]` in §7 and old §7): `construct_excluded_mask()` returns `polymath.Boolean` in all code paths; `ignore_shadows` parameter default (`False`) now matches callers. The gridless-backplane dead branch was removed. → **RESOLVED**
+
+**New findings added this pass (§2.9–2.10, §4.10–4.11, §5.1 updated, §7.7):** see below.
+
+---
+
+---
+
 ## 1. Critical Bugs
 
 ### 1.1 Broken shell command in `gcp_cumulative_startup.sh` — RESOLVED (2026-06-29)
@@ -289,6 +312,45 @@ BODY_TILE_DICT: dict[str, TileList] = {}
 
 ---
 
+### 2.9 `python.mdc` — Backwards-compatibility alias in `cli/_host.py`
+
+**File:** `src/metadata_tools/cli/_host.py`, lines 87–89
+
+```python
+def resolve_task_file(host_dir: Path) -> None:
+    """Alias for :func:`resolve_host_paths`; kept for backwards compatibility."""
+    resolve_host_paths(host_dir)
+```
+
+`python.mdc` states: *"NEVER include backwards-compatibility code unless explicitly requested."*
+This function is a one-liner alias whose only value is to satisfy callers that have not been
+updated. There is no external caller (the `cli/` package is new) and no published API to
+protect.
+
+**Fix:** Search for callers with `grep -r 'resolve_task_file'` across `src/` and `tests/`.
+Update any callers to use `resolve_host_paths` directly, then delete `resolve_task_file`.
+
+---
+
+### 2.10 `python.mdc` — `Args:` instead of `Parameters:` in `run_cloud_worker` docstring
+
+**File:** `src/metadata_tools/cli/_host.py`, lines 174–179
+
+```python
+    Args:
+        parser: The argparser for the command (passed through to Worker).
+        task: Picklable callable to execute per task (index, geometry, or cumulative).
+        supports_volumes: When False, skip the ``--volumes`` pre-parse step
+            (cumulative tasks do not accept per-volume task sources).
+```
+
+The project standard (from `python.mdc`) is Google-style docstrings, which use `Parameters:`
+not `Args:`. This is inconsistent with the rest of the codebase.
+
+**Fix:** Change `Args:` to `Parameters:` in the `run_cloud_worker` docstring.
+
+---
+
 ## 3. Architecture / Import Issues
 
 ### 3.1 Module-level SPICE-dependent code
@@ -534,19 +596,55 @@ And update the adjacent prose to link to `git_workflow.mdc`.
 
 ---
 
-## 5. CI/CD Issues
+### 4.10 `index_support/__init__.py` exports a private name in `__all__`
 
-### 5.1 GCP startup scripts clone from `jns-test-gcp` branch
+**File:** `src/metadata_tools/index_support/__init__.py`
 
-**Files:** `gcp_index_startup.sh`, `gcp_geometry_startup.sh`, `gcp_cumulative_startup.sh`
+`__all__` includes `_create_index` — a name with a leading underscore, conventionally
+signaling a private implementation detail. Exporting private names via `__all__` breaks
+the public/private contract: users who do `from metadata_tools.index_support import *`
+will receive an internal function they should not call directly.
 
-All three scripts contain:
-```bash
-git clone -b jns-test-gcp --single-branch https://github.com/SETI/rms-metadata-tools.git
+**Fix:** Either make the function public (remove the leading underscore and update
+all callers), or remove it from `__all__` so it remains internal.
+
+---
+
+### 4.11 `util.py:replace()` uses `type()` identity check instead of `isinstance()`
+
+**File:** `src/metadata_tools/util.py`, `replace()` function
+
+```python
+if type(leaf) in (tuple, list):
 ```
 
-This is a development artifact. Production GCP workers should clone from `main` or a
-pinned release tag.
+PEP 8 says to use `isinstance()` for type checks (it respects subclasses).
+`ruff` rule UP038 also flags this pattern. Using `type(x) in (A, B)` is correct
+for exact-type matching but reads as a stylistic anti-pattern and will diverge if
+the input type is ever subclassed.
+
+**Fix:**
+
+```python
+if isinstance(leaf, (tuple, list)):
+```
+
+---
+
+## 5. CI/CD Issues
+
+### 5.1 GCP startup scripts clone from a feature branch, not `main`
+
+**File:** `cloud/gcp_common_startup.sh`
+
+```bash
+git clone -b jns-updates-claude --single-branch https://github.com/SETI/rms-metadata-tools.git
+```
+
+This is a development artifact. The branch name has changed over time (was `jns-test-gcp`, now
+`jns-updates-claude`); neither is appropriate for production. GCP workers should clone from
+`main` or a pinned release tag so that any promotion of the work-in-progress branch is
+decoupled from GCP execution.
 
 **Fix:** Change to `main` (or a release tag) before deploying to production:
 
@@ -779,6 +877,20 @@ tracking issue:
 
 ---
 
+### 7.7 `cumulative_cloud.py` docstring says "GCP runs are not yet working" — likely stale
+
+**File:** `src/metadata_tools/cli/cumulative_cloud.py`, module docstring
+
+The docstring opens with *"GCP runs are not yet working."* After commit `1f334bc` (repair
+cumulative-cloud GCP runs that never terminated), this statement is outdated. Stale
+documentation erodes trust and causes users to avoid a feature that now functions.
+
+**Fix:** Update the docstring to reflect current status. If the fix is complete, change
+to a description of the command's purpose. If partial issues remain, document them
+specifically.
+
+---
+
 ## Summary Table
 
 | # | Severity | Category | File(s) |
@@ -794,6 +906,8 @@ tracking issue:
 | 2.6 | Medium | Standards (`python.mdc`) | `geometry_support/record.py` |
 | 2.7 | Medium | Standards (`filecache.mdc`) | multiple |
 | 2.8 | Low | Standards (`python.mdc`) | `columns/body.py` |
+| 2.9 | Low | Standards (`python.mdc`) | `cli/_host.py` |
+| 2.10 | Low | Standards (`python.mdc`) | `cli/_host.py` |
 | 3.1 | High | Architecture | `bodies.py`, `columns/body.py` |
 | 3.2 | Medium | Security | cloud scripts, `host_init.py` |
 | 3.3 | Medium | Security | `util.py` |
@@ -806,6 +920,8 @@ tracking issue:
 | 4.7 | Low | Test coverage | `columns/sky.py` |
 | 4.8 | Medium | Standards | `pyproject.toml` |
 | 4.9 | Low | Documentation | `CONTRIBUTING.md` |
+| 4.10 | Low | API design | `index_support/__init__.py` |
+| 4.11 | Low | Code style | `util.py` |
 | 5.1 | High | CI/CD | GCP startup scripts |
 | 5.2 | Medium | CI/CD | GCP startup scripts |
 | 5.3 | Low | CI/CD | `gcp_geometry_startup.sh` |
@@ -815,7 +931,7 @@ tracking issue:
 | 5.7 | Low | CI/CD | Sphinx invocations |
 | 6.1 | Low | Config | `pyproject.toml` |
 | 6.2 | Low | Config | `pyproject.toml` |
-| 7.1–7.6 | Low | Minor | various |
+| 7.1–7.7 | Low | Minor | various |
 
 ## Summary
 

@@ -11,12 +11,6 @@ import pytest
 from metadata_tools.geometry_support import masks
 
 
-@pytest.fixture
-def exists_true(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Make every body name 'exist' (no SPICE registry available in tests)."""
-    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
-
-
 def _one_pixel(shape: tuple[int, int] = (4, 4)) -> np.ndarray:
     arr = np.zeros(shape, dtype=bool)
     arr[0, 0] = True

@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support/suite.py - The Suite class (a volume's geometry tables).
 ################################################################################
+"""Suite class orchestrating geometry table generation for one observation."""
 import fnmatch
 from pathlib import Path
 from typing import Any, cast

@@ -56,18 +56,18 @@ Workflow
 ========
 
 For a single collection the workflow is a three-stage pipeline. Each stage is a
-command-line program that you run from inside the collection's host directory
+console script that takes the host ID as its first argument
 (see :doc:`user_guide_installation`):
 
 .. mermaid::
 
    flowchart TD
-       L[PDS3 data labels<br/>+ corrected index file] --> I[Stage 1: index<br/>HOST_index.py]
+       L[PDS3 data labels<br/>+ corrected index file] --> I[Stage 1: index<br/>metadata-index HOST_ID]
        I --> IT[(Supplemental<br/>index table + label)]
-       IT --> G[Stage 2: geometry<br/>HOST_geometry.py]
+       IT --> G[Stage 2: geometry<br/>metadata-geometry HOST_ID]
        SPICE[SPICE kernels<br/>via oops] --> G
        G --> GT[(Geometry tables<br/>summary/detailed + labels)]
-       IT --> C[Stage 3: cumulative<br/>HOST_cumulative.py]
+       IT --> C[Stage 3: cumulative<br/>metadata-cumulative HOST_ID]
        GT --> C
        C --> CT[(Cumulative tables + labels)]
 

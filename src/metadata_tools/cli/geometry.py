@@ -14,6 +14,7 @@ from metadata_tools.config import get_geometry_config, get_host_config, set_host
 
 
 def main() -> None:
+    """Entry point for the ``metadata-geometry`` console script."""
     if len(sys.argv) < 2 or sys.argv[1].startswith('-'):
         sys.exit('Usage: metadata-geometry HOST_ID [args...]')
     host_id = sys.argv[1]
