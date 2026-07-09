@@ -25,6 +25,10 @@ To preview the startup script that would be sent to GCP instances:
   metadata-geometry-cloud GO_0xxx $RMS_METADATA_GCP/GO_0xxx/ \\
       $RMS_METADATA_TEST_GCP/GO_0xxx/ --create-startup-file startup.sh
 
+Use ``--startup-template`` to substitute a custom file for ``gcp_common_startup.sh``:
+
+  metadata-geometry-cloud GO_0xxx ... --config ... --startup-template my_header.sh
+
 The full list of command-line options is documented in the user guide.
 """
 import sys
@@ -56,6 +60,13 @@ def main() -> None:
             'metadata-geometry-cloud requires --config; use metadata-geometry-worker for local runs'
         )
 
+    startup_template: str | None = None
+    if '--startup-template' in sys.argv:
+        idx = sys.argv.index('--startup-template')
+        if idx + 1 >= len(sys.argv):
+            sys.exit('--startup-template requires a file path argument')
+        startup_template = sys.argv[idx + 1]
+
     set_host(host_id)
     hconf = get_host_config()
     config = get_geometry_config()
@@ -70,9 +81,12 @@ def main() -> None:
         idx = sys.argv.index('--create-startup-file')
         if idx + 1 >= len(sys.argv):
             sys.exit('--create-startup-file requires a file path argument')
-        Path(sys.argv[idx + 1]).write_text(build_startup_script(host_id, parser, _WORKER))
+        Path(sys.argv[idx + 1]).write_text(
+            build_startup_script(host_id, parser, _WORKER, startup_template)
+        )
         sys.exit(0)
 
     with volumes_as_task_file():
-        rc = dispatch_cloud_run_if_config(host_id, parser, worker_cmd_name=_WORKER)
+        rc = dispatch_cloud_run_if_config(host_id, parser, worker_cmd_name=_WORKER,
+                                          startup_template=startup_template)
     sys.exit(rc)

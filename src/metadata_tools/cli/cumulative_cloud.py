@@ -14,6 +14,10 @@ To preview the startup script that would be sent to the GCP instance:
   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ \\
       --create-startup-file startup.sh
 
+Use ``--startup-template`` to substitute a custom file for ``gcp_common_startup.sh``:
+
+  metadata-cumulative-cloud GO_0xxx ... --config ... --startup-template my_header.sh
+
 The full list of command-line options is documented in the user guide.
 """
 import sys
@@ -44,6 +48,13 @@ def main() -> None:
         sys.exit('metadata-cumulative-cloud requires --config; '
                  'use metadata-cumulative-worker for local runs')
 
+    startup_template: str | None = None
+    if '--startup-template' in sys.argv:
+        idx = sys.argv.index('--startup-template')
+        if idx + 1 >= len(sys.argv):
+            sys.exit('--startup-template requires a file path argument')
+        startup_template = sys.argv[idx + 1]
+
     set_host(host_id)  # also registers geometry_config: column registration
     hconf = get_host_config()
 
@@ -57,9 +68,12 @@ def main() -> None:
         idx = sys.argv.index('--create-startup-file')
         if idx + 1 >= len(sys.argv):
             sys.exit('--create-startup-file requires a file path argument')
-        Path(sys.argv[idx + 1]).write_text(build_startup_script(host_id, parser, _WORKER))
+        Path(sys.argv[idx + 1]).write_text(
+            build_startup_script(host_id, parser, _WORKER, startup_template)
+        )
         sys.exit(0)
 
     with single_task_as_task_file():
-        rc = dispatch_cloud_run_if_config(host_id, parser, worker_cmd_name=_WORKER)
+        rc = dispatch_cloud_run_if_config(host_id, parser, worker_cmd_name=_WORKER,
+                                          startup_template=startup_template)
     sys.exit(rc)

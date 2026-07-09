@@ -111,13 +111,14 @@ def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
 
 
 def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
-                         worker_cmd_name: str | None = None) -> str:
+                         worker_cmd_name: str | None = None,
+                         startup_template: str | Path | None = None) -> str:
     """Build and return the GCP instance startup script as a string.
 
-    Combines the common header from ``cloud/gcp_common_startup.sh`` with a worker
-    command reconstructed from the metadata_tools arguments in ``sys.argv`` (unknown
-    flags, including any cloud_tasks or ``--create-startup-file`` flags, are stripped).
-    The current git branch is detected and injected as ``BRANCH``.
+    Combines the startup template with a worker command reconstructed from the
+    metadata_tools arguments in ``sys.argv`` (unknown flags, including any
+    cloud_tasks or ``--create-startup-file`` flags, are stripped).  The current
+    git branch is detected and injected as ``BRANCH``.
 
     Args:
         host_id: The host identifier (e.g. ``'GO_0xxx'``).
@@ -125,6 +126,8 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
             flags from everything else.
         worker_cmd_name: Name of the worker console script to embed. Defaults to
             the name of the current executable.
+        startup_template: Path to the startup template file to use instead of the
+            default ``cloud/gcp_common_startup.sh``.
 
     Returns:
         The complete startup script text.
@@ -144,25 +147,26 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     except subprocess.CalledProcessError:
         branch = 'main'
 
-    common_sh = cloud_dir_for(host_id).parent / 'gcp_common_startup.sh'
+    template_path = (Path(startup_template) if startup_template is not None
+                     else cloud_dir_for(host_id).parent / 'gcp_common_startup.sh')
     branch_line = f'export BRANCH={shlex.quote(branch)}'
-    return f'#!/bin/bash\n{branch_line}\n{common_sh.read_text().rstrip()}\n\n{worker_cmd}\n'
+    return f'#!/bin/bash\n{branch_line}\n{template_path.read_text().rstrip()}\n\n{worker_cmd}\n'
 
 
 def dispatch_cloud_run_if_config(host_id: str,
                                  parser: argparse.ArgumentParser,
-                                 worker_cmd_name: str | None = None) -> int | None:
+                                 worker_cmd_name: str | None = None,
+                                 startup_template: str | Path | None = None) -> int | None:
     """Shell out to ``cloud_tasks run`` if ``--config`` is present in sys.argv.
 
     Must be called after :func:`load_host` and :func:`resolve_host_paths` so that
     bare ``--config`` and ``--task-file`` filenames have already been resolved to
     absolute paths under the host directory.
 
-    Generates the GCP instance startup script at runtime by combining the common
-    header from ``cloud/gcp_common_startup.sh`` with a worker command reconstructed
-    from the metadata_tools arguments in ``sys.argv``.  The current git branch is
-    detected and injected as ``BRANCH`` so the VM clones the same code that
-    dispatched it.
+    Generates the GCP instance startup script at runtime by combining the startup
+    template with a worker command reconstructed from the metadata_tools arguments
+    in ``sys.argv``.  The current git branch is detected and injected as ``BRANCH``
+    so the VM clones the same code that dispatched it.
 
     The startup script is delivered to cloud_tasks by injecting ``startup_script_file``
     into a modified copy of the config YAML (written to a temp file) because
@@ -190,6 +194,8 @@ def dispatch_cloud_run_if_config(host_id: str,
             name of the current executable (``Path(sys.argv[0]).name``), which
             is appropriate when the dispatcher and worker share the same entry
             point name.
+        startup_template: Path to the startup template file passed to
+            :func:`build_startup_script`; see that function for details.
     """
     if '--config' not in sys.argv:
         return None
@@ -197,7 +203,7 @@ def dispatch_cloud_run_if_config(host_id: str,
     # Split argv into metadata_tools args (→ startup script) and cloud_tasks args (→ dispatch).
     _ns, cloud_args = parser.parse_known_args(sys.argv[1:])
 
-    startup = build_startup_script(host_id, parser, worker_cmd_name)
+    startup = build_startup_script(host_id, parser, worker_cmd_name, startup_template)
 
     # Write startup script to a temp file; must outlive the subprocess.
     with tempfile.NamedTemporaryFile(suffix='.sh', delete=False, mode='w') as sh_tmp:
