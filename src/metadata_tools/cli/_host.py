@@ -91,6 +91,22 @@ def resolve_task_file(host_dir: Path) -> None:
     resolve_host_paths(host_dir)
 
 
+def pop_argv_flag(flag: str) -> str | None:
+    """Remove *flag* and its value from sys.argv and return the value.
+
+    Returns ``None`` if *flag* is absent.  Calls ``sys.exit`` with an error
+    message if *flag* is present but has no following value.
+    """
+    if flag not in sys.argv:
+        return None
+    idx = sys.argv.index(flag)
+    if idx + 1 >= len(sys.argv):
+        sys.exit(f'{flag} requires a value')
+    value = sys.argv[idx + 1]
+    del sys.argv[idx:idx + 2]
+    return value
+
+
 def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
     """Remove cloud_args elements from argv in order, returning what remains.
 
@@ -112,7 +128,8 @@ def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
 
 def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
                          worker_cmd_name: str | None = None,
-                         startup_template: str | Path | None = None) -> str:
+                         startup_template: str | Path | None = None,
+                         oops_resources: str | None = None) -> str:
     """Build and return the GCP instance startup script as a string.
 
     Combines the startup template with a worker command reconstructed from the
@@ -128,6 +145,9 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
             the name of the current executable.
         startup_template: Path to the startup template file to use instead of the
             default ``cloud/gcp_common_startup.sh``.
+        oops_resources: Name of the persistent disk to mount as OOPS resources,
+            injected as ``OOPS_RESOURCES_DISK`` in the script header.  When
+            ``None`` the template's own default is used.
 
     Returns:
         The complete startup script text.
@@ -149,14 +169,19 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
 
     template_path = (Path(startup_template) if startup_template is not None
                      else cloud_dir_for(host_id).parent / 'gcp_common_startup.sh')
-    branch_line = f'export BRANCH={shlex.quote(branch)}'
-    return f'#!/bin/bash\n{branch_line}\n{template_path.read_text().rstrip()}\n\n{worker_cmd}\n'
+
+    header_lines = [f'export BRANCH={shlex.quote(branch)}']
+    if oops_resources is not None:
+        header_lines.append(f'export OOPS_RESOURCES_DISK={shlex.quote(oops_resources)}')
+    header = '\n'.join(header_lines)
+    return f'#!/bin/bash\n{header}\n{template_path.read_text().rstrip()}\n\n{worker_cmd}\n'
 
 
 def dispatch_cloud_run_if_config(host_id: str,
                                  parser: argparse.ArgumentParser,
                                  worker_cmd_name: str | None = None,
-                                 startup_template: str | Path | None = None) -> int | None:
+                                 startup_template: str | Path | None = None,
+                                 oops_resources: str | None = None) -> int | None:
     """Shell out to ``cloud_tasks run`` if ``--config`` is present in sys.argv.
 
     Must be called after :func:`load_host` and :func:`resolve_host_paths` so that
@@ -196,6 +221,8 @@ def dispatch_cloud_run_if_config(host_id: str,
             point name.
         startup_template: Path to the startup template file passed to
             :func:`build_startup_script`; see that function for details.
+        oops_resources: Persistent disk name passed to :func:`build_startup_script`;
+            see that function for details.
     """
     if '--config' not in sys.argv:
         return None
@@ -203,7 +230,8 @@ def dispatch_cloud_run_if_config(host_id: str,
     # Split argv into metadata_tools args (→ startup script) and cloud_tasks args (→ dispatch).
     _ns, cloud_args = parser.parse_known_args(sys.argv[1:])
 
-    startup = build_startup_script(host_id, parser, worker_cmd_name, startup_template)
+    startup = build_startup_script(host_id, parser, worker_cmd_name, startup_template,
+                                   oops_resources)
 
     # Write startup script to a temp file; must outlive the subprocess.
     with tempfile.NamedTemporaryFile(suffix='.sh', delete=False, mode='w') as sh_tmp:

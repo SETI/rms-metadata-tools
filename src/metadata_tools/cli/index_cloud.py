@@ -25,9 +25,9 @@ To preview the startup script that would be sent to GCP instances:
   metadata-index-cloud GO_0xxx $RMS_VOLUMES_GCP/GO_0xxx/ $RMS_METADATA_GCP/GO_0xxx/ \\
       $RMS_METADATA_TEST_GCP/GO_0xxx/ --create-startup-file startup.sh
 
-Use ``--startup-template`` to substitute a custom file for ``gcp_common_startup.sh``:
-
-  metadata-index-cloud GO_0xxx ... --config ... --startup-template my_header.sh
+Optional overrides (all consumed before dispatch; do not reach cloud_tasks or the worker):
+  --startup-template <file>  Use <file> instead of cloud/gcp_common_startup.sh.
+  --oops-resources <name>    Persistent disk name for OOPS resources.
 
 The full list of command-line options is documented in the user guide.
 """
@@ -39,6 +39,7 @@ from metadata_tools.cli._host import (
     cloud_dir_for,
     dispatch_cloud_run_if_config,
     load_host,
+    pop_argv_flag,
     resolve_host_paths,
     volumes_as_task_file,
 )
@@ -55,15 +56,12 @@ def main() -> None:
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir, cloud_dir_for(host_id))
 
-    if '--config' not in sys.argv and '--create-startup-file' not in sys.argv:
-        sys.exit('metadata-index-cloud requires --config; use metadata-index-worker for local runs')
+    create_startup_file = pop_argv_flag('--create-startup-file')
+    startup_template = pop_argv_flag('--startup-template')
+    oops_resources = pop_argv_flag('--oops-resources')
 
-    startup_template: str | None = None
-    if '--startup-template' in sys.argv:
-        idx = sys.argv.index('--startup-template')
-        if idx + 1 >= len(sys.argv):
-            sys.exit('--startup-template requires a file path argument')
-        startup_template = sys.argv[idx + 1]
+    if '--config' not in sys.argv and create_startup_file is None:
+        sys.exit('metadata-index-cloud requires --config; use metadata-index-worker for local runs')
 
     set_host(host_id)
     hconf = get_host_config()
@@ -74,16 +72,14 @@ def main() -> None:
     host, index_type, _ = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host, index_type=index_type)
 
-    if '--create-startup-file' in sys.argv:
-        idx = sys.argv.index('--create-startup-file')
-        if idx + 1 >= len(sys.argv):
-            sys.exit('--create-startup-file requires a file path argument')
-        Path(sys.argv[idx + 1]).write_text(
-            build_startup_script(host_id, parser, _WORKER, startup_template)
+    if create_startup_file is not None:
+        Path(create_startup_file).write_text(
+            build_startup_script(host_id, parser, _WORKER, startup_template, oops_resources)
         )
         sys.exit(0)
 
     with volumes_as_task_file():
         rc = dispatch_cloud_run_if_config(host_id, parser, worker_cmd_name=_WORKER,
-                                          startup_template=startup_template)
+                                          startup_template=startup_template,
+                                          oops_resources=oops_resources)
     sys.exit(rc)
