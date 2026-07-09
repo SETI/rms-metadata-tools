@@ -29,6 +29,7 @@ Optional overrides (all consumed before dispatch; do not reach cloud_tasks or th
   --startup-template <file>   Use <file> instead of cloud/gcp_common_startup.sh.
   --oops-resources <name>     Persistent disk name for OOPS resources.
   --service-account <account> GCP service account (overrides $GCP_SERVICE_ACCOUNT).
+  --debug-branch <branch>     Git branch to clone on GCP VMs (overrides $GCP_DEBUG_BRANCH).
 
 The full list of command-line options is documented in the user guide.
 """
@@ -61,6 +62,7 @@ def main() -> None:
     startup_template = pop_argv_flag('--startup-template')
     oops_resources = pop_argv_flag('--oops-resources')
     service_account = pop_argv_flag('--service-account')
+    debug_branch = pop_argv_flag('--debug-branch')
 
     if '--config' not in sys.argv and create_startup_file is None:
         sys.exit(
@@ -79,7 +81,8 @@ def main() -> None:
 
     if create_startup_file is not None:
         Path(create_startup_file).write_text(
-            build_startup_script(host_id, parser, _WORKER, startup_template, oops_resources)
+            build_startup_script(host_id, parser, _WORKER, startup_template, oops_resources,
+                                 debug_branch)
         )
         sys.exit(0)
 
@@ -87,5 +90,6 @@ def main() -> None:
         rc = dispatch_cloud_run_if_config(host_id, parser, worker_cmd_name=_WORKER,
                                           startup_template=startup_template,
                                           oops_resources=oops_resources,
-                                          service_account=service_account)
+                                          service_account=service_account,
+                                          debug_branch=debug_branch)
     sys.exit(rc)

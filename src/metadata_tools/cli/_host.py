@@ -129,13 +129,14 @@ def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
 def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
                          worker_cmd_name: str | None = None,
                          startup_template: str | Path | None = None,
-                         oops_resources: str | None = None) -> str:
+                         oops_resources: str | None = None,
+                         debug_branch: str | None = None) -> str:
     """Build and return the GCP instance startup script as a string.
 
     Combines the startup template with a worker command reconstructed from the
     metadata_tools arguments in ``sys.argv`` (unknown flags, including any
-    cloud_tasks or ``--create-startup-file`` flags, are stripped).  The current
-    git branch is detected and injected as ``BRANCH``.
+    cloud_tasks or ``--create-startup-file`` flags, are stripped).  The git
+    branch to clone is injected as ``BRANCH``.
 
     Args:
         host_id: The host identifier (e.g. ``'GO_0xxx'``).
@@ -150,6 +151,9 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
             injected as ``OOPS_RESOURCES_DISK`` in the script header.  Falls back
             to the ``OOPS_RESOURCES_DISK`` environment variable when ``None``.
             Calls ``sys.exit`` if neither is provided.
+        debug_branch: Git branch to clone on the GCP VM, injected as ``BRANCH``
+            in the script header.  Falls back to the ``GCP_DEBUG_BRANCH``
+            environment variable, then to the currently checked-out branch.
 
     Returns:
         The complete startup script text.
@@ -160,14 +164,16 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     cmd_name = worker_cmd_name if worker_cmd_name is not None else Path(sys.argv[0]).name
     worker_cmd = shlex.join([cmd_name, host_id] + worker_argv)
 
-    try:
-        branch_result = subprocess.run(  # nosec B603 B607
-            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
-            capture_output=True, text=True, check=True,
-        )
-        branch = branch_result.stdout.strip() or 'main'
-    except subprocess.CalledProcessError:
-        branch = 'main'
+    resolved_branch = debug_branch or os.environ.get('GCP_DEBUG_BRANCH')
+    if not resolved_branch:
+        try:
+            branch_result = subprocess.run(  # nosec B603 B607
+                ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                capture_output=True, text=True, check=True,
+            )
+            resolved_branch = branch_result.stdout.strip() or 'main'
+        except subprocess.CalledProcessError:
+            resolved_branch = 'main'
 
     resolved_template = startup_template or os.environ.get('GCP_STARTUP_TEMPLATE')
     template_path = (Path(resolved_template) if resolved_template is not None
@@ -176,7 +182,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     resolved_oops = oops_resources or os.environ.get('OOPS_RESOURCES_DISK')
     if not resolved_oops:
         sys.exit('--oops-resources or $OOPS_RESOURCES_DISK is required')
-    header_lines = [f'export BRANCH={shlex.quote(branch)}',
+    header_lines = [f'export BRANCH={shlex.quote(resolved_branch)}',
                     f'export OOPS_RESOURCES_DISK={shlex.quote(resolved_oops)}']
     header = '\n'.join(header_lines)
     return f'#!/bin/bash\n{header}\n{template_path.read_text().rstrip()}\n\n{worker_cmd}\n'
@@ -187,7 +193,8 @@ def dispatch_cloud_run_if_config(host_id: str,
                                  worker_cmd_name: str | None = None,
                                  startup_template: str | Path | None = None,
                                  oops_resources: str | None = None,
-                                 service_account: str | None = None) -> int | None:
+                                 service_account: str | None = None,
+                                 debug_branch: str | None = None) -> int | None:
     """Shell out to ``cloud_tasks run`` if ``--config`` is present in sys.argv.
 
     Must be called after :func:`load_host` and :func:`resolve_host_paths` so that
@@ -232,6 +239,8 @@ def dispatch_cloud_run_if_config(host_id: str,
         service_account: GCP service account to pass to ``cloud_tasks run`` via
             ``--service-account``.  Takes precedence over the ``GCP_SERVICE_ACCOUNT``
             environment variable.
+        debug_branch: Git branch passed to :func:`build_startup_script`; see that
+            function for details.
     """
     if '--config' not in sys.argv:
         return None
@@ -240,7 +249,7 @@ def dispatch_cloud_run_if_config(host_id: str,
     _ns, cloud_args = parser.parse_known_args(sys.argv[1:])
 
     startup = build_startup_script(host_id, parser, worker_cmd_name, startup_template,
-                                   oops_resources)
+                                   oops_resources, debug_branch)
 
     # Write startup script to a temp file; must outlive the subprocess.
     with tempfile.NamedTemporaryFile(suffix='.sh', delete=False, mode='w') as sh_tmp:
