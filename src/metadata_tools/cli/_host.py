@@ -181,7 +181,8 @@ def dispatch_cloud_run_if_config(host_id: str,
                                  parser: argparse.ArgumentParser,
                                  worker_cmd_name: str | None = None,
                                  startup_template: str | Path | None = None,
-                                 oops_resources: str | None = None) -> int | None:
+                                 oops_resources: str | None = None,
+                                 service_account: str | None = None) -> int | None:
     """Shell out to ``cloud_tasks run`` if ``--config`` is present in sys.argv.
 
     Must be called after :func:`load_host` and :func:`resolve_host_paths` so that
@@ -223,6 +224,9 @@ def dispatch_cloud_run_if_config(host_id: str,
             :func:`build_startup_script`; see that function for details.
         oops_resources: Persistent disk name passed to :func:`build_startup_script`;
             see that function for details.
+        service_account: GCP service account to pass to ``cloud_tasks run`` via
+            ``--service-account``.  Takes precedence over the ``GCP_SERVICE_ACCOUNT``
+            environment variable.
     """
     if '--config' not in sys.argv:
         return None
@@ -263,7 +267,7 @@ def dispatch_cloud_run_if_config(host_id: str,
             modified_cloud_args[config_path_idx + 1] = cfg_tmp_name
 
             extra: list[str] = []
-            sa = os.environ.get('GCP_SERVICE_ACCOUNT')
+            sa = service_account or os.environ.get('GCP_SERVICE_ACCOUNT')
             if sa and '--service-account' not in cloud_args:
                 extra += ['--service-account', sa]
 

@@ -26,8 +26,9 @@ To preview the startup script that would be sent to GCP instances:
       $RMS_METADATA_TEST_GCP/GO_0xxx/ --create-startup-file startup.sh
 
 Optional overrides (all consumed before dispatch; do not reach cloud_tasks or the worker):
-  --startup-template <file>  Use <file> instead of cloud/gcp_common_startup.sh.
-  --oops-resources <name>    Persistent disk name for OOPS resources.
+  --startup-template <file>   Use <file> instead of cloud/gcp_common_startup.sh.
+  --oops-resources <name>     Persistent disk name for OOPS resources.
+  --service-account <account> GCP service account (overrides $GCP_SERVICE_ACCOUNT).
 
 The full list of command-line options is documented in the user guide.
 """
@@ -59,6 +60,7 @@ def main() -> None:
     create_startup_file = pop_argv_flag('--create-startup-file')
     startup_template = pop_argv_flag('--startup-template')
     oops_resources = pop_argv_flag('--oops-resources')
+    service_account = pop_argv_flag('--service-account')
 
     if '--config' not in sys.argv and create_startup_file is None:
         sys.exit('metadata-index-cloud requires --config; use metadata-index-worker for local runs')
@@ -81,5 +83,6 @@ def main() -> None:
     with volumes_as_task_file():
         rc = dispatch_cloud_run_if_config(host_id, parser, worker_cmd_name=_WORKER,
                                           startup_template=startup_template,
-                                          oops_resources=oops_resources)
+                                          oops_resources=oops_resources,
+                                          service_account=service_account)
     sys.exit(rc)
