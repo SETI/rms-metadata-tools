@@ -111,7 +111,8 @@ def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
 
 
 def dispatch_cloud_run_if_config(host_id: str,
-                                 parser: argparse.ArgumentParser) -> int | None:
+                                 parser: argparse.ArgumentParser,
+                                 worker_cmd_name: str | None = None) -> int | None:
     """Shell out to ``cloud_tasks run`` if ``--config`` is present in sys.argv.
 
     Must be called after :func:`load_host` and :func:`resolve_host_paths` so that
@@ -145,6 +146,11 @@ def dispatch_cloud_run_if_config(host_id: str,
         parser: The argparser for this command; used to separate metadata_tools
             flags (kept in the startup script worker command) from cloud_tasks
             flags (passed to ``cloud_tasks run``).
+        worker_cmd_name: Name of the worker console script to embed in the GCP
+            startup script (e.g. ``'metadata-index-worker'``).  Defaults to the
+            name of the current executable (``Path(sys.argv[0]).name``), which
+            is appropriate when the dispatcher and worker share the same entry
+            point name.
     """
     if '--config' not in sys.argv:
         return None
@@ -154,7 +160,7 @@ def dispatch_cloud_run_if_config(host_id: str,
     worker_argv = _strip_cloud_args(sys.argv[1:], cloud_args)
 
     # Reconstruct the worker command for the startup script.
-    cmd_name = Path(sys.argv[0]).name
+    cmd_name = worker_cmd_name if worker_cmd_name is not None else Path(sys.argv[0]).name
     worker_cmd = shlex.join([cmd_name, host_id] + worker_argv)
 
     # Detect the current git branch so the VM clones the same code that dispatched.
