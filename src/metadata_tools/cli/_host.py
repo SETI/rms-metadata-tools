@@ -110,6 +110,45 @@ def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
     return remaining
 
 
+def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
+                         worker_cmd_name: str | None = None) -> str:
+    """Build and return the GCP instance startup script as a string.
+
+    Combines the common header from ``cloud/gcp_common_startup.sh`` with a worker
+    command reconstructed from the metadata_tools arguments in ``sys.argv`` (unknown
+    flags, including any cloud_tasks or ``--create-startup-file`` flags, are stripped).
+    The current git branch is detected and injected as ``BRANCH``.
+
+    Args:
+        host_id: The host identifier (e.g. ``'GO_0xxx'``).
+        parser: The argparser for this command; used to separate metadata_tools
+            flags from everything else.
+        worker_cmd_name: Name of the worker console script to embed. Defaults to
+            the name of the current executable.
+
+    Returns:
+        The complete startup script text.
+    """
+    _ns, extra_args = parser.parse_known_args(sys.argv[1:])
+    worker_argv = _strip_cloud_args(sys.argv[1:], extra_args)
+
+    cmd_name = worker_cmd_name if worker_cmd_name is not None else Path(sys.argv[0]).name
+    worker_cmd = shlex.join([cmd_name, host_id] + worker_argv)
+
+    try:
+        branch_result = subprocess.run(  # nosec B603 B607
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+            capture_output=True, text=True, check=True,
+        )
+        branch = branch_result.stdout.strip() or 'main'
+    except subprocess.CalledProcessError:
+        branch = 'main'
+
+    common_sh = cloud_dir_for(host_id).parent / 'gcp_common_startup.sh'
+    branch_line = f'export BRANCH={shlex.quote(branch)}'
+    return f'#!/bin/bash\n{branch_line}\n{common_sh.read_text().rstrip()}\n\n{worker_cmd}\n'
+
+
 def dispatch_cloud_run_if_config(host_id: str,
                                  parser: argparse.ArgumentParser,
                                  worker_cmd_name: str | None = None) -> int | None:
@@ -157,26 +196,8 @@ def dispatch_cloud_run_if_config(host_id: str,
 
     # Split argv into metadata_tools args (→ startup script) and cloud_tasks args (→ dispatch).
     _ns, cloud_args = parser.parse_known_args(sys.argv[1:])
-    worker_argv = _strip_cloud_args(sys.argv[1:], cloud_args)
 
-    # Reconstruct the worker command for the startup script.
-    cmd_name = worker_cmd_name if worker_cmd_name is not None else Path(sys.argv[0]).name
-    worker_cmd = shlex.join([cmd_name, host_id] + worker_argv)
-
-    # Detect the current git branch so the VM clones the same code that dispatched.
-    try:
-        branch_result = subprocess.run(  # nosec B603 B607
-            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
-            capture_output=True, text=True, check=True,
-        )
-        branch = branch_result.stdout.strip() or 'main'
-    except subprocess.CalledProcessError:
-        branch = 'main'
-
-    # Build startup script: inject BRANCH before the common header.
-    common_sh = cloud_dir_for(host_id).parent / 'gcp_common_startup.sh'
-    branch_line = f'export BRANCH={shlex.quote(branch)}'
-    startup = f'#!/bin/bash\n{branch_line}\n{common_sh.read_text().rstrip()}\n\n{worker_cmd}\n'
+    startup = build_startup_script(host_id, parser, worker_cmd_name)
 
     # Write startup script to a temp file; must outlive the subprocess.
     with tempfile.NamedTemporaryFile(suffix='.sh', delete=False, mode='w') as sh_tmp:
