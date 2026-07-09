@@ -146,8 +146,9 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
         startup_template: Path to the startup template file to use instead of the
             default ``cloud/gcp_common_startup.sh``.
         oops_resources: Name of the persistent disk to mount as OOPS resources,
-            injected as ``OOPS_RESOURCES_DISK`` in the script header.  When
-            ``None`` the template's own default is used.
+            injected as ``OOPS_RESOURCES_DISK`` in the script header.  Falls back
+            to the ``OOPS_RESOURCES_DISK`` environment variable when ``None``.
+            Calls ``sys.exit`` if neither is provided.
 
     Returns:
         The complete startup script text.
@@ -170,9 +171,11 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     template_path = (Path(startup_template) if startup_template is not None
                      else cloud_dir_for(host_id).parent / 'gcp_common_startup.sh')
 
-    header_lines = [f'export BRANCH={shlex.quote(branch)}']
-    if oops_resources is not None:
-        header_lines.append(f'export OOPS_RESOURCES_DISK={shlex.quote(oops_resources)}')
+    resolved_oops = oops_resources or os.environ.get('OOPS_RESOURCES_DISK')
+    if not resolved_oops:
+        sys.exit('--oops-resources or $OOPS_RESOURCES_DISK is required')
+    header_lines = [f'export BRANCH={shlex.quote(branch)}',
+                    f'export OOPS_RESOURCES_DISK={shlex.quote(resolved_oops)}']
     header = '\n'.join(header_lines)
     return f'#!/bin/bash\n{header}\n{template_path.read_text().rstrip()}\n\n{worker_cmd}\n'
 
