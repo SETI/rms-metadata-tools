@@ -144,7 +144,8 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
         worker_cmd_name: Name of the worker console script to embed. Defaults to
             the name of the current executable.
         startup_template: Path to the startup template file to use instead of the
-            default ``cloud/gcp_common_startup.sh``.
+            default ``cloud/gcp_common_startup.sh``.  Falls back to the
+            ``GCP_STARTUP_TEMPLATE`` environment variable when ``None``.
         oops_resources: Name of the persistent disk to mount as OOPS resources,
             injected as ``OOPS_RESOURCES_DISK`` in the script header.  Falls back
             to the ``OOPS_RESOURCES_DISK`` environment variable when ``None``.
@@ -168,7 +169,8 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     except subprocess.CalledProcessError:
         branch = 'main'
 
-    template_path = (Path(startup_template) if startup_template is not None
+    resolved_template = startup_template or os.environ.get('GCP_STARTUP_TEMPLATE')
+    template_path = (Path(resolved_template) if resolved_template is not None
                      else cloud_dir_for(host_id).parent / 'gcp_common_startup.sh')
 
     resolved_oops = oops_resources or os.environ.get('OOPS_RESOURCES_DISK')
