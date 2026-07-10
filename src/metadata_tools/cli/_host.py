@@ -153,7 +153,8 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
             Calls ``sys.exit`` if neither is provided.
         debug_branch: Git branch to clone on the GCP VM, injected as ``BRANCH``
             in the script header.  Falls back to the ``GCP_DEBUG_BRANCH``
-            environment variable, then to the currently checked-out branch.
+            environment variable.  When neither is set the startup template
+            installs from PyPI instead of cloning the repository.
 
     Returns:
         The complete startup script text.
@@ -165,15 +166,6 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     worker_cmd = shlex.join([cmd_name, host_id] + worker_argv)
 
     resolved_branch = debug_branch or os.environ.get('GCP_DEBUG_BRANCH')
-    if not resolved_branch:
-        try:
-            branch_result = subprocess.run(  # nosec B603 B607
-                ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
-                capture_output=True, text=True, check=True,
-            )
-            resolved_branch = branch_result.stdout.strip() or 'main'
-        except subprocess.CalledProcessError:
-            resolved_branch = 'main'
 
     resolved_template = startup_template or os.environ.get('GCP_STARTUP_TEMPLATE')
     template_path = (Path(resolved_template) if resolved_template is not None
@@ -182,8 +174,10 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     resolved_oops = oops_resources or os.environ.get('OOPS_RESOURCES_DISK')
     if not resolved_oops:
         sys.exit('--oops-resources or $OOPS_RESOURCES_DISK is required')
-    header_lines = [f'export BRANCH={shlex.quote(resolved_branch)}',
-                    f'export OOPS_RESOURCES_DISK={shlex.quote(resolved_oops)}']
+    header_lines = []
+    if resolved_branch:
+        header_lines.append(f'export BRANCH={shlex.quote(resolved_branch)}')
+    header_lines.append(f'export OOPS_RESOURCES_DISK={shlex.quote(resolved_oops)}')
     header = '\n'.join(header_lines)
     return f'#!/bin/bash\n{header}\n{template_path.read_text().rstrip()}\n\n{worker_cmd}\n'
 

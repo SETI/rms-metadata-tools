@@ -13,9 +13,15 @@ sudo apt-get update -y
 sudo apt-get install -y python3 python3-pip python3-venv git
 cd /root
 
-git clone -b "${BRANCH:-main}" --single-branch https://github.com/SETI/rms-metadata-tools.git
-cd rms-metadata-tools
-REPO_DIR="$(pwd)"
-python3 -m venv venv
-"$REPO_DIR/venv/bin/pip" install ".[cloud]"
+if [ -n "${BRANCH:-}" ]; then
+    git clone -b "${BRANCH}" --single-branch https://github.com/SETI/rms-metadata-tools.git
+    cd rms-metadata-tools
+    REPO_DIR="$(pwd)"
+    python3 -m venv venv
+    "$REPO_DIR/venv/bin/pip" install ".[cloud]"
+else
+    REPO_DIR="$(pwd)"
+    python3 -m venv venv
+    "$REPO_DIR/venv/bin/pip" install "rms-metadata-tools[cloud]"
+fi
 export PATH="$REPO_DIR/venv/bin:$PATH"
