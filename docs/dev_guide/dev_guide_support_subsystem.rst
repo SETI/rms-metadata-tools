@@ -67,11 +67,11 @@ populated (see ``bodies`` below).
 ====================================
 
 :func:`~metadata_tools.bodies.get_bodies` builds the mapping from body name to
-``oops`` ``Body`` object, including each primary's regular children, and
-:data:`~metadata_tools.bodies.BODIES` is computed once on import. This requires
-the host's ``oops`` module to have been initialized first (so SPICE bodies are
-registered), which is why :mod:`metadata_tools.bodies` is excluded from the
-hermetic test coverage and stubbed in the test fixtures.
+``oops`` ``Body`` object, including each primary's regular children.
+:func:`~metadata_tools.bodies.get_bodies_registry` returns a cached singleton (computed once
+on first call). This requires the host's ``oops`` module to have been initialized
+first (so SPICE bodies are registered), which is why :mod:`metadata_tools.bodies`
+is excluded from the hermetic test coverage and stubbed in the test fixtures.
 
 ``util`` and ``defs``
 =====================
@@ -99,7 +99,7 @@ Invariants
   :class:`str`. The package never creates directories through ``FCPath``.
 - **Logging.** There is a single global logger; per-run handlers are added by
   :func:`~metadata_tools.common.init_logger`.
-- **Import order.** :data:`~metadata_tools.bodies.BODIES` and the
+- **Import order.** The :func:`~metadata_tools.bodies.get_bodies_registry` singleton and the
   :mod:`metadata_tools.columns` tables are computed at import and depend on an
   initialized ``oops`` registry.
 

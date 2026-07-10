@@ -136,18 +136,25 @@ SSI) that is excluded from the per-volume stages.
 Console scripts
 ===============
 
-The package installs seven console scripts. Pass the host ID (e.g. ``GO_0xxx``
+The package installs ten console scripts. Pass the host ID (e.g. ``GO_0xxx``
 for Galileo SSI) as the first positional argument:
 
 .. code-block:: text
 
-   metadata-index          HOST_ID [options] volume_tree metadata_tree output_tree
-   metadata-geometry       HOST_ID [options] metadata_tree output_tree
-   metadata-cumulative     HOST_ID [options] output_dir
-   metadata-index-cloud    HOST_ID [options] volume_tree metadata_tree output_tree
-   metadata-geometry-cloud HOST_ID [options] metadata_tree output_tree
+   metadata-index           HOST_ID [options] volume_tree metadata_tree output_tree
+   metadata-geometry        HOST_ID [options] metadata_tree output_tree
+   metadata-cumulative      HOST_ID [options] output_dir
+   metadata-index-worker    HOST_ID [options] volume_tree metadata_tree output_tree
+   metadata-geometry-worker HOST_ID [options] metadata_tree output_tree
+   metadata-cumulative-worker HOST_ID [options] output_dir
+   metadata-index-cloud     HOST_ID [options] volume_tree metadata_tree output_tree
+   metadata-geometry-cloud  HOST_ID [options] metadata_tree output_tree
    metadata-cumulative-cloud HOST_ID [options] output_dir
-   metadata-task-list      HOST_ID tree --output FILE
+   metadata-task-list       HOST_ID tree --output FILE
+
+The ``*-worker`` scripts run the engine locally in parallel using
+``rms-cloud-tasks``; the ``*-cloud`` scripts dispatch work to GCP and require
+``--config``. See :doc:`user_guide_cloud` for details.
 
 All scripts accept ``--help`` (``-h``) to print a full option summary. For
 complete option descriptions see :doc:`user_guide_index`,

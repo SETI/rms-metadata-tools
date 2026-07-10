@@ -3,9 +3,17 @@ Distributed (cloud) runs
 ============================
 
 Generating geometry for a large collection is CPU-bound and embarrassingly
-parallel across volumes. Three cloud console scripts distribute the per-volume
-work using the `rms-cloud-tasks <https://pypi.org/project/rms-cloud-tasks>`_
-framework on Google Cloud Platform (GCP):
+parallel across volumes. Two families of console scripts handle this:
+
+**Worker scripts** — run the engine locally in parallel (no GCP account needed):
+
+.. code-block:: text
+
+   metadata-index-worker    HOST_ID [options] volume_tree metadata_tree output_tree
+   metadata-geometry-worker HOST_ID [options] metadata_tree output_tree
+   metadata-cumulative-worker HOST_ID [options] output_dir
+
+**Cloud scripts** — dispatch work to GCP (require ``--config``):
 
 .. code-block:: text
 
@@ -13,7 +21,7 @@ framework on Google Cloud Platform (GCP):
    metadata-geometry-cloud HOST_ID [options] metadata_tree output_tree
    metadata-cumulative-cloud HOST_ID [options] output_dir
 
-These scripts require the ``cloud`` optional dependency group:
+Both families require the ``cloud`` optional dependency group:
 
 .. code-block:: bash
 
@@ -22,39 +30,40 @@ These scripts require the ``cloud`` optional dependency group:
 How it works
 ============
 
-The cloud scripts reuse the same engine entry points
+The worker and cloud scripts reuse the same engine entry points
 (:func:`~metadata_tools.index_support.process_index`,
 :func:`~metadata_tools.geometry_support.process.process_tables`) but run them
 inside a ``rms-cloud-tasks`` Worker.
 
-- Without ``--config`` the script behaves identically to its non-cloud
-  counterpart, except that ``--num-simultaneous-tasks`` is also accepted to
-  run volumes in parallel locally.
-- With ``--config`` the script shells out to ``cloud_tasks run`` for a full GCP
-  dispatch instead of running locally.
+Worker scripts start a local Worker directly. Cloud scripts shell out to
+``cloud_tasks run``, which provisions GCP instances, generates and delivers a
+startup script to each VM, and monitors progress. The startup script
+pip-installs ``rms-metadata-tools`` from PyPI (or clones a specific git branch
+when ``--debug-branch`` / ``$GCP_DEBUG_BRANCH`` is set) and then runs the
+appropriate worker command.
 
 Local parallel runs
 ====================
 
-Run a cloud script exactly like its plain counterpart, with the additional
+Run a worker script just like its plain counterpart, with the additional
 ``--num-simultaneous-tasks`` option to process volumes in parallel:
 
 .. code-block:: bash
 
-   metadata-index-cloud GO_0xxx "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
+   metadata-index-worker GO_0xxx "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
        "$RMS_METADATA_TEST/GO_0xxx/" --num-simultaneous-tasks 12
 
 You can also restrict to specific volumes with ``--volumes``:
 
 .. code-block:: bash
 
-   metadata-geometry-cloud GO_0xxx "$RMS_METADATA/GO_0xxx/" \
+   metadata-geometry-worker GO_0xxx "$RMS_METADATA/GO_0xxx/" \
        "$RMS_METADATA_TEST/GO_0xxx/" --volumes GO_0017 GO_0018
 
 GCP runs
 ========
 
-For a GCP run, use the same path arguments as a local run and add ``--config``.
+For a GCP run, pass the same path arguments as a local run and add ``--config``.
 The GCP instance startup script is generated automatically from those arguments
 at dispatch time, so no personal bucket paths ever appear in committed files.
 
@@ -67,7 +76,7 @@ First generate a task file with ``metadata-task-list``, then dispatch:
    # Generate task file
    metadata-task-list GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" --output tasks.json
 
-   # Dispatch to GCP (same paths as local; --config triggers GCP dispatch)
+   # Dispatch to GCP
    metadata-index-cloud GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" "$RMS_METADATA_GCP/GO_0xxx/" \
        "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot \
        --config cloud/GO_0xxx/gcp_index_config.yml \
@@ -85,12 +94,49 @@ automatically:
 
 The ``gcp_*_config.yml`` machine/queue configuration files live in
 ``cloud/<HOST>/`` at the repository root (not inside the installed package).
-The instance startup script is generated at dispatch time and not stored on disk.
+The instance startup script is generated at dispatch time and delivered to
+``cloud_tasks`` via the config YAML; it is not stored on disk.
+
+Previewing the startup script
+------------------------------
+
+To see exactly what startup script would be sent to a GCP instance without
+actually dispatching, use ``--create-startup-file``:
+
+.. code-block:: bash
+
+   metadata-index-cloud GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" "$RMS_METADATA_GCP/GO_0xxx/" \
+       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --create-startup-file startup.sh
+
+This writes the startup script to ``startup.sh`` and exits immediately. The
+``--config`` flag is not required when ``--create-startup-file`` is used.
+
+Worker options
+==============
+
+Worker scripts accept all options of their non-cloud counterpart, plus:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 38 62
+
+   * - Option
+     - Description
+   * - ``--task-file FILE``
+     - Path to a task file (JSON). Passed automatically when using
+       ``metadata-task-list`` output; can also be provided manually.
+   * - ``--num-simultaneous-tasks N``
+     - Number of volumes to process in parallel.
 
 Cloud options
 =============
 
-The cloud scripts accept all options of their non-cloud counterpart, plus:
+Cloud scripts accept all options of their non-cloud counterpart, plus the
+following. Options in the first group are forwarded to ``cloud_tasks run``;
+options in the second group are consumed before dispatch and never reach
+``cloud_tasks`` or the worker.
+
+Dispatch options (forwarded to ``cloud_tasks run``):
 
 .. list-table::
    :header-rows: 1
@@ -99,16 +145,84 @@ The cloud scripts accept all options of their non-cloud counterpart, plus:
    * - Option
      - Description
    * - ``--config FILE``
-     - GCP configuration YAML. When present, the script dispatches to GCP
-       instead of running locally. Bare filenames are resolved against the
-       ``cloud/<HOST>/`` directory.
+     - GCP configuration YAML. Required for dispatch. Bare filenames are
+       resolved against the ``cloud/<HOST>/`` directory.
    * - ``--task-file FILE``
      - Path to a task file (JSON). Passed automatically when using
        ``metadata-task-list`` output; can also be provided manually.
    * - ``--use-spot``
      - Request spot (preemptible) GCP instances.
-   * - ``--num-simultaneous-tasks N``
-     - Number of volumes to process in parallel (local runs only).
+
+Cloud-only overrides (consumed before dispatch):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 38 62
+
+   * - Option
+     - Description
+   * - ``--create-startup-file FILE``
+     - Write the generated startup script to ``FILE`` and exit without
+       dispatching. ``--config`` is not required when this flag is used.
+   * - ``--startup-template FILE``
+     - Use ``FILE`` as the startup script template instead of the default
+       ``cloud/gcp_common_startup.sh``. Overrides ``$GCP_STARTUP_TEMPLATE``.
+   * - ``--oops-resources NAME``
+     - Name of the persistent GCP disk to attach as OOPS resources on each VM.
+       Overrides ``$OOPS_RESOURCES_DISK``. One of this flag or the environment
+       variable is required.
+   * - ``--service-account ACCOUNT``
+     - GCP service account to use for dispatch. Overrides ``$GCP_SERVICE_ACCOUNT``.
+   * - ``--debug-branch BRANCH``
+     - Git branch to clone on GCP VMs instead of pip-installing from PyPI.
+       Overrides ``$GCP_DEBUG_BRANCH``. Use for testing unreleased changes.
+
+Environment variables
+=====================
+
+Cloud-related settings can be provided via environment variables, which are
+loaded from a ``.env`` file at the repository root at import time (shell
+environment takes precedence over ``.env``). The file is git-ignored so it
+never contains committed credentials.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 72
+
+   * - Variable
+     - Description
+   * - ``GCP_SERVICE_ACCOUNT``
+     - GCP service account passed to ``cloud_tasks run`` via ``--service-account``.
+       Overridden by the ``--service-account`` CLI flag.
+   * - ``OOPS_RESOURCES_DISK``
+     - Name of the persistent disk to attach on each GCP VM for OOPS resources.
+       Injected as ``$OOPS_RESOURCES_DISK`` in the startup script header.
+       Overridden by ``--oops-resources``. Required — either this variable or
+       that flag must be set.
+   * - ``GCP_STARTUP_TEMPLATE``
+     - Path to a custom startup script template to use instead of
+       ``cloud/gcp_common_startup.sh``. Overridden by ``--startup-template``.
+       Leave blank or unset to use the default.
+   * - ``GCP_DEBUG_BRANCH``
+     - Git branch to clone on GCP VMs. When unset and ``--debug-branch`` is not
+       given, the startup script pip-installs ``rms-metadata-tools`` from PyPI
+       instead of cloning. Overridden by ``--debug-branch``.
+
+A typical ``.env`` file:
+
+.. code-block:: bash
+
+   # GCP service account to pass to cloud_tasks run (--service-account).
+   GCP_SERVICE_ACCOUNT=rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
+
+   # Name of the persistent disk to attach on each GCP VM for OOPS resources.
+   OOPS_RESOURCES_DISK=standard-oops-resources-central1-a-1
+
+   # Custom startup template (leave blank to use the default).
+   GCP_STARTUP_TEMPLATE=
+
+   # Git branch to clone on GCP VMs (leave blank to pip-install from PyPI).
+   GCP_DEBUG_BRANCH=
 
 The ``metadata-task-list`` script
 ==================================

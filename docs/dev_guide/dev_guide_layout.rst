@@ -43,9 +43,12 @@ scripts, tests, docs, and tooling.
            index.py            # metadata-index
            geometry.py         # metadata-geometry
            cumulative.py       # metadata-cumulative
-           index_cloud.py      # metadata-index-cloud
-           geometry_cloud.py   # metadata-geometry-cloud
-           cumulative_cloud.py # metadata-cumulative-cloud
+           index_worker.py     # metadata-index-worker    (local parallel)
+           geometry_worker.py  # metadata-geometry-worker (local parallel)
+           cumulative_worker.py # metadata-cumulative-worker (local parallel)
+           index_cloud.py      # metadata-index-cloud     (GCP dispatch)
+           geometry_cloud.py   # metadata-geometry-cloud  (GCP dispatch)
+           cumulative_cloud.py # metadata-cumulative-cloud (GCP dispatch)
            task_list.py        # metadata-task-list
            _host.py            # shared host-directory injection helpers
          columns/              # geometry column definitions (body/ring/sky/sun)
