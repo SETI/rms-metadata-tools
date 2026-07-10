@@ -168,7 +168,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     resolved_branch = debug_branch or os.environ.get('GCP_DEBUG_BRANCH')
 
     resolved_template = startup_template or os.environ.get('GCP_STARTUP_TEMPLATE')
-    template_path = (Path(resolved_template) if resolved_template is not None
+    template_path = (Path(resolved_template) if resolved_template
                      else cloud_dir_for(host_id).parent / 'gcp_common_startup.sh')
 
     resolved_oops = oops_resources or os.environ.get('OOPS_RESOURCES_DISK')
