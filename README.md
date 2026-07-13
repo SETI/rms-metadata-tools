@@ -47,7 +47,7 @@ volume tree from a small per-collection configuration.
 
 ## Features
 
-- **Three table kinds.** Generates supplemental **index** tables (extra columns
+- **Three table types.** Generates supplemental **index** tables (extra columns
   from PDS3 labels), **geometry** tables (body, ring, sky, and Sun quantities
   computed from SPICE through `oops`), and **cumulative** tables that span a
   whole collection.

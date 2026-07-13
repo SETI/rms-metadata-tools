@@ -179,7 +179,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
         header_lines.append(f'export BRANCH={shlex.quote(resolved_branch)}')
     header_lines.append(f'export OOPS_RESOURCES_DISK={shlex.quote(resolved_oops)}')
     header = '\n'.join(header_lines)
-    return f'#!/bin/bash\n{header}\n{template_path.read_text().rstrip()}\n\n{worker_cmd}\n'
+    return f'#!/bin/bash\n{header}\n{template_path.read_text(encoding="utf-8").rstrip()}\n\n{worker_cmd}\n'
 
 
 def dispatch_cloud_run_if_config(host_id: str,
@@ -258,7 +258,7 @@ def dispatch_cloud_run_if_config(host_id: str,
 
         config_path_idx = next(i for i, a in enumerate(cloud_args) if a == '--config')
         config_path = cloud_args[config_path_idx + 1]
-        with open(config_path) as cfg_f:
+        with open(config_path, encoding='utf-8') as cfg_f:
             config_data: dict[str, object] = yaml.safe_load(cfg_f)
 
         provider = str(config_data.get('provider', 'gcp')).lower()

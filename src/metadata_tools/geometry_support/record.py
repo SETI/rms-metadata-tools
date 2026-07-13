@@ -2,6 +2,7 @@
 # geometry_support/record.py - The Record class (one geometry table row).
 ################################################################################
 """Geometry record class for accumulating per-row column values."""
+from collections.abc import Callable
 from typing import Any, cast
 
 import oops
@@ -193,6 +194,10 @@ class Record:
 
             return data_columns
 
+        _link_dispatch: dict[str, Callable[[dict[str, Any], list[Any], list[str]], list[str]]] = {
+            'null': link_null,
+        }
+
         # Get the backplane key mapping
         backplane_keys, data_columns = self.get_key_map(columns, qualifier)
 
@@ -207,7 +212,7 @@ class Record:
 
         # Call link functions
         for link in links:
-            link_fn = locals()['link_' + link]
+            link_fn = _link_dispatch[link]
             data_columns = link_fn(links[link], backplane_keys, data_columns)
 
         # Substitute new data columns

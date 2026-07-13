@@ -69,7 +69,8 @@ def main() -> None:
     if create_startup_file is not None:
         Path(create_startup_file).write_text(
             build_startup_script(host_id, parser, _WORKER, startup_template, oops_resources,
-                                 debug_branch)
+                                 debug_branch),
+            encoding='utf-8',
         )
         sys.exit(0)
 

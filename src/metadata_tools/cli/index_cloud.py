@@ -6,7 +6,7 @@ local parallel runs.
 
 First generate a task file:
 
-  metadata-task-list GO_0xxx $RMS_VOLUMES_GCP/GO_0xxx/ --output tasks.json
+  metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output tasks.json
 
 Then dispatch:
 
@@ -79,7 +79,8 @@ def main() -> None:
     if create_startup_file is not None:
         Path(create_startup_file).write_text(
             build_startup_script(host_id, parser, _WORKER, startup_template, oops_resources,
-                                 debug_branch)
+                                 debug_branch),
+            encoding='utf-8',
         )
         sys.exit(0)
 

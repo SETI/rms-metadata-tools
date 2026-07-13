@@ -25,7 +25,7 @@ from pathlib import Path as _Path
 
 _env_file = _Path(__file__).parent.parent.parent / '.env'
 if _env_file.is_file():
-    with _env_file.open() as _f:
+    with _env_file.open(encoding='utf-8') as _f:
         for _line in _f:
             _line = _line.strip()
             if _line and not _line.startswith('#') and '=' in _line:

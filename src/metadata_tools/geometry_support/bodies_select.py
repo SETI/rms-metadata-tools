@@ -58,7 +58,7 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
     except (AssertionError, AttributeError, IndexError, KeyError,
             LookupError, TypeError, ValueError):
         logger.exception("Unexpected error during inventory")
-        return []
+        raise
 
 #===============================================================================
 def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
