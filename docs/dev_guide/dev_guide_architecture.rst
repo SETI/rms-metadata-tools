@@ -13,12 +13,18 @@ collection-specific knowledge: which files to include, how to derive certain
 columns, the spacecraft ID, the body-selection mission table, the meshgrids, and
 the label templates.
 
-The engine never imports a specific host. Instead, the host's runnable scripts
-set the current working directory to the host package and import their
-configuration as the top-level modules ``host_config``, ``index_config``, and
-``geometry_config``; the engine modules then import those same top-level names.
-This is why host scripts only work when run from inside the host directory, and
-why the documentation build mocks those three module names (see ``docs/conf.py``).
+The engine never imports a specific host's config modules directly (see issue #112).
+Instead, console-script entry points call :func:`metadata_tools.config.set_host`
+once, which package-qualifies the import of ``metadata_tools.hosts.<host_id>.host_config``
+and ``index_config`` (``geometry_config`` is imported lazily, on first use, to avoid
+paying the SPICE startup cost for stages that do not need it). Engine modules then
+call :func:`~metadata_tools.config.get_host_config`,
+:func:`~metadata_tools.config.get_index_config`, and
+:func:`~metadata_tools.config.get_geometry_config` instead of importing those modules
+directly. This works from any current working directory — no ``sys.path`` manipulation
+is involved — and is why the documentation build mocks the three module names as
+plugin-injected surfaces (see ``docs/conf.py``) rather than needing a working directory
+trick.
 
 Table classes
 =============

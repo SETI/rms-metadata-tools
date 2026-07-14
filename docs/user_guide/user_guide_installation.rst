@@ -34,7 +34,7 @@ The package and its runtime dependencies are published on PyPI as
    pip install rms-metadata-tools
 
 To work from a checkout (recommended when you are adding or modifying a host
-configuration, since the runnable host scripts live in the source tree):
+configuration, since host configuration lives in the source tree):
 
 .. code-block:: bash
 
@@ -67,8 +67,7 @@ path argument is expanded for environment variables** before use (``$NAME`` and
 preserved). This lets you keep the locations of your trees in the environment
 and pass them symbolically on the command line.
 
-The conventional variables used throughout this guide and in the host scripts'
-examples are:
+The conventional variables used throughout this guide's examples are:
 
 .. list-table::
    :header-rows: 1

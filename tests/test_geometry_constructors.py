@@ -44,7 +44,8 @@ def test_inventory_missing_ckernel_clears_pointing(monkeypatch: pytest.MonkeyPat
     assert record.pointing_available is False
 
 
-def test_inventory_other_error_returns_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_inventory_other_error_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Non-SPICE exceptions from observation.inventory() are genuine bugs and must propagate."""
     monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
 
     def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
@@ -52,7 +53,11 @@ def test_inventory_other_error_returns_empty(monkeypatch: pytest.MonkeyPatch) ->
 
     obs = types.SimpleNamespace(inventory=_raise)
     record = types.SimpleNamespace(observation=obs, pointing_available=True)
-    assert bodies_select.inventory(record, ['IO']) == []  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match='boom'):
+        bodies_select.inventory(record, ['IO'])  # type: ignore[arg-type]
+    # Non-CKINSUFFDATA/non-SPICE errors must NOT clear pointing_available (only the
+    # SPICE(CKINSUFFDATA)/SPICE(NOFRAMECONNECT) branch does that).
+    assert record.pointing_available is True
 
 
 #===============================================================================

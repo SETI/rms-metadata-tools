@@ -61,7 +61,7 @@ def main() -> None:
         sys.exit('metadata-cumulative-cloud requires --config; '
                  'use metadata-cumulative-worker for local runs')
 
-    set_host(host_id)  # also registers geometry_config: column registration
+    set_host(host_id)
     hconf = get_host_config()
 
     import metadata_tools.util as util

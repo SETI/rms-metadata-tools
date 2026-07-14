@@ -46,14 +46,13 @@ and SPICE kernels.
 Running the entry points
 ========================
 
-Run a host's programs from inside its directory, because they import their
-configuration as top-level modules:
+Run any console script from any directory; pass the host id as the first
+argument (see :doc:`/user_guide/user_guide_installation`):
 
 .. code-block:: bash
 
-   cd src/metadata_tools/hosts/GO_0xxx
-   python GO_0xxx_index.py "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
-       "$RMS_METADATA_TEST/GO_0xxx/" -vv GO_0017
+   metadata-index GO_0xxx "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
+       "$RMS_METADATA_TEST/GO_0xxx/" --volumes GO_0017
 
 A fast smoke test is to add ``--first 5`` to the geometry stage so it stops
 after five images. See :doc:`/user_guide/user_guide_examples`.

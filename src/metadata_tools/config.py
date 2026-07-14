@@ -22,22 +22,22 @@ _geometry_config: types.ModuleType | None = None
 def set_host(host_id: str) -> None:
     """Import and register the config modules for *host_id*.
 
-    Resolves ``metadata_tools.hosts.<host_id>.{host_config,index_config,
-    geometry_config}`` as package-qualified imports, so no ``sys.path``
-    manipulation is required. Importing ``geometry_config`` also triggers that
-    host's ``host_init`` side-effect import (SPICE initialization and backplane
-    column registration).
+    Eagerly resolves ``metadata_tools.hosts.<host_id>.{host_config,index_config}``
+    as package-qualified imports, so no ``sys.path`` manipulation is required.
+    ``geometry_config`` (and the ``host_init`` side-effect it carries — SPICE
+    initialization and backplane column registration) is loaded lazily on the
+    first :func:`get_geometry_config` call, so index and cumulative workers
+    never pay the SPICE startup cost.
 
     Parameters:
         host_id: Host directory name, e.g. 'GO_0xxx'.
     """
+    global _host_id, _host_config, _index_config, _geometry_config
     base = f'metadata_tools.hosts.{host_id}'
-    set_current(
-        host_id=host_id,
-        host_config=importlib.import_module(f'{base}.host_config'),
-        index_config=importlib.import_module(f'{base}.index_config'),
-        geometry_config=importlib.import_module(f'{base}.geometry_config'),
-    )
+    _host_id = host_id
+    _host_config = importlib.import_module(f'{base}.host_config')
+    _index_config = importlib.import_module(f'{base}.index_config')
+    _geometry_config = None  # loaded lazily in get_geometry_config()
 
 #===============================================================================
 def set_current(*,
@@ -115,14 +115,22 @@ def get_index_config() -> types.ModuleType:
 def get_geometry_config() -> types.ModuleType:
     """The currently registered host's geometry_config module.
 
+    The module is imported on the first call (lazy loading), which triggers
+    that host's ``host_init`` side-effect (SPICE initialization and backplane
+    column registration).  Subsequent calls return the cached module.
+
     Returns:
-        The geometry_config module registered via :func:`set_host` or
-        :func:`set_current`.
+        The geometry_config module for the active host.
 
     Raises:
-        RuntimeError: If no host has been registered yet.
+        RuntimeError: If :func:`set_host` or :func:`set_current` has not been
+            called yet.
     """
+    global _geometry_config
     if _geometry_config is None:
-        raise RuntimeError(
-            'metadata_tools.config.set_host() has not been called')
+        if _host_id is None:
+            raise RuntimeError(
+                'metadata_tools.config.set_host() has not been called')
+        _geometry_config = importlib.import_module(
+            f'metadata_tools.hosts.{_host_id}.geometry_config')
     return _geometry_config

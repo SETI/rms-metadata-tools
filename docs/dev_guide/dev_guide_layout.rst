@@ -4,8 +4,8 @@ Repository layout
 
 The importable public package is everything under ``src/metadata_tools/``
 *except* the ``hosts/`` subpackage. The ``hosts/`` subpackage and everything
-outside ``src/`` is supporting code: per-collection configuration, runnable
-scripts, tests, docs, and tooling.
+outside ``src/`` is supporting code: per-collection configuration, templates,
+tests, docs, and tooling.
 
 .. code-block:: text
 
@@ -76,7 +76,9 @@ The geometry engine is a package:
      formats.py         # FORMAT_DICT: per-column format/units/null/range metadata
      bodies_select.py   # primary/body selection and field-of-view inventory
 
-A host directory contains configuration, templates, and runnable scripts:
+A host directory contains configuration and templates only — there are no
+per-host runnable scripts; every host is driven through the shared
+console-script entry points (see :doc:`dev_guide_environment`):
 
 .. code-block:: text
 
@@ -85,7 +87,6 @@ A host directory contains configuration, templates, and runnable scripts:
      index_config.py           # index glob + key__<NAME> column functions
      geometry_config.py        # SPICE id, mission table, meshgrids, hooks
      host_init.py              # initializes the oops host module (side effects)
-     GO_0xxx_*_cloud.py        # rms-cloud-tasks (GCP) counterparts
      templates/                # host PDS3 label templates
 
 GCP deployment files live outside the package and are not installed with the wheel:
@@ -93,9 +94,15 @@ GCP deployment files live outside the package and are not installed with the whe
 .. code-block:: text
 
    cloud/
-     gcp_common_startup.sh     # shared VM bootstrap header
-     generate_startup_scripts.py  # regenerates gcp_*_startup.sh from tail fragments
+     gcp_common_startup.sh     # shared VM bootstrap template
      GO_0xxx/
-       gcp_*_config.yml        # GCP machine/queue configuration
-       gcp_*_startup.sh        # GCP instance start-up scripts (generated)
-       gcp_*_startup.tail.sh   # host-specific command fragments (edit these)
+       gcp_index_config.yml        # GCP machine/queue config for the index stage
+       gcp_geometry_config.yml     # GCP machine/queue config for the geometry stage
+       gcp_cumulative_config.yml   # GCP machine/queue config for the cumulative stage
+       tasks.json                 # example/output task file
+
+GCP instance startup scripts are generated at runtime by
+``metadata_tools.cli._host.build_startup_script`` (invoked by the ``*-cloud``
+entry points, or previewed directly with ``--create-startup-file``); they are never
+stored in the repository. The ``cli`` package is console-script entry-point code,
+not a stable import surface, so it is not part of the :doc:`/dev_guide/api/api`.

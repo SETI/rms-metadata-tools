@@ -100,10 +100,12 @@ GCP dispatch is paired with `cloud/<HOST>/gcp_*_config.yml` and `cloud/<HOST>/gc
 
 **Config registry:** the generic engine never imports a host's config modules directly (see
 issue #112). Entry points call `metadata_tools.config.set_host(host_id)` once, which
-package-qualified-imports `metadata_tools.hosts.<host_id>.{host_config,index_config,
-geometry_config}` (also triggering that host's `host_init` side effect); engine code then reads
-the active host via `get_host_config()` / `get_index_config()` / `get_geometry_config()`. This
-works from any current working directory — no `sys.path` manipulation is involved. A host's own
+eagerly package-qualified-imports `metadata_tools.hosts.<host_id>.{host_config,index_config}`;
+`geometry_config` (and the `host_init` side effect it carries — SPICE initialization and
+backplane column registration) is imported lazily, on the first `get_geometry_config()` call,
+so index and cumulative stages never pay the SPICE startup cost. Engine code reads the active
+host via `get_host_config()` / `get_index_config()` / `get_geometry_config()`. This works from
+any current working directory — no `sys.path` manipulation is involved. A host's own
 `index_config.py`/`geometry_config.py` should cross-reference sibling config modules with a
 package-qualified or relative import (e.g. `from metadata_tools.hosts.GO_0xxx import
 host_config`), not a bare `import host_config`.

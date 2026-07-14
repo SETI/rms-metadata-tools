@@ -112,12 +112,25 @@ def key__product_creation_time(label_path: str | Path | FCPath,
     label_path = FCPath(label_path)
     image_path = label_path.with_suffix('.IMG')
 
-    # Read the VICAR label and take the latest DAT_TIM value
-    try:
-        local_path = image_path.retrieve()
-        viclab = vicar.VicarLabel(local_path, strict=False)
-    except FileNotFoundError:
+    # Read the VICAR label and take the latest DAT_TIM value.
+    # lock_timeout=-1: wait indefinitely for the lock.  Multiple concurrent Worker
+    # subprocesses on the same VM may all request the same .IMG file; we want the second
+    # to block until the first finishes downloading rather than timing out.  On local tmpfs
+    # (the normal case for /tmp/ on GCP VMs) flock(2) is supported, so if a subprocess
+    # dies mid-download the OS releases its flock immediately and the waiter unblocks.
+    # exception_on_fail=False returns any other retrieval failure as an Exception object.
+    local_path_or_exc = image_path.retrieve(lock_timeout=-1, exception_on_fail=False)
+    if isinstance(local_path_or_exc, FileNotFoundError):
         raise FileNotFoundError(image_path)
+    if isinstance(local_path_or_exc, Exception):
+        warnings.warn(
+            f'Cannot retrieve {image_path} ({local_path_or_exc!r}), '
+            'PRODUCT_CREATION_TIME skipped',
+            RuntimeWarning,
+        )
+        return None
+    try:
+        viclab = vicar.VicarLabel(local_path_or_exc, strict=False)
     except vicar.VicarError as err:
         warnings.warn(f'VICAR error in file {image_path}, '
                       f'PRODUCT_CREATION_TIME cannot be determined: {err}', RuntimeWarning)

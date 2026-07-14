@@ -28,16 +28,19 @@ from metadata_tools.config import get_host_config, set_host
 class _CumulativeTask:
     """Picklable callable passed to Worker; safe to use with multiprocessing spawn."""
 
-    def __init__(self, host_id: str, template_name: str) -> None:
+    def __init__(self, host_id: str, template_name: str,
+                 exclude: list[str] | None) -> None:
         self._host_id = host_id
         self._template_name = template_name
+        self._exclude = exclude
 
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
-        set_host(self._host_id)  # also registers geometry_config: column registration
+        set_host(self._host_id)
 
         from metadata_tools.cumulative_support import create_cumulative_indexes
-        create_cumulative_indexes(self._template_name, args=worker_data.args)
+        create_cumulative_indexes(self._template_name, args=worker_data.args,
+                                  exclude=self._exclude)
         return False, None
 
 
@@ -49,7 +52,7 @@ def main() -> None:
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir, cloud_dir_for(host_id))
 
-    set_host(host_id)  # also registers geometry_config: column registration
+    set_host(host_id)
     hconf = get_host_config()
 
     import metadata_tools.util as util
@@ -59,5 +62,6 @@ def main() -> None:
     parser = get_args(host=host)
 
     with single_task_as_task_file():
-        run_cloud_worker(parser, _CumulativeTask(host_id, hconf.template_name),
+        run_cloud_worker(parser,
+                         _CumulativeTask(host_id, hconf.template_name, hconf.exclude),
                          supports_volumes=False)

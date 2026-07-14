@@ -9,7 +9,7 @@ The full list of command-line options is documented in the user guide.
 import sys
 
 from metadata_tools.cli._host import load_host
-from metadata_tools.config import get_geometry_config, get_host_config, set_host
+from metadata_tools.config import get_host_config, set_host
 
 
 def main() -> None:
@@ -20,8 +20,7 @@ def main() -> None:
     load_host(host_id)
     set_host(host_id)
     hconf = get_host_config()
-    config = get_geometry_config()
 
     import metadata_tools.cumulative_support as cml
 
-    cml.create_cumulative_indexes(hconf.template_name, exclude=config.exclude)
+    cml.create_cumulative_indexes(hconf.template_name, exclude=hconf.exclude)

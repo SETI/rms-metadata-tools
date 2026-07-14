@@ -74,7 +74,7 @@ pip install rms-metadata-tools
 ```
 
 To work from a checkout (recommended when adding or modifying a host
-configuration, since the runnable host scripts live in the source tree):
+configuration, since host configuration lives in the source tree):
 
 ```sh
 git clone https://github.com/SETI/rms-metadata-tools.git

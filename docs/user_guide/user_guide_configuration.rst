@@ -28,8 +28,11 @@ know what they control.
 ``host_config.py``
     Settings shared by every stage: ``template_name`` (the base name of the
     host's label templates and tables, e.g. ``GO_0xxx_supplemental_index``),
+    ``exclude`` (volumes to skip, e.g. the cumulative directory itself),
     spacecraft-clock formatting constants, and ``get_volume_id()``, which
-    extracts the volume ID from a path.
+    extracts the volume ID from a path. ``exclude`` lives here rather than in
+    ``geometry_config.py`` so the cumulative stage can read it without paying
+    the cost of importing SPICE.
 
 ``index_config.py``
     Index-stage settings: ``glob`` (which data labels to include, e.g.
@@ -43,7 +46,7 @@ know what they control.
     - ``glob`` / ``index_glob`` — patterns selecting data labels and the
       supplemental index file.
     - ``selection`` — default table levels (``"S"`` summary, ``"D"`` detailed).
-    - ``exclude`` — volumes to skip (e.g. the cumulative directory).
+    - ``exclude`` — re-exported from ``host_config.exclude`` (see above).
     - ``MISSION_TABLE`` and ``EXCEPTIONS`` — the mapping from spacecraft-clock
       ranges to the primary body, secondaries, and other selected bodies, with
       regular-expression or predicate exceptions.

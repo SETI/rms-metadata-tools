@@ -27,8 +27,8 @@ def pds_table(label_path: FCPath) -> pdstable.PdsTable:
     Returns:
         Table associated with the given label.
     """
-    local_label_path = label_path.retrieve()
-    _local_table_path = label_path.with_suffix('.tab').retrieve() # Retrieve table as well
+    local_label_path = label_path.retrieve(lock_timeout=-1)
+    _local_table_path = label_path.with_suffix('.tab').retrieve(lock_timeout=-1)
     return pdstable.PdsTable(local_label_path)
 
 #===============================================================================
