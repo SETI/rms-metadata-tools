@@ -206,7 +206,7 @@ def replace(tree: list[Any], placeholder: str, name: str) -> Any:
     new_tree: list[Any] = []
     for leaf in tree:
         # Main entries: replace placeholder and evaluate dict references
-        if type(leaf) in (tuple, list):
+        if isinstance(leaf, (tuple, list)):
             # replace placeholder
             replacement = replace(leaf, placeholder, name)
 

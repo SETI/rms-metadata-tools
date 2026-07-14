@@ -94,13 +94,16 @@ MISSION_TABLE: list[Any] = [
 
 #=========================================================================================
 def except_test(observation: Any) -> bool:
-    """Mission table exception function template.
+    """Return True if this observation should be skipped for geometry.
+
+    GO_0xxx never skips observations. Hosts that need to filter specific
+    observations can override this function in their geometry_config.
 
     Parameters:
         observation: OOPS Observation object.
 
     Returns:
-        True if the observation should be an exception.
+        True if the observation should be skipped; always False for GO_0xxx.
     """
     return False
 

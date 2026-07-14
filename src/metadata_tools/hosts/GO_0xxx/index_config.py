@@ -117,7 +117,7 @@ def key__product_creation_time(label_path: str | Path | FCPath,
         local_path = image_path.retrieve()
         viclab = vicar.VicarLabel(local_path, strict=False)
     except FileNotFoundError:
-        raise FileNotFoundError(image_path) from None
+        raise FileNotFoundError(image_path)
     except vicar.VicarError as err:
         warnings.warn(f'VICAR error in file {image_path}, '
                       f'PRODUCT_CREATION_TIME cannot be determined: {err}', RuntimeWarning)

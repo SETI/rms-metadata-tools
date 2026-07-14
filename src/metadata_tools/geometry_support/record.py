@@ -72,8 +72,8 @@ class Record:
 
         # Determine target
         self.target = str(config.target_name(observation.dict))
-        if self.target in defs.TRANSLATIONS:
-            self.target = defs.TRANSLATIONS[self.target]
+        if self.target in defs._translations:
+            self.target = defs._translations[self.target]
 
         # Create the record prefix
         filespec = observation.dict["FILE_SPECIFICATION_NAME"]

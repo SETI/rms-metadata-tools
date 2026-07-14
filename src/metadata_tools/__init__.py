@@ -30,7 +30,11 @@ if _env_file.is_file():
             _line = _line.strip()
             if _line and not _line.startswith('#') and '=' in _line:
                 _k, _, _v = _line.partition('=')
-                _os.environ.setdefault(_k.strip(), _v.strip())
+                _k = _k.strip()
+                # Expand $VAR references in the value against vars already set (including
+                # those set by earlier lines in this .env file), then apply as a default.
+                _v = _os.path.expandvars(_v.strip())
+                _os.environ.setdefault(_k, _v)
 
 try:
     from ._version import __version__

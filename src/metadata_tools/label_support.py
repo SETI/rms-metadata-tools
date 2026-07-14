@@ -31,7 +31,9 @@ def create(filepath: str | Path | FCPath,
         table_type: BODY, RING, SKY, SUPPLEMENTAL_INDEX, INVENTORY.
     """
     filepath = FCPath(filepath)
-    if not filepath.exists():
+    try:
+        filepath.stat()
+    except FileNotFoundError:
         return
     host_template_path = FCPath(host_template_path)
     table_type = (table_type or '').upper()

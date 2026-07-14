@@ -14,6 +14,7 @@ import metadata_tools.cli._host as _host_mod
 from metadata_tools.cli._host import (
     _strip_cloud_args,
     build_startup_script,
+    pop_argv_bool_flag,
     pop_argv_flag,
     resolve_host_paths,
     single_task_as_task_file,
@@ -52,6 +53,23 @@ def test_pop_argv_flag_no_value_exits(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_pop_argv_flag_at_start(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(sys, 'argv', ['cmd', '--flag', 'v', 'positional'])
     assert pop_argv_flag('--flag') == 'v'
+    assert sys.argv == ['cmd', 'positional']
+
+
+#===============================================================================
+# pop_argv_bool_flag
+#===============================================================================
+
+def test_pop_argv_bool_flag_absent_returns_false(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, 'argv', ['cmd', '--other'])
+    assert pop_argv_bool_flag('--missing') is False
+    assert sys.argv == ['cmd', '--other']
+
+
+def test_pop_argv_bool_flag_present_returns_true_and_removes(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(sys, 'argv', ['cmd', '--flag', 'positional'])
+    assert pop_argv_bool_flag('--flag') is True
     assert sys.argv == ['cmd', 'positional']
 
 
@@ -302,6 +320,178 @@ def test_build_startup_contains_template_body(
                                   startup_template=str(tpl), oops_resources='my-disk')
     assert 'set -e' in script
     assert 'apt-get install python3' in script
+
+
+def test_build_startup_ssh_paste_exports_quota_project(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('echo hello\n')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=True)
+    assert 'GOOGLE_CLOUD_QUOTA_PROJECT' in script
+    assert 'metadata.google.internal' in script
+
+
+def test_build_startup_non_ssh_no_quota_project(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('echo hello\n')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=False)
+    assert 'GOOGLE_CLOUD_QUOTA_PROJECT' not in script
+
+
+def test_build_startup_ssh_paste_replaces_cd_root(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('sudo apt-get install -y python3\ncd /root\npython3 -m venv venv\n')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=True)
+    assert 'cd ~' in script
+    assert 'cd /root' not in script
+    assert 'SSH-pastable' in script
+
+
+def test_build_startup_ssh_paste_false_keeps_cd_root(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('sudo apt-get install -y python3\ncd /root\npython3 -m venv venv\n')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=False)
+    assert 'cd /root' in script
+    assert 'cd ~' not in script
+    assert 'SSH-pastable' not in script
+
+
+def test_build_startup_ssh_paste_no_cd_root_is_noop(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('echo hello\n')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=True)
+    assert 'echo hello' in script
+    assert 'cd ~' not in script
+    assert 'cd /root' not in script
+
+
+def test_build_startup_ssh_paste_set_plus_e_before_worker(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('set -e\necho setup\n')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  worker_cmd_name='metadata-index-worker',
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=True)
+    # set +e must appear before the worker command so a worker failure cannot exit the shell
+    set_plus_e_pos = script.index('set +e')
+    worker_pos = script.index('metadata-index-worker')
+    assert set_plus_e_pos < worker_pos
+
+
+def test_build_startup_non_ssh_no_set_plus_e(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('set -e\necho setup\n')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=False)
+    assert 'set +e' not in script
+
+
+def test_build_startup_ssh_paste_embeds_local_task_file(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('echo setup\n')
+    tasks_file = tmp_path / 'tasks.json'
+    tasks_file.write_text('[{"task_id": "t1", "data": {}}]')
+    monkeypatch.setattr(sys, 'argv',
+                        ['cmd', 'gs://bucket/vol/', '--task-file', str(tasks_file)])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  worker_cmd_name='metadata-index-worker',
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=True)
+    assert 'task_id' in script          # task file content embedded
+    assert '/tmp/tasks.json' in script   # worker references embedded file
+    # worker command must come after the heredoc
+    heredoc_end = script.index('EOF_TASKS')
+    worker_pos = script.index('metadata-index-worker')
+    assert heredoc_end < worker_pos
+
+
+def test_build_startup_ssh_paste_remote_task_file_passed_through(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('echo setup\n')
+    monkeypatch.setattr(sys, 'argv',
+                        ['cmd', 'gs://bucket/vol/', '--task-file', 'gs://bucket/tasks.json'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  worker_cmd_name='metadata-index-worker',
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=True)
+    assert 'gs://bucket/tasks.json' in script
+    assert 'EOF_TASKS' not in script     # no heredoc for remote URL
+
+
+def test_build_startup_non_ssh_task_file_not_included(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('echo setup\n')
+    tasks_file = tmp_path / 'tasks.json'
+    tasks_file.write_text('[{"task_id": "t1", "data": {}}]')
+    monkeypatch.setattr(sys, 'argv',
+                        ['cmd', 'gs://bucket/vol/', '--task-file', str(tasks_file)])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(tpl), oops_resources='my-disk',
+                                  for_ssh=False)
+    assert 'task_id' not in script       # task file NOT embedded in non-SSH mode
+    assert '/tmp/tasks.json' not in script
+
+
+def test_build_startup_expands_env_vars_in_argv(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """$VAR references in argv are expanded via os.environ (which includes .env values)."""
+    tpl = tmp_path / 'startup.sh'
+    tpl.write_text('echo hello\n')
+    monkeypatch.setenv('RMS_VOLUMES_GCP', 'gs://my-bucket/volumes')
+    monkeypatch.setattr(sys, 'argv', ['cmd', '$RMS_VOLUMES_GCP/GO_0xxx/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(tpl), oops_resources='my-disk')
+    assert 'gs://my-bucket/volumes/GO_0xxx/' in script
+    assert '$RMS_VOLUMES_GCP' not in script
 
 
 #===============================================================================

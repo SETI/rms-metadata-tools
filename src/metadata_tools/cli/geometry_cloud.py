@@ -30,6 +30,8 @@ Optional overrides (all consumed before dispatch; do not reach cloud_tasks or th
   --oops-resources <name>     Persistent disk name for OOPS resources.
   --service-account <account> GCP service account (overrides $GCP_SERVICE_ACCOUNT).
   --debug-branch <branch>     Git branch to clone on GCP VMs (overrides $GCP_DEBUG_BRANCH).
+  --ssh-paste                 With --create-startup-file: replace ``cd /root`` with ``cd ~``
+                              so the script can be pasted into an SSH terminal as a non-root user.
 
 The full list of command-line options is documented in the user guide.
 """
@@ -41,6 +43,7 @@ from metadata_tools.cli._host import (
     cloud_dir_for,
     dispatch_cloud_run_if_config,
     load_host,
+    pop_argv_bool_flag,
     pop_argv_flag,
     resolve_host_paths,
     volumes_as_task_file,
@@ -63,6 +66,7 @@ def main() -> None:
     oops_resources = pop_argv_flag('--oops-resources')
     service_account = pop_argv_flag('--service-account')
     debug_branch = pop_argv_flag('--debug-branch')
+    ssh_paste = pop_argv_bool_flag('--ssh-paste')
 
     if '--config' not in sys.argv and create_startup_file is None:
         sys.exit(
@@ -82,7 +86,7 @@ def main() -> None:
     if create_startup_file is not None:
         Path(create_startup_file).write_text(
             build_startup_script(host_id, parser, _WORKER, startup_template, oops_resources,
-                                 debug_branch),
+                                 debug_branch, for_ssh=ssh_paste),
             encoding='utf-8',
         )
         sys.exit(0)

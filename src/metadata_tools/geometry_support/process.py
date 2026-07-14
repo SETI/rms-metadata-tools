@@ -133,7 +133,7 @@ def process_tables(template_name: str,
                     continue
 
                 # Check whether this volume has already been processed
-                if new_only and (list(outdir.glob('*_inventory.csv')) != []):
+                if new_only and any(outdir.glob('*_inventory.csv')):
                     continue
 
                 suite = Suite(indir, outdir, template_path, metadata_dir,

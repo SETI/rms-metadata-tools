@@ -107,6 +107,14 @@ def pop_argv_flag(flag: str) -> str | None:
     return value
 
 
+def pop_argv_bool_flag(flag: str) -> bool:
+    """Remove *flag* from sys.argv if present and return whether it was found."""
+    if flag not in sys.argv:
+        return False
+    sys.argv.remove(flag)
+    return True
+
+
 def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
     """Remove cloud_args elements from argv in order, returning what remains.
 
@@ -130,7 +138,8 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
                          worker_cmd_name: str | None = None,
                          startup_template: str | Path | None = None,
                          oops_resources: str | None = None,
-                         debug_branch: str | None = None) -> str:
+                         debug_branch: str | None = None,
+                         for_ssh: bool = False) -> str:
     """Build and return the GCP instance startup script as a string.
 
     Combines the startup template with a worker command reconstructed from the
@@ -138,7 +147,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     cloud_tasks or ``--create-startup-file`` flags, are stripped).  The git
     branch to clone is injected as ``BRANCH``.
 
-    Args:
+    Parameters:
         host_id: The host identifier (e.g. ``'GO_0xxx'``).
         parser: The argparser for this command; used to separate metadata_tools
             flags from everything else.
@@ -155,12 +164,19 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
             in the script header.  Falls back to the ``GCP_DEBUG_BRANCH``
             environment variable.  When neither is set the startup template
             installs from PyPI instead of cloning the repository.
+        for_ssh: When ``True``, produce an SSH-pastable variant: replace
+            ``cd /root`` with ``cd ~``; recover ``--task-file`` (normally
+            stripped as a cloud_tasks arg) by embedding local files inline as a
+            heredoc or passing remote URLs through to the worker command; and
+            prepend ``set +e`` before the worker command so a worker failure
+            does not terminate the interactive shell session.
 
     Returns:
         The complete startup script text.
     """
     _ns, extra_args = parser.parse_known_args(sys.argv[1:])
     worker_argv = _strip_cloud_args(sys.argv[1:], extra_args)
+    worker_argv = [os.path.expandvars(arg) for arg in worker_argv]
 
     cmd_name = worker_cmd_name if worker_cmd_name is not None else Path(sys.argv[0]).name
     worker_cmd = shlex.join([cmd_name, host_id] + worker_argv)
@@ -175,11 +191,52 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     if not resolved_oops:
         sys.exit('--oops-resources or $OOPS_RESOURCES_DISK is required')
     header_lines = []
+    if for_ssh:
+        # Fetch the GCP project ID from the instance metadata service and export it as
+        # GOOGLE_CLOUD_QUOTA_PROJECT.  google-auth's _apply_quota_project_id() reads this
+        # env var via with_quota_project_from_environment() and sets quota_project_id on the
+        # credentials, which causes the x-goog-user-project header to be included in every
+        # GCS request.  This is the correct mechanism for requester-pays bucket access —
+        # GOOGLE_CLOUD_PROJECT alone is not sufficient because filecache does not pass
+        # user_project to client.bucket().
+        header_lines.append(
+            'export GOOGLE_CLOUD_QUOTA_PROJECT='
+            '$(curl -sf "http://metadata.google.internal/computeMetadata/v1/project/project-id"'
+            ' -H "Metadata-Flavor: Google")'
+        )
     if resolved_branch:
         header_lines.append(f'export BRANCH={shlex.quote(resolved_branch)}')
     header_lines.append(f'export OOPS_RESOURCES_DISK={shlex.quote(resolved_oops)}')
     header = '\n'.join(header_lines)
-    return f'#!/bin/bash\n{header}\n{template_path.read_text(encoding="utf-8").rstrip()}\n\n{worker_cmd}\n'
+    template_body = template_path.read_text(encoding='utf-8').rstrip()
+    ssh_comment = '# SSH-pastable: paste this script directly into a GCP instance SSH terminal.\n' if for_ssh else ''
+    if for_ssh:
+        template_body = template_body.replace('cd /root', 'cd ~')
+
+    # In SSH paste mode: (1) recover --task-file, which build_startup_script strips as a
+    # cloud_tasks arg — embed local files as a heredoc so the instance has a local copy,
+    # and pass remote URLs (gs://, s3://, ...) through as-is; (2) cancel set -e before
+    # the worker command so a worker failure does not terminate the interactive shell session.
+    task_file_inject = ''
+    if for_ssh and '--task-file' in extra_args:
+        tf_idx = extra_args.index('--task-file')
+        if tf_idx + 1 < len(extra_args):
+            tf_value = extra_args[tf_idx + 1]
+            if '://' in tf_value:
+                worker_cmd = worker_cmd + ' --task-file ' + shlex.quote(tf_value)
+            else:
+                tf_path = Path(tf_value)
+                if tf_path.exists():
+                    content = tf_path.read_text(encoding='utf-8').rstrip()
+                    task_file_inject = (
+                        "cat > /tmp/tasks.json << 'EOF_TASKS'\n"
+                        + content + '\n'
+                        + 'EOF_TASKS\n'
+                    )
+                    worker_cmd = worker_cmd + ' --task-file /tmp/tasks.json'
+
+    worker_section = f'set +e\n{task_file_inject}{worker_cmd}' if for_ssh else worker_cmd
+    return f'#!/bin/bash\n{ssh_comment}{header}\n{template_body}\n\n{worker_section}\n'
 
 
 def dispatch_cloud_run_if_config(host_id: str,
@@ -216,7 +273,7 @@ def dispatch_cloud_run_if_config(host_id: str,
     ``--service-account`` is not already in the cloud_tasks args, it is appended
     automatically.
 
-    Args:
+    Parameters:
         host_id: The host identifier (e.g. ``'GO_0xxx'``).
         parser: The argparser for this command; used to separate metadata_tools
             flags (kept in the startup script worker command) from cloud_tasks
@@ -258,6 +315,12 @@ def dispatch_cloud_run_if_config(host_id: str,
 
         config_path_idx = next(i for i, a in enumerate(cloud_args) if a == '--config')
         config_path = cloud_args[config_path_idx + 1]
+        if config_path.startswith('-'):
+            sys.exit(
+                f'Error: --config value looks like a flag ({config_path!r}). '
+                'The argparser consumed the config path as a positional argument — '
+                'check that all required positional arguments are provided before --config.'
+            )
         with open(config_path, encoding='utf-8') as cfg_f:
             config_data: dict[str, object] = yaml.safe_load(cfg_f)
 
