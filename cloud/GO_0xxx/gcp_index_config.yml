@@ -5,7 +5,6 @@ gcp:
   region:                   us-central1
   zone:                     us-central1-a
 
-
   instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
   boot_disk_types:          pd-balanced
   max_instances:            1
