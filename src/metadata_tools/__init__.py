@@ -40,26 +40,3 @@ try:
     from ._version import __version__
 except ImportError:  # pragma: no cover
     __version__ = 'Version unspecified'
-
-# Temporary diagnostic: log a full stack trace any time FCPath.stat() is called on a
-# remote path, so we can find the call site causing NotImplementedError in GCP runs.
-# TODO: remove once the call site is identified and fixed.
-def _patch_fcpath_stat() -> None:
-    import sys
-    import traceback
-
-    import filecache
-
-    _orig = filecache.FCPath.stat
-
-    def _stat(self: filecache.FCPath, *, follow_symlinks: bool = True) -> object:
-        if not self.is_local():
-            print('=== DIAGNOSTIC: FCPath.stat() on remote path:', self, file=sys.stderr)
-            traceback.print_stack(file=sys.stderr)
-            sys.stderr.flush()
-        return _orig(self, follow_symlinks=follow_symlinks)
-
-    filecache.FCPath.stat = _stat  # type: ignore[method-assign]
-
-_patch_fcpath_stat()
-del _patch_fcpath_stat
