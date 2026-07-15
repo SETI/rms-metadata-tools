@@ -43,6 +43,14 @@ jobs:
         run: |
           vulture src tests
 
+      - name: Pyroma (packaging metadata)
+        run: |
+          python -m pyroma .
+
+      - name: pip audit (dependency vulnerabilities)
+        run: |
+          pip audit
+
       - name: Sphinx
         run: |
           sphinx-build -W -n -b html docs docs/_build
