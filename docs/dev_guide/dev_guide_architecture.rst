@@ -117,19 +117,28 @@ template, not from a Python column list. It does not use a
 The geometry tables
 -------------------
 
-The five geometry tables in
+The geometry tables in
 :mod:`metadata_tools.geometry_support.tables` all extend
 :class:`~metadata_tools.common.Table` and share a single contract: an ``add``
 method that takes a :class:`~metadata_tools.geometry_support.record.Record` and
 appends the appropriate rows.
 :class:`~metadata_tools.geometry_support.tables.SkyTable`,
-:class:`~metadata_tools.geometry_support.tables.SunTable`,
 :class:`~metadata_tools.geometry_support.tables.RingTable`, and
 :class:`~metadata_tools.geometry_support.tables.BodyTable` each ask the record
 for the rows for their qualifier (the body table emits one row per selected
 body; the ring table emits rows only when a ring system is present), while
 :class:`~metadata_tools.geometry_support.tables.InventoryTable` writes the list
 of bodies in the field of view as a CSV row.
+
+:class:`~metadata_tools.geometry_support.tables.SunTable` is defined (and shown
+in the diagram above) but is **experimental and not wired into the pipeline**:
+``Suite`` does not build it and ``cumulative_support`` does not concatenate it.
+The Sun is a body, so a sun table would be structured like the body table but
+without illumination-based columns; however ``oops`` models the Sun as the sole
+illumination source and cannot currently evaluate a Sun-surface backplane (a
+surface event key for the Sun collapses to the illegal ``('SUN<',)``). See the
+:class:`~metadata_tools.geometry_support.tables.SunTable` docstring for the
+blocker and the recipe for enabling it once that support exists.
 
 The volume coordinator
 ----------------------
