@@ -140,5 +140,5 @@ Read the relevant rule before non-trivial work. Highlights:
 - **Git:** Conventional Commits (`feat:`, `fix:`, `docs:`, ...), 50-char imperative subject. Work on
   `feature/<name>` or `bugfix/<name>` branches; merge to `main` via PR (squash). See `git_workflow.mdc`.
 - **Dependencies:** declared in `pyproject.toml`; tool config consolidated there (no `.flake8`,
-  `.coveragerc`, etc.). NOTE: `pyproject.toml` runtime `dependencies` are still `"TODO"`; the actual
-  runtime requirements currently live in `requirements.txt` / `requirements-cloud.txt`.
+  `.coveragerc`, etc.). Runtime dependencies are fully declared in `[project].dependencies`;
+  `requirements.txt` is `-e .[dev,cloud]` (a dev-environment convenience, not the canonical list).
