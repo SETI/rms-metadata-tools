@@ -130,15 +130,19 @@ def get_system(body: str) -> str | None:
 
     Parameters:
         body: Body for which to determine the system. For a satellite, the system
-            is the parent. For a planet, the system is itself.
+            is the parent. For a planet, the system is itself. For a root body
+            with no parent (e.g. the Sun), the system is itself.
 
     Returns:
         Name of system, body, or None if the body is not registered.
     """
-    if body in oops.Body.BODY_REGISTRY:
-        parent = cast(str, oops.Body.BODY_REGISTRY[body].parent.name)
-    else:
+    if body not in oops.Body.BODY_REGISTRY:
         return None
+    parent_body = oops.Body.BODY_REGISTRY[body].parent
+    # A root body such as the Sun has no parent; it is its own system.
+    if parent_body is None:
+        return body
+    parent = cast(str, parent_body.name)
     if parent != 'SUN':
         return parent
     return body

@@ -158,7 +158,7 @@ class Suite:
         overrides: dict[str, list[dict[str, Any]]] = {}
 
         overrides['sky'] = Suite.get_override(record, 'sky')
-#        overrides['sun'] = Suite.get_override(record, 'sun')
+        # No 'sun' entry: the sun table is not wired in (see tables.SunTable).
         overrides['ring'] = Suite.get_override(record, 'ring', name=record.primary)
         overrides['body'] = Suite.get_override(record, 'body', name=record.primary)
 
@@ -172,10 +172,11 @@ class Suite:
             output_dir: Directory in which to write the geometry files.
             level: 'summary' or 'detailed'.
         """
+        # A SunTable would be inserted here (summary level only); it is not yet
+        # wired in. See tables.SunTable for the blocker and enablement recipe.
         self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = [
             InventoryTable(output_dir, self.template_path, volume_id=self.volume_id),
             SkyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
-#            SunTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
             RingTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
             BodyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level)
             ]

@@ -111,6 +111,13 @@ def test_get_system_unknown_body_is_none(monkeypatch: pytest.MonkeyPatch) -> Non
     assert bodies_select.get_system('NOPE') is None
 
 
+def test_get_system_root_body_is_self(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A root body such as the Sun has no parent; its system is itself.
+    registry = {'SUN': types.SimpleNamespace(parent=None)}
+    monkeypatch.setattr(oops.Body, 'BODY_REGISTRY', registry)
+    assert bodies_select.get_system('SUN') == 'SUN'
+
+
 #===============================================================================
 # bodies_select.obs_excluded
 #===============================================================================

@@ -118,6 +118,7 @@ def test_create_cumulative_indexes_fires_eight_cat_rows(
     # SimpleNamespace stands in for an argparse.Namespace here.
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index',
                                   args=args)  # type: ignore[arg-type]
+    # No sun table: it is not wired in (see geometry_support.tables.SunTable).
     assert len(calls) == 8
     assert ('SkyTable', 'summary') in calls
     assert ('IndexTable', 'index') in calls
