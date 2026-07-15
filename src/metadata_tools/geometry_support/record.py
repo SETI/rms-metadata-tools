@@ -68,7 +68,9 @@ class Record:
             registry = col.get_bodies_registry()
             self.rings_present: bool = registry[self.primary].ring_frame is not None
             self.ring_tile_dict: Any = col.RING_TILE_DICT[self.primary]
-            self.body_tile_dict: Any = col.BODY_TILE_DICT[self.primary]
+            # Per-Record copy so that irregular-moon additions below do not mutate
+            # the shared module-level BODY_TILE_DICT.
+            self.body_tile_dict: dict[str, Any] = dict(col.BODY_TILE_DICT)
 
         # Determine target
         self.target = str(config.target_name(observation.dict))
@@ -96,14 +98,16 @@ class Record:
             if blocker:
                 self.blocker = blocker[0]
 
-        # Add a targeted irregular moon to the dictionaries if present
+        # Add a targeted irregular moon to the dictionaries if present.
+        # Both assignments copy the shared cached dicts first so that irregular-moon
+        # targets accumulated in one Record do not leak into sibling Records or
+        # persist across observations.
         if self.target in self.bodies and self.target not in self.dicts['body']:
+            self.dicts['body'] = dict(self.dicts['body'])
             self.dicts['body'][self.target] = \
-                util.replace(col.BODY_SUMMARY_COLUMNS,
-                                defs.BODYX, self.target)
+                util.replace(col.BODY_SUMMARY_COLUMNS, defs.BODYX, self.target)
             self.body_tile_dict[self.target] = \
-                util.replace(cast(list[Any], col.BODY_TILES),
-                                defs.BODYX, self.target)
+                util.replace(col.BODY_TILES[self.primary], defs.BODYX, self.target)
 
     #===========================================================================
     @staticmethod
