@@ -189,13 +189,13 @@ def _resolve_dict_ref(ref: str) -> Any:
 
 
 #===============================================================================
-def replace(tree: list[Any], placeholder: str, name: str) -> Any:
+def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> Any:
     """Return a copy of the tree of objects, with each occurrence of the
     placeholder string replaced by the given name.  If a dictionary reference is
     detected, it is resolved via an explicit lookup.
 
     Parameters:
-        tree: List containing the tree.
+        tree: List or tuple containing the tree.
         placeholder: Placeholder to replace.
         name: Replacement string.
 

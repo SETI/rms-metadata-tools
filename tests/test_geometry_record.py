@@ -90,7 +90,6 @@ def test_get_backplane_key_tuple_event_key() -> None:
 
 
 def test_get_backplane_key_plain_event_key() -> None:
-    # The docstring claims `Returns: None`; it actually returns the key.
     desc = ('phase_angle', ('', '', ''))
     assert Record.get_backplane_key(desc) == 'phase_angle'
 

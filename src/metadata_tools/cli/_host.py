@@ -209,7 +209,10 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
     header_lines.append(f'export OOPS_RESOURCES_DISK={shlex.quote(resolved_oops)}')
     header = '\n'.join(header_lines)
     template_body = template_path.read_text(encoding='utf-8').rstrip()
-    ssh_comment = '# SSH-pastable: paste this script directly into a GCP instance SSH terminal.\n' if for_ssh else ''
+    ssh_comment = (
+        '# SSH-pastable: paste this script directly into a GCP instance SSH terminal.\n'
+        if for_ssh else ''
+    )
     if for_ssh:
         template_body = template_body.replace('cd /root', 'cd ~')
 
