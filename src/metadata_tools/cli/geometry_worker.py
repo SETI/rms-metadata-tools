@@ -40,14 +40,25 @@ class _GeometryTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         set_host(self._host_id)
+        from copy import copy
+
+        from filecache import FileCache
+
         from metadata_tools.geometry_support import process_tables
-        process_tables(self._template_name,
-                       glob=self._glob,
-                       index_glob=self._index_glob,
-                       selection=self._selection,
-                       exclude=self._exclude,
-                       args=worker_data.args,
-                       volumes=[task_data['volume_id']])
+
+        # Private auto-deleting cache reclaims downloaded index files per task; the
+        # global cache never evicts on single-instance GCP runs, exhausting the boot disk.
+        with FileCache(cache_name=None, delete_on_exit=True) as fc:
+            args = copy(worker_data.args)
+            if getattr(args, 'metadata_tree', None) is not None:
+                args.metadata_tree = fc.new_path(args.metadata_tree)
+            process_tables(self._template_name,
+                           glob=self._glob,
+                           index_glob=self._index_glob,
+                           selection=self._selection,
+                           exclude=self._exclude,
+                           args=args,
+                           volumes=[task_data['volume_id']])
         return False, None
 
 

@@ -35,9 +35,21 @@ class _IndexTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         set_host(self._host_id)
+        from copy import copy
+
+        from filecache import FileCache
+
         from metadata_tools.index_support import process_index
-        process_index(self._template_name, glob=self._glob,
-                      args=worker_data.args, volumes=[task_data['volume_id']])
+
+        # Private auto-deleting cache reclaims downloaded labels per task; the global
+        # cache never evicts on single-instance GCP runs, exhausting the boot disk.
+        with FileCache(cache_name=None, delete_on_exit=True) as fc:
+            args = copy(worker_data.args)
+            args.volume_tree = fc.new_path(args.volume_tree)
+            if getattr(args, 'metadata_tree', None) is not None:
+                args.metadata_tree = fc.new_path(args.metadata_tree)
+            process_index(self._template_name, glob=self._glob,
+                          args=args, volumes=[task_data['volume_id']])
         return False, None
 
 

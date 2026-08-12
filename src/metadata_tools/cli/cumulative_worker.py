@@ -37,10 +37,20 @@ class _CumulativeTask:
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
         set_host(self._host_id)
+        from copy import copy
+
+        from filecache import FileCache
 
         from metadata_tools.cumulative_support import create_cumulative_indexes
-        create_cumulative_indexes(self._template_name, args=worker_data.args,
-                                  exclude=self._exclude)
+
+        # Private auto-deleting cache reclaims read tables per task (global cache never
+        # evicts); write_text uploads on close so remote output survives cache deletion.
+        with FileCache(cache_name=None, delete_on_exit=True) as fc:
+            args = copy(worker_data.args)
+            if getattr(args, 'output_dir', None) is not None:
+                args.output_dir = fc.new_path(args.output_dir)
+            create_cumulative_indexes(self._template_name, args=args,
+                                      exclude=self._exclude)
         return False, None
 
 

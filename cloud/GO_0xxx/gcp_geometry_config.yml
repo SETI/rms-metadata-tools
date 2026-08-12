@@ -5,6 +5,15 @@ gcp:
   region:                   us-central1
   zone:                     us-central1-a
 
+  instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
+  boot_disk_types:          pd-balanced
+  max_instances:            1
+  cpus_per_task:            1
+  min_memory_per_task:      8
+
+  max_runtime:              10000
+  max_cpu:                  4
+
 
 #  instance_types: ["^c4-.*"]
 #  min_cpu: 8
@@ -19,14 +28,6 @@ gcp:
 
 
 
-  instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
-  boot_disk_types:          pd-balanced
-  max_instances:            1
-  cpus_per_task:            1
-  min_memory_per_task:      8
-
-  max_runtime:              10000
-  max_cpu:                  4
 #  min_memory_per_cpu:       4                       # GB
 #  max_total_price_per_hour: 1.00                    # USD/hour
 
