@@ -3,8 +3,6 @@
 ################################################################################
 """Utility functions for path handling, file I/O, and metadata computations."""
 import math
-import os
-import re
 from pathlib import Path
 from typing import Any
 
@@ -288,30 +286,6 @@ def add_by_base(x_digits: list[int], y_digits: list[int],
     return list(reversed(result))
 
 #===============================================================================
-def expandvars(filespec: str | Path | FCPath) -> str | Path | FCPath:           ### add to FCPath?
-    """Expand environment variables in path.
-
-    Parameters:
-        filespec: Path to expand.
-
-    Returns:
-        Expanded path.
-    """
-    result = filespec
-    if not isinstance(result, str):
-        result = result.as_posix()
-
-    result = re.sub('://', '<<token>>', result)
-    result = os.path.expandvars(result)
-    result = re.sub('<<token>>', '://', result)
-
-    if isinstance(filespec, str):
-        return result
-    if isinstance(filespec, FCPath):
-        return FCPath(result)
-    return Path(result)
-
-#===============================================================================
 def read_txt_file(filespec: str | Path | FCPath, as_string: bool = False,
                   terminator: str = '\r\n') -> str | list[str]:    ### move to utilities
     """Read a text file, with some options.
@@ -327,7 +301,7 @@ def read_txt_file(filespec: str | Path | FCPath, as_string: bool = False,
         the lines of the file concatenated using the specified terminator.
     """
     # Expand environment variables and resolve to absolute path
-    path = FCPath(expandvars(FCPath(filespec)))
+    path = FCPath(filespec).expandvars()
 
     # Read the file
     content = path.read_text(encoding='utf-8', newline=terminator)
@@ -355,7 +329,7 @@ def write_txt_file(filespec: str | Path | FCPath, content: str | list[str],
         terminator: Desired line terminator.
     """
     # Expand environment variables and resolve to absolute path
-    path = FCPath(expandvars(FCPath(filespec)))
+    path = FCPath(filespec).expandvars()
 
     # Determine terminator
     if terminator is None:
@@ -388,7 +362,7 @@ def append_txt_file(filespec: str | Path | FCPath, content: str | list[str],
         terminator: Desired line terminator.
     """
     # Expand environment variables and resolve to absolute path
-    path = FCPath(expandvars(FCPath(filespec)))
+    path = FCPath(filespec).expandvars()
 
     # Determine terminator
     if terminator is None:
