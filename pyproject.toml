@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 dependencies = [
   "numpy>=2.3.0",
   "rms-oops>=0.2.0",
+  "rms-polymath>=2.0.0",
   "rms-filecache>=3.1.0",
   "rms-pdslogger>=3.0.0",
   "rms-julian>=3.0.1",
@@ -91,16 +92,17 @@ write_to = "src/metadata_tools/_version.py"
 dev = [
   "coverage>=7.0",
   "mypy>=1.0",
-  "pymarkdownlnt>=0.9.35",
+  "pymarkdownlnt>=0.9.39",
   "pytest>=7.0",
   "pytest-cov>=4.0",
-  "pytest-randomly>=3.0",
+  "pytest-randomly>=4.1.0",
   "pytest-xdist>=3.8.0",
   "ruff>=0.8",
   "types-PyYAML",
   "bandit[toml]>=1.8",
+  "pip-audit>=2.7",
   "pyroma>=4.2",
-  "vulture>=2.14",
+  "vulture>=2.16",
   "rms-metadata-tools[docs]",
 ]
 docs = [

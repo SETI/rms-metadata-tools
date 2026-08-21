@@ -47,9 +47,10 @@ jobs:
         run: |
           python -m pyroma .
 
-      - name: pip audit (dependency vulnerabilities)
+      - name: pip-audit (dependency vulnerabilities)
         run: |
-          pip audit
+          python -m pip install --upgrade pip setuptools
+          pip-audit --skip-editable
 
       - name: Sphinx
         run: |

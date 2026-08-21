@@ -13,7 +13,8 @@ parallel across volumes. Two families of console scripts handle this:
    metadata-geometry-worker HOST_ID [options] metadata_tree output_tree
    metadata-cumulative-worker HOST_ID [options] output_dir
 
-**Cloud scripts** — dispatch work to GCP (require ``--config``):
+**Cloud scripts** — dispatch work to GCP (``--config`` defaults to the host's
+``cloud/<HOST>/gcp_*_config.yml``):
 
 .. code-block:: text
 
@@ -64,23 +65,28 @@ GCP runs
 ========
 
 For a GCP run, pass the same path arguments as a local run and add ``--config``.
+When ``--config`` is omitted, each dispatch command defaults to the conventional
+``cloud/<HOST>/gcp_<index|geometry|cumulative>_config.yml`` if that file exists.
 The GCP instance startup script is generated automatically from those arguments
 at dispatch time, so no personal bucket paths ever appear in committed files.
 
-First generate a task file with ``metadata-task-list``, then dispatch:
+The recommended workflow is one directory per dispatch, outside the repository:
+generate the task file there, then dispatch from it, so the task DB and any
+status dumps land beside the task list. ``--task-file`` defaults to
+``./tasks.json``, so no flags are needed:
 
 .. code-block:: bash
 
    gcloud auth application-default login        # if necessary
 
-   # Generate task file
-   metadata-task-list GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" --output tasks.json
+   mkdir -p ~/metadata-runs/2026-08-21-GO-index && cd ~/metadata-runs/2026-08-21-GO-index
 
-   # Dispatch to GCP
+   # Generate the task file into the run directory (default output: ./tasks.json)
+   metadata-task-list GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/"
+
+   # Dispatch to GCP (--config and --task-file use their defaults)
    metadata-index-cloud GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" "$RMS_METADATA_GCP/GO_0xxx/" \
-       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot \
-       --config cloud/GO_0xxx/gcp_index_config.yml \
-       --task-file tasks.json
+       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot
 
 Or pass ``--volumes`` directly and let the cloud script generate the task file
 automatically:
@@ -88,9 +94,10 @@ automatically:
 .. code-block:: bash
 
    metadata-index-cloud GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" "$RMS_METADATA_GCP/GO_0xxx/" \
-       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot \
-       --config cloud/GO_0xxx/gcp_index_config.yml \
-       --volumes GO_0022 GO_0016
+       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot --volumes GO_0022 GO_0016
+
+Both flags can always be given explicitly (taking precedence over the defaults),
+e.g. ``--config my_gcp_config.yml --task-file ./retry_tasks.json``.
 
 The ``gcp_*_config.yml`` machine/queue configuration files live in
 ``cloud/<HOST>/`` at the repository root (not inside the installed package).
@@ -145,11 +152,15 @@ Dispatch options (forwarded to ``cloud_tasks run``):
    * - Option
      - Description
    * - ``--config FILE``
-     - GCP configuration YAML. Required for dispatch. Bare filenames are
-       resolved against the ``cloud/<HOST>/`` directory.
+     - GCP configuration YAML. Defaults to the conventional
+       ``cloud/<HOST>/gcp_<type>_config.yml`` when that file exists. Bare
+       filenames are resolved against the ``cloud/<HOST>/`` directory.
    * - ``--task-file FILE``
-     - Path to a task file (JSON). Passed automatically when using
-       ``metadata-task-list`` output; can also be provided manually.
+     - Path to a task file (JSON). Defaults to ``./tasks.json`` when that
+       exists in the current directory and no ``--volumes`` or ``--continue``
+       is given. Bare filenames resolve against ``cloud/<HOST>/``; use a
+       ``./`` prefix (or an absolute path) to select a file relative to the
+       current directory.
    * - ``--use-spot``
      - Request spot (preemptible) GCP instances.
 
@@ -234,7 +245,7 @@ supports two modes:
 
 .. code-block:: text
 
-   metadata-task-list HOST_ID tree --output FILE
+   metadata-task-list HOST_ID tree [--output FILE]
 
 .. list-table::
    :header-rows: 1
@@ -247,8 +258,9 @@ supports two modes:
    * - ``tree``
      - Path to the top of the volume or metadata tree to scan.
    * - ``--output FILE``, ``-o``
-     - Output JSON task file path. Required. A bare filename is resolved against
-       the host's directory.
+     - Output JSON task file path, relative to the current directory. Defaults
+       to ``./tasks.json``, which the ``metadata-*-cloud`` commands pick up as
+       the default ``--task-file``.
 
 **Explicit mode** — list volumes directly (no HOST_ID):
 

@@ -271,7 +271,7 @@ def test_create_index_processes_each_volume(
                             info=lambda *a, **k: None,
                             warning=lambda msg, arg: warnings.append(arg),
                             close=lambda **k: closes.append(True)))
-    idx._create_index(tree, tree, FCPath('/tmpl.lbl'))
+    idx.process._create_index(tree, tree, FCPath('/tmpl.lbl'))
     assert sorted(processed) == ['GO_0001', 'GO_0002']
     # The logger is closed exactly once (after the walk), not once per directory.
     assert closes == [True]

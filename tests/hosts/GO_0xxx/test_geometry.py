@@ -39,6 +39,7 @@ def test_geometry_body() -> None:
     # Get labels to test
     files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
     files = support.exclude(files, 'templates/', 'old/', '__skip/', '_ring_', '_sky_', 'GO_0999/')
+    assert files, 'no body summary labels found under $RMS_METADATA'
 
     # Test labels
     print()

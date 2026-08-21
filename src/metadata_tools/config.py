@@ -34,9 +34,13 @@ def set_host(host_id: str) -> None:
     """
     global _host_id, _host_config, _index_config, _geometry_config
     base = f'metadata_tools.hosts.{host_id}'
+    # Import first, then commit: a failed import must not leave the registry
+    # with the new host ID paired with the previous host's config modules.
+    host_config = importlib.import_module(f'{base}.host_config')
+    index_config = importlib.import_module(f'{base}.index_config')
     _host_id = host_id
-    _host_config = importlib.import_module(f'{base}.host_config')
-    _index_config = importlib.import_module(f'{base}.index_config')
+    _host_config = host_config
+    _index_config = index_config
     _geometry_config = None  # loaded lazily in get_geometry_config()
 
 #===============================================================================

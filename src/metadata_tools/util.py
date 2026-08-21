@@ -175,8 +175,20 @@ _DICT_REF = re.compile(r'^(\w+)\.(\w+)\["([^"]+)"\]$')
 def _resolve_dict_ref(ref: str) -> Any:
     """Resolve a dict-reference string of the form ``defs.<ATTR>["<key>"]``.
 
-    This is the safe, non-eval replacement for evaluating strings produced by
-    :func:`replacement_fn`. Only the ``defs`` module is accessible.
+    Only dictionaries in the ``defs`` module are accessible.
+
+    Parameters:
+        ref: Reference string produced by :func:`replacement_fn`, e.g.
+            ``'defs.RING_SYSTEM_RADII["JUPITER"]'``.
+
+    Returns:
+        The value stored under ``<key>`` in the named ``defs`` dictionary.
+
+    Raises:
+        ValueError: If *ref* does not match the expected form or names a module
+            other than ``defs``.
+        AttributeError: If the named dictionary does not exist in ``defs``.
+        KeyError: If ``<key>`` is not present in the named dictionary.
     """
     m = _DICT_REF.match(ref)
     if m is None:
@@ -214,7 +226,8 @@ def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> A
             for i in range(len(lrep)):
                 if isinstance(lrep[i], str) and '[' in lrep[i]:
                     lrep[i] = _resolve_dict_ref(lrep[i])
-            replacement = tuple(lrep)
+            # Preserve the leaf's container type: lists stay lists, tuples tuples.
+            replacement = tuple(lrep) if isinstance(leaf, tuple) else lrep
 
             new_tree.append(replacement)
 

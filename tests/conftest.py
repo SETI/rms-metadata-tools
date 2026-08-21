@@ -36,7 +36,7 @@ def _install_fakes() -> None:
                              'target_name': lambda d: d.get('TARGET_NAME', 'SKY'),
                              'cleanup': lambda: None}),
     ]
-    modules = {}
+    modules: dict[str, types.ModuleType] = {}
     for name, attrs in attr_table:
         m = types.ModuleType(name)
         for k, v in attrs.items():

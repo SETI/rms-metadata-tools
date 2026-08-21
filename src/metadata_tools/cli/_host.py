@@ -59,6 +59,9 @@ def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
 
     For either ``--config`` or ``--task-file``:
 
+    * **Explicitly cwd-relative paths** (a ``./`` or ``../`` prefix) are honored as given
+      and rewritten to absolute paths, so a task file next to the current working
+      directory can be selected even though its bare name would resolve elsewhere.
     * **Bare filenames** (no directory components) are resolved against *cloud_dir* (if
       provided) or *host_dir*.
     * **Relative paths with directory components** that do not exist from the current working
@@ -75,7 +78,12 @@ def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
             p = Path(value)
             if p.is_absolute() or '://' in value:
                 continue
-            if p.parent == Path('.'):
+            if value.startswith(('./', '../')):
+                # Explicit cwd-relative path: honor it as given.  Path() would
+                # normalize away the ./ prefix and make it look like a bare
+                # filename, so absolutize before that can happen.
+                sys.argv[i + 1] = str(Path(value).resolve())
+            elif p.parent == Path('.'):
                 # Bare filename: always resolve against base (cloud dir or host dir).
                 sys.argv[i + 1] = str(base / value)
             elif not p.exists() and cloud_dir is not None:
@@ -89,6 +97,46 @@ def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
 def resolve_task_file(host_dir: Path) -> None:
     """Alias for :func:`resolve_host_paths`; kept for backwards compatibility."""
     resolve_host_paths(host_dir)
+
+
+def default_config_arg(host_id: str, config_type: str) -> Path:
+    """Default ``--config`` to the host's conventional GCP config file.
+
+    When ``--config`` is absent from sys.argv and the conventional
+    ``cloud/<host_id>/gcp_<config_type>_config.yml`` exists, append it so cloud
+    dispatch can be invoked without naming the config explicitly.  A missing
+    default is not an error here — the entry point's own ``--config`` check
+    reports it, using the returned path.
+
+    Parameters:
+        host_id: The host identifier (e.g. ``'GO_0xxx'``).
+        config_type: The dispatch type: ``'index'``, ``'geometry'``, or
+            ``'cumulative'``.
+
+    Returns:
+        The conventional default config path (whether or not it was applied).
+    """
+    default = cloud_dir_for(host_id) / f'gcp_{config_type}_config.yml'
+    if '--config' not in sys.argv and default.is_file():
+        sys.argv += ['--config', str(default)]
+    return default
+
+
+def default_task_file_arg() -> Path:
+    """Default ``--task-file`` to ``tasks.json`` in the current working directory.
+
+    Supports the run-directory workflow: dispatching from a directory holding a
+    ``tasks.json`` needs no ``--task-file`` flag.  Skipped when a task source is
+    already given (``--task-file`` or ``--volumes``), when ``--continue`` resumes
+    an existing run, or when ``./tasks.json`` does not exist.
+
+    Returns:
+        The absolute default task-file path (whether or not it was applied).
+    """
+    default = Path('tasks.json').resolve()
+    if not {'--task-file', '--volumes', '--continue'} & set(sys.argv) and default.is_file():
+        sys.argv += ['--task-file', str(default)]
+    return default
 
 
 def pop_argv_flag(flag: str) -> str | None:
@@ -398,10 +446,17 @@ def volumes_as_task_file() -> Iterator[None]:
         return
     from metadata_tools import task_list_support as tl
     idx = sys.argv.index('--volumes')
-    vols = [v for v in sys.argv[idx + 1:] if not v.startswith('-')]
+    # Consume only the contiguous values following --volumes; a later flag (and
+    # its value, e.g. an injected --config path) must not be swept into the
+    # volume list.
+    vols = []
+    for v in sys.argv[idx + 1:]:
+        if v.startswith('-'):
+            break
+        vols.append(v)
     with tempfile.NamedTemporaryFile(suffix='.json', delete=True, mode='w') as tmp:
         tl.write_task_file(vols, tmp.name)
-        sys.argv = [a for a in sys.argv if a not in (['--volumes'] + vols)]
+        del sys.argv[idx:idx + 1 + len(vols)]
         sys.argv += ['--task-file', tmp.name]
         yield
 

@@ -3,7 +3,6 @@
 This module supplies the file glob and the ``key__<NAME>`` functions used to populate
 columns of the GO_0xxx supplemental index table.
 """
-import warnings
 from pathlib import Path
 from typing import Any, cast
 
@@ -11,6 +10,7 @@ import julian
 import vicar
 from filecache import FCPath
 
+import metadata_tools.common as com
 import metadata_tools.util as util
 from metadata_tools.hosts.GO_0xxx import host_config as hconf
 
@@ -123,17 +123,15 @@ def key__product_creation_time(label_path: str | Path | FCPath,
     if isinstance(local_path_or_exc, FileNotFoundError):
         raise FileNotFoundError(image_path)
     if isinstance(local_path_or_exc, Exception):
-        warnings.warn(
-            f'Cannot retrieve {image_path} ({local_path_or_exc!r}), '
-            'PRODUCT_CREATION_TIME skipped',
-            RuntimeWarning,
-        )
+        com.get_logger().warning('Cannot retrieve %s (%r), PRODUCT_CREATION_TIME skipped',
+                                 image_path, local_path_or_exc)
         return None
     try:
         viclab = vicar.VicarLabel(local_path_or_exc, strict=False)
     except vicar.VicarError as err:
-        warnings.warn(f'VICAR error in file {image_path}, '
-                      f'PRODUCT_CREATION_TIME cannot be determined: {err}', RuntimeWarning)
+        com.get_logger().warning('VICAR error in file %s, '
+                                 'PRODUCT_CREATION_TIME cannot be determined: %s',
+                                 image_path, err)
         return None
 
     pct = viclab['DAT_TIM', -1]

@@ -5,6 +5,16 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    # Runtime dependencies are declared as minimum-version floors in
+    # [project].dependencies; raising a floor forces every downstream installer
+    # onto the newer release, so floors are raised deliberately when a feature
+    # or fix requires it — not on release cadence. Only dev/CI tooling updates
+    # are proposed automatically.
+    ignore:
+      - dependency-name: "numpy"
+      - dependency-name: "fortranformat"
+      - dependency-name: "json-stream"
+      - dependency-name: "rms-*"
 
   - package-ecosystem: github-actions
     directory: /

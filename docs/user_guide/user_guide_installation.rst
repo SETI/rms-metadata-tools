@@ -149,7 +149,7 @@ for Galileo SSI) as the first positional argument:
    metadata-index-cloud     HOST_ID [options] volume_tree metadata_tree output_tree
    metadata-geometry-cloud  HOST_ID [options] metadata_tree output_tree
    metadata-cumulative-cloud HOST_ID [options] output_dir
-   metadata-task-list       HOST_ID tree --output FILE
+   metadata-task-list       HOST_ID tree [--output FILE]
 
 The ``*-worker`` scripts run the engine locally in parallel using
 ``rms-cloud-tasks``; the ``*-cloud`` scripts dispatch work to GCP and require
