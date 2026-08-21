@@ -1,8 +1,9 @@
 ################################################################################
 # tests/test_cli_host.py: Tests for metadata_tools.cli._host
 ################################################################################
-"""Tests for pop_argv_flag, _strip_cloud_args, resolve_host_paths,
-build_startup_script, volumes_as_task_file, and single_task_as_task_file."""
+"""Tests for pop_argv_flag, _strip_cloud_args, resolve_host_paths, default_config_arg,
+default_task_file_arg, build_startup_script, volumes_as_task_file, and
+single_task_as_task_file."""
 import argparse
 import json
 import sys
@@ -14,6 +15,8 @@ import metadata_tools.cli._host as _host_mod
 from metadata_tools.cli._host import (
     _strip_cloud_args,
     build_startup_script,
+    default_config_arg,
+    default_task_file_arg,
     pop_argv_bool_flag,
     pop_argv_flag,
     resolve_host_paths,
@@ -150,6 +153,114 @@ def test_resolve_host_paths_no_config_flag_is_noop(
     monkeypatch.setattr(sys, 'argv', ['cmd', '--other', 'val'])
     resolve_host_paths(host_dir)
     assert sys.argv == ['cmd', '--other', 'val']
+
+
+def test_resolve_host_paths_dot_slash_stays_cwd_relative(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """An explicit ./ prefix selects the cwd file, not the cloud-dir one."""
+    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
+    cloud_dir.mkdir(parents=True)
+    host_dir = tmp_path / 'host'
+    run_dir = tmp_path / 'run'
+    run_dir.mkdir()
+    monkeypatch.chdir(run_dir)
+    monkeypatch.setattr(sys, 'argv', ['cmd', '--task-file', './tasks_remaining.json'])
+    resolve_host_paths(host_dir, cloud_dir)
+    assert sys.argv[2] == str((run_dir / 'tasks_remaining.json').resolve())
+
+
+def test_resolve_host_paths_dot_dot_stays_cwd_relative(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """An explicit ../ prefix resolves against the cwd's parent."""
+    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
+    cloud_dir.mkdir(parents=True)
+    host_dir = tmp_path / 'host'
+    run_dir = tmp_path / 'run'
+    run_dir.mkdir()
+    monkeypatch.chdir(run_dir)
+    monkeypatch.setattr(sys, 'argv', ['cmd', '--config', '../cfg.yml'])
+    resolve_host_paths(host_dir, cloud_dir)
+    assert sys.argv[2] == str((tmp_path / 'cfg.yml').resolve())
+
+
+#===============================================================================
+# default_config_arg
+#===============================================================================
+
+def test_default_config_arg_injects_when_absent(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
+    cloud_dir.mkdir(parents=True)
+    default = cloud_dir / 'gcp_index_config.yml'
+    default.write_text('provider: gcp\n', encoding='utf-8')
+    monkeypatch.setattr(_host_mod, 'cloud_dir_for', lambda host_id: cloud_dir)
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'tree/'])
+    returned = default_config_arg('GO_0xxx', 'index')
+    assert returned == default
+    assert sys.argv[-2:] == ['--config', str(default)]
+
+
+def test_default_config_arg_respects_explicit_config(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
+    cloud_dir.mkdir(parents=True)
+    (cloud_dir / 'gcp_geometry_config.yml').write_text('provider: gcp\n', encoding='utf-8')
+    monkeypatch.setattr(_host_mod, 'cloud_dir_for', lambda host_id: cloud_dir)
+    argv = ['cmd', 'tree/', '--config', 'other.yml']
+    monkeypatch.setattr(sys, 'argv', list(argv))
+    default_config_arg('GO_0xxx', 'geometry')
+    assert sys.argv == argv
+
+
+def test_default_config_arg_missing_default_is_noop(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
+    cloud_dir.mkdir(parents=True)
+    monkeypatch.setattr(_host_mod, 'cloud_dir_for', lambda host_id: cloud_dir)
+    argv = ['cmd', 'tree/']
+    monkeypatch.setattr(sys, 'argv', list(argv))
+    returned = default_config_arg('GO_0xxx', 'cumulative')
+    assert returned == cloud_dir / 'gcp_cumulative_config.yml'
+    assert sys.argv == argv
+
+
+#===============================================================================
+# default_task_file_arg
+#===============================================================================
+
+def test_default_task_file_arg_injects_cwd_tasks_json(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.chdir(tmp_path)
+    default = tmp_path / 'tasks.json'
+    default.write_text('[]', encoding='utf-8')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'tree/'])
+    returned = default_task_file_arg()
+    assert returned == default.resolve()
+    assert sys.argv[-2:] == ['--task-file', str(default.resolve())]
+
+
+@pytest.mark.parametrize('flag_args', [
+    ['--task-file', 'other.json'],
+    ['--volumes', 'GO_0001'],
+    ['--continue'],
+])
+def test_default_task_file_arg_respects_explicit_source(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, flag_args: list[str]) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / 'tasks.json').write_text('[]', encoding='utf-8')
+    argv = ['cmd', 'tree/'] + flag_args
+    monkeypatch.setattr(sys, 'argv', list(argv))
+    default_task_file_arg()
+    assert sys.argv == argv
+
+
+def test_default_task_file_arg_missing_file_is_noop(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.chdir(tmp_path)
+    argv = ['cmd', 'tree/']
+    monkeypatch.setattr(sys, 'argv', list(argv))
+    default_task_file_arg()
+    assert sys.argv == argv
 
 
 #===============================================================================
@@ -534,6 +645,19 @@ def test_volumes_as_task_file_volumes_absent_from_argv_inside(
     with volumes_as_task_file():
         assert 'GO_0001' not in sys.argv
         assert '--config' in sys.argv
+
+
+def test_volumes_as_task_file_stops_at_next_flag(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A flag value after --volumes (e.g. an injected --config path) is not a volume."""
+    monkeypatch.setattr(sys, 'argv',
+                        ['cmd', 'tree/', '--volumes', 'GO_0022', '--config', 'cfg.yml'])
+    with volumes_as_task_file():
+        cfg_idx = sys.argv.index('--config')
+        assert sys.argv[cfg_idx + 1] == 'cfg.yml'
+        tf_idx = sys.argv.index('--task-file')
+        data = json.loads(Path(sys.argv[tf_idx + 1]).read_text())
+        assert [t['data']['volume_id'] for t in data] == ['GO_0022']
 
 
 #===============================================================================
