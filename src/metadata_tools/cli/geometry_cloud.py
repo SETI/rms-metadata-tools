@@ -1,8 +1,9 @@
 """GCP dispatch entry point for geometry table generation across all hosts.
 
-Dispatches geometry generation to GCP via rms-cloud-tasks.  Requires ``--config``
-pointing at a GCP cloud_tasks config YAML; use ``metadata-geometry-worker`` for
-local parallel runs.
+Dispatches geometry generation to GCP via rms-cloud-tasks.  ``--config`` names a GCP
+cloud_tasks config YAML, defaulting to ``cloud/<HOST>/gcp_geometry_config.yml`` when that
+file exists; use
+``metadata-geometry-worker`` for local parallel runs.
 
 First generate a task file:
 
@@ -41,6 +42,7 @@ from pathlib import Path
 from metadata_tools.cli._host import (
     build_startup_script,
     cloud_dir_for,
+    default_config_arg,
     dispatch_cloud_run_if_config,
     load_host,
     pop_argv_bool_flag,
@@ -60,6 +62,7 @@ def main() -> None:
     host_id = sys.argv[1]
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir, cloud_dir_for(host_id))
+    default_config = default_config_arg(host_id, 'geometry')
 
     create_startup_file = pop_argv_flag('--create-startup-file')
     startup_template = pop_argv_flag('--startup-template')
@@ -69,9 +72,8 @@ def main() -> None:
     ssh_paste = pop_argv_bool_flag('--ssh-paste')
 
     if '--config' not in sys.argv and create_startup_file is None:
-        sys.exit(
-            'metadata-geometry-cloud requires --config; use metadata-geometry-worker for local runs'
-        )
+        sys.exit(f'metadata-geometry-cloud requires --config (default {default_config} not '
+                 'found); use metadata-geometry-worker for local runs')
 
     set_host(host_id)
     hconf = get_host_config()

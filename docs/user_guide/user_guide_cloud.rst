@@ -64,6 +64,8 @@ GCP runs
 ========
 
 For a GCP run, pass the same path arguments as a local run and add ``--config``.
+When ``--config`` is omitted, each dispatch command defaults to the conventional
+``cloud/<HOST>/gcp_<index|geometry|cumulative>_config.yml`` if that file exists.
 The GCP instance startup script is generated automatically from those arguments
 at dispatch time, so no personal bucket paths ever appear in committed files.
 
@@ -145,11 +147,14 @@ Dispatch options (forwarded to ``cloud_tasks run``):
    * - Option
      - Description
    * - ``--config FILE``
-     - GCP configuration YAML. Required for dispatch. Bare filenames are
-       resolved against the ``cloud/<HOST>/`` directory.
+     - GCP configuration YAML. Defaults to the conventional
+       ``cloud/<HOST>/gcp_<type>_config.yml`` when that file exists. Bare
+       filenames are resolved against the ``cloud/<HOST>/`` directory.
    * - ``--task-file FILE``
      - Path to a task file (JSON). Passed automatically when using
-       ``metadata-task-list`` output; can also be provided manually.
+       ``metadata-task-list`` output; can also be provided manually. Bare
+       filenames resolve against ``cloud/<HOST>/``; use a ``./`` prefix (or an
+       absolute path) to select a file relative to the current directory.
    * - ``--use-spot``
      - Request spot (preemptible) GCP instances.
 
