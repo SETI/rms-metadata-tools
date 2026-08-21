@@ -90,7 +90,7 @@ write_to = "src/metadata_tools/_version.py"
 
 [project.optional-dependencies]
 dev = [
-  "coverage>=7.0",
+  "coverage>=7.15.4",
   "mypy>=1.0",
   "pymarkdownlnt>=0.9.39",
   "pytest>=7.0",
