@@ -167,6 +167,7 @@ cython_debug/
 # Cloud/GCP runtime artifacts (generated; not source)
 *_tasks.json
 *_in_queue_original.json
+metadata-*-job_*.json
 metadata-*.db
 
 .code_planner_cache.db
