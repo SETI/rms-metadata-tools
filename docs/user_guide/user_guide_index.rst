@@ -2,19 +2,17 @@
 The index program
 ==========================
 
-Each host ships an index program named ``<HOST>_index.py`` (for Galileo SSI,
-``GO_0xxx_index.py``). It generates the supplemental index table and its PDS3
-label for every volume in a tree, by reading each data product's PDS3 label.
-Under the hood it calls :func:`~metadata_tools.index_support.process_index`.
-
-Run it from inside the host directory (see :doc:`user_guide_installation`).
+The ``metadata-index`` console script generates the supplemental index table
+and its PDS3 label for every volume in a tree, by reading each data product's
+PDS3 label. Under the hood it calls
+:func:`~metadata_tools.index_support.process_index`.
 
 Synopsis
 ========
 
 .. code-block:: text
 
-   python <HOST>_index.py [options] volume_tree metadata_tree output_tree
+   metadata-index HOST_ID [options] volume_tree metadata_tree output_tree
 
 Positional arguments
 ====================
@@ -49,9 +47,9 @@ Selection
 
    * - Option
      - Description
-   * - ``--volumes VOL [VOL ...]``, ``-vv``
-     - Process only these volume IDs (e.g. ``GO_0017``). Repeatable list. If
-       omitted, every volume in the tree is processed.
+   * - ``--volumes VOL [VOL ...]``
+     - Process only these volume IDs (e.g. ``GO_0017``). If omitted, every
+       volume in the tree is processed.
    * - ``--pattern PATTERN``, ``-p``
      - Glob pattern that further restricts which data files are processed
        within each volume.
@@ -71,20 +69,6 @@ Output / type
    * - ``--labels``, ``-l``
      - Generate labels only for index tables that already exist; do not
        recompute the tables themselves.
-
-Processing / distribution
--------------------------
-
-.. list-table::
-   :header-rows: 1
-   :widths: 34 66
-
-   * - Option
-     - Description
-   * - ``--task-output FILE``, ``-to``
-     - Write a task-queue file listing one task per volume and perform no
-       processing. Used to drive the distributed cloud workers; see
-       :doc:`user_guide_cloud`.
 
 Miscellaneous
 -------------
@@ -106,11 +90,10 @@ volume only:
 
 .. code-block:: bash
 
-   cd src/metadata_tools/hosts/GO_0xxx
-   python GO_0xxx_index.py "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
+   metadata-index GO_0xxx "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
        "$RMS_METADATA_TEST/GO_0xxx/"
-   python GO_0xxx_index.py "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
-       "$RMS_METADATA_TEST/GO_0xxx/" -vv GO_0017
+   metadata-index GO_0xxx "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
+       "$RMS_METADATA_TEST/GO_0xxx/" --volumes GO_0017
 
 Results
 =======

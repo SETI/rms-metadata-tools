@@ -29,8 +29,10 @@ Use the global :class:`pdslogger.PdsLogger` via
 Python style and typing
 =======================
 
-Maximum line length is 100. The project does not run ``ruff format`` as a gate;
-``ruff check`` is the linter. Annotate every parameter and return value
+Maximum line length is 100. ``ruff check`` is the linter (run by
+``scripts/run-all-checks.sh`` and CI); code is formatted with ``ruff format``
+using single quotes. ``ruff format --check`` is available via
+``ENABLE_RUFF_FORMAT=true`` but is off by default. Annotate every parameter and return value
 (including ``-> None``); ``mypy`` runs in strict mode. Use modern generic syntax
 (``list[str]``, ``X | None``). Docstrings are Google style with a
 ``Parameters:`` section, wrapped at 90 columns. Do not add backwards-compatibility

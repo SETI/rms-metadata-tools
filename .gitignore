@@ -172,6 +172,9 @@ tasks_remaining.json
 metadata-*-job_*.json
 metadata-*.db
 
+# AI-generated critique documents (working notes; not source)
+critiques/
+
 .code_planner_cache.db
 _work/
 **/_version.py

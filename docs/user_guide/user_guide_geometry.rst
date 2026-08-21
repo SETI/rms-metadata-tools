@@ -2,23 +2,21 @@
 The geometry program
 =====================
 
-Each host ships a geometry program named ``<HOST>_geometry.py`` (for Galileo
-SSI, ``GO_0xxx_geometry.py``). It reads the supplemental index table for each
-volume, computes the geometry backplanes from SPICE through ``oops``, and writes
-the geometry tables (and labels) for the bodies, rings, sky, and an inventory of
-bodies in each field of view. Under the hood it calls
+The ``metadata-geometry`` console script reads the supplemental index table for
+each volume, computes the geometry backplanes from SPICE through ``oops``, and
+writes the geometry tables (and labels) for the bodies, rings, sky, and an
+inventory of bodies in each field of view. Under the hood it calls
 :func:`~metadata_tools.geometry_support.process.process_tables`.
 
 The index program must have been run first, because the geometry stage reads the
-supplemental index file it produced. Run the geometry program from inside the
-host directory (see :doc:`user_guide_installation`).
+supplemental index file it produced.
 
 Synopsis
 ========
 
 .. code-block:: text
 
-   python <HOST>_geometry.py [options] metadata_tree output_tree
+   metadata-geometry HOST_ID [options] metadata_tree output_tree
 
 Positional arguments
 ====================
@@ -67,9 +65,9 @@ Volume selection
 
    * - Option
      - Description
-   * - ``--volumes VOL [VOL ...]``, ``-vv``
-     - Process only these volume IDs. Repeatable list. Supplying volumes
-       disables ``--new_only``.
+   * - ``--volumes VOL [VOL ...]``
+     - Process only these volume IDs. Supplying volumes disables
+       ``--new_only``.
    * - ``--exclude VOL [VOL ...]``, ``-e``
      - Volume IDs to skip. Repeatable list. Default: the host's configured
        exclusions (e.g. the cumulative directory ``GO_0999``).
@@ -94,9 +92,6 @@ Output / distribution
    * - ``--labels``, ``-l``
      - Generate labels only for geometry tables that already exist; do not
        recompute the tables.
-   * - ``--task-output FILE``, ``-to``
-     - Write a task-queue file listing one task per volume and perform no
-       processing. See :doc:`user_guide_cloud`.
 
 Miscellaneous
 -------------
@@ -118,11 +113,10 @@ volume, then for a single image matched by pattern:
 
 .. code-block:: bash
 
-   cd src/metadata_tools/hosts/GO_0xxx
-   python GO_0xxx_geometry.py "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/"
-   python GO_0xxx_geometry.py "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/" \
-       -vv GO_0017
-   python GO_0xxx_geometry.py "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/" \
+   metadata-geometry GO_0xxx "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/"
+   metadata-geometry GO_0xxx "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/" \
+       --volumes GO_0017
+   metadata-geometry GO_0xxx "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/" \
        -p "*C0349605600R*"
 
 Results
