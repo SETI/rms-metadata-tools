@@ -100,6 +100,7 @@ dev = [
   "ruff>=0.8",
   "types-PyYAML",
   "bandit[toml]>=1.8",
+  "pip-audit>=2.7",
   "pyroma>=4.2",
   "vulture>=2.14",
   "rms-metadata-tools[docs]",
