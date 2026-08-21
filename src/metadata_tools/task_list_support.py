@@ -10,6 +10,7 @@ formerly embedded in ``_create_index`` and ``process_tables``).
 import fnmatch
 import json
 from collections.abc import Iterator
+from pathlib import Path
 from typing import Any
 
 from filecache import FCPath
@@ -45,7 +46,7 @@ def task_generator(volumes: list[str]) -> Iterator[dict[str, Any]]:
 
 
 #=========================================================================================
-def scan_volumes(tree: FCPath) -> list[str]:
+def scan_volumes(tree: str | Path | FCPath) -> list[str]:
     """Walk *tree* and return the sorted list of volume IDs it contains.
 
     Volumes are identified by matching the last path component against the glob
@@ -59,6 +60,7 @@ def scan_volumes(tree: FCPath) -> list[str]:
     Returns:
         Sorted list of volume IDs found in *tree*.
     """
+    tree = FCPath(tree)
     vol_glob = util.get_volume_glob(tree.name)
     volumes: list[str] = []
     for root, dirs, _files in tree.walk():
@@ -72,7 +74,7 @@ def scan_volumes(tree: FCPath) -> list[str]:
 
 
 #=========================================================================================
-def write_task_file(volumes: list[str], output: str | FCPath) -> None:
+def write_task_file(volumes: list[str], output: str | Path | FCPath) -> None:
     """Write a JSON task list file for *volumes*.
 
     Parameters:

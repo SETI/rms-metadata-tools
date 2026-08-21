@@ -4,7 +4,6 @@
 """Process entry points for index file generation."""
 import argparse
 import fnmatch
-from pathlib import Path
 
 from filecache import FCPath
 
@@ -44,8 +43,8 @@ def get_args(host: str | None = None,
 #===============================================================================
 def _create_index(volume_tree: FCPath,
                   output_tree: FCPath,
-                  template_path: str | Path | FCPath,
-                  metadata_tree: str | Path | FCPath | None = None,
+                  template_path: FCPath,
+                  metadata_tree: FCPath | None = None,
                   volumes: list[str] | None = None,
                   labels_only: bool = False,
                   qualifier: str | None = None,
@@ -63,7 +62,9 @@ def _create_index(volume_tree: FCPath,
         template_path: Path to the host template.
         metadata_tree: Top of the directory tree in which to find the corrected
             index file (e.g., <volume>_index.tab).
-        volumes: List of volume ids to process.  Overrides args.volumes.
+        volumes: List of volume ids to process; an explicit list (even empty)
+            selects exactly those volumes, while None processes every
+            discovered volume.
         labels_only: If True, labels are generated for any existing tables.
         qualifier: Qualifying string identifying the type of index file to create,
             e.g., 'supplemental'.
@@ -72,9 +73,7 @@ def _create_index(volume_tree: FCPath,
     """
     logger = com.get_logger()
 
-    if metadata_tree is not None:
-        metadata_tree = FCPath(metadata_tree)
-    else:
+    if metadata_tree is None:
         metadata_tree = output_tree
 
     # Build volume glob
@@ -100,7 +99,8 @@ def _create_index(volume_tree: FCPath,
 
         # Test whether this root is a volume
         if fnmatch.filter([vol], vol_glob):
-            if not volumes or vol in volumes:
+            # volumes=None means all volumes; an explicit list (even empty) is a filter.
+            if volumes is None or vol in volumes:
 
                 # Determine input and output directories
                 indir = root
@@ -144,12 +144,14 @@ def process_index(template_name: str,
         parser = get_args(host=host, index_type=index_type)
         args = parser.parse_args()
 
-    if not volumes:
+    # An explicit volumes list — including an empty one — overrides args.volumes.
+    if volumes is None:
         volumes = args.volumes
 
     # Create the index
     _create_index(FCPath(args.volume_tree), FCPath(args.output_tree), template_path,
-                  metadata_tree=args.metadata_tree,
+                  metadata_tree=(FCPath(args.metadata_tree)
+                                 if args.metadata_tree is not None else None),
                   volumes=volumes,
                   labels_only=args.labels is not False,
                   qualifier=args.type,

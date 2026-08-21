@@ -1,7 +1,7 @@
 ################################################################################
 # tests/test_cumulative_support.py: _cat_rows walk + create_cumulative_indexes.
 ################################################################################
-import types
+import argparse
 from pathlib import Path
 from typing import Any
 
@@ -103,6 +103,7 @@ def test_cat_rows_skips_missing_table(
 # get_args / create_cumulative_indexes
 #===============================================================================
 def test_get_args_parses_exclude() -> None:
+    """--exclude collects volume IDs into args.exclude."""
     parser = cum.get_args(host='GO')
     args = parser.parse_args(['/out', '--exclude', 'GO_0999'])
     assert args.exclude == ['GO_0999']
@@ -110,14 +111,13 @@ def test_get_args_parses_exclude() -> None:
 
 def test_create_cumulative_indexes_fires_eight_cat_rows(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
+    """All eight cumulative tables get a _cat_rows pass; the sun table is not wired in."""
     calls: list[Any] = []
     monkeypatch.setattr(cum, '_cat_rows',
                         lambda *a, **k: calls.append((type(a[4]).__name__, a[4].level)))
-    args = types.SimpleNamespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
-                                 volumes=None, exclude=None)
-    # SimpleNamespace stands in for an argparse.Namespace here.
-    cum.create_cumulative_indexes('GO_0xxx_supplemental_index',
-                                  args=args)  # type: ignore[arg-type]
+    args = argparse.Namespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
+                              volumes=None, exclude=None)
+    cum.create_cumulative_indexes('GO_0xxx_supplemental_index', args=args)
     # No sun table: it is not wired in (see geometry_support.tables.SunTable).
     assert len(calls) == 8
     assert ('SkyTable', 'summary') in calls
@@ -130,11 +130,10 @@ def test_create_cumulative_indexes_uses_args_exclude_over_parameter(
     excludes_seen: list[list[str] | None] = []
     monkeypatch.setattr(cum, '_cat_rows',
                         lambda *a, **k: excludes_seen.append(k.get('exclude')))
-    args = types.SimpleNamespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
-                                 volumes=None, exclude=['GO_0016'])
-    # SimpleNamespace stands in for an argparse.Namespace here.
+    args = argparse.Namespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
+                              volumes=None, exclude=['GO_0016'])
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index',
-                                  args=args,  # type: ignore[arg-type]
+                                  args=args,
                                   exclude=['GO_0999'])
     assert excludes_seen == [['GO_0016']] * 8
 
@@ -145,10 +144,9 @@ def test_create_cumulative_indexes_falls_back_to_parameter_when_args_exclude_uns
     excludes_seen: list[list[str] | None] = []
     monkeypatch.setattr(cum, '_cat_rows',
                         lambda *a, **k: excludes_seen.append(k.get('exclude')))
-    args = types.SimpleNamespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
-                                 volumes=None, exclude=None)
-    # SimpleNamespace stands in for an argparse.Namespace here.
+    args = argparse.Namespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
+                              volumes=None, exclude=None)
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index',
-                                  args=args,  # type: ignore[arg-type]
+                                  args=args,
                                   exclude=['GO_0999'])
     assert excludes_seen == [['GO_0999']] * 8

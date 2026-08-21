@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 dependencies = [
   "numpy>=2.3.0",
   "rms-oops>=0.2.0",
+  "rms-polymath>=2.0.0",
   "rms-filecache>=3.1.0",
   "rms-pdslogger>=3.0.0",
   "rms-julian>=3.0.1",

@@ -40,15 +40,15 @@ $ELSE
     This index describes the images found on volume $volume_id$.
 $END_IF
 
-    Two types of geometry are represented in this index. Gridded quantites
+    Two types of geometry are represented in this index. Gridded quantities
     were constructed by uniformly sampling the pixels that comprise each data
     product on an 8x8 grid, i.e., every 64th pixel, spanning the field of
     view. Gridless quantities represent a single value.
 
-    For each sampled pixel, a variety of geometric quantitities have been
-    calculated. All quantites, gridded and gridless, are tabulated in terms of
+    For each sampled pixel, a variety of geometric quantities have been
+    calculated. All quantities, gridded and gridless, are tabulated in terms of
     a global minimum and maximum value with respect to the varying geometry
-    during the interval in which the obsevation was taken. For angular
+    during the interval in which the observation was taken. For angular
     quantities that cycle from 360 degrees to zero, the tabulated minimum can
     be numerically greater than the maximum. If the ring plane does not fall
     within the field of view, values of the NULL_CONSTANT appear in the table.

@@ -9,6 +9,8 @@ embedded dictionary references. The tests are hermetic — they need no SPICE or
 environment variables.
 """
 
+import pytest
+
 import metadata_tools.defs as defs
 import metadata_tools.util as util
 
@@ -39,6 +41,13 @@ def test_replace_returns_list_instance_for_list_input() -> None:
     assert isinstance(result, list)
 
 
+def test_replace_preserves_nested_list_type() -> None:
+    """A nested list stays a list; it is not coerced to a tuple."""
+    result = util.replace([['bodyx', 'x']], 'bodyx', 'IO')
+    assert result == [['IO', 'x']]
+    assert isinstance(result[0], list)
+
+
 def test_replace_passes_through_non_string_leaves() -> None:
     """Numbers and booleans are carried through unchanged."""
     result = util.replace(
@@ -63,14 +72,12 @@ def test_replace_resolves_embedded_dict_reference() -> None:
 
 def test_resolve_dict_ref_rejects_unknown_module() -> None:
     """``_resolve_dict_ref`` raises ValueError for non-defs module references."""
-    import pytest
     with pytest.raises(ValueError, match='Unknown module'):
         util._resolve_dict_ref('os.environ["PATH"]')
 
 
 def test_resolve_dict_ref_rejects_unrecognized_pattern() -> None:
     """``_resolve_dict_ref`` raises ValueError for strings that don't match the pattern."""
-    import pytest
     with pytest.raises(ValueError, match='Unrecognized column reference'):
         util._resolve_dict_ref('defs.RING_SYSTEM_RADII[SATURN]')
 
