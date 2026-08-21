@@ -13,11 +13,13 @@
 import pathlib
 import re
 
+from filecache import FCPath
+
 from metadata_tools.columns import sun
 from metadata_tools.geometry_support import formats
 
 _FRAGMENT = (
-    pathlib.Path(__file__).resolve().parents[1]
+    FCPath(pathlib.Path(__file__).resolve().parents[1])
     / 'src'
     / 'metadata_tools'
     / 'templates'
@@ -49,7 +51,8 @@ def _label_widths() -> list[int]:
     The width comes from an ``F``/``A`` FORMAT; a ``DATA_TYPE = TIME`` column
     carries no FORMAT and uses the 25-character ISO width from FORMAT_DICT.
     """
-    text = _FRAGMENT.read_text()
+    with _FRAGMENT.open('r') as f:
+        text = f.read()
     # Split on column starts; the lookbehind avoids matching END_OBJECT = COLUMN.
     blocks = re.split(r'(?<!END_)OBJECT\s*=\s*COLUMN', text)[1:]
     widths: list[int] = []

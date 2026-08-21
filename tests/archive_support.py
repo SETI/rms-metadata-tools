@@ -70,8 +70,8 @@ def bounds(file: str, table: Any, key: str,
                        tested.  In this case, those prefixes must be omitted
                        from the key argument.
 
-    Returns:
-        None.
+    Raises:
+        AssertionError: If any non-null value lies outside [min_val, max_val].
     """
     if minmax:
         bounds(file, table, 'MINIMUM_' + key, minmax=False, min_val=min_val, max_val=max_val)

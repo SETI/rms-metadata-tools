@@ -13,7 +13,7 @@ import pytest
 import metadata_tools.columns.body as body
 import metadata_tools.defs as defs
 
-_FAKE_BODY_NAMES = ['MIMAS', 'TETHYS']
+_FAKE_BODY_NAMES: list[str] = ['MIMAS', 'TETHYS']
 
 
 @pytest.fixture
@@ -26,6 +26,7 @@ def fake_registry(monkeypatch: pytest.MonkeyPatch) -> list[int]:
     calls: list[int] = []
 
     def registry() -> dict[str, object]:
+        """Count each call and return a two-body stand-in registry."""
         calls.append(1)
         return {name: object() for name in _FAKE_BODY_NAMES}
 

@@ -159,7 +159,7 @@ def create_cumulative_indexes(template_name: str,
 
     # A user-supplied --exclude on the command line takes precedence over the
     # exclude= parameter (typically the host's configured default).
-    if getattr(args, 'exclude', None) is not None:
+    if args.exclude is not None:
         exclude = args.exclude
 
     cumulative_dir = FCPath(args.output_dir)

@@ -24,7 +24,7 @@ def key__volume_id(label_path: str | Path | FCPath,
     Returns:
         Volume ID.
     """
-    return cast(str, get_host_config().get_volume_id(label_path))
+    return cast(str, get_host_config().get_volume_id(FCPath(label_path)))
 
 #===============================================================================
 def key__file_specification_name(label_path: str | Path | FCPath,

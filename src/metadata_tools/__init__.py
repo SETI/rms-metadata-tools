@@ -21,10 +21,11 @@ Per-collection configuration lives in
 """
 ##########################################################################################
 import os as _os
-from pathlib import Path as _Path
 
-_env_file = _Path(__file__).parent.parent.parent / '.env'
-if _env_file.is_file():
+from filecache import FCPath as _FCPath
+
+_env_file = _FCPath(__file__).parent.parent.parent / '.env'
+try:
     with _env_file.open(encoding='utf-8') as _f:
         for _line in _f:
             _line = _line.strip()
@@ -35,6 +36,8 @@ if _env_file.is_file():
                 # those set by earlier lines in this .env file), then apply as a default.
                 _v = _os.path.expandvars(_v.strip())
                 _os.environ.setdefault(_k, _v)
+except FileNotFoundError:
+    pass
 
 try:
     from ._version import __version__

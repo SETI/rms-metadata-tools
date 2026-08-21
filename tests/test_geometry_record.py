@@ -9,7 +9,6 @@ import oops
 import pytest
 
 import metadata_tools.columns as col
-import metadata_tools.defs as defs
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select
@@ -19,36 +18,49 @@ from metadata_tools.geometry_support.record import Record
 #===============================================================================
 # Shared-cache isolation: irregular-moon dict additions
 #===============================================================================
+def _make_record(monkeypatch: pytest.MonkeyPatch, moon: str) -> Record:
+    """Run the real Record.__init__ hermetically for an irregular-moon target.
+
+    Patches the SPICE-facing seams (primary/inventory/body selection, meshgrid,
+    Backplane, bodies registry) so __init__ executes end to end without kernels;
+    the conftest fake host registry supplies get_geometry_config().
+    """
+    monkeypatch.setattr(col, 'get_bodies_registry',
+                        lambda: {'JUPITER': types.SimpleNamespace(ring_frame=None)})
+    monkeypatch.setattr(bodies_select, 'get_primary',
+                        lambda rec, table, sclk: ('JUPITER', [], [], []))
+    monkeypatch.setattr(bodies_select, 'inventory', lambda rec, reg: [moon])
+    monkeypatch.setattr(bodies_select, 'select_bodies', lambda rec, reg: [moon])
+    monkeypatch.setattr(Record, '_meshgrid',
+                        staticmethod(lambda observation, meshgrids: 'MESH'))
+    monkeypatch.setattr(oops.backplane, 'Backplane', lambda obs, meshgrid: object())
+    observation = types.SimpleNamespace(dict={
+        'SPACECRAFT_CLOCK_START_COUNT': '1/00000000:00',
+        'FILE_SPECIFICATION_NAME': 'GO_0001/C012345/C0123456789R.IMG',
+        'TARGET_NAME': moon,
+    })
+    return Record(observation, 'GO_0001', {}, 8, 'summary')
+
+
 def test_body_dict_addition_does_not_mutate_shared_cache(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """Record body-dict additions for irregular moons must not pollute the shared cache.
+    """Record.__init__ body-dict additions for irregular moons must not pollute the cache.
 
-    Two simulated Records with different irregular-moon targets each expand their
-    own copy of the body column dict; the module-level cached dict (represented here
-    by the monkeypatched fake) must be identical before and after.
+    Two Records with different irregular-moon targets are constructed through the
+    real initializer; each expands only its own copy of the body column dict, and
+    the shared cached dict (a monkeypatched fake here) is identical afterwards.
     """
-    # Use a tiny fake "shared" dict so the test is hermetic (no SPICE/oops needed).
     fake_shared: dict[str, Any] = {'IO': [('io_col_desc',)]}
     monkeypatch.setattr(col, 'get_body_summary_dict', lambda: fake_shared)
 
-    per_record_dicts: list[dict[str, Any]] = []
-    for moon in ('FAKE_MOON_A', 'FAKE_MOON_B'):
-        # Reproduce the Record.__init__ body-dict path without constructing a full Record.
-        r = Record.__new__(Record)
-        r.dicts = {'body': col.get_body_summary_dict()}
-        r.bodies = [moon]
-        r.target = moon
-        # Fixed __init__ code: copy the shared dict before inserting the target.
-        if r.target in r.bodies and r.target not in r.dicts['body']:
-            r.dicts['body'] = dict(r.dicts['body'])
-            r.dicts['body'][r.target] = util.replace(col.BODY_SUMMARY_COLUMNS, defs.BODYX, moon)
-        per_record_dicts.append(r.dicts['body'])
+    rec_a = _make_record(monkeypatch, 'FAKE_MOON_A')
+    rec_b = _make_record(monkeypatch, 'FAKE_MOON_B')
 
     # Each per-record dict independently holds only its own target moon.
-    assert 'FAKE_MOON_A' in per_record_dicts[0]
-    assert 'FAKE_MOON_B' not in per_record_dicts[0]
-    assert 'FAKE_MOON_B' in per_record_dicts[1]
-    assert 'FAKE_MOON_A' not in per_record_dicts[1]
+    assert 'FAKE_MOON_A' in rec_a.dicts['body']
+    assert 'FAKE_MOON_B' not in rec_a.dicts['body']
+    assert 'FAKE_MOON_B' in rec_b.dicts['body']
+    assert 'FAKE_MOON_A' not in rec_b.dicts['body']
 
     # The "shared" fake dict is unchanged — only the per-Record copies were mutated.
     assert set(fake_shared.keys()) == {'IO'}
@@ -56,26 +68,23 @@ def test_body_dict_addition_does_not_mutate_shared_cache(
 
 def test_body_tile_dict_addition_does_not_mutate_shared_cache(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """Record body-tile-dict additions for irregular moons must not pollute BODY_TILE_DICT.
+    """Record.__init__ tile-dict additions for irregular moons must not pollute
+    BODY_TILE_DICT.
 
-    Two simulated Records with different irregular-moon targets each expand their
-    own per-Record copy of the tile dict; the module-level col.BODY_TILE_DICT must
-    be identical before and after.
+    Two Records with different irregular-moon targets are constructed through the
+    real initializer; each gets its own expanded tile dict, and the module-level
+    col.BODY_TILE_DICT is identical before and after.
     """
-    # BODY_TILE_DICT and BODY_TILES are built at import time without SPICE; they
-    # have entries for all BODY_NAMES planets and can be used directly in tests.
+    monkeypatch.setattr(col, 'get_body_summary_dict', lambda: {})
     shared_keys_before: frozenset[str] = frozenset(col.BODY_TILE_DICT)
 
-    primary = 'JUPITER'  # arbitrary planet whose tile template we borrow
-    for moon in ('FAKE_MOON_A', 'FAKE_MOON_B'):
-        # Reproduce the Record.__init__ tile-dict path without constructing a full Record.
-        r = Record.__new__(Record)
-        r.body_tile_dict = dict(col.BODY_TILE_DICT)  # per-Record copy (the fix)
-        r.bodies = [moon]
-        r.target = moon
-        if r.target in r.bodies and r.target not in col.BODY_TILE_DICT:
-            r.body_tile_dict[r.target] = util.replace(
-                col.BODY_TILES[primary], defs.BODYX, r.target)
+    rec_a = _make_record(monkeypatch, 'FAKE_MOON_A')
+    rec_b = _make_record(monkeypatch, 'FAKE_MOON_B')
+
+    # Each per-record tile dict holds its own moon (from the JUPITER template).
+    assert 'FAKE_MOON_A' in rec_a.body_tile_dict
+    assert 'FAKE_MOON_B' not in rec_a.body_tile_dict
+    assert 'FAKE_MOON_B' in rec_b.body_tile_dict
 
     # The shared module-level dict is unchanged.
     assert frozenset(col.BODY_TILE_DICT) == shared_keys_before

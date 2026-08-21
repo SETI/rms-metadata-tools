@@ -4,6 +4,7 @@
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 import oops
 import polymath
 import pytest
@@ -11,7 +12,7 @@ import pytest
 from metadata_tools.geometry_support import masks
 
 
-def _one_pixel(shape: tuple[int, int] = (4, 4)) -> np.ndarray:
+def _one_pixel(shape: tuple[int, int] = (4, 4)) -> npt.NDArray[np.bool_]:
     arr = np.zeros(shape, dtype=bool)
     arr[0, 0] = True
     return arr
