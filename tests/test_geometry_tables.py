@@ -5,16 +5,18 @@ import types
 from collections.abc import Callable
 from typing import Any
 
-import geometry_config as config
 import numpy as np
 import oops
 import pytest
 
 import metadata_tools.common as com
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import suite as suite_mod
 from metadata_tools.geometry_support import tables
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.suite import Suite
+
+config = get_geometry_config()
 
 
 class RecordingRecord:
@@ -47,11 +49,12 @@ def test_sky_table_add_uses_no_body() -> None:
     assert record.calls == [('sky', {'no_body': True})]
 
 
-def test_sun_table_add_plain() -> None:
+def test_sun_table_add_targets_sun() -> None:
     table = tables.SunTable(level='summary')
     record = RecordingRecord()
     table.add(record)  # type: ignore[arg-type]
-    assert record.calls == [('sun', {})]
+    # The Sun is a body, so it uses the body-style prefix with a fixed target.
+    assert record.calls == [('sun', {'target': 'SUN'})]
 
 
 def test_ring_table_add_only_when_rings_present() -> None:
@@ -157,6 +160,7 @@ def test_suite_get_overrides_covers_sky_ring_body(
         record_stub: Callable[..., Record]) -> None:
     record = _override_record(record_stub)
     overrides = Suite.get_overrides(record)
+    # No 'sun': the sun table is not wired in (see tables.SunTable).
     assert set(overrides) == {'sky', 'ring', 'body'}
 
 
@@ -167,6 +171,7 @@ def test_suite_add_tables_creates_four_tables(
     suite.volume_id = 'GO_0001'
     suite.add_tables(None, 'summary')  # type: ignore[arg-type]
     qualifiers = [t.qualifier for t in suite.tables]
+    # No 'sun': the sun table is not wired in (see tables.SunTable).
     assert qualifiers == ['inventory', 'sky', 'ring', 'body']
 
 

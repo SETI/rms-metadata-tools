@@ -51,3 +51,10 @@ def test_body_diameter_resolves_ring_system_radius(ring_module: ModuleType) -> N
 def test_no_placeholder_survives_substitution(ring_module: ModuleType) -> None:
     """No ``BODYX`` sentinel leaks into the assembled summary dict."""
     assert defs.BODYX not in repr(ring_module.RING_SUMMARY_DICT)
+
+
+def test_outer_ring_tile_dict_has_no_duplicate_tiles(ring_module: ModuleType) -> None:
+    """Every per-body tile list in OUTER_RING_TILE_DICT must contain unique tuples."""
+    for body, tiles in ring_module.OUTER_RING_TILE_DICT.items():
+        seen = [tuple(t) for t in tiles]
+        assert len(seen) == len(set(seen)), f'{body} has duplicate tiles in OUTER_RING_TILE_DICT'

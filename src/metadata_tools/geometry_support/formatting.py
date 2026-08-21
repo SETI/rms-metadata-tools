@@ -4,6 +4,7 @@
 # Config-free: depends only on oops/polymath/julian/numpy plus util, so the
 # number-formatting logic can be unit-tested without the host plugin.
 ################################################################################
+"""Column value formatting utilities for geometry tables."""
 import warnings
 from typing import Any, cast
 

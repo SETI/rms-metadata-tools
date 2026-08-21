@@ -16,7 +16,9 @@ import geometry_config as config
 import host_init  # noqa: F401  (imported for side effects)
 
 import metadata_tools.geometry_support as geom
+from metadata_tools.config import set_host
 
+set_host('GO_0xxx')
 geom.process_tables('GO_0xxx_supplemental_index',
                     glob=config.glob,
                     index_glob=config.index_glob,

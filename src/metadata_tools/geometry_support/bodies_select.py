@@ -5,15 +5,16 @@
 # record's state) so they can be exercised without constructing a full
 # SPICE-backed Record.
 ################################################################################
+"""Body visibility and selection utilities for geometry table generation."""
 import re
 from typing import TYPE_CHECKING, Any, cast
 
-import geometry_config as config
 import oops
 
 import metadata_tools.columns as col
 import metadata_tools.common as com
 import metadata_tools.util as util
+from metadata_tools.config import get_geometry_config
 
 if TYPE_CHECKING:
     from metadata_tools.geometry_support.record import Record
@@ -34,7 +35,8 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
 
     # Attempt to obtain inventory
     try:
-        inventory = record.observation.inventory(bodies, expand=config.EXPAND, cache=False)
+        inventory = record.observation.inventory(
+            bodies, expand=get_geometry_config().EXPAND, cache=False)
         return cast(list[str], inventory)
 
     # A RuntimeError is probably caused by missing spice data. There is
@@ -56,7 +58,7 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
     except (AssertionError, AttributeError, IndexError, KeyError,
             LookupError, TypeError, ValueError):
         logger.exception("Unexpected error during inventory")
-        return []
+        raise
 
 #===============================================================================
 def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
@@ -88,7 +90,7 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
     # Add primary body and FOV/selected children
     if record.primary:
         body_names += [record.primary]
-        children = [child.name for child in col.BODIES[record.primary].children
+        children = [child.name for child in col.get_bodies_registry()[record.primary].children
                         if child.name in bodies]
         children = inventory(record, children)
         if record.selections:
@@ -117,7 +119,8 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
     body_names = list(dict.fromkeys(body_names))
 
     # Sort bodies based on occurrence in BODIES list
-    body_names.sort(key=lambda name : list(col.BODIES.keys()).index(name))
+    bodies_order = {name: i for i, name in enumerate(col.get_bodies_registry())}
+    body_names.sort(key=lambda name: bodies_order.get(name, len(bodies_order)))
 
     return [body_name for body_name in body_names if oops.Body.exists(body_name)]
 
@@ -127,15 +130,19 @@ def get_system(body: str) -> str | None:
 
     Parameters:
         body: Body for which to determine the system. For a satellite, the system
-            is the parent. For a planet, the system is itself.
+            is the parent. For a planet, the system is itself. For a root body
+            with no parent (e.g. the Sun), the system is itself.
 
     Returns:
         Name of system, body, or None if the body is not registered.
     """
-    if body in oops.Body.BODY_REGISTRY:
-        parent = cast(str, oops.Body.BODY_REGISTRY[body].parent.name)
-    else:
+    if body not in oops.Body.BODY_REGISTRY:
         return None
+    parent_body = oops.Body.BODY_REGISTRY[body].parent
+    # A root body such as the Sun has no parent; it is its own system.
+    if parent_body is None:
+        return body
+    parent = cast(str, parent_body.name)
     if parent != 'SUN':
         return parent
     return body
@@ -161,7 +168,7 @@ def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
         # regex tested against the observation ID. The observation is excluded if
         # *any* exception matches, so keep checking the remaining exceptions.
         if exception.isidentifier():
-            fn = getattr(config, exception)
+            fn = getattr(get_geometry_config(), exception)
             if fn(record.observation):
                 return True
         elif re.match(exception, obs_id):
@@ -191,7 +198,7 @@ def get_primary(record: 'Record', table: list[Any],
         bodies.
     """
     fail: tuple[str, list[str], list[str], list[str]] = ('', [], [], [])
-    sclk_ticks = util.sclk_to_ticks(sclk, config.SC)
+    sclk_ticks = util.sclk_to_ticks(sclk, get_geometry_config().SC)
     for row in table:
         if obs_excluded(record, row[1]):
             return fail

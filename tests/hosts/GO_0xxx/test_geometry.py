@@ -5,11 +5,7 @@ import numpy as np
 import pdstable
 import pytest
 
-#metadata_tools.util as util
-#import metadata_tools.hosts.GO_0xxx.host_config as config
 import tests.archive_support as support
-
-#SYSTEMS_TABLE = util.convert_systems_table(config.SYSTEMS_TABLE, config.SCLK_BASES)
 
 # These tests read pre-generated tables/labels from the $RMS_METADATA holdings
 # tree; they are excluded from the default run (see the requires_archive marker
@@ -44,26 +40,14 @@ def test_geometry_body() -> None:
     files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
     files = support.exclude(files, 'templates/', 'old/', '__skip/', '_ring_', '_sky_', 'GO_0999/')
 
-    # Test labels, 'GO_0999/
+    # Test labels
     print()
     for file in files:
         print('Reading', file)
-        _ = pdstable.PdsTable(file)
+        table = pdstable.PdsTable(file)
 
-#            system, secondaries = util.get_system(SYSTEMS_TABLE, sclk, config.SCLK_BASES)
-
-#            body = table.column_values['BODY_NAME']
-
-        # validate value bounds
-# These bounds only apply to the Jupiter orbits, if any.
-#            support.bounds(file, table, 'SUB_SOLAR_PLANETOCENTRIC_LATITUDE',
-#                        min_val=-30, max_val=30)
-#            support.bounds(file, table, 'SUB_SOLAR_PLANETOGRAPHIC_LATITUDE',
-#                        min_val=-30, max_val=30)
-#            support.bounds(file, table, 'SUB_OBSERVER_PLANETOCENTRIC_LATITUDE',
-#                        min_val=-35, max_val=35)
-#            support.bounds(file, table, 'SUB_OBSERVER_PLANETOGRAPHIC_LATITUDE',
-#                        min_val=-35, max_val=35)
+        # validate column values
+        assert isinstance(table.column_values['BODY_NAME'][0], np.str_), file
 
 
 #===============================================================================
@@ -87,10 +71,6 @@ def test_geometry_ring() -> None:
         support.bounds(file, table, 'RING_CENTER_INCIDENCE_ANGLE', min_val=60, max_val=90)
         support.bounds(file, table, 'NORTH_BASED_CENTER_INCIDENCE_ANGLE',
                     min_val=35, max_val=145)
-
-        #################### Slightly exceeds 90 deg in GO_0022
-#            support.bounds(file, table, 'RING_CENTER_EMISSION_ANGLE', min_val=-30, max_val=30)
-
         support.bounds(file, table, 'NORTH_BASED_CENTER_EMISSION_ANGLE',
                     min_val=35, max_val=145)
         support.bounds(file, table, 'SOLAR_RING_CENTER_OPENING_ANGLE',

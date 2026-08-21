@@ -10,11 +10,13 @@ These definitions are gathered and re-exported by ``columns/__init__.py`` and
 consumed by the geometry Record/prep code, which evaluates each backplane key
 and formats the result via FORMAT_DICT in ``geometry_support.py``.
 """
+from typing import Any
+
 import oops
 
 import metadata_tools.defs as defs
 import metadata_tools.util as util
-from metadata_tools.bodies import BODIES
+from metadata_tools.bodies import get_bodies_registry
 
 ################################################################################
 # *COLUMN description tuples are
@@ -91,13 +93,29 @@ BODY_GRIDLESS_COLUMNS = [
 BODY_SUMMARY_COLUMNS  = BODY_COLUMNS + BODY_GRIDLESS_COLUMNS
 BODY_DETAILED_COLUMNS = BODY_COLUMNS
 
-BODY_SUMMARY_DICT = {}
-BODY_DETAILED_DICT = {}
-for body in BODIES:
-    BODY_SUMMARY_DICT.update(util.replacement_dict(BODY_SUMMARY_COLUMNS,
-                                                         defs.BODYX, [body]))
-    BODY_DETAILED_DICT.update(util.replacement_dict(BODY_DETAILED_COLUMNS,
-                                                         defs.BODYX, [body]))
+_BODY_SUMMARY_DICT: dict[str, Any] | None = None
+_BODY_DETAILED_DICT: dict[str, Any] | None = None
+
+
+def get_body_summary_dict() -> dict[str, Any]:
+    """Return the per-body summary column replacement dict, building it on first call."""
+    global _BODY_SUMMARY_DICT, _BODY_DETAILED_DICT
+    if _BODY_SUMMARY_DICT is None:
+        summary: dict[str, Any] = {}
+        detailed: dict[str, Any] = {}
+        for body in get_bodies_registry():
+            summary.update(util.replacement_dict(BODY_SUMMARY_COLUMNS, defs.BODYX, [body]))
+            detailed.update(util.replacement_dict(BODY_DETAILED_COLUMNS, defs.BODYX, [body]))
+        _BODY_SUMMARY_DICT = summary
+        _BODY_DETAILED_DICT = detailed
+    return _BODY_SUMMARY_DICT
+
+
+def get_body_detailed_dict() -> dict[str, Any]:
+    """Return the per-body detailed column replacement dict, building it on first call."""
+    get_body_summary_dict()  # ensures both caches are populated
+    assert _BODY_DETAILED_DICT is not None  # nosec B101 - type-narrowing invariant
+    return _BODY_DETAILED_DICT
 ################################################################################
 # Define the tiling for detailed listings
 #

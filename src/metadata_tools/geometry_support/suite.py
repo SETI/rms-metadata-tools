@@ -1,16 +1,16 @@
 ################################################################################
 # geometry_support/suite.py - The Suite class (a volume's geometry tables).
 ################################################################################
+"""Suite class orchestrating geometry table generation for one observation."""
 import fnmatch
-import traceback
 from pathlib import Path
 from typing import Any, cast
 
-import geometry_config as config
 from filecache import FCPath
 
 import metadata_tools.common as com
 import metadata_tools.util as util
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import formats
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.tables import BodyTable, InventoryTable, RingTable, SkyTable
@@ -50,6 +50,7 @@ class Suite:
                 directory.
         """
         # Save inputs
+        config = get_geometry_config()
         self.input_dir = FCPath(input_dir)
         self.output_dir = FCPath(output_dir)
         self.metadata_dir = FCPath(metadata_dir)
@@ -94,7 +95,8 @@ class Suite:
             self.observations = config.from_index(index_filename,
                                                   supplemental_index_filename)
         except FileNotFoundError:
-            logger.error(traceback.format_exc())
+            logger.exception('Index file not found for %s', self.volume_id)
+            return
 
         # Initialize data tables
         for level in self.levels:
@@ -156,7 +158,7 @@ class Suite:
         overrides: dict[str, list[dict[str, Any]]] = {}
 
         overrides['sky'] = Suite.get_override(record, 'sky')
-#        overrides['sun'] = Suite.get_override(record, 'sun')
+        # No 'sun' entry: the sun table is not wired in (see tables.SunTable).
         overrides['ring'] = Suite.get_override(record, 'ring', name=record.primary)
         overrides['body'] = Suite.get_override(record, 'body', name=record.primary)
 
@@ -170,10 +172,11 @@ class Suite:
             output_dir: Directory in which to write the geometry files.
             level: 'summary' or 'detailed'.
         """
+        # A SunTable would be inserted here (summary level only); it is not yet
+        # wired in. See tables.SunTable for the blocker and enablement recipe.
         self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = [
             InventoryTable(output_dir, self.template_path, volume_id=self.volume_id),
             SkyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
-#            SunTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
             RingTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
             BodyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level)
             ]
@@ -264,19 +267,13 @@ class Suite:
 
                 # Construct the record for this observation
                 records = self.make_records(i)
-#                   # Build overrides dict
-#                   if count == 0:
-#                       overrides = Suite.get_overrides(records[0])
                 # Update the tables
                 self.add(records)
                 count += 1
-
-        # Run post-processor
-#        self.post()
 
         # Write tables and make labels
         self.write(labels_only=labels_only)
 
         # Clean up
-        config.cleanup()
+        get_geometry_config().cleanup()
         logger.close()

@@ -32,17 +32,29 @@ def test_inventory() -> None:
 #===============================================================================
 # test cumulative geometry file
 def test_geometry_cumulative() -> None:
-    return
-    # Get labels to test
-##### this needs to be changed to match cumulative files
-    files = support.match(support.METADATA, '*_summary.lbl')
-    files = support.exclude(files, 'templates/', 'old/', '__skip/', '.ring_', '_sky_')
 
-    # Test labels
+    # Get labels to test
+    files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
+    files = support.exclude(files, 'templates/', 'old/', '__skip/')
+
+    # Cumulative labels declare INDEX_TYPE == "CUMULATIVE" inside their single
+    # nested TABLE object (BODY_SUMMARY_TABLE / RING_SUMMARY_TABLE /
+    # SKY_SUMMARY_TABLE); per-volume labels use INDEX_TYPE == "SINGLE" and are
+    # already exercised by test_geometry_common/_body/_ring/_sky.
     print()
+    found_cumulative = False
     for file in files:
+        label_dict = pdsparser.PdsLabel.from_file(file).as_dict()
+        table_obj = next((v for v in label_dict.values()
+                           if isinstance(v, dict) and 'INDEX_TYPE' in v), None)
+        if table_obj is None or table_obj['INDEX_TYPE'] != 'CUMULATIVE':
+            continue
+
+        found_cumulative = True
         print('Reading', file)
         _ = pdstable.PdsTable(file)
+
+    assert found_cumulative, 'No cumulative summary labels found under RMS_METADATA'
 
 
 #===============================================================================

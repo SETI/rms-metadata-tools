@@ -1,8 +1,7 @@
 ################################################################################
-# tests/test_util_textfile.py: read/write/append + expandvars.
+# tests/test_util_textfile.py: read/write/append text files.
 ################################################################################
 from pathlib import Path
-from typing import cast
 
 import pytest
 from filecache import FCPath
@@ -69,25 +68,11 @@ def test_append_to_existing_terminator_none_infers_from_list(tmp_path: Path) -> 
 
 
 #===============================================================================
-# expandvars
+# environment-variable expansion
 #===============================================================================
-def test_expandvars_expands_and_preserves_str(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv('METADIR', '/data/meta')
-    result = util.expandvars('$METADIR/index.tab')
-    assert result == '/data/meta/index.tab'
-    assert isinstance(result, str)
-
-
-def test_expandvars_preserves_scheme_and_fcpath_type(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv('BUCKET', 'my-bucket')
-    result = util.expandvars(FCPath('gs://$BUCKET/x'))
-    # expandvars() returns str | Path | FCPath; an FCPath in -> FCPath out.
-    assert cast(FCPath, result).as_posix() == 'gs://my-bucket/x'
-    assert isinstance(result, FCPath)
-
-
-def test_expandvars_preserves_path_type(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv('HERE', '/tmp/here')
-    result = util.expandvars(Path('$HERE/file'))
-    assert isinstance(result, Path)
-    assert result == Path('/tmp/here/file')
+def test_write_and_read_expand_env_vars(tmp_path: Path,
+                                        monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv('TEXTDIR', str(tmp_path))
+    util.write_txt_file('$TEXTDIR/env.txt', ['one', 'two'])
+    assert (tmp_path / 'env.txt').exists()
+    assert util.read_txt_file('$TEXTDIR/env.txt') == ['one', 'two']

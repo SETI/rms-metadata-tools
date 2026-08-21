@@ -34,7 +34,7 @@ OBJECT                          = RING_SUMMARY_TABLE
     geometry for the Galileo SSI image collection. The file contains one row
     per image targeted at the Jupiter system.
 
-$IF(TABLE_TYPE == 'CUMULATIVE')
+$IF(index_type == 'CUMULATIVE')
     This is the cumulative index, describing all the images in the collection.
 $ELSE
     This index describes the images found on volume $volume_id$.

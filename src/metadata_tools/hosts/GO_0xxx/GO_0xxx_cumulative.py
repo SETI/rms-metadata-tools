@@ -14,7 +14,9 @@ The full list of command-line options is documented in the user guide.
 import host_init  # noqa: F401  (imported for side effects)
 
 import metadata_tools.cumulative_support as cml
+from metadata_tools.config import set_host
 
+set_host('GO_0xxx')
 cml.create_cumulative_indexes('GO_0xxx_supplemental_index',
                               exclude=['GO_0999'])
 ##########################################################################################

@@ -167,7 +167,6 @@ for body in defs.BODY_NAMES:
         ("where_between", RING_AZ, 1.20 * np.pi, 1.45 * np.pi),
         ("where_between", RING_AZ, 1.45 * np.pi, 1.55 * np.pi),
         ("where_between", RING_AZ, 1.55 * np.pi, 1.80 * np.pi),
-        ("where_between", RING_AZ, 0.80 * np.pi, 1.20 * np.pi),
         ("where_any",
             ("where_below", RING_AZ, 0.20 * np.pi),
             ("where_above", RING_AZ, 1.80 * np.pi)),
