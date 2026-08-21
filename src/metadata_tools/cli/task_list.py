@@ -4,10 +4,12 @@ Two modes are supported:
 
 **Scan mode** — HOST_ID and a tree path are given; volumes are discovered by walking
 the tree.  The task file defaults to ``tasks.json`` in the cloud/host directory
-(``cloud/<HOST_ID>/``):
+(``cloud/<HOST_ID>/``); bare ``--output`` filenames resolve there too, so pass an
+absolute path (e.g. ``$PWD/tasks.json``) to write into a run directory, where the
+``metadata-*-cloud`` commands pick it up as the default ``--task-file``:
 
     metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/
-    metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output tasks.json
+    metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output $PWD/tasks.json
 
 **Explicit mode** — no HOST_ID; volumes are specified directly (the task file is written
 to the current working directory):

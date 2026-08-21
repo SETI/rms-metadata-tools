@@ -13,7 +13,8 @@ parallel across volumes. Two families of console scripts handle this:
    metadata-geometry-worker HOST_ID [options] metadata_tree output_tree
    metadata-cumulative-worker HOST_ID [options] output_dir
 
-**Cloud scripts** — dispatch work to GCP (require ``--config``):
+**Cloud scripts** — dispatch work to GCP (``--config`` defaults to the host's
+``cloud/<HOST>/gcp_*_config.yml``):
 
 .. code-block:: text
 
@@ -69,20 +70,23 @@ When ``--config`` is omitted, each dispatch command defaults to the conventional
 The GCP instance startup script is generated automatically from those arguments
 at dispatch time, so no personal bucket paths ever appear in committed files.
 
-First generate a task file with ``metadata-task-list``, then dispatch:
+The recommended workflow is one directory per dispatch, outside the repository:
+generate the task file there, then dispatch from it, so the task DB and any
+status dumps land beside the task list. ``--task-file`` defaults to
+``./tasks.json``, so no flags are needed:
 
 .. code-block:: bash
 
    gcloud auth application-default login        # if necessary
 
-   # Generate task file
-   metadata-task-list GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" --output tasks.json
+   mkdir -p ~/metadata-runs/2026-08-21-GO-index && cd ~/metadata-runs/2026-08-21-GO-index
 
-   # Dispatch to GCP
+   # Generate the task file into the run directory
+   metadata-task-list GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" --output $PWD/tasks.json
+
+   # Dispatch to GCP (--config and --task-file use their defaults)
    metadata-index-cloud GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" "$RMS_METADATA_GCP/GO_0xxx/" \
-       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot \
-       --config cloud/GO_0xxx/gcp_index_config.yml \
-       --task-file tasks.json
+       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot
 
 Or pass ``--volumes`` directly and let the cloud script generate the task file
 automatically:
@@ -90,9 +94,10 @@ automatically:
 .. code-block:: bash
 
    metadata-index-cloud GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" "$RMS_METADATA_GCP/GO_0xxx/" \
-       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot \
-       --config cloud/GO_0xxx/gcp_index_config.yml \
-       --volumes GO_0022 GO_0016
+       "$RMS_METADATA_TEST_GCP/GO_0xxx/" --use-spot --volumes GO_0022 GO_0016
+
+Both flags can always be given explicitly (taking precedence over the defaults),
+e.g. ``--config my_gcp_config.yml --task-file ./retry_tasks.json``.
 
 The ``gcp_*_config.yml`` machine/queue configuration files live in
 ``cloud/<HOST>/`` at the repository root (not inside the installed package).

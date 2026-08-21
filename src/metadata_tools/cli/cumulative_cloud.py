@@ -1,14 +1,15 @@
 """GCP dispatch entry point for cumulative table generation across all hosts.
 
-Dispatches cumulative generation to GCP via rms-cloud-tasks.  ``--config`` names a GCP
-cloud_tasks config YAML, defaulting to ``cloud/<HOST>/gcp_cumulative_config.yml`` when that
-file exists; use
+Dispatches cumulative generation to GCP via rms-cloud-tasks; use
 ``metadata-cumulative-worker`` for local runs.
+
+``--config`` defaults to ``cloud/<HOST>/gcp_cumulative_config.yml`` when that file
+exists (bare filenames resolve against ``cloud/<HOST>/``); no ``--task-file`` is
+needed — the single cumulative task is generated automatically.
 
   gcloud auth application-default login       # if necessary
 
-  metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ \\
-      --use-spot --config cloud/GO_0xxx/gcp_cumulative_config.yml
+  metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ --use-spot
 
 To preview the startup script that would be sent to the GCP instance:
 
