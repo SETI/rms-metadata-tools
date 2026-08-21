@@ -2,8 +2,8 @@
 
 Dispatches geometry generation to GCP via rms-cloud-tasks.  ``--config`` names a GCP
 cloud_tasks config YAML, defaulting to ``cloud/<HOST>/gcp_geometry_config.yml`` when that
-file exists; use
-``metadata-geometry-worker`` for local parallel runs.
+file exists, and ``--task-file`` to ``./tasks.json`` when that exists in the current
+directory; use ``metadata-geometry-worker`` for local parallel runs.
 
 First generate a task file:
 
@@ -43,6 +43,7 @@ from metadata_tools.cli._host import (
     build_startup_script,
     cloud_dir_for,
     default_config_arg,
+    default_task_file_arg,
     dispatch_cloud_run_if_config,
     load_host,
     pop_argv_bool_flag,
@@ -63,6 +64,7 @@ def main() -> None:
     host_dir = load_host(host_id)
     resolve_host_paths(host_dir, cloud_dir_for(host_id))
     default_config = default_config_arg(host_id, 'geometry')
+    default_task_file_arg()
 
     create_startup_file = pop_argv_flag('--create-startup-file')
     startup_template = pop_argv_flag('--startup-template')

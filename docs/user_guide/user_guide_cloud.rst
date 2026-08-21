@@ -151,10 +151,11 @@ Dispatch options (forwarded to ``cloud_tasks run``):
        ``cloud/<HOST>/gcp_<type>_config.yml`` when that file exists. Bare
        filenames are resolved against the ``cloud/<HOST>/`` directory.
    * - ``--task-file FILE``
-     - Path to a task file (JSON). Passed automatically when using
-       ``metadata-task-list`` output; can also be provided manually. Bare
-       filenames resolve against ``cloud/<HOST>/``; use a ``./`` prefix (or an
-       absolute path) to select a file relative to the current directory.
+     - Path to a task file (JSON). Defaults to ``./tasks.json`` when that
+       exists in the current directory and no ``--volumes`` or ``--continue``
+       is given. Bare filenames resolve against ``cloud/<HOST>/``; use a
+       ``./`` prefix (or an absolute path) to select a file relative to the
+       current directory.
    * - ``--use-spot``
      - Request spot (preemptible) GCP instances.
 

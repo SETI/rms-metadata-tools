@@ -2,7 +2,8 @@
 # tests/test_cli_host.py: Tests for metadata_tools.cli._host
 ################################################################################
 """Tests for pop_argv_flag, _strip_cloud_args, resolve_host_paths, default_config_arg,
-build_startup_script, volumes_as_task_file, and single_task_as_task_file."""
+default_task_file_arg, build_startup_script, volumes_as_task_file, and
+single_task_as_task_file."""
 import argparse
 import json
 import sys
@@ -15,6 +16,7 @@ from metadata_tools.cli._host import (
     _strip_cloud_args,
     build_startup_script,
     default_config_arg,
+    default_task_file_arg,
     pop_argv_bool_flag,
     pop_argv_flag,
     resolve_host_paths,
@@ -219,6 +221,45 @@ def test_default_config_arg_missing_default_is_noop(
     monkeypatch.setattr(sys, 'argv', list(argv))
     returned = default_config_arg('GO_0xxx', 'cumulative')
     assert returned == cloud_dir / 'gcp_cumulative_config.yml'
+    assert sys.argv == argv
+
+
+#===============================================================================
+# default_task_file_arg
+#===============================================================================
+
+def test_default_task_file_arg_injects_cwd_tasks_json(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.chdir(tmp_path)
+    default = tmp_path / 'tasks.json'
+    default.write_text('[]', encoding='utf-8')
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'tree/'])
+    returned = default_task_file_arg()
+    assert returned == default.resolve()
+    assert sys.argv[-2:] == ['--task-file', str(default.resolve())]
+
+
+@pytest.mark.parametrize('flag_args', [
+    ['--task-file', 'other.json'],
+    ['--volumes', 'GO_0001'],
+    ['--continue'],
+])
+def test_default_task_file_arg_respects_explicit_source(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, flag_args: list[str]) -> None:
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / 'tasks.json').write_text('[]', encoding='utf-8')
+    argv = ['cmd', 'tree/'] + flag_args
+    monkeypatch.setattr(sys, 'argv', list(argv))
+    default_task_file_arg()
+    assert sys.argv == argv
+
+
+def test_default_task_file_arg_missing_file_is_noop(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.chdir(tmp_path)
+    argv = ['cmd', 'tree/']
+    monkeypatch.setattr(sys, 'argv', list(argv))
+    default_task_file_arg()
     assert sys.argv == argv
 
 

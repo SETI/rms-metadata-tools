@@ -122,6 +122,23 @@ def default_config_arg(host_id: str, config_type: str) -> Path:
     return default
 
 
+def default_task_file_arg() -> Path:
+    """Default ``--task-file`` to ``tasks.json`` in the current working directory.
+
+    Supports the run-directory workflow: dispatching from a directory holding a
+    ``tasks.json`` needs no ``--task-file`` flag.  Skipped when a task source is
+    already given (``--task-file`` or ``--volumes``), when ``--continue`` resumes
+    an existing run, or when ``./tasks.json`` does not exist.
+
+    Returns:
+        The absolute default task-file path (whether or not it was applied).
+    """
+    default = Path('tasks.json').resolve()
+    if not {'--task-file', '--volumes', '--continue'} & set(sys.argv) and default.is_file():
+        sys.argv += ['--task-file', str(default)]
+    return default
+
+
 def pop_argv_flag(flag: str) -> str | None:
     """Remove *flag* and its value from sys.argv and return the value.
 
