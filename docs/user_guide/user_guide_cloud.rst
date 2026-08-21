@@ -81,8 +81,8 @@ status dumps land beside the task list. ``--task-file`` defaults to
 
    mkdir -p ~/metadata-runs/2026-08-21-GO-index && cd ~/metadata-runs/2026-08-21-GO-index
 
-   # Generate the task file into the run directory
-   metadata-task-list GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" --output $PWD/tasks.json
+   # Generate the task file into the run directory (default output: ./tasks.json)
+   metadata-task-list GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/"
 
    # Dispatch to GCP (--config and --task-file use their defaults)
    metadata-index-cloud GO_0xxx "$RMS_VOLUMES_GCP/GO_0xxx/" "$RMS_METADATA_GCP/GO_0xxx/" \
@@ -245,7 +245,7 @@ supports two modes:
 
 .. code-block:: text
 
-   metadata-task-list HOST_ID tree --output FILE
+   metadata-task-list HOST_ID tree [--output FILE]
 
 .. list-table::
    :header-rows: 1
@@ -258,8 +258,9 @@ supports two modes:
    * - ``tree``
      - Path to the top of the volume or metadata tree to scan.
    * - ``--output FILE``, ``-o``
-     - Output JSON task file path. Required. A bare filename is resolved against
-       the host's directory.
+     - Output JSON task file path, relative to the current directory. Defaults
+       to ``./tasks.json``, which the ``metadata-*-cloud`` commands pick up as
+       the default ``--task-file``.
 
 **Explicit mode** — list volumes directly (no HOST_ID):
 
