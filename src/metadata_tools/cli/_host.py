@@ -446,10 +446,17 @@ def volumes_as_task_file() -> Iterator[None]:
         return
     from metadata_tools import task_list_support as tl
     idx = sys.argv.index('--volumes')
-    vols = [v for v in sys.argv[idx + 1:] if not v.startswith('-')]
+    # Consume only the contiguous values following --volumes; a later flag (and
+    # its value, e.g. an injected --config path) must not be swept into the
+    # volume list.
+    vols = []
+    for v in sys.argv[idx + 1:]:
+        if v.startswith('-'):
+            break
+        vols.append(v)
     with tempfile.NamedTemporaryFile(suffix='.json', delete=True, mode='w') as tmp:
         tl.write_task_file(vols, tmp.name)
-        sys.argv = [a for a in sys.argv if a not in (['--volumes'] + vols)]
+        del sys.argv[idx:idx + 1 + len(vols)]
         sys.argv += ['--task-file', tmp.name]
         yield
 

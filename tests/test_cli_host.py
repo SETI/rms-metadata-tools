@@ -647,6 +647,19 @@ def test_volumes_as_task_file_volumes_absent_from_argv_inside(
         assert '--config' in sys.argv
 
 
+def test_volumes_as_task_file_stops_at_next_flag(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A flag value after --volumes (e.g. an injected --config path) is not a volume."""
+    monkeypatch.setattr(sys, 'argv',
+                        ['cmd', 'tree/', '--volumes', 'GO_0022', '--config', 'cfg.yml'])
+    with volumes_as_task_file():
+        cfg_idx = sys.argv.index('--config')
+        assert sys.argv[cfg_idx + 1] == 'cfg.yml'
+        tf_idx = sys.argv.index('--task-file')
+        data = json.loads(Path(sys.argv[tf_idx + 1]).read_text())
+        assert [t['data']['volume_id'] for t in data] == ['GO_0022']
+
+
 #===============================================================================
 # single_task_as_task_file
 #===============================================================================
