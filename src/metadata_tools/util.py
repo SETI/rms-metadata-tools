@@ -3,7 +3,6 @@
 ################################################################################
 """Utility functions for path handling, file I/O, and metadata computations."""
 import math
-import os
 import re
 from pathlib import Path
 from typing import Any
@@ -27,8 +26,8 @@ def pds_table(label_path: FCPath) -> pdstable.PdsTable:
     Returns:
         Table associated with the given label.
     """
-    local_label_path = label_path.retrieve()
-    _local_table_path = label_path.with_suffix('.tab').retrieve() # Retrieve table as well
+    local_label_path = label_path.retrieve(lock_timeout=-1)
+    _local_table_path = label_path.with_suffix('.tab').retrieve(lock_timeout=-1)
     return pdstable.PdsTable(local_label_path)
 
 #===============================================================================
@@ -167,16 +166,35 @@ def get_volume_subdir(path: FCPath, volume_id: str) -> FCPath:
         Final directory in the tree.
     """
     return splitpath(path, volume_id)[-1]
-#    return path.split(volume_id)[-1]  ## not currently supported by filecache
 
 #===============================================================================
-def replace(tree: list[Any], placeholder: str, name: str) -> Any:
+# Matches the only form produced by replacement_fn: "defs.<ATTR>["<key>"]"
+_DICT_REF = re.compile(r'^(\w+)\.(\w+)\["([^"]+)"\]$')
+
+
+def _resolve_dict_ref(ref: str) -> Any:
+    """Resolve a dict-reference string of the form ``defs.<ATTR>["<key>"]``.
+
+    This is the safe, non-eval replacement for evaluating strings produced by
+    :func:`replacement_fn`. Only the ``defs`` module is accessible.
+    """
+    m = _DICT_REF.match(ref)
+    if m is None:
+        raise ValueError(f'Unrecognized column reference: {ref!r}')
+    module_name, attr_name, key = m.groups()
+    if module_name != 'defs':
+        raise ValueError(f'Unknown module in column reference: {module_name!r}')
+    return getattr(defs, attr_name)[key]
+
+
+#===============================================================================
+def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> Any:
     """Return a copy of the tree of objects, with each occurrence of the
     placeholder string replaced by the given name.  If a dictionary reference is
-    detected, then it is evaluated.
+    detected, it is resolved via an explicit lookup.
 
     Parameters:
-        tree: List containing the tree.
+        tree: List or tuple containing the tree.
         placeholder: Placeholder to replace.
         name: Replacement string.
 
@@ -187,15 +205,15 @@ def replace(tree: list[Any], placeholder: str, name: str) -> Any:
     new_tree: list[Any] = []
     for leaf in tree:
         # Main entries: replace placeholder and evaluate dict references
-        if type(leaf) in (tuple, list):
+        if isinstance(leaf, (tuple, list)):
             # replace placeholder
             replacement = replace(leaf, placeholder, name)
 
-            # evaluate any dictionary references now that placeholders are resolved
+            # resolve any dictionary references now that placeholders are resolved
             lrep = list(replacement)
             for i in range(len(lrep)):
                 if isinstance(lrep[i], str) and '[' in lrep[i]:
-                    lrep[i] = eval(lrep[i])  # nosec B307 - eval of column refs; tracked by issue #110
+                    lrep[i] = _resolve_dict_ref(lrep[i])
             replacement = tuple(lrep)
 
             new_tree.append(replacement)
@@ -288,30 +306,6 @@ def add_by_base(x_digits: list[int], y_digits: list[int],
     return list(reversed(result))
 
 #===============================================================================
-def expandvars(filespec: str | Path | FCPath) -> str | Path | FCPath:           ### add to FCPath?
-    """Expand environment variables in path.
-
-    Parameters:
-        filespec: Path to expand.
-
-    Returns:
-        Expanded path.
-    """
-    result = filespec
-    if not isinstance(result, str):
-        result = result.as_posix()
-
-    result = re.sub('://', '<<token>>', result)
-    result = os.path.expandvars(result)
-    result = re.sub('<<token>>', '://', result)
-
-    if isinstance(filespec, str):
-        return result
-    if isinstance(filespec, FCPath):
-        return FCPath(result)
-    return Path(result)
-
-#===============================================================================
 def read_txt_file(filespec: str | Path | FCPath, as_string: bool = False,
                   terminator: str = '\r\n') -> str | list[str]:    ### move to utilities
     """Read a text file, with some options.
@@ -327,7 +321,7 @@ def read_txt_file(filespec: str | Path | FCPath, as_string: bool = False,
         the lines of the file concatenated using the specified terminator.
     """
     # Expand environment variables and resolve to absolute path
-    path = FCPath(expandvars(FCPath(filespec)))
+    path = FCPath(filespec).expandvars()
 
     # Read the file
     content = path.read_text(encoding='utf-8', newline=terminator)
@@ -355,7 +349,7 @@ def write_txt_file(filespec: str | Path | FCPath, content: str | list[str],
         terminator: Desired line terminator.
     """
     # Expand environment variables and resolve to absolute path
-    path = FCPath(expandvars(FCPath(filespec)))
+    path = FCPath(filespec).expandvars()
 
     # Determine terminator
     if terminator is None:
@@ -388,7 +382,7 @@ def append_txt_file(filespec: str | Path | FCPath, content: str | list[str],
         terminator: Desired line terminator.
     """
     # Expand environment variables and resolve to absolute path
-    path = FCPath(expandvars(FCPath(filespec)))
+    path = FCPath(filespec).expandvars()
 
     # Determine terminator
     if terminator is None:

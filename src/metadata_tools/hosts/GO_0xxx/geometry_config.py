@@ -17,9 +17,8 @@ import metadata_tools.hosts.GO_0xxx.host_init  # noqa: F401  (side-effect import
 SC: int = -77
 index_glob: str = 'GO_????_index.lbl'
 selection: str = "S"
-exclude: list[str] = ['GO_0999']
+exclude: list[str] = host_config.exclude
 glob: str = 'C0*.LBL'
-#glob = 'C0*[!G].LBL'
 
 
 ##########################################################################################
@@ -95,13 +94,16 @@ MISSION_TABLE: list[Any] = [
 
 #=========================================================================================
 def except_test(observation: Any) -> bool:
-    """Mission table exception function template.
+    """Return True if this observation should be skipped for geometry.
+
+    GO_0xxx never skips observations. Hosts that need to filter specific
+    observations can override this function in their geometry_config.
 
     Parameters:
         observation: OOPS Observation object.
 
     Returns:
-        True if the observation should be an exception.
+        True if the observation should be skipped; always False for GO_0xxx.
     """
     return False
 
@@ -205,24 +207,6 @@ def target_name(snapshot: dict[str, Any]) -> str:
     """
 
     return cast(str, snapshot["TARGET_NAME"])
-
-# Leaving this here for when we implement Cassini ISS metadata....
-#    target = dict["TARGET_NAME"]
-#    if target != "SKY":
-#        return target
-#
-#    id = dict["OBSERVATION_ID"]
-#    abbrev = id[id.index("_"):][4:6]
-#
-#    if abbrev == "SK":
-#        desc = dict["TARGET_DESC"]
-#        if desc in defs.BODY_NAMES:
-#            return desc
-#
-#    try:
-#        return col.CIMS_TARGET_ABBREVIATIONS[abbrev]
-#    except KeyError:
-#        return target
 
 #=========================================================================================
 def cleanup() -> None:

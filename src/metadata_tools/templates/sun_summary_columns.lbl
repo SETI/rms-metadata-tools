@@ -1,0 +1,448 @@
+$NOTE
+##############################################################################
+# Column definitions for the sun summary geometry table.
+#
+# The Sun is treated as a single target body. The first block of columns
+# describes the surface points where pixel lines of sight intercept the Sun
+# (gridded, sampled across the field of view); the second block describes
+# whole-disk quantities that are independent of the field of view (gridless).
+#
+# Formats, units, valid ranges, and null constants mirror the entries in
+# geometry_support/formats.py FORMAT_DICT for the corresponding backplane keys.
+##############################################################################
+$END_NOTE
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_PLANETOCENTRIC_LATITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Planetocentric latitude is the angle
+      between the Sun's equator plane and a vector from its center to a point
+      on the surface. Values are positive in the Sun's northern hemisphere and
+      negative in the southern hemisphere.
+
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_PLANETOCENTRIC_LATITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Planetocentric latitude is the angle
+      between the Sun's equator plane and a vector from its center to a point
+      on the surface. Values are positive in the Sun's northern hemisphere and
+      negative in the southern hemisphere.
+
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_PLANETOGRAPHIC_LATITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Planetographic latitude is the angle
+      between the Sun's equator plane and the normal vector at a point on the
+      surface. Values are positive in the Sun's northern hemisphere and
+      negative in the southern hemisphere.
+
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_PLANETOGRAPHIC_LATITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Planetographic latitude is the angle
+      between the Sun's equator plane and the normal vector at a point on the
+      surface. Values are positive in the Sun's northern hemisphere and
+      negative in the southern hemisphere.
+
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_IAU_LONGITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "IAU longitude is the angle, projected
+      perpendicular to the Sun's rotation axis, from the prime meridian to a
+      vector pointing from the Sun's center to a surface point. Longitudes
+      increase toward the west. The prime meridian is as defined by the
+      International Astronomical Union.
+
+      This column tabulates the easternmost longitude among the pixels whose
+      lines of sight intercept the Sun's surface. Note that for data products
+      that capture both sides of the prime meridian, this value will be
+      numerically greater than the westernmost longitude."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_IAU_LONGITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "IAU longitude is the angle, projected
+      perpendicular to the Sun's rotation axis, from the prime meridian to a
+      vector pointing from the Sun's center to a surface point. Longitudes
+      increase toward the west. The prime meridian is as defined by the
+      International Astronomical Union.
+
+      This column tabulates the westernmost longitude among the pixels whose
+      lines of sight intercept the Sun's surface. Note that for data products
+      that capture both sides of the prime meridian, this value will be
+      numerically less than the easternmost longitude."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_LONGITUDE_WRT_OBSERVER
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -180.
+    VALID_MAXIMUM               = 180.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Longitude with respect to the observer is
+      the longitude of a point on the Sun's surface minus the sub-observer
+      longitude. Values are modulo 360 degrees and are shifted to the range
+      -180 to 180. They increase toward the west.
+
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_LONGITUDE_WRT_OBSERVER
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -180.
+    VALID_MAXIMUM               = 180.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Longitude with respect to the observer is
+      the longitude of a point on the Sun's surface minus the sub-observer
+      longitude. Values are modulo 360 degrees and are shifted to the range
+      -180 to 180. They increase toward the west.
+
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_FINEST_SURFACE_RESOLUTION
+    FORMAT                      = "F10.5"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Finest surface resolution is the shorter
+      dimension of a pixel as projected onto the Sun's surface at the intercept
+      point. It defines the approximate size of the smallest linear feature
+      that can be resolved at that surface location.
+
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_FINEST_SURFACE_RESOLUTION
+    FORMAT                      = "F10.5"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Finest surface resolution is the shorter
+      dimension of a pixel as projected onto the Sun's surface at the intercept
+      point. It defines the approximate size of the smallest linear feature
+      that can be resolved at that surface location.
+
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_COARSEST_SURFACE_RESOLUTION
+    FORMAT                      = "F10.5"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Coarsest surface resolution is the longer
+      dimension of a pixel as projected onto the Sun's surface at the intercept
+      point. This is larger than the finest surface resolution due to
+      foreshortening by a factor of 1/cos(emission angle).
+
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_COARSEST_SURFACE_RESOLUTION
+    FORMAT                      = "F10.5"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Coarsest surface resolution is the longer
+      dimension of a pixel as projected onto the Sun's surface at the intercept
+      point. This is larger than the finest surface resolution due to
+      foreshortening by a factor of 1/cos(emission angle).
+
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_SURFACE_DISTANCE
+    FORMAT                      = "F12.3"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Surface distance is the distance between the
+      observer and the intercept point on the Sun's surface.
+
+      This column tabulates the minimum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_SURFACE_DISTANCE
+    FORMAT                      = "F12.3"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Surface distance is the distance between the
+      observer and the intercept point on the Sun's surface.
+
+      This column tabulates the maximum value among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
+    DATA_TYPE                   = TIME
+    NULL_CONSTANT               = "NA"
+    DESCRIPTION                 = "Surface intercept time is the International
+      Atomic Time (TAI) when the received photon left a point on the Sun's
+      surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss.
+
+      This column tabulates the earliest time among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
+    DATA_TYPE                   = TIME
+    NULL_CONSTANT               = "NA"
+    DESCRIPTION                 = "Surface intercept time is the International
+      Atomic Time (TAI) when the received photon left a point on the Sun's
+      surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss.
+
+      This column tabulates the latest time among the pixels whose lines of
+      sight intercept the Sun's surface."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_PLANETOCENTRIC_SUB_OBSERVER_LATITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The planetocentric sub-observer point is the
+      point where a photon path from the center of the Sun toward the observer
+      intercepts the surface. The planetocentric latitude is the angle between
+      the equator plane and a vector from the Sun's center to this point.
+
+      This column tabulates the minimum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_PLANETOCENTRIC_SUB_OBSERVER_LATITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The planetocentric sub-observer point is the
+      point where a photon path from the center of the Sun toward the observer
+      intercepts the surface. The planetocentric latitude is the angle between
+      the equator plane and a vector from the Sun's center to this point.
+
+      This column tabulates the maximum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The planetographic sub-observer point is the
+      point on the Sun's surface where a photon toward the observer departs
+      along a path parallel to the local normal vector. The planetographic
+      latitude is the angle between this vector and the Sun's equatorial plane.
+
+      This column tabulates the minimum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The planetographic sub-observer point is the
+      point on the Sun's surface where a photon toward the observer departs
+      along a path parallel to the local normal vector. The planetographic
+      latitude is the angle between this vector and the Sun's equatorial plane.
+
+      This column tabulates the maximum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_SUB_OBSERVER_IAU_LONGITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The sub-observer point is the point where a
+      photon path from the center of the Sun toward the observer intercepts the
+      surface. The IAU longitude is the angle, projected perpendicular to the
+      Sun's rotation axis, from the prime meridian to a vector pointing from the
+      center to this surface point. Longitudes increase toward the west.
+
+      This column tabulates the easternmost value during the observation. It
+      depends on the observation's timing but is independent of the pointing.
+      Note that, if the sub-observer longitude crosses zero during the
+      observation, this tabulated value will be greater than the 'maximum'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_SUB_OBSERVER_IAU_LONGITUDE
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The sub-observer point is the point where a
+      photon path from the center of the Sun toward the observer intercepts the
+      surface. The IAU longitude is the angle, projected perpendicular to the
+      Sun's rotation axis, from the prime meridian to a vector pointing from the
+      center to this surface point. Longitudes increase toward the west.
+
+      This column tabulates the westernmost value during the observation. It
+      depends on the observation's timing but is independent of the pointing.
+      Note that, if the sub-observer longitude crosses zero during the
+      observation, this tabulated value will be less than the 'minimum'."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_CENTER_RESOLUTION
+    FORMAT                      = "F10.5"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Center resolution is the linear size of a
+      pixel as projected at the distance of the center of the Sun.
+
+      This column tabulates the minimum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_CENTER_RESOLUTION
+    FORMAT                      = "F10.5"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Center resolution is the linear size of a
+      pixel as projected at the distance of the center of the Sun.
+
+      This column tabulates the maximum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_CENTER_DISTANCE
+    FORMAT                      = "F12.3"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Center distance is the distance from the
+      observer to the center of the Sun.
+
+      This column tabulates the minimum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_CENTER_DISTANCE
+    FORMAT                      = "F12.3"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "Center distance is the distance from the
+      observer to the center of the Sun.
+
+      This column tabulates the maximum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MINIMUM_RADIUS_IN_PIXELS
+    FORMAT                      = "F12.3"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The apparent radius of the Sun's disk,
+      converted to pixels.
+
+      This column tabulates the minimum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = MAXIMUM_RADIUS_IN_PIXELS
+    FORMAT                      = "F12.3"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "The apparent radius of the Sun's disk,
+      converted to pixels.
+
+      This column tabulates the maximum value during the observation. It
+      depends on the observation's timing but is independent of the pointing."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = CENTER_X_COORDINATE
+    FORMAT                      = "F12.3"
+    NULL_CONSTANT               = -99999.
+    VALID_MINIMUM               = -10000.
+    VALID_MAXIMUM               =  10000.
+    DESCRIPTION                 = "Center X coordinate is the predicted
+      horizontal coordinate of the center of the Sun within this data product.
+      A fractional value of 0.5 indicates the center of the pixel.
+
+      This column tabulates the mean value during the observation."
+  END_OBJECT                    = COLUMN
+
+  OBJECT                        = COLUMN
+    NAME                        = CENTER_Y_COORDINATE
+    FORMAT                      = "F12.3"
+    NULL_CONSTANT               = -99999.
+    VALID_MINIMUM               = -10000.
+    VALID_MAXIMUM               =  10000.
+    DESCRIPTION                 = "Center Y coordinate is the predicted
+      vertical coordinate of the center of the Sun within this data product.
+      A fractional value of 0.5 indicates the center of the pixel.
+
+      This column tabulates the mean value during the observation."
+  END_OBJECT                    = COLUMN

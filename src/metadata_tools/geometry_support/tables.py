@@ -1,6 +1,7 @@
 ################################################################################
 # geometry_support/tables.py - Geometry table classes.
 ################################################################################
+"""Geometry table classes: InventoryTable and summary table support."""
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -80,7 +81,38 @@ class SkyTable(com.Table):
 # SunTable class
 ################################################################################
 class SunTable(com.Table):
-    """Class describing a sun geometry table."""
+    """Class describing a sun geometry table. EXPERIMENTAL: not yet wired in.
+
+    The Sun is a body like any other, so a sun table is structured like the body
+    table (its rows carry the same SYSTEM_NAME/BODY_NAME prefixes) with a single
+    fixed target. It differs only in that the Sun is itself the illumination
+    source, so its column set (``SUN_SUMMARY_COLUMNS`` in ``columns/sun.py``)
+    omits every illumination-based quantity (phase, incidence, sub-solar, ...).
+
+    This table is intentionally NOT wired into the pipeline, because ``oops``
+    cannot currently evaluate any Sun-surface backplane. ``oops`` models the Sun
+    as the sole illumination source and prepends ``'SUN<'`` to every surface
+    event key; when the target surface is itself the Sun,
+    ``Backplane.standardize_event_key`` collapses the duplicate
+    ``('SUN<', 'SUN')`` to the illegal length-1 key ``('SUN<',)`` and raises
+    ``ValueError: illegal surface event key``. Every ``SUN_COLUMNS`` key hits
+    this, so no sun row can be generated. Resolving it requires new backplane
+    support (e.g. a self-illuminated / observer-only surface event key), not a
+    change here.
+
+    Enablement recipe, once ``oops`` supports Sun-surface geometry:
+      1. In ``suite.Suite.add_tables``, add ``SunTable`` at the ``'summary'``
+         level (the Sun has no per-body tiling, so no detailed variant), and add
+         it to the ``self.tables`` type annotation.
+      2. In ``suite.Suite.get_overrides``, add
+         ``overrides['sun'] = Suite.get_override(record, 'sun')``.
+      3. In ``cumulative_support.create_cumulative_indexes``, add
+         ``geom.SunTable(level='summary')`` to the table list.
+      4. The label templates already exist and are validated:
+         ``hosts/GO_0xxx/templates/GO_0xxx_sun_summary.lbl`` and the shared
+         ``templates/sun_summary_columns.lbl`` (guarded by
+         ``tests/test_geometry_sun_label.py``).
+    """
 
     #===========================================================================
     def __init__(self, output_dir: str | Path | FCPath | None = None,
@@ -100,10 +132,15 @@ class SunTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a Sun row.
 
+        The Sun is treated as a body, so its row uses the same body-name
+        prefixing as the body table, with a single fixed target. See the class
+        docstring: this is dead until ``oops`` can evaluate Sun-surface
+        backplanes.
+
         Parameters:
             record: Record describing the row to add.
         """
-        self.rows += record.add(cast(str, self.qualifier))
+        self.rows += record.add(cast(str, self.qualifier), target='SUN')
 
 
 ################################################################################
@@ -138,12 +175,6 @@ class RingTable(com.Table):
         if record.primary:
             if record.rings_present:
                 self.rows += record.add(cast(str, self.qualifier), name=record.primary)
-
-#        # Add other rings
-#        for name in record.bodies
-#           if record.rings_present:
-#               self.rows += record.add(self.qualifier, name=name,
-#                                       target=name+'-ring', no_mask=True
 
 
 ################################################################################

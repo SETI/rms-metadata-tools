@@ -6,7 +6,12 @@
 # API: the format dictionaries, the Record and Suite classes, the table classes,
 # and the process entry points.
 ################################################################################
-from metadata_tools.geometry_support.formats import ALT_FORMAT_DICT, FORMAT_DICT, MISSION_TABLE
+"""Geometry table generation engine: body, ring, sky, sun, and inventory tables."""
+from metadata_tools.geometry_support.formats import (
+    ALT_FORMAT_DICT,
+    FORMAT_DICT,
+    get_mission_table,
+)
 from metadata_tools.geometry_support.process import get_args, process_tables
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.suite import Suite
@@ -21,7 +26,6 @@ from metadata_tools.geometry_support.tables import (
 __all__ = [
     'ALT_FORMAT_DICT',
     'FORMAT_DICT',
-    'MISSION_TABLE',
     'BodyTable',
     'InventoryTable',
     'Record',
@@ -30,5 +34,6 @@ __all__ = [
     'Suite',
     'SunTable',
     'get_args',
+    'get_mission_table',
     'process_tables',
 ]

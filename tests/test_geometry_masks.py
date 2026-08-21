@@ -4,20 +4,14 @@
 from typing import Any
 
 import numpy as np
-import numpy.typing as npt
 import oops
+import polymath
 import pytest
 
 from metadata_tools.geometry_support import masks
 
 
-@pytest.fixture
-def exists_true(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Make every body name 'exist' (no SPICE registry available in tests)."""
-    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
-
-
-def _one_pixel(shape: tuple[int, int] = (4, 4)) -> npt.NDArray[np.bool_]:
+def _one_pixel(shape: tuple[int, int] = (4, 4)) -> np.ndarray:
     arr = np.zeros(shape, dtype=bool)
     arr[0, 0] = True
     return arr
@@ -29,15 +23,15 @@ def test_planet_masker_ors_in_back(exists_true: None, fake_backplane: Any) -> No
     fake_backplane.in_back[('IO', 'JUPITER')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('P', '', ''), ignore_shadows=True)
-    assert isinstance(result, np.ndarray)
-    assert result.sum() == 1
+    assert isinstance(result, polymath.Boolean)
+    assert result.vals.sum() == 1
 
 
 def test_ring_masker_only_for_saturn(exists_true: None, fake_backplane: Any) -> None:
     fake_backplane.in_back[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'SATURN', ('R', '', ''), ignore_shadows=True)
-    assert result.sum() == 1  # type: ignore[union-attr]
+    assert result.vals.sum() == 1
 
 
 def test_moon_blocker_masker(exists_true: None, fake_backplane: Any) -> None:
@@ -45,7 +39,7 @@ def test_moon_blocker_masker(exists_true: None, fake_backplane: Any) -> None:
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('M', '', ''),
         blocker='EUROPA', ignore_shadows=True)
-    assert result.sum() == 1  # type: ignore[union-attr]
+    assert result.vals.sum() == 1
 
 
 def test_target_cannot_block_itself(exists_true: None, fake_backplane: Any) -> None:
@@ -54,7 +48,7 @@ def test_target_cannot_block_itself(exists_true: None, fake_backplane: Any) -> N
     result = masks.construct_excluded_mask(
         fake_backplane, 'EUROPA', 'JUPITER', ('M', '', ''),
         blocker='EUROPA', ignore_shadows=True)
-    assert result is False
+    assert not np.any(result.vals)
 
 
 def test_ignore_shadows_skips_shadowers_and_faces(exists_true: None, fake_backplane: Any) -> None:
@@ -62,24 +56,22 @@ def test_ignore_shadows_skips_shadowers_and_faces(exists_true: None, fake_backpl
     fake_backplane.antisunward['IO'] = np.ones((4, 4), dtype=bool)
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('', '', 'D'), ignore_shadows=True)
-    assert result is False
+    assert not np.any(result.vals)
 
 
 def test_day_face_masks_antisunward(exists_true: None, fake_backplane: Any) -> None:
     fake_backplane.antisunward['IO'] = np.ones((4, 4), dtype=bool)
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('', '', 'D'), ignore_shadows=False)
-    # An all-True mask is returned as the array itself; the trailing
-    # `if np.all(excluded): return True` is unreachable (dead branch).
-    assert isinstance(result, np.ndarray)
-    assert result.all()
+    assert isinstance(result, polymath.Boolean)
+    assert result.vals is True
 
 
 def test_shadowers_applied_when_not_ignored(exists_true: None, fake_backplane: Any) -> None:
     fake_backplane.inside_shadow[('IO', 'JUPITER')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('', 'P', ''), ignore_shadows=False)
-    assert result.sum() == 1  # type: ignore[union-attr]
+    assert result.vals.sum() == 1
 
 
 def test_pluto_primary_also_masks_charon(exists_true: None, fake_backplane: Any) -> None:
@@ -89,14 +81,14 @@ def test_pluto_primary_also_masks_charon(exists_true: None, fake_backplane: Any)
     fake_backplane.in_back[('IO', 'CHARON')] = charon
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'PLUTO', ('P', '', ''), ignore_shadows=True)
-    assert result.sum() == 2  # type: ignore[union-attr]
+    assert result.vals.sum() == 2
 
 
 def test_ring_shadower_for_saturn(exists_true: None, fake_backplane: Any) -> None:
     fake_backplane.inside_shadow[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'SATURN', ('', 'R', ''), ignore_shadows=False)
-    assert result.sum() == 1  # type: ignore[union-attr]
+    assert result.vals.sum() == 1
 
 
 def test_moon_shadower(exists_true: None, fake_backplane: Any) -> None:
@@ -104,7 +96,7 @@ def test_moon_shadower(exists_true: None, fake_backplane: Any) -> None:
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('', 'M', ''),
         blocker='EUROPA', ignore_shadows=False)
-    assert result.sum() == 1  # type: ignore[union-attr]
+    assert result.vals.sum() == 1
 
 
 def test_pluto_shadower_also_shadows_charon(exists_true: None, fake_backplane: Any) -> None:
@@ -114,25 +106,27 @@ def test_pluto_shadower_also_shadows_charon(exists_true: None, fake_backplane: A
     fake_backplane.inside_shadow[('IO', 'CHARON')] = charon
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'PLUTO', ('', 'P', ''), ignore_shadows=False)
-    assert result.sum() == 2  # type: ignore[union-attr]
+    assert result.vals.sum() == 2
 
 
 def test_night_face_masks_sunward(exists_true: None, fake_backplane: Any) -> None:
     fake_backplane.sunward['IO'] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('', '', 'N'), ignore_shadows=False)
-    assert result.sum() == 1  # type: ignore[union-attr]
+    assert result.vals.sum() == 1
 
 
-def test_all_false_returns_python_false(exists_true: None, fake_backplane: Any) -> None:
+def test_all_false_returns_boolean_false(exists_true: None, fake_backplane: Any) -> None:
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('P', '', ''), ignore_shadows=True)
-    assert result is False
+    assert isinstance(result, polymath.Boolean)
+    assert not np.any(result.vals)
 
 
-def test_nonexistent_target_returns_true(
+def test_nonexistent_target_returns_boolean_true(
         monkeypatch: pytest.MonkeyPatch, fake_backplane: Any) -> None:
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: False))
     result = masks.construct_excluded_mask(
         fake_backplane, 'NOPE', 'JUPITER', ('P', '', ''), ignore_shadows=True)
-    assert result is True
+    assert isinstance(result, polymath.Boolean)
+    assert result.vals is True

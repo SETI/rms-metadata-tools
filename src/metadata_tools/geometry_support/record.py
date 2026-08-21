@@ -1,14 +1,16 @@
 ################################################################################
 # geometry_support/record.py - The Record class (one geometry table row).
 ################################################################################
+"""Geometry record class for accumulating per-row column values."""
+from collections.abc import Callable
 from typing import Any, cast
 
-import geometry_config as config
 import oops
 
 import metadata_tools.columns as col
 import metadata_tools.defs as defs
 import metadata_tools.util as util
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select, formats, prep
 
 
@@ -33,11 +35,12 @@ class Record:
         """
         self.observation = observation
         self.backplane_keys: dict[str, list[Any]] = {}
+        config = get_geometry_config()
 
         # Determine primary, if any
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
         self.primary, self.secondaries, self.selections, self.additions = \
-            bodies_select.get_primary(self, formats.MISSION_TABLE, sclk)
+            bodies_select.get_primary(self, formats.get_mission_table(), sclk)
         self.level = level
         self.sampling = sampling
         self.pointing_available = True
@@ -48,13 +51,13 @@ class Record:
             self.dicts |= {
                 'sun'    : col.SUN_SUMMARY_COLUMNS,
                 'ring'   : col.RING_SUMMARY_DICT,
-                'body'   : col.BODY_SUMMARY_DICT,
+                'body'   : col.get_body_summary_dict(),
             }
         else:
             self.dicts |= {
                 'sun'    : col.SUN_DETAILED_COLUMNS,
                 'ring'   : col.RING_DETAILED_DICT,
-                'body'   : col.BODY_DETAILED_DICT
+                'body'   : col.get_body_detailed_dict()
             }
 
         # Set up planet-based geometry
@@ -62,14 +65,17 @@ class Record:
         self.blocker: str | None = None
 
         if self.primary:
-            self.rings_present: bool = col.BODIES[self.primary].ring_frame is not None
+            registry = col.get_bodies_registry()
+            self.rings_present: bool = registry[self.primary].ring_frame is not None
             self.ring_tile_dict: Any = col.RING_TILE_DICT[self.primary]
-            self.body_tile_dict: Any = col.BODY_TILE_DICT[self.primary]
+            # Per-Record copy so that irregular-moon additions below do not mutate
+            # the shared module-level BODY_TILE_DICT.
+            self.body_tile_dict: dict[str, Any] = dict(col.BODY_TILE_DICT)
 
         # Determine target
         self.target = str(config.target_name(observation.dict))
-        if self.target in defs.TRANSLATIONS:
-            self.target = defs.TRANSLATIONS[self.target]
+        if self.target in defs._translations:
+            self.target = defs._translations[self.target]
 
         # Create the record prefix
         filespec = observation.dict["FILE_SPECIFICATION_NAME"]
@@ -81,10 +87,10 @@ class Record:
         self.backplane = oops.backplane.Backplane(observation, meshgrid)
 
         # Get inventory for this record
-        self.inventory = bodies_select.inventory(self, col.BODIES)
+        self.inventory = bodies_select.inventory(self, col.get_bodies_registry())
 
         # Select bodies for this record
-        self.bodies = bodies_select.select_bodies(self, col.BODIES)
+        self.bodies = bodies_select.select_bodies(self, col.get_bodies_registry())
 
         # Define a blocker body, if any
         if self.target in self.bodies:
@@ -92,14 +98,16 @@ class Record:
             if blocker:
                 self.blocker = blocker[0]
 
-        # Add a targeted irregular moon to the dictionaries if present
+        # Add a targeted irregular moon to the dictionaries if present.
+        # Both assignments copy the shared cached dicts first so that irregular-moon
+        # targets accumulated in one Record do not leak into sibling Records or
+        # persist across observations.
         if self.target in self.bodies and self.target not in self.dicts['body']:
+            self.dicts['body'] = dict(self.dicts['body'])
             self.dicts['body'][self.target] = \
-                util.replace(col.BODY_SUMMARY_COLUMNS,
-                                defs.BODYX, self.target)
+                util.replace(col.BODY_SUMMARY_COLUMNS, defs.BODYX, self.target)
             self.body_tile_dict[self.target] = \
-                util.replace(cast(list[Any], col.BODY_TILES),
-                                defs.BODYX, self.target)
+                util.replace(col.BODY_TILES[self.primary], defs.BODYX, self.target)
 
     #===========================================================================
     @staticmethod
@@ -190,6 +198,10 @@ class Record:
 
             return data_columns
 
+        _link_dispatch: dict[str, Callable[[dict[str, Any], list[Any], list[str]], list[str]]] = {
+            'null': link_null,
+        }
+
         # Get the backplane key mapping
         backplane_keys, data_columns = self.get_key_map(columns, qualifier)
 
@@ -204,7 +216,7 @@ class Record:
 
         # Call link functions
         for link in links:
-            link_fn = locals()['link_' + link]
+            link_fn = _link_dispatch[link]
             data_columns = link_fn(links[link], backplane_keys, data_columns)
 
         # Substitute new data columns
@@ -224,7 +236,7 @@ class Record:
         Returns:
             Meshgrid for the given observation.
         """
-        return config.meshgrid(meshgrids, observation)
+        return get_geometry_config().meshgrid(meshgrids, observation)
 
     #===============================================================================
     def add(self, qualifier: str, *,
@@ -294,7 +306,6 @@ class Record:
                                 start_index=start_index, allow_zero_rows=allow_zero_rows,
                                 no_mask=no_mask,
                                 no_body=no_body)
-#        self.overrides += overrides  ## this is for future development
 
         # Postprocess the rows and append to the output
         lines: list[str] = []

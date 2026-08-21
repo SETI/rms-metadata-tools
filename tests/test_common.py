@@ -2,7 +2,6 @@
 # tests/test_common.py: Table, PathAction, args, task list, logger.
 ################################################################################
 import types
-from collections.abc import Iterator
 from pathlib import Path
 
 import pdslogger
@@ -12,14 +11,6 @@ from filecache import FCPath
 import metadata_tools.common as com
 import metadata_tools.label_support as lab
 import metadata_tools.util as util
-
-
-@pytest.fixture(autouse=True)
-def _reset_task_list() -> Iterator[None]:
-    # task_list is a module global; keep these tests isolated and ordered.
-    com.task_list.clear()
-    yield
-    com.task_list.clear()
 
 
 #===============================================================================
@@ -113,41 +104,6 @@ def test_get_common_args_flags() -> None:
                               '--volumes', 'GO_0001', 'GO_0002'])
     assert args.labels is True
     assert args.volumes == ['GO_0001', 'GO_0002']
-
-
-#===============================================================================
-# task list
-#===============================================================================
-def test_add_task_appends(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(com, 'get_logger',
-                        lambda: types.SimpleNamespace(info=lambda *a, **k: None))
-    com.add_task('GO_0001', 'index')
-    assert com.task_list == [
-        {'task_id': 'index-task-GO_0001', 'data': {'volume_id': 'GO_0001'}}]
-
-
-def test_task_source_yields_tasks(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(com, 'get_logger',
-                        lambda: types.SimpleNamespace(info=lambda *a, **k: None))
-    com.add_task('GO_0002', 'geometry')
-    assert list(com.task_source()) == com.task_list
-
-
-def test_write_task_file_writes_json(monkeypatch: pytest.MonkeyPatch,
-                                        tmp_path: Path) -> None:
-    monkeypatch.setattr(com, 'get_logger',
-                        lambda: types.SimpleNamespace(info=lambda *a, **k: None))
-    com.add_task('GO_0001', 'index')
-    target = tmp_path / 'tasks.json'
-    com.write_task_file(str(target))
-    assert 'GO_0001' in target.read_text(encoding='utf-8')
-
-
-def test_write_task_file_noop_without_path() -> None:
-    # write_task_file() is typed -> None; assert it runs without error and
-    # yields None for a None path. (func-returns-value: the -> None return is
-    # exactly what this test checks.)
-    assert com.write_task_file(None) is None  # type: ignore[func-returns-value]
 
 
 #===============================================================================

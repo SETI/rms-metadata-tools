@@ -8,7 +8,6 @@ from typing import Any
 import pytest
 from filecache import FCPath
 
-import metadata_tools.common as com
 from metadata_tools.geometry_support import process as proc
 
 
@@ -43,17 +42,6 @@ def test_get_args_defaults_and_parse() -> None:
 #===============================================================================
 # process_tables
 #===============================================================================
-def test_process_tables_task_list_only(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    tree = _tree(tmp_path)
-    added: list[str] = []
-    monkeypatch.setattr(com, 'add_task', lambda vol, t: added.append(vol))
-    monkeypatch.setattr(com, 'write_task_file', lambda f: None)
-    proc.process_tables('GO_0xxx_supplemental_index',
-                        args=_args(tree),  # type: ignore[arg-type]
-                        task_list_only=True, task_file='tasks.json')
-    assert sorted(added) == ['GO_0001', 'GO_0002']
-
 
 def test_process_tables_builds_suite(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

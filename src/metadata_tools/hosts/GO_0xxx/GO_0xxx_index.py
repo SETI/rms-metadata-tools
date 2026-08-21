@@ -6,8 +6,10 @@ top-level ``import host_config`` / ``import index_config`` which only resolve wh
 host directory is on sys.path.
 
 Examples:
-    python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/
-    python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
+    python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ \\
+        $RMS_METADATA_TEST/GO_0xxx/
+    python3 GO_0xxx_index.py $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ \\
+        $RMS_METADATA_TEST/GO_0xxx/ -vv GO_0017
 
 The full list of command-line options is documented in the user guide.
 """
@@ -15,7 +17,9 @@ import host_init  # noqa: F401  (imported for side effects)
 import index_config as config
 
 import metadata_tools.index_support as idx
+from metadata_tools.config import set_host
 
+set_host('GO_0xxx')
 idx.process_index('GO_0xxx_supplemental_index',
                   glob=config.glob)
 ##########################################################################################

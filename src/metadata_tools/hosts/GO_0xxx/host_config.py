@@ -12,6 +12,15 @@ import metadata_tools.util as util
 template_name = 'GO_0xxx_supplemental_index'
 
 ################################################################################
+# Volumes to exclude from processing (e.g. the cumulative-index volume itself).
+#
+# Lives here, not in geometry_config.py, so the cumulative-index entry points
+# (which do not need SPICE) can read it without importing geometry_config and
+# incurring its host_init/SPICE side effect.
+################################################################################
+exclude: list[str] = ['GO_0999']
+
+################################################################################
 # Spacecraft clock modulo
 ################################################################################
 SCLK_BASES: list[int] = [16777215, 91, 10, 8]

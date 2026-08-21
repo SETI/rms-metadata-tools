@@ -1,11 +1,11 @@
 ################################################################################
 # geometry_support/formats.py - Geometry column format dictionaries.
 ################################################################################
+"""Master format dictionaries (FORMAT_DICT, ALT_FORMAT_DICT) for geometry columns."""
 from typing import Any
 
-import geometry_config as config
-
 import metadata_tools.util as util
+from metadata_tools.config import current_host_id, get_geometry_config
 
 # A FORMAT_DICT/ALT_FORMAT_DICT value tuple:
 #   (flag, number_of_values, column_width, standard_format, overflow_format,
@@ -121,6 +121,22 @@ ALT_FORMAT_DICT: dict[tuple[str, str], FormatTuple] = {
     ("sub_longitude",  "-180")  : ("-180", 2, 8, "%8.3f",  None,     -999., -180, 180, 0, '')}
 """Alternate format entries keyed by ``(column_name, alt_format_tag)``."""
 
-MISSION_TABLE: list[Any] = \
-    util.convert_mission_table(config.MISSION_TABLE, config.SC)
-"""Host mission table with spacecraft-clock strings converted to ticks."""
+_mission_table_cache: dict[str, list[Any]] = {}
+
+#===============================================================================
+def get_mission_table() -> list[Any]:
+    """The active host's mission table, with SCLK strings converted to ticks.
+
+    Computed once per host and cached, since the conversion requires SPICE
+    (via ``util.convert_mission_table``) and the source table does not change
+    within a process.
+
+    Returns:
+        The host mission table with spacecraft-clock strings converted to ticks.
+    """
+    host_id = current_host_id()
+    if host_id not in _mission_table_cache:
+        config = get_geometry_config()
+        _mission_table_cache[host_id] = util.convert_mission_table(
+            config.MISSION_TABLE, config.SC)
+    return _mission_table_cache[host_id]

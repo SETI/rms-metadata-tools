@@ -7,7 +7,6 @@ import fnmatch
 from pathlib import Path
 from typing import cast
 
-import host_config as hconf
 from filecache import FCPath
 
 import metadata_tools.common as com
@@ -15,6 +14,7 @@ import metadata_tools.geometry_support as geom
 import metadata_tools.index_support as idx
 import metadata_tools.label_support as lab
 import metadata_tools.util as util
+from metadata_tools.config import get_host_config
 
 
 #===============================================================================
@@ -38,6 +38,7 @@ def _cat_rows(volume_tree: FCPath,
         volumes: If given, only these volumes are processed.
     """
     logger = com.get_logger()
+    hconf = get_host_config()
 
     table_type = table.qualifier or ''
     if table.level:
@@ -156,6 +157,11 @@ def create_cumulative_indexes(template_name: str,
     if not volumes:
         volumes = args.volumes
 
+    # A user-supplied --exclude on the command line takes precedence over the
+    # exclude= parameter (typically the host's configured default).
+    if getattr(args, 'exclude', None) is not None:
+        exclude = args.exclude
+
     cumulative_dir = FCPath(args.output_dir)
     volume_tree = cumulative_dir.parent
 
@@ -170,6 +176,8 @@ def create_cumulative_indexes(template_name: str,
     tables = [
         geom.SkyTable(level='summary'),
         geom.SkyTable(level='detailed'),
+        # geom.SunTable(level='summary') would go here; not yet wired in
+        # (see geometry_support.tables.SunTable).
         geom.BodyTable(level='summary'),
         geom.BodyTable(level='detailed'),
         geom.RingTable(level='summary'),

@@ -1,21 +1,17 @@
 ################################################################################
 # tests/conftest.py: Hermetic import shim + shared fixtures.
 #
-# See plans/plan2_test_suite.md. Three things block importing the support
-# modules without SPICE; all three are solved here, before collection:
+# See plans/plan2_test_suite.md. One thing blocks importing the support modules
+# without SPICE; it is solved here, before collection:
 #
-#   * metadata_tools.bodies runs oops.Body.lookup('MERCURY') at import (needs the
-#     SPICE body registry) -> inject a fake module with BODIES = {name: object()}.
-#   * index_support / cumulative_support do `import host_config`, `import
-#     index_config` (top-level, CWD-dependent) -> inject stub modules.
-#   * geometry_support.formats runs MISSION_TABLE = convert_mission_table(
-#     config.MISSION_TABLE, config.SC) at import (cspyce SCLK) -> stub
-#     geometry_config with MISSION_TABLE = [] so the conversion is a no-op.
-#
-# Stubs use setdefault so a real host environment (if ever present) is not
-# clobbered.
+#   * index_support / cumulative_support / geometry_support call
+#     metadata_tools.config.get_host_config() / get_index_config() /
+#     get_geometry_config() (see issue #112) -> register fake config modules via
+#     metadata_tools.config.set_current() so no real host or SPICE is needed.
+#     (geometry_support.formats.get_mission_table() would otherwise need cspyce
+#     SCLK conversion; the fake geometry_config's MISSION_TABLE = [] makes that
+#     conversion a no-op.)
 ################################################################################
-import sys
 import types
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -26,18 +22,11 @@ import numpy.typing as npt
 import pytest
 from filecache import FCPath
 
+import metadata_tools.config as mt_config
+
 
 def _install_fakes() -> None:
-    """Install fake SPICE/host modules into sys.modules before collection."""
-    body_names = ['MERCURY', 'VENUS', 'EARTH', 'MARS', 'JUPITER', 'SATURN',
-                  'URANUS', 'NEPTUNE', 'PLUTO', 'IO', 'EUROPA', 'GANYMEDE',
-                  'CALLISTO', 'METIS', 'ADRASTEA', 'AMALTHEA', 'THEBE', 'MOON']
-    fb = types.ModuleType('metadata_tools.bodies')
-    # Attributes are attached to a stub module, so types must be loosened.
-    fb.BODIES = {n: object() for n in body_names}  # type: ignore[attr-defined]
-    fb.get_bodies = lambda names: {n: object() for n in names}  # type: ignore[attr-defined]
-    sys.modules.setdefault('metadata_tools.bodies', fb)
-
+    """Install fake host config modules before collection."""
     attr_table: list[tuple[str, dict[str, Any]]] = [
         ('host_config',     {'get_volume_id': lambda p: 'GO_0001',
                              'SCLK_BASES': [16777215, 91, 10, 8],
@@ -47,11 +36,17 @@ def _install_fakes() -> None:
                              'target_name': lambda d: d.get('TARGET_NAME', 'SKY'),
                              'cleanup': lambda: None}),
     ]
+    modules = {}
     for name, attrs in attr_table:
         m = types.ModuleType(name)
         for k, v in attrs.items():
             setattr(m, k, v)
-        sys.modules.setdefault(name, m)
+        modules[name] = m
+
+    mt_config.set_current(host_id='GO_0xxx',
+                          host_config=modules['host_config'],
+                          index_config=modules['index_config'],
+                          geometry_config=modules['geometry_config'])
 
 
 _install_fakes()
@@ -114,6 +109,25 @@ class FakeBackplane:
 def fake_backplane() -> FakeBackplane:
     """A fresh FakeBackplane for each test."""
     return FakeBackplane()
+
+
+@pytest.fixture
+def exists_true(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Make every oops.Body.exists() call return True (no SPICE registry)."""
+    import oops
+    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
+
+
+@pytest.fixture
+def silent_logger(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Suppress all PdsLogger output for the duration of a test."""
+    import metadata_tools.common as com
+    monkeypatch.setattr(
+        com, 'get_logger',
+        lambda: types.SimpleNamespace(
+            info=lambda *a, **k: None,
+            warning=lambda *a, **k: None,
+            close=lambda **k: None))
 
 
 @pytest.fixture

@@ -3,10 +3,10 @@
 ################################################################################
 """Integration tests for the assembled ``metadata_tools.columns`` package.
 
-Importing the package builds the oops/SPICE body registry (``BODIES``), so these
-tests require a fully initialized host and are marked ``integration`` (excluded
-from the default run). ``metadata_tools.columns`` is imported inside each test,
-not at module top, so collection does not trigger SPICE.
+The body registry is built lazily on first call to ``get_bodies_registry()``,
+so these tests require a fully initialized host and are marked ``integration``
+(excluded from the default run). ``metadata_tools.columns`` is imported inside
+each test, not at module top, so collection does not trigger SPICE.
 """
 
 import pytest
@@ -26,12 +26,12 @@ def test_body_summary_dict_is_populated() -> None:
     """The body summary dict is keyed by the resolved oops body names."""
     import metadata_tools.columns as col
 
-    assert len(col.BODY_SUMMARY_DICT) > 0
+    assert len(col.get_body_summary_dict()) > 0
 
 
 def test_bodies_registry_is_shared_with_bodies_module() -> None:
-    """The package re-exports the same ``BODIES`` object as ``bodies``."""
-    import metadata_tools.bodies as bodies
+    """``col.get_bodies_registry()`` and ``bodies.get_bodies_registry()`` return the same object."""
+    import metadata_tools.bodies as bodies_mod
     import metadata_tools.columns as col
 
-    assert col.BODIES is bodies.BODIES
+    assert col.get_bodies_registry() is bodies_mod.get_bodies_registry()

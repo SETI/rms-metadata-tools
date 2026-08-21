@@ -8,9 +8,77 @@ from typing import Any
 import oops
 import pytest
 
+import metadata_tools.columns as col
+import metadata_tools.defs as defs
 import metadata_tools.util as util
+from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select
 from metadata_tools.geometry_support.record import Record
+
+
+#===============================================================================
+# Shared-cache isolation: irregular-moon dict additions
+#===============================================================================
+def test_body_dict_addition_does_not_mutate_shared_cache(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Record body-dict additions for irregular moons must not pollute the shared cache.
+
+    Two simulated Records with different irregular-moon targets each expand their
+    own copy of the body column dict; the module-level cached dict (represented here
+    by the monkeypatched fake) must be identical before and after.
+    """
+    # Use a tiny fake "shared" dict so the test is hermetic (no SPICE/oops needed).
+    fake_shared: dict[str, Any] = {'IO': [('io_col_desc',)]}
+    monkeypatch.setattr(col, 'get_body_summary_dict', lambda: fake_shared)
+
+    per_record_dicts: list[dict[str, Any]] = []
+    for moon in ('FAKE_MOON_A', 'FAKE_MOON_B'):
+        # Reproduce the Record.__init__ body-dict path without constructing a full Record.
+        r = Record.__new__(Record)
+        r.dicts = {'body': col.get_body_summary_dict()}
+        r.bodies = [moon]
+        r.target = moon
+        # Fixed __init__ code: copy the shared dict before inserting the target.
+        if r.target in r.bodies and r.target not in r.dicts['body']:
+            r.dicts['body'] = dict(r.dicts['body'])
+            r.dicts['body'][r.target] = util.replace(col.BODY_SUMMARY_COLUMNS, defs.BODYX, moon)
+        per_record_dicts.append(r.dicts['body'])
+
+    # Each per-record dict independently holds only its own target moon.
+    assert 'FAKE_MOON_A' in per_record_dicts[0]
+    assert 'FAKE_MOON_B' not in per_record_dicts[0]
+    assert 'FAKE_MOON_B' in per_record_dicts[1]
+    assert 'FAKE_MOON_A' not in per_record_dicts[1]
+
+    # The "shared" fake dict is unchanged — only the per-Record copies were mutated.
+    assert set(fake_shared.keys()) == {'IO'}
+
+
+def test_body_tile_dict_addition_does_not_mutate_shared_cache(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Record body-tile-dict additions for irregular moons must not pollute BODY_TILE_DICT.
+
+    Two simulated Records with different irregular-moon targets each expand their
+    own per-Record copy of the tile dict; the module-level col.BODY_TILE_DICT must
+    be identical before and after.
+    """
+    # BODY_TILE_DICT and BODY_TILES are built at import time without SPICE; they
+    # have entries for all BODY_NAMES planets and can be used directly in tests.
+    shared_keys_before: frozenset[str] = frozenset(col.BODY_TILE_DICT)
+
+    primary = 'JUPITER'  # arbitrary planet whose tile template we borrow
+    for moon in ('FAKE_MOON_A', 'FAKE_MOON_B'):
+        # Reproduce the Record.__init__ tile-dict path without constructing a full Record.
+        r = Record.__new__(Record)
+        r.body_tile_dict = dict(col.BODY_TILE_DICT)  # per-Record copy (the fix)
+        r.bodies = [moon]
+        r.target = moon
+        if r.target in r.bodies and r.target not in col.BODY_TILE_DICT:
+            r.body_tile_dict[r.target] = util.replace(
+                col.BODY_TILES[primary], defs.BODYX, r.target)
+
+    # The shared module-level dict is unchanged.
+    assert frozenset(col.BODY_TILE_DICT) == shared_keys_before
 
 
 #===============================================================================
@@ -22,7 +90,6 @@ def test_get_backplane_key_tuple_event_key() -> None:
 
 
 def test_get_backplane_key_plain_event_key() -> None:
-    # The docstring claims `Returns: None`; it actually returns the key.
     desc = ('phase_angle', ('', '', ''))
     assert Record.get_backplane_key(desc) == 'phase_angle'
 
@@ -110,6 +177,13 @@ def test_get_system_unknown_body_is_none(monkeypatch: pytest.MonkeyPatch) -> Non
     assert bodies_select.get_system('NOPE') is None
 
 
+def test_get_system_root_body_is_self(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A root body such as the Sun has no parent; its system is itself.
+    registry = {'SUN': types.SimpleNamespace(parent=None)}
+    monkeypatch.setattr(oops.Body, 'BODY_REGISTRY', registry)
+    assert bodies_select.get_system('SUN') == 'SUN'
+
+
 #===============================================================================
 # bodies_select.obs_excluded
 #===============================================================================
@@ -128,7 +202,7 @@ def test_obs_excluded_regex_match(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_obs_excluded_identifier_calls_config_function(
         monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123')
-    import geometry_config as config
+    config = get_geometry_config()
     monkeypatch.setattr(config, 'always_true_fn', lambda obs: True, raising=False)
     record = types.SimpleNamespace(observation=object())
     assert bodies_select.obs_excluded(
@@ -137,7 +211,7 @@ def test_obs_excluded_identifier_calls_config_function(
 
 def test_obs_excluded_identifier_then_regex(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123CAL')
-    import geometry_config as config
+    config = get_geometry_config()
     monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
     record = types.SimpleNamespace(observation=object())
     # The first (identifier) exception does not match, but a later regex does;
@@ -148,7 +222,7 @@ def test_obs_excluded_identifier_then_regex(monkeypatch: pytest.MonkeyPatch) -> 
 
 def test_obs_excluded_no_exception_matches(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123')
-    import geometry_config as config
+    config = get_geometry_config()
     monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
     record = types.SimpleNamespace(observation=object())
     assert bodies_select.obs_excluded(

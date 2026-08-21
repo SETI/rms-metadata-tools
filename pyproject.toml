@@ -66,6 +66,9 @@ markers = [
   "integration: requires oops/SPICE host initialization (excluded by default)",
   "requires_archive: requires the $RMS_METADATA holdings tree (excluded by default)",
 ]
+filterwarnings = [
+  "error",
+]
 
 [tool.setuptools]
 [tool.setuptools.packages.find]
@@ -73,8 +76,6 @@ where = ["src"]
 
 # PDS3 label templates are read at runtime (see defs.GLOBAL_TEMPLATE_PATH and the
 # per-host templates/ directories); they must ship in the wheel.
-# py.typed is intentionally NOT declared: the package is not yet fully annotated, so
-# advertising it as typed would mislead downstream type checkers.
 [tool.setuptools.package-data]
 "metadata_tools" = ["py.typed", "templates/*.lbl"]
 "metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
@@ -90,6 +91,7 @@ dev = [
   "pymarkdownlnt>=0.9.35",
   "pytest>=7.0",
   "pytest-cov>=4.0",
+  "pytest-randomly>=3.0",
   "pytest-xdist>=3.8.0",
   "ruff>=0.8",
   "bandit[toml]>=1.8",
