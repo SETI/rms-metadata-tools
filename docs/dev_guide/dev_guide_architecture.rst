@@ -13,12 +13,18 @@ collection-specific knowledge: which files to include, how to derive certain
 columns, the spacecraft ID, the body-selection mission table, the meshgrids, and
 the label templates.
 
-The engine never imports a specific host. Instead, the host's runnable scripts
-set the current working directory to the host package and import their
-configuration as the top-level modules ``host_config``, ``index_config``, and
-``geometry_config``; the engine modules then import those same top-level names.
-This is why host scripts only work when run from inside the host directory, and
-why the documentation build mocks those three module names (see ``docs/conf.py``).
+The engine never imports a specific host's config modules directly (see issue #112).
+Instead, console-script entry points call :func:`metadata_tools.config.set_host`
+once, which package-qualifies the import of ``metadata_tools.hosts.<host_id>.host_config``
+and ``index_config`` (``geometry_config`` is imported lazily, on first use, to avoid
+paying the SPICE startup cost for stages that do not need it). Engine modules then
+call :func:`~metadata_tools.config.get_host_config`,
+:func:`~metadata_tools.config.get_index_config`, and
+:func:`~metadata_tools.config.get_geometry_config` instead of importing those modules
+directly. This works from any current working directory — no ``sys.path`` manipulation
+is involved — and is why the documentation build mocks the three module names as
+plugin-injected surfaces (see ``docs/conf.py``) rather than needing a working directory
+trick.
 
 Table classes
 =============
@@ -111,19 +117,28 @@ template, not from a Python column list. It does not use a
 The geometry tables
 -------------------
 
-The five geometry tables in
+The geometry tables in
 :mod:`metadata_tools.geometry_support.tables` all extend
 :class:`~metadata_tools.common.Table` and share a single contract: an ``add``
 method that takes a :class:`~metadata_tools.geometry_support.record.Record` and
 appends the appropriate rows.
 :class:`~metadata_tools.geometry_support.tables.SkyTable`,
-:class:`~metadata_tools.geometry_support.tables.SunTable`,
 :class:`~metadata_tools.geometry_support.tables.RingTable`, and
 :class:`~metadata_tools.geometry_support.tables.BodyTable` each ask the record
 for the rows for their qualifier (the body table emits one row per selected
 body; the ring table emits rows only when a ring system is present), while
 :class:`~metadata_tools.geometry_support.tables.InventoryTable` writes the list
 of bodies in the field of view as a CSV row.
+
+:class:`~metadata_tools.geometry_support.tables.SunTable` is defined (and shown
+in the diagram above) but is **experimental and not wired into the pipeline**:
+``Suite`` does not build it and ``cumulative_support`` does not concatenate it.
+The Sun is a body, so a sun table would be structured like the body table but
+without illumination-based columns; however ``oops`` models the Sun as the sole
+illumination source and cannot currently evaluate a Sun-surface backplane (a
+surface event key for the Sun collapses to the illegal ``('SUN<',)``). See the
+:class:`~metadata_tools.geometry_support.tables.SunTable` docstring for the
+blocker and the recipe for enabling it once that support exists.
 
 The volume coordinator
 ----------------------

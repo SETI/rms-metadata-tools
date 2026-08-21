@@ -46,14 +46,13 @@ and SPICE kernels.
 Running the entry points
 ========================
 
-Run a host's programs from inside its directory, because they import their
-configuration as top-level modules:
+Run any console script from any directory; pass the host id as the first
+argument (see :doc:`/user_guide/user_guide_installation`):
 
 .. code-block:: bash
 
-   cd src/metadata_tools/hosts/GO_0xxx
-   python GO_0xxx_index.py "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
-       "$RMS_METADATA_TEST/GO_0xxx/" -vv GO_0017
+   metadata-index GO_0xxx "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
+       "$RMS_METADATA_TEST/GO_0xxx/" --volumes GO_0017
 
 A fast smoke test is to add ``--first 5`` to the geometry stage so it stops
 after five images. See :doc:`/user_guide/user_guide_examples`.
@@ -99,13 +98,17 @@ The individual tools, run from the repository root inside the venv:
 .. code-block:: bash
 
    ruff check src tests
-   ruff format --check src tests
    mypy src tests
    bandit -c pyproject.toml -r src -q
    vulture src tests
+   python -m pyroma .
+   pip audit
    sphinx-build -W -b html docs docs/_build
    sphinx-build -n -b html docs docs/_build
    pymarkdown scan docs/ README.md CONTRIBUTING.md
+
+``ruff format --check`` is also available to verify formatting but is not
+enabled by default (``ENABLE_RUFF_FORMAT=true`` to include it in the script).
 
 The documentation MUST build clean under both ``-W`` (warnings as errors) and
 ``-n`` (nitpicky) before delivery. To build and open the docs locally:
@@ -120,8 +123,8 @@ CI/CD and release
 The ``Run Tests`` GitHub Actions workflow runs on pull requests to ``main``,
 pushes to ``main``, a weekly schedule, and manual dispatch. It has two jobs:
 
-- **lint** (Python 3.13): ``ruff check``, ``ruff format --check``, ``mypy``,
-  ``bandit``, ``vulture``, the ``sphinx-build -W`` docs build, and ``pymarkdown``.
+- **lint** (Python 3.11): ``ruff check``, ``mypy``, ``bandit``, ``vulture``,
+  ``pyroma``, ``pip audit``, the ``sphinx-build -W`` docs build, and ``pymarkdown``.
 - **test**: the pytest suite with coverage across Python 3.11, 3.12, and 3.13,
   uploading coverage to Codecov.
 

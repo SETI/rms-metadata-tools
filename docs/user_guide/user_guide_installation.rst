@@ -34,7 +34,7 @@ The package and its runtime dependencies are published on PyPI as
    pip install rms-metadata-tools
 
 To work from a checkout (recommended when you are adding or modifying a host
-configuration, since the runnable host scripts live in the source tree):
+configuration, since host configuration lives in the source tree):
 
 .. code-block:: bash
 
@@ -54,7 +54,7 @@ The optional dependency groups are:
     Sphinx and the extensions needed to build this documentation.
 ``cloud``
     ``rms-cloud-tasks`` and its dependencies, required only to run the
-    distributed ``*_cloud.py`` workers (see :doc:`user_guide_cloud`).
+    distributed cloud console scripts (see :doc:`user_guide_cloud`).
 
 Install a group with, for example, ``pip install -e ".[cloud]"``.
 
@@ -67,8 +67,7 @@ path argument is expanded for environment variables** before use (``$NAME`` and
 preserved). This lets you keep the locations of your trees in the environment
 and pass them symbolically on the command line.
 
-The conventional variables used throughout this guide and in the host scripts'
-examples are:
+The conventional variables used throughout this guide's examples are:
 
 .. list-table::
    :header-rows: 1
@@ -133,21 +132,39 @@ collection name (``GO_0xxx`` becomes ``GO_0[0-9][0-9][0-9]``). The cumulative
 stage writes into a dedicated volume-like directory (``GO_0999`` for Galileo
 SSI) that is excluded from the per-volume stages.
 
-Running the programs
-====================
+Console scripts
+===============
 
-The package does not install console scripts. Each collection has its own set
-of runnable entry-point scripts in its host directory under
-``src/metadata_tools/hosts/<HOST>/``. Because those scripts import their
-configuration as top-level modules (``import host_config``,
-``import index_config``, ``import geometry_config``), they resolve **only when
-the current working directory is the host directory**. Always ``cd`` into the
-host directory first:
+The package installs ten console scripts. Pass the host ID (e.g. ``GO_0xxx``
+for Galileo SSI) as the first positional argument:
+
+.. code-block:: text
+
+   metadata-index           HOST_ID [options] volume_tree metadata_tree output_tree
+   metadata-geometry        HOST_ID [options] metadata_tree output_tree
+   metadata-cumulative      HOST_ID [options] output_dir
+   metadata-index-worker    HOST_ID [options] volume_tree metadata_tree output_tree
+   metadata-geometry-worker HOST_ID [options] metadata_tree output_tree
+   metadata-cumulative-worker HOST_ID [options] output_dir
+   metadata-index-cloud     HOST_ID [options] volume_tree metadata_tree output_tree
+   metadata-geometry-cloud  HOST_ID [options] metadata_tree output_tree
+   metadata-cumulative-cloud HOST_ID [options] output_dir
+   metadata-task-list       HOST_ID tree --output FILE
+
+The ``*-worker`` scripts run the engine locally in parallel using
+``rms-cloud-tasks``; the ``*-cloud`` scripts dispatch work to GCP and require
+``--config``. See :doc:`user_guide_cloud` for details.
+
+All scripts accept ``--help`` (``-h``) to print a full option summary. For
+complete option descriptions see :doc:`user_guide_index`,
+:doc:`user_guide_geometry`, :doc:`user_guide_cumulative`, and
+:doc:`user_guide_cloud`.
+
+Example invocation for Galileo SSI:
 
 .. code-block:: bash
 
-   cd src/metadata_tools/hosts/GO_0xxx
-   python GO_0xxx_index.py "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
+   metadata-index GO_0xxx "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
        "$RMS_METADATA_TEST/GO_0xxx/"
 
 A quick smoke test that generates one image's worth of metadata for a single

@@ -47,7 +47,7 @@ volume tree from a small per-collection configuration.
 
 ## Features
 
-- **Three table kinds.** Generates supplemental **index** tables (extra columns
+- **Three table types.** Generates supplemental **index** tables (extra columns
   from PDS3 labels), **geometry** tables (body, ring, sky, and Sun quantities
   computed from SPICE through `oops`), and **cumulative** tables that span a
   whole collection.
@@ -74,7 +74,7 @@ pip install rms-metadata-tools
 ```
 
 To work from a checkout (recommended when adding or modifying a host
-configuration, since the runnable host scripts live in the source tree):
+configuration, since host configuration lives in the source tree):
 
 ```sh
 git clone https://github.com/SETI/rms-metadata-tools.git
@@ -89,27 +89,26 @@ The optional extras are `dev` (linting, type-checking, tests, docs), `docs`
 
 ## Quick Start
 
-Each supported collection ("host") has its own runnable programs in its
-directory under `src/metadata_tools/hosts/<HOST>/`. They import their
-configuration as top-level modules, so run them from inside the host directory.
-The three stages, for the Galileo SSI host, are:
+Each supported collection ("host") has its own configuration under
+`src/metadata_tools/hosts/<HOST>/`, generated through three console-script entry
+points that take the host id as their first argument. They can be run from any
+directory. The three stages, for the Galileo SSI host, are:
 
 ```sh
-cd src/metadata_tools/hosts/GO_0xxx
-
 # 1. Supplemental index tables (extra columns from the PDS3 labels)
-python GO_0xxx_index.py "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
+metadata-index GO_0xxx "$RMS_VOLUMES/GO_0xxx/" "$RMS_METADATA/GO_0xxx/" \
     "$RMS_METADATA_TEST/GO_0xxx/"
 
 # 2. Geometry tables (body/ring/sky/Sun quantities from SPICE)
-python GO_0xxx_geometry.py "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/"
+metadata-geometry GO_0xxx "$RMS_METADATA/GO_0xxx/" "$RMS_METADATA_TEST/GO_0xxx/"
 
 # 3. Cumulative tables across the whole collection
-python GO_0xxx_cumulative.py "$RMS_METADATA_TEST/GO_0xxx/GO_0999/"
+metadata-cumulative GO_0xxx "$RMS_METADATA_TEST/GO_0xxx/GO_0999/"
 ```
 
-Path arguments are expanded for environment variables. Restrict a run to one
-volume with `-vv GO_0017`, or to a few images with `--first 5`. See the
+Path arguments are expanded for environment variables. Restrict a run to one or
+more volumes with `--volumes GO_0017`, or to a few images with `--first 5`. See
+the
 [user guide](https://rms-metadata-tools.readthedocs.io/en/latest/user_guide/user_guide.html)
 for the full list of programs and options.
 
@@ -139,7 +138,7 @@ Information on contributing to this package can be found in the
 - [Issue tracker](https://github.com/SETI/rms-metadata-tools/issues)
 - [PyPI](https://pypi.org/project/rms-metadata-tools)
 
-## Licensing
+## License
 
 This code is licensed under the
 [Apache License v2.0](https://github.com/SETI/rms-metadata-tools/blob/main/LICENSE).

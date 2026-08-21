@@ -26,11 +26,22 @@ of utilities.
   ``output_arg`` parameters select which positional path arguments a stage takes,
   and :class:`~metadata_tools.common.PathAction` normalizes path separators while
   preserving URI prefixes.
-- The cloud-task plumbing
-  (:func:`~metadata_tools.common.add_task`,
-  :func:`~metadata_tools.common.write_task_file`,
-  :func:`~metadata_tools.common.task_source`) shared by the ``*_cloud.py``
-  workers.
+- CLI argument helpers shared across all three stages.
+
+``task_list_support`` -- cloud task files
+=========================================
+
+:mod:`metadata_tools.task_list_support` creates and writes the JSON task files
+consumed by ``rms-cloud-tasks`` workers. The four public functions are:
+
+- :func:`~metadata_tools.task_list_support.make_task` -- builds a single task
+  dict for one volume ID.
+- :func:`~metadata_tools.task_list_support.task_generator` -- yields one task
+  dict per volume without touching the filesystem.
+- :func:`~metadata_tools.task_list_support.scan_volumes` -- walks a directory
+  tree and returns the sorted list of volume IDs it contains.
+- :func:`~metadata_tools.task_list_support.write_task_file` -- writes the JSON
+  task list for a volume list to a local or remote path.
 
 ``label_support`` -- PDS3 labels
 ================================
@@ -56,11 +67,11 @@ populated (see ``bodies`` below).
 ====================================
 
 :func:`~metadata_tools.bodies.get_bodies` builds the mapping from body name to
-``oops`` ``Body`` object, including each primary's regular children, and
-:data:`~metadata_tools.bodies.BODIES` is computed once on import. This requires
-the host's ``oops`` module to have been initialized first (so SPICE bodies are
-registered), which is why :mod:`metadata_tools.bodies` is excluded from the
-hermetic test coverage and stubbed in the test fixtures.
+``oops`` ``Body`` object, including each primary's regular children.
+:func:`~metadata_tools.bodies.get_bodies_registry` returns a cached singleton (computed once
+on first call). This requires the host's ``oops`` module to have been initialized
+first (so SPICE bodies are registered), which is why :mod:`metadata_tools.bodies`
+is excluded from the hermetic test coverage and stubbed in the test fixtures.
 
 ``util`` and ``defs``
 =====================
@@ -88,11 +99,11 @@ Invariants
   :class:`str`. The package never creates directories through ``FCPath``.
 - **Logging.** There is a single global logger; per-run handlers are added by
   :func:`~metadata_tools.common.init_logger`.
-- **Import order.** :data:`~metadata_tools.bodies.BODIES` and the
+- **Import order.** The :func:`~metadata_tools.bodies.get_bodies_registry` singleton and the
   :mod:`metadata_tools.columns` tables are computed at import and depend on an
   initialized ``oops`` registry.
 
 API reference
 =============
 
-See :doc:`api/core` and :doc:`api/columns`.
+See :doc:`api/core`, :doc:`api/task_list_support`, and :doc:`api/columns`.

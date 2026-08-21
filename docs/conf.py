@@ -114,9 +114,10 @@ add_module_names = False
 autodoc_typehints_format = "short"
 
 # Host config modules (`host_config`, `index_config`, `geometry_config`) are
-# imported as top-level modules by the engine and only resolve when the current
-# working directory is a host directory. They cannot be imported on the docs
-# builder, so they are mocked for autodoc.
+# plugin-injected surfaces: engine code never imports a specific host's modules
+# directly, it calls metadata_tools.config.get_host_config() / get_index_config() /
+# get_geometry_config(), which resolve to whichever host was registered via
+# set_host(). Autodoc has no host registered, so these names are mocked.
 autodoc_mock_imports = [
     'host_config',
     'index_config',

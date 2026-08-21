@@ -18,10 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.11
         uses: actions/setup-python@v6
         with:
-          python-version: 3.13
+          python-version: 3.11
 
       - name: Install dependencies
         run: |
@@ -43,9 +43,17 @@ jobs:
         run: |
           vulture src tests
 
+      - name: Pyroma (packaging metadata)
+        run: |
+          python -m pyroma .
+
+      - name: pip audit (dependency vulnerabilities)
+        run: |
+          pip audit
+
       - name: Sphinx
         run: |
-          sphinx-build -W -b html docs docs/_build
+          sphinx-build -W -n -b html docs docs/_build
 
       - name: PyMarkdown
         run: |
