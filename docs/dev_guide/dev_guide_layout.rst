@@ -17,6 +17,7 @@ tests, docs, and tooling.
      codecov.yml               # coverage service configuration
      scripts/
        run-all-checks.sh       # single source of truth for the quality gates
+                               # (CI adds pip-audit, which is network-only)
        read-docs.sh            # build the docs (-W) and open them in a browser
      docs/                     # Sphinx documentation source (this site)
        conf.py                 # single Sphinx configuration

@@ -29,7 +29,8 @@ pip install -e ".[dev]"          # dev tooling (ruff, mypy, pytest, sphinx, ...)
 ```
 
 Run all quality gates (lint, type-check, tests, sphinx, markdown) — this is the **single
-source of truth** for what CI runs; keep the two in sync:
+source of truth** for what CI runs; keep the two in sync (one deliberate exception:
+`pip-audit` queries the PyPI advisory database, so it runs in CI only):
 
 ```sh
 scripts/run-all-checks.sh                 # everything, parallel

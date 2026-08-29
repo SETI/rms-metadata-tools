@@ -102,7 +102,7 @@ The individual tools, run from the repository root inside the venv:
    bandit -c pyproject.toml -r src -q
    vulture src tests
    python -m pyroma .
-   pip audit
+   pip-audit --skip-editable
    sphinx-build -W -b html docs docs/_build
    sphinx-build -n -b html docs docs/_build
    pymarkdown scan docs/ README.md CONTRIBUTING.md
@@ -124,7 +124,9 @@ The ``Run Tests`` GitHub Actions workflow runs on pull requests to ``main``,
 pushes to ``main``, a weekly schedule, and manual dispatch. It has two jobs:
 
 - **lint** (Python 3.11): ``ruff check``, ``mypy``, ``bandit``, ``vulture``,
-  ``pyroma``, ``pip audit``, the ``sphinx-build -W`` docs build, and ``pymarkdown``.
+  ``pyroma``, ``pip-audit``, the ``sphinx-build -W`` docs build, and ``pymarkdown``.
+  ``pip-audit`` queries the PyPI advisory database, so it runs in CI only and has
+  no ``run-all-checks.sh`` counterpart.
 - **test**: the pytest suite with coverage across Python 3.11, 3.12, and 3.13,
   uploading coverage to Codecov.
 
