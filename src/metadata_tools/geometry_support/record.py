@@ -249,24 +249,26 @@ class Record:
 
         The tiles argument supports detailed listings where a geometric region is
         broken down into separate subregions. If the tiles argument is empty (which
-        is the default), then this routine writes a summary file.
+        is the default), then this routine produces summary rows.
 
-        If the tiles argument is not empty, then the routine writes a detailed file,
-        which generally contains one record for each non-empty subregion. The tiles
-        argument must be a list of boolean backplane keys, each equal to True for
-        the pixels within the subregion. An additional column is added before the
-        geometry columns, containing the index value of the associated tile.
+        If the tiles argument is not empty, then the routine produces detailed rows,
+        generally one for each non-empty subregion. The tiles argument must be a
+        list of boolean backplane keys, each equal to True for the pixels within
+        the subregion. An additional column is added before the geometry columns,
+        containing the index value of the associated tile.
 
         The first backplane in the list is treated differently. It should evaluate
         to an area roughly equal to the union of all the other backplanes. It is
         used to ensure that tiling is suppressed when the region to be tiled is too
         small. If the number of meshgrid samples that are equal to True in this
         backplane is smaller than the limit specified by argument tiling_min, then
-        no detailed record is written.
+        tiling is suppressed and a single untiled record (still carrying a
+        subregion index column) is produced instead.
 
-        In a summary listing, this routine writes one record per call, even if all
-        values are null. In a detailed listing, only records associated with
-        non-empty regions of the meshgrid are written.
+        In a summary listing, at most one record is produced per call; if all
+        values are null, a record is produced only when allow_zero_rows is False.
+        In a detailed listing, only records associated with non-empty regions of
+        the meshgrid are produced.
 
         Parameters:
             qualifier: 'sky', 'sun', 'ring', or 'body'.
@@ -274,7 +276,8 @@ class Record:
             target: Optionally, the target name to write into the record.
             tiles: An optional list of boolean backplane keys, used to support
                 the generation of detailed tabulations instead of summary
-                tabulations. See details above.
+                tabulations, or a tuple of such lists to process multiple tile
+                sets. See details above.
             tiling_min: The lower limit on the number of meshgrid points in a
                 region before that region is subdivided into tiles.
             ignore_shadows: True to ignore any mask constraints applicable to

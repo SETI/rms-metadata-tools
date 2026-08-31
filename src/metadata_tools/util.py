@@ -32,7 +32,7 @@ def pds_table(label_path: FCPath) -> pdstable.PdsTable:
 
 #===============================================================================
 def select_dir(tree: FCPath, col: str, vol: str) -> FCPath:
-    """Determine the template directory for a given collection and volume.
+    """Determine the directory for a given collection and volume within a tree.
 
     Parameters:
         tree: Base tree path.
@@ -51,7 +51,7 @@ def get_index_name(tree: FCPath, vol_id: str, index_type: str) -> str:
     """Determine the name of the index file.
 
     Parameters:
-        tree: Top dir for volume.
+        tree: Ignored. The result depends only on vol_id and index_type.
         vol_id: Volume ID.
         index_type: Index type.
 
@@ -81,7 +81,7 @@ def get_template_name(filename: str, volume_id: str, code_dir: FCPath) -> str:
         code_dir: Directory whose name is the collection name.
 
     Returns:
-        Index name.
+        Template name.
     """
     collection = code_dir.name
     return filename.replace(volume_id, collection).split('.')[0]
@@ -144,11 +144,16 @@ def splitpath(path: FCPath, string: str) -> tuple[FCPath, FCPath]:
 
     Parameters:
         path: Path to split.
-        string: Search string. The path is split at the first occurrence and the
-            search string is omitted.
+        string: Path component at which to split. The path is split at the first
+            component equal to this string, and that component is omitted from the
+            result.
 
     Returns:
-        Tuple of the path portion before the search string and the portion after it.
+        Tuple of the path portion before the matching component and the portion
+        after it.
+
+    Raises:
+        ValueError: If string is not a component of path.
     """
     parts = path.parts
     i = parts.index(string)
@@ -163,7 +168,7 @@ def get_volume_subdir(path: FCPath, volume_id: str) -> FCPath:
         volume_id: Volume ID at which to split the path.
 
     Returns:
-        Final directory in the tree.
+        Path portion below the volume directory.
     """
     return splitpath(path, volume_id)[-1]
 
@@ -202,8 +207,9 @@ def _resolve_dict_ref(ref: str) -> Any:
 #===============================================================================
 def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> Any:
     """Return a copy of the tree of objects, with each occurrence of the
-    placeholder string replaced by the given name.  If a dictionary reference is
-    detected, it is resolved via an explicit lookup.
+    placeholder string replaced by the given name. Dictionary references are
+    resolved via an explicit lookup, but only within elements of nested list or
+    tuple leaves; top-level string leaves are not resolved.
 
     Parameters:
         tree: List or tuple containing the tree.
@@ -324,14 +330,16 @@ def read_txt_file(filespec: str | Path | FCPath, as_string: bool = False,
     """Read a text file, with some options.
 
     Parameters:
-        filespec: Path to the file to read.  Environment variables are expanded.
-        as_string: If True, the result is returned as a string using the specified
-            terminator.
-        terminator: Terminator to use for string return.
+        filespec: Path to the file to read. Environment variables are expanded.
+        as_string: If True, the file content is returned as a single string with
+            its original terminators preserved (no terminator translation is
+            performed).
+        terminator: Newline value passed when reading the file; it disables
+            line-ending translation during the read.
 
     Returns:
         If as_string is False, the lines of the file with no terminators; if True,
-        the lines of the file concatenated using the specified terminator.
+        the file content as a single string with its original terminators.
     """
     # Expand environment variables and resolve to absolute path
     path = FCPath(filespec).expandvars()
@@ -356,10 +364,12 @@ def write_txt_file(filespec: str | Path | FCPath, content: str | list[str],
 
     Parameters:
         filespec: Path to the file to write.
-        content: Text to write.  If list, each element is a line that will be
-            terminated using the specified terminator.  If string, existing
+        content: Text to write. If list, each element is a line that will be
+            terminated using the specified terminator. If string, existing
             terminators are replaced with the specified terminator.
-        terminator: Desired line terminator.
+        terminator: Desired line terminator. If None, the terminator is inferred
+            from the first line of content: CRLF if it ends with '\\r\\n', LF
+            otherwise.
     """
     # Expand environment variables and resolve to absolute path
     path = FCPath(filespec).expandvars()
@@ -389,10 +399,12 @@ def append_txt_file(filespec: str | Path | FCPath, content: str | list[str],
 
     Parameters:
         filespec: Path to the file to write.
-        content: Text to write.  If list, each element is a line that will be
-            terminated using the specified terminator.  If string, existing
+        content: Text to write. If list, each element is a line that will be
+            terminated using the specified terminator. If string, existing
             terminators are replaced with the specified terminator.
-        terminator: Desired line terminator.
+        terminator: Desired line terminator. If None, the terminator is inferred
+            from the first line of content: CRLF if it ends with '\\r\\n', LF
+            otherwise.
     """
     # Expand environment variables and resolve to absolute path
     path = FCPath(filespec).expandvars()
@@ -453,12 +465,13 @@ def sclk_split_count(count: str, delim: str | None = None) -> list[int]:
     """Parse a spacecraft clock count into a list.
 
     Parameters:
-        count: Number to convert.
+        count: Spacecraft clock count string to parse.
         delim: Field delimiter to use. If None, all non-alphanumeric characters are
             treated as delimiters.
 
     Returns:
-        Fields (int) of the given spacecraft clock count.
+        The first four fields (int) of the given spacecraft clock count,
+        zero-padded if the count has fewer than four fields.
     """
 
     # Replace all non-alphanumerics with default delimiter if non given
@@ -480,7 +493,7 @@ def sclk_format_count(fields: list[int], fmt: str) -> str:
 
     Parameters:
         fields: Fields (int) of the spacecraft clock count.
-        fmt: Template indicating the field widths and delimiters.  Alphanumeric
+        fmt: Template indicating the field widths and delimiters. Alphanumeric
             characters indicate field digits, non-alphanumeric characters indicate
             field delimiters. Example: 'nnnnnnnn:nn:n.n'.
 
@@ -538,7 +551,9 @@ def convert_mission_table(table: list[Any], sc: int) -> list[Any]:
         sc: NAIF spacecraft identifier.
 
     Returns:
-        Converted mission table containing ticks instead of strings.
+        Converted mission table. Each output row drops the first element of the
+        input row and consists of a (start_ticks, stop_ticks) pair converted from
+        the SCLK count strings in element 1, followed by input elements 2-6.
     """
     new_table: list[Any] = []
     for item in table:
@@ -721,12 +736,14 @@ def _get_range_mod360(values: list[float] | npt.NDArray[np.float64],
         alt_format: "-180" to return values in the range (-180,180) rather than
             (0,360).
         width: If given, smoothing width for diffs.
-        diffmin: Minimum diff to consider.  If the maximum diff is below this value,
+        diffmin: Minimum diff to consider. If the maximum diff is below this value,
             then full coverage is assumed, unless the span of the given angles is
             smaller.
 
     Returns:
-        Minimum and maximum values in the cyclic array.
+        Minimum and maximum values in the cyclic array, or the full-coverage
+        bounds ([0., 360.] or [-180., 180.]) when the input is empty or the
+        largest gap is too small to rule out complete coverage.
     """
 
     # Check for use of negative values

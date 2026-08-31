@@ -32,15 +32,18 @@ Both flags can always be given explicitly and take precedence over the defaults:
 To preview the startup script that would be sent to GCP instances:
 
   metadata-index-cloud GO_0xxx $RMS_VOLUMES_GCP/GO_0xxx/ $RMS_METADATA_GCP/GO_0xxx/ \\
-      $RMS_METADATA_TEST_GCP/GO_0xxx/ --create-startup-file startup.sh --ssh-paste --volumes GO_0022
+      $RMS_METADATA_TEST_GCP/GO_0xxx/ --create-startup-file startup.sh --ssh-paste \\
+      --volumes GO_0022
 
 Optional overrides (all consumed before dispatch; do not reach cloud_tasks or the worker):
   --startup-template <file>   Use <file> instead of cloud/gcp_common_startup.sh.
   --oops-resources <name>     Persistent disk name for OOPS resources.
   --service-account <account> GCP service account (overrides $GCP_SERVICE_ACCOUNT).
-  --debug-branch <branch>     Git branch to clone on GCP VMs (overrides $GCP_DEBUG_BRANCH).
-  --ssh-paste                 With --create-startup-file: replace ``cd /root`` with ``cd ~``
-                              so the script can be pasted into an SSH terminal as a non-root user.
+  --debug-branch <branch>     Git branch to clone on GCP VMs (overrides
+                              $GCP_DEBUG_BRANCH).
+  --ssh-paste                 With --create-startup-file: replace ``cd /root`` with
+                              ``cd ~`` so the script can be pasted into an SSH
+                              terminal as a non-root user.
 
 The full list of command-line options is documented in the user guide.
 """

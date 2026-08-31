@@ -31,8 +31,10 @@ def init_logger(log_dir: FCPath, log_type: str) -> None:
     """Initialize the global logger with file and stdout handlers.
 
     Parameters:
-        log_dir: Directory to log.
-        log_type: Type of log to create.
+        log_dir: Directory in which the log file is written; its name is also used
+            as the prefix of the log filename. Any existing log file of the same
+            name is deleted first.
+        log_type: Type of log to create, used in the log filename.
     """
     name = '%s_%s-log.txt' % (log_dir.name, log_type)
     path = log_dir / name
@@ -45,7 +47,11 @@ def init_logger(log_dir: FCPath, log_type: str) -> None:
 #=========================================================================================
 
 def get_logger() -> pdslogger.PdsLogger:
-    """The global PdsLogger for the metadata tools."""
+    """Return the global PdsLogger for the metadata tools.
+
+    Returns:
+        The global PdsLogger instance.
+    """
     return _LOGGER
 
 
@@ -146,7 +152,8 @@ class Table:
             level: Processing level: "summary", "detailed", or "index".
             qualifier: "sky", "sun", "ring", "body", "inventory", or
                 "supplemental".
-            prefix: File path prefix.
+            prefix: Ignored. The output file prefix is always derived from
+                output_dir and volume_id.
             suffix: File name suffix.
             use_global_template: If True, the label template is to be found in the
                 global template directory.
@@ -175,8 +182,8 @@ class Table:
         """Write a table and its label.
 
         Parameters:
-            labels_only: If True, labels are generated for any existing geometry
-                tables.
+            labels_only: If True, the table itself is not written; only the label
+                for the existing table file is generated.
         """
         logger = get_logger()
 

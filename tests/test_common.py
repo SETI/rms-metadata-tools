@@ -1,6 +1,7 @@
 ################################################################################
 # tests/test_common.py: Table, PathAction, args, task list, logger.
 ################################################################################
+"""Tests for common: Table, PathAction, get_common_args, and init_logger."""
 import types
 from pathlib import Path
 
@@ -17,18 +18,21 @@ import metadata_tools.util as util
 # Table.__init__
 #===============================================================================
 def test_table_filename_default_suffix(tmp_path: Path) -> None:
+    """The default filename is <volume>_<qualifier>_<level>.tab."""
     table = com.Table(output_dir=FCPath(tmp_path), volume_id='GO_0001',
                       level='summary', qualifier='body')
     assert table.filename.name == 'GO_0001_body_summary.tab'
 
 
 def test_table_explicit_suffix(tmp_path: Path) -> None:
+    """An explicit suffix overrides the default table filename suffix."""
     table = com.Table(output_dir=FCPath(tmp_path), volume_id='GO_0001',
                       qualifier='inventory', suffix='_inventory.csv')
     assert table.filename.name == 'GO_0001_inventory.csv'
 
 
 def test_table_without_output_dir_has_no_filename() -> None:
+    """Without an output dir, no filename is set and rows start empty."""
     table = com.Table(qualifier='body', level='summary')
     assert not hasattr(table, 'filename')
     assert table.rows == []
@@ -39,6 +43,7 @@ def test_table_without_output_dir_has_no_filename() -> None:
 #===============================================================================
 def test_write_empty_rows_returns_early(monkeypatch: pytest.MonkeyPatch,
                                         tmp_path: Path) -> None:
+    """write() with no rows writes neither table nor label."""
     table = com.Table(output_dir=FCPath(tmp_path), volume_id='GO_0001',
                       qualifier='body', level='summary')
     wrote = []
@@ -52,6 +57,7 @@ def test_write_empty_rows_returns_early(monkeypatch: pytest.MonkeyPatch,
 
 def test_write_table_and_label(monkeypatch: pytest.MonkeyPatch,
                                         tmp_path: Path) -> None:
+    """write() writes the rows and creates a label of the matching table type."""
     table = com.Table(output_dir=FCPath(tmp_path), volume_id='GO_0001',
                       qualifier='body', level='summary')
     calls = []
@@ -67,6 +73,7 @@ def test_write_table_and_label(monkeypatch: pytest.MonkeyPatch,
 
 def test_write_labels_only_skips_table(monkeypatch: pytest.MonkeyPatch,
                                         tmp_path: Path) -> None:
+    """write(labels_only=True) creates only the label, never the table file."""
     table = com.Table(output_dir=FCPath(tmp_path), volume_id='GO_0001',
                       qualifier='inventory', suffix='_inventory.csv',
                       use_global_template=True)
@@ -83,6 +90,7 @@ def test_write_labels_only_skips_table(monkeypatch: pytest.MonkeyPatch,
 # PathAction
 #===============================================================================
 def test_path_action_collapses_slashes_preserves_scheme() -> None:
+    """Repeated slashes are collapsed while the URL scheme's // survives."""
     parser = com.get_common_args(host='GO')
     args = parser.parse_args(['gs://bucket//a///b', '/m', '/o'])
     assert args.volume_tree == 'gs://bucket/a/b'
@@ -92,6 +100,7 @@ def test_path_action_collapses_slashes_preserves_scheme() -> None:
 # get_common_args
 #===============================================================================
 def test_get_common_args_skips_volume_when_none() -> None:
+    """volume_arg=None omits the volume_tree positional from the parser."""
     parser = com.get_common_args(host='GO', volume_arg=None)
     args = parser.parse_args(['/meta', '/out'])
     assert not hasattr(args, 'volume_tree')
@@ -99,6 +108,7 @@ def test_get_common_args_skips_volume_when_none() -> None:
 
 
 def test_get_common_args_flags() -> None:
+    """--labels and multi-value --volumes parse into the namespace."""
     parser = com.get_common_args(host='GO')
     args = parser.parse_args(['/v', '/m', '/o', '--labels',
                               '--volumes', 'GO_0001', 'GO_0002'])
@@ -111,6 +121,7 @@ def test_get_common_args_flags() -> None:
 #===============================================================================
 def test_init_logger_registers_handlers(monkeypatch: pytest.MonkeyPatch,
                                         tmp_path: Path) -> None:
+    """init_logger registers the stdout handler alongside the file handler."""
     handlers = []
     fake_logger = types.SimpleNamespace(
         add_handler=lambda h: handlers.append(h),

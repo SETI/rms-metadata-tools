@@ -5,7 +5,7 @@ Dispatches cumulative generation to GCP via rms-cloud-tasks; use
 
 ``--config`` defaults to ``cloud/<HOST>/gcp_cumulative_config.yml`` when that file
 exists (bare filenames resolve against ``cloud/<HOST>/``); no ``--task-file`` is
-needed — the single cumulative task is generated automatically.
+needed, since the single cumulative task is generated automatically.
 
   gcloud auth application-default login       # if necessary
 
@@ -20,9 +20,11 @@ Optional overrides (all consumed before dispatch; do not reach cloud_tasks or th
   --startup-template <file>   Use <file> instead of cloud/gcp_common_startup.sh.
   --oops-resources <name>     Persistent disk name for OOPS resources.
   --service-account <account> GCP service account (overrides $GCP_SERVICE_ACCOUNT).
-  --debug-branch <branch>     Git branch to clone on GCP VMs (overrides $GCP_DEBUG_BRANCH).
-  --ssh-paste                 With --create-startup-file: replace ``cd /root`` with ``cd ~``
-                              so the script can be pasted into an SSH terminal as a non-root user.
+  --debug-branch <branch>     Git branch to clone on GCP VMs (overrides
+                              $GCP_DEBUG_BRANCH).
+  --ssh-paste                 With --create-startup-file: replace ``cd /root`` with
+                              ``cd ~`` so the script can be pasted into an SSH
+                              terminal as a non-root user.
 
 The full list of command-line options is documented in the user guide.
 """

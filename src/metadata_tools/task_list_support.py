@@ -4,8 +4,7 @@
 """Task list creation and volume scanning for cloud/Worker metadata runs.
 
 Provides :func:`task_generator` for building tasks from an explicit volume list and
-:func:`scan_volumes` for discovering volumes by walking a directory tree (the logic
-formerly embedded in ``_create_index`` and ``process_tables``).
+:func:`scan_volumes` for discovering volumes by walking a directory tree.
 """
 import fnmatch
 import json
@@ -51,10 +50,10 @@ def scan_volumes(tree: str | Path | FCPath) -> list[str]:
 
     Volumes are identified by matching the last path component against the glob
     derived from the tree's own name via :func:`~metadata_tools.util.get_volume_glob`.
-    Directories named ``__skip`` are ignored.
+    Any directory whose path contains the substring ``__skip`` is skipped.
 
     Parameters:
-        tree: Top of the directory tree to scan.  Pass ``volume_tree`` for index
+        tree: Top of the directory tree to scan. Pass ``volume_tree`` for index
               runs or ``output_tree`` / ``metadata_tree`` for geometry runs.
 
     Returns:

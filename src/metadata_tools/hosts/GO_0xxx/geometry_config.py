@@ -196,14 +196,11 @@ get_volume_id = host_config.get_volume_id
 def target_name(snapshot: dict[str, Any]) -> str:
     """Determine the target name from the snapshot's dictionary.
 
-    If the given name is "SKY", it checks the CIMS ID and the TARGET_DESC for
-    something different.
-
     Parameters:
         snapshot: Snapshot observation dictionary.
 
     Returns:
-        Target name.
+        The snapshot's TARGET_NAME value.
     """
 
     return cast(str, snapshot["TARGET_NAME"])

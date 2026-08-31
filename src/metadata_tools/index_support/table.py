@@ -36,6 +36,10 @@ class IndexTable(com.Table):
                  **kwargs: Any) -> None:
         """Constructor for an IndexTable object.
 
+        If input_dir is None or empty, the constructor returns after the base-class
+        initialization, producing a stub table with no file list (create() is then a
+        no-op); cumulative table generation relies on such stubs.
+
         Parameters:
             input_dir: Directory containing the volume, specifically the data
                 labels.
@@ -46,6 +50,8 @@ class IndexTable(com.Table):
             qualifier: Qualifying string identifying the type of index file to
                 create, e.g., 'supplemental'.
             glob: Glob pattern for data files.
+            **kwargs: Additional keyword arguments (e.g., volume_id) passed on to
+                the Table base class.
 
         Raises:
             FileNotFoundError: If a primary index is required but its label is
@@ -121,7 +127,7 @@ class IndexTable(com.Table):
         """Create the index file for a single volume.
 
         Parameters:
-            labels_only: If True, labels are generated for any existing geometry
+            labels_only: If True, labels are generated for any existing index
                 tables.
             pattern: Glob pattern for sub-selecting files to process.
         """
@@ -169,7 +175,7 @@ class IndexTable(com.Table):
         """Write a single index file entry.
 
         Parameters:
-            root: Top of the directory tree containing the volume.
+            root: Directory containing the PDS label file.
             name: Name of PDS label.
         """
 

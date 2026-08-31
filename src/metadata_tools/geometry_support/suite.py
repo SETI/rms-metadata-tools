@@ -1,7 +1,7 @@
 ################################################################################
 # geometry_support/suite.py - The Suite class (a volume's geometry tables).
 ################################################################################
-"""Suite class orchestrating geometry table generation for one observation."""
+"""Suite class orchestrating geometry table generation for one volume."""
 import fnmatch
 from pathlib import Path
 from typing import Any, cast
@@ -109,7 +109,7 @@ class Suite:
     @staticmethod
     def get_override(record: Record, qualifier: str,
                      name: str | None = None) -> list[dict[str, Any]]:
-        """Build a dictionary of column overrides.
+        """Build a list of column override dicts.
 
         Parameters:
             record: Any Record.
@@ -117,7 +117,7 @@ class Suite:
             name: Name identifying a specific column description.
 
         Returns:
-            Dicts containing override names and values for each column.
+            A list of dicts containing override names and values, one for each column.
         """
 
         column_descs = record.dicts[qualifier]
@@ -166,7 +166,10 @@ class Suite:
 
     #===========================================================================
     def add_tables(self, output_dir: str | Path | FCPath, level: str) -> None:
-        """Add a set of tables.
+        """Create the set of tables for one processing level.
+
+        Assigns a fresh list to ``self.tables``, so tables created by any earlier call
+        are discarded; only the tables from the most recent call are retained.
 
         Parameters:
             output_dir: Directory in which to write the geometry files.
@@ -183,7 +186,7 @@ class Suite:
 
     #===========================================================================
     def make_records(self, index: int) -> list[Record]:
-        """Add a record for each processing level.
+        """Create a record for each processing level.
 
         Parameters:
             index: Row index.

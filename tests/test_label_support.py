@@ -1,6 +1,7 @@
 ################################################################################
 # tests/test_label_support.py: label_support.create paths.
 ################################################################################
+"""Tests for the label_support.create template paths."""
 
 from pathlib import Path
 from typing import Any
@@ -13,7 +14,7 @@ import metadata_tools.label_support as lab
 
 def test_create_returns_for_missing_file(monkeypatch: pytest.MonkeyPatch,
                                          tmp_path: Path) -> None:
-    # A non-existent table file -> create() returns before any template work.
+    """A missing table file makes create() return before any template work."""
     made = []
     monkeypatch.setattr(lab, 'PdsTemplate',
                         lambda *a, **k: made.append('template'))
@@ -23,6 +24,12 @@ def test_create_returns_for_missing_file(monkeypatch: pytest.MonkeyPatch,
 
 
 def _capture_template(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    """Install a PdsTemplate stub that records constructor and write arguments.
+
+    Returns:
+        The dict the stub fills with template_path, kwargs, fields, and
+        label_path.
+    """
     captured: dict[str, Any] = {}
 
     class FakeTemplate:
@@ -40,6 +47,7 @@ def _capture_template(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
 
 def test_create_global_template_path(monkeypatch: pytest.MonkeyPatch,
                                      tmp_path: Path) -> None:
+    """use_global_template resolves the template under the global template dir."""
     captured = _capture_template(monkeypatch)
     host_template = tmp_path / 'host' / 'GO_0xxx_body_summary.lbl'
     host_template.parent.mkdir(parents=True)
@@ -55,6 +63,7 @@ def test_create_global_template_path(monkeypatch: pytest.MonkeyPatch,
 
 def test_create_host_template_path(monkeypatch: pytest.MonkeyPatch,
                                    tmp_path: Path) -> None:
+    """Without the global flag, the host template path is used as given."""
     captured = _capture_template(monkeypatch)
     host_dir = tmp_path / 'GO_0xxx' / 'templates'
     host_dir.mkdir(parents=True)
@@ -68,6 +77,7 @@ def test_create_host_template_path(monkeypatch: pytest.MonkeyPatch,
 
 def test_create_inventory_disables_preprocessor(monkeypatch: pytest.MonkeyPatch,
                                                 tmp_path: Path) -> None:
+    """An 'inventory' table stem disables the label preprocessor."""
     captured = _capture_template(monkeypatch)
     host_dir = tmp_path / 'GO_0xxx' / 'templates'
     host_dir.mkdir(parents=True)

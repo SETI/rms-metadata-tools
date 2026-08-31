@@ -1,7 +1,8 @@
 ################################################################################
-# tests/test_task_list.py: Tests for metadata_tools.task_list
+# tests/test_task_list.py: Tests for metadata_tools.task_list_support
 ################################################################################
-"""Tests for task_list: make_task, task_generator, scan_volumes, write_task_file."""
+"""Tests for task_list_support: make_task, task_generator, scan_volumes, and
+write_task_file."""
 import json
 from pathlib import Path
 
@@ -53,7 +54,15 @@ def test_task_generator_is_reusable() -> None:
 # scan_volumes
 #===============================================================================
 def _make_tree(tmp_path: Path, volumes: list[str]) -> FCPath:
-    """Create a fake GO_0xxx collection tree under tmp_path."""
+    """Create a fake GO_0xxx collection tree under tmp_path.
+
+    Parameters:
+        tmp_path: The pytest tmp_path fixture directory.
+        volumes: Volume directory names to create.
+
+    Returns:
+        The collection root as an FCPath.
+    """
     col = tmp_path / 'GO_0xxx'
     for vol in volumes:
         (col / vol).mkdir(parents=True)

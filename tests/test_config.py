@@ -129,7 +129,7 @@ def test_set_host_defers_geometry_config_import(monkeypatch: pytest.MonkeyPatch)
 
 def test_set_host_failed_import_leaves_registry_unchanged(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """A failed host import must not register the new host id (see review of #122)."""
+    """A failed host import must not register the requested host id (see review of #122)."""
     _clear_config(monkeypatch)
     good = types.ModuleType('metadata_tools.hosts.GOOD.host_config')
     goodidx = types.ModuleType('metadata_tools.hosts.GOOD.index_config')

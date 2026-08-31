@@ -132,7 +132,8 @@ def process_index(template_name: str,
     Parameters:
         template_name: Name of input template.
         glob: Glob pattern for data files.
-        volumes: List of volume ids to process.  Overrides args.volumes.
+        volumes: List of volume ids to process. An explicit list, even an empty one,
+            overrides args.volumes.
         args: Parsed arguments.
     """
 
@@ -144,7 +145,7 @@ def process_index(template_name: str,
         parser = get_args(host=host, index_type=index_type)
         args = parser.parse_args()
 
-    # An explicit volumes list — including an empty one — overrides args.volumes.
+    # An explicit volumes list, including an empty one, overrides args.volumes.
     if volumes is None:
         volumes = args.volumes
 

@@ -2,7 +2,7 @@
 
 This package gathers the body, ring, sky, and sun geometry column definitions
 from its submodules (``body``, ``ring``, ``sky``, ``sun``) and re-exports them,
-along with the body list, under a single namespace. Callers import it as
+along with the bodies registry accessor, under a single namespace. Callers import it as
 ``import metadata_tools.columns as col`` and reference the assembled column
 lists, replacement dictionaries, and tile definitions used to build the
 geometry tables.

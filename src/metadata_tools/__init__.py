@@ -4,16 +4,16 @@
 """PDS Ring-Moon Systems Node metadata table generator.
 
 ``rms-metadata-tools`` generates PDS3 index, geometry, and cumulative metadata
-tables (and their PDS3 labels) for planetary science data collections.  Each
+tables (and their PDS3 labels) for planetary science data collections. Each
 table row holds metadata for one data file (e.g. an image).
 
 Three stages run in order for each collection:
 
-1. **Index** — supplemental index columns sourced from PDS labels
+1. **Index** - supplemental index columns sourced from PDS labels
    (``metadata-index HOST_ID ...``).
-2. **Geometry** — geometric quantities computed from SPICE via ``oops``
+2. **Geometry** - geometric quantities computed from SPICE via ``oops``
    (``metadata-geometry HOST_ID ...``).
-3. **Cumulative** — per-volume table concatenations across a volume tree
+3. **Cumulative** - per-volume table concatenations across a volume tree
    (``metadata-cumulative HOST_ID ...``).
 
 Per-collection configuration lives in

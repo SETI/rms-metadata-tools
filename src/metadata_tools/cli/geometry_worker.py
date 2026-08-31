@@ -1,11 +1,11 @@
 """Local worker entry point for geometry table generation across all hosts.
 
 This is the rms-cloud-tasks worker counterpart of ``metadata-geometry``: the same work,
-distributed across local Worker processes.  Basic usage matches ``metadata-geometry``;
+distributed across local Worker processes. Basic usage matches ``metadata-geometry``;
 all cloud_tasks Worker arguments are also accepted.
 
 GCP VMs launched by ``metadata-geometry-cloud`` invoke this entry point via the startup
-script.  For local parallelism without GCP, use this command directly:
+script. For local parallelism without GCP, use this command directly:
 
   metadata-geometry-worker GO_0xxx $RMS_METADATA/GO_0xxx/ $RMS_METADATA_TEST/GO_0xxx/ \\
       --volumes GO_0022 GO_0016 --num-simultaneous-tasks 12
@@ -30,6 +30,18 @@ class _GeometryTask:
     def __init__(self, host_id: str, template_name: str, glob: str | None,
                  index_glob: str | None, selection: str | None,
                  exclude: list[str] | None) -> None:
+        """Store the task configuration.
+
+        Parameters:
+            host_id: The host identifier (e.g. ``'GO_0xxx'``).
+            template_name: The host's label template name.
+            glob: Filename glob for selecting PDS labels, or None for the default.
+            index_glob: Filename glob for locating index label files, or None for
+                the default.
+            selection: Summary/detailed table selection string, or None for the
+                default.
+            exclude: Volume IDs to exclude from processing, or None.
+        """
         self._host_id = host_id
         self._template_name = template_name
         self._glob = glob
@@ -39,6 +51,17 @@ class _GeometryTask:
 
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
+        """Generate the geometry tables for one volume.
+
+        Parameters:
+            _task_id: The cloud_tasks task ID (unused).
+            task_data: Task payload; ``task_data['volume_id']`` names the volume
+                to process.
+            worker_data: Worker context providing the parsed command-line ``args``.
+
+        Returns:
+            A ``(retry, result)`` tuple; always ``(False, None)``.
+        """
         set_host(self._host_id)
         from copy import copy
 

@@ -2,6 +2,7 @@
 # tests/test_geometry_constructors.py: SPICE-bound constructors, covered with
 # heavy monkeypatching instead of running real kernels.
 ################################################################################
+"""Tests for SPICE-bound constructors, using monkeypatching instead of real kernels."""
 import types
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,7 @@ config = get_geometry_config()
 # bodies_select.inventory
 #===============================================================================
 def test_inventory_success(monkeypatch: pytest.MonkeyPatch) -> None:
+    """inventory() returns the observation's body list when the call succeeds."""
     monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
     obs = types.SimpleNamespace(
         inventory=lambda bodies, expand, cache: ['IO', 'EUROPA'])
@@ -33,6 +35,7 @@ def test_inventory_success(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_inventory_missing_ckernel_clears_pointing(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A SPICE CKINSUFFDATA error yields an empty list and clears pointing."""
     monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
 
     def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
@@ -45,7 +48,7 @@ def test_inventory_missing_ckernel_clears_pointing(monkeypatch: pytest.MonkeyPat
 
 
 def test_inventory_other_error_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Non-SPICE exceptions from observation.inventory() are genuine bugs and must propagate."""
+    """Non-SPICE exceptions from observation.inventory() propagate as genuine bugs."""
     monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
 
     def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
@@ -64,6 +67,7 @@ def test_inventory_other_error_propagates(monkeypatch: pytest.MonkeyPatch) -> No
 # bodies_select.select_bodies
 #===============================================================================
 def test_select_bodies_primary_children_and_target(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The primary, its children, and the target are selected with a primary set."""
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     fake_bodies = {
         'JUPITER': types.SimpleNamespace(children=[
@@ -84,6 +88,7 @@ def test_select_bodies_primary_children_and_target(monkeypatch: pytest.MonkeyPat
 
 
 def test_select_bodies_no_primary_uses_selections(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without a primary, the selections and secondaries drive body selection."""
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     fake_bodies = {'IO': object(), 'EUROPA': object()}
     monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
@@ -101,6 +106,12 @@ def test_select_bodies_no_primary_uses_selections(monkeypatch: pytest.MonkeyPatc
 # Record.__init__
 #===============================================================================
 def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> None:
+    """Patch the SPICE-facing seams so Record.__init__ runs without kernels.
+
+    Parameters:
+        monkeypatch: The pytest monkeypatch fixture.
+        primary: Primary body name returned by the patched get_primary.
+    """
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     monkeypatch.setattr(bodies_select, 'get_primary',
                         lambda record, table, sclk: (primary, [], [], []))
@@ -114,7 +125,7 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
                         lambda meshgrids, obs: object(), raising=False)
     monkeypatch.setattr(oops.backplane, 'Backplane',
                         lambda obs, meshgrid: 'BACKPLANE')
-    # Body registry and dicts are now lazy (built from SPICE on first call); stub
+    # Body registry and dicts are lazy (built from SPICE on first call); stub
     # them out so Record.__init__ can run without a SPICE-initialized host. Use
     # distinct singleton dicts so identity assertions in callers remain meaningful.
     _fake_summary: dict[str, Any] = {}
@@ -125,7 +136,7 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
 
 
 def _observation(target: str = 'SKY') -> Any:
-    # Returns a SimpleNamespace observation stub (oops Observation stand-in).
+    """Return a SimpleNamespace observation stub (oops Observation stand-in)."""
     return types.SimpleNamespace(dict={
         'SPACECRAFT_CLOCK_START_COUNT': '100',
         'FILE_SPECIFICATION_NAME': 'DATA/C0123.IMG',
@@ -133,6 +144,7 @@ def _observation(target: str = 'SKY') -> Any:
 
 
 def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without a primary, Record still builds backplane, prefixes, and dicts."""
     _patch_record_spice(monkeypatch, primary='')
     record = Record(_observation(), 'GO_0001', {}, 8, 'summary')
     assert record.primary == ''
@@ -144,6 +156,7 @@ def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_record_init_detailed_selects_detailed_dicts(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The 'detailed' level selects the detailed ring and body dicts."""
     _patch_record_spice(monkeypatch, primary='')
     record = Record(_observation(), 'GO_0001', {}, 8, 'detailed')
     assert record.dicts['ring'] is col.RING_DETAILED_DICT
@@ -151,6 +164,7 @@ def test_record_init_detailed_selects_detailed_dicts(monkeypatch: pytest.MonkeyP
 
 
 def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A primary with a ring frame sets rings_present."""
     _patch_record_spice(monkeypatch, primary='JUPITER')
     fake_bodies = {'JUPITER': types.SimpleNamespace(ring_frame=object())}
     monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
@@ -163,8 +177,7 @@ def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) ->
 # Suite.__init__ early-return paths
 #===============================================================================
 def test_suite_init_returns_without_index(tmp_path: Path) -> None:
-    # No index files in the (empty) metadata dir -> __init__ returns early and
-    # never builds observations.
+    """With no index file, __init__ returns early and never builds observations."""
     suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path,
                   selection='S', index_glob='*_index.tab')
     assert not hasattr(suite, 'observations')
@@ -172,6 +185,7 @@ def test_suite_init_returns_without_index(tmp_path: Path) -> None:
 
 
 def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
+    """More than one matching index file raises RuntimeError."""
     meta = tmp_path / 'meta'
     meta.mkdir()
     (meta / 'GO_0001_index.tab').write_text('a', encoding='utf-8')
@@ -183,6 +197,7 @@ def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
 
 def test_suite_init_builds_tables_and_meshgrids(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A single index yields observations, meshgrids, and the standard tables."""
     meta = tmp_path / 'meta'
     meta.mkdir()
     (meta / 'GO_0001_index.tab').write_text('a', encoding='utf-8')

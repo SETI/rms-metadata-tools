@@ -24,7 +24,7 @@ def set_host(host_id: str) -> None:
 
     Eagerly resolves ``metadata_tools.hosts.<host_id>.{host_config,index_config}``
     as package-qualified imports, so no ``sys.path`` manipulation is required.
-    ``geometry_config`` (and the ``host_init`` side-effect it carries — SPICE
+    ``geometry_config`` (and the ``host_init`` side-effect it carries - SPICE
     initialization and backplane column registration) is loaded lazily on the
     first :func:`get_geometry_config` call, so index and cumulative workers
     never pay the SPICE startup cost.
@@ -121,7 +121,7 @@ def get_geometry_config() -> types.ModuleType:
 
     The module is imported on the first call (lazy loading), which triggers
     that host's ``host_init`` side-effect (SPICE initialization and backplane
-    column registration).  Subsequent calls return the cached module.
+    column registration). Subsequent calls return the cached module.
 
     Returns:
         The geometry_config module for the active host.

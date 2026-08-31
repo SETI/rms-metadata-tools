@@ -1,6 +1,7 @@
 ################################################################################
 # tests/test_geometry_process.py: get_args + process_tables walk.
 ################################################################################
+"""Tests for geometry get_args and the process_tables volume walk."""
 import types
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,15 @@ from metadata_tools.geometry_support import process as proc
 
 
 def _args(tree: FCPath, **over: Any) -> types.SimpleNamespace:
+    """Build a SimpleNamespace mimicking the parsed geometry arguments.
+
+    Parameters:
+        tree: Path used for both metadata_tree and output_tree.
+        over: Attribute overrides applied on top of the defaults.
+
+    Returns:
+        The populated namespace.
+    """
     ns = types.SimpleNamespace(
         metadata_tree=str(tree), output_tree=str(tree), new_only=False,
         labels=False, volumes=None, selection='S', first=None, sampling=8,
@@ -22,6 +32,11 @@ def _args(tree: FCPath, **over: Any) -> types.SimpleNamespace:
 
 
 def _tree(tmp_path: Path) -> FCPath:
+    """Create a GO_0xxx tree with two empty volume directories.
+
+    Returns:
+        The collection root as an FCPath.
+    """
     root = tmp_path / 'GO_0xxx'
     for vol in ('GO_0001', 'GO_0002'):
         (root / vol).mkdir(parents=True)
@@ -32,6 +47,7 @@ def _tree(tmp_path: Path) -> FCPath:
 # get_args
 #===============================================================================
 def test_get_args_defaults_and_parse() -> None:
+    """--selection and --sampling parse over the provided defaults."""
     parser = proc.get_args(host='GO', selection='S', sampling=8)
     args = parser.parse_args(['/meta', '/out', '--selection', 'SD',
                               '--sampling', '4'])
@@ -45,6 +61,7 @@ def test_get_args_defaults_and_parse() -> None:
 
 def test_process_tables_builds_suite(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """One Suite is built and created per volume directory."""
     tree = _tree(tmp_path)
     built: list[str] = []
 
@@ -65,6 +82,7 @@ def test_process_tables_builds_suite(
 
 def test_process_tables_excludes_volume(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Volumes listed in exclude are skipped."""
     tree = _tree(tmp_path)
     built: list[str] = []
 
@@ -84,6 +102,7 @@ def test_process_tables_excludes_volume(
 
 def test_process_tables_volumes_filter(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Only volumes named in the volumes filter are processed."""
     tree = _tree(tmp_path)
     built: list[str] = []
 

@@ -26,7 +26,7 @@ def _cat_rows(volume_tree: FCPath,
               *,
               exclude: list[str] | None = None,
               volumes: list[str] | None = None) -> None:
-    """Create the cumulative files for a collection of volumes.
+    """Concatenate one table type across volumes into a cumulative table and label.
 
     Parameters:
         volume_tree: Root of the tree containing the volumes.
@@ -142,7 +142,8 @@ def create_cumulative_indexes(template_name: str,
 
     Parameters:
         template_name: Name of index template.
-        volumes: List of volume ids to process.  Overrides args.volumes.
+        volumes: List of volume ids to process. A non-empty list overrides
+            args.volumes; an empty list or None falls back to args.volumes.
         args: Parsed arguments.
         exclude: List of volumes to exclude.
     """

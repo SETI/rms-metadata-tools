@@ -1,11 +1,11 @@
 """Local worker entry point for cumulative table generation across all hosts.
 
 This is the rms-cloud-tasks worker counterpart of ``metadata-cumulative``: the same work,
-run via a cloud_tasks Worker.  Basic usage is identical to ``metadata-cumulative``;
+run via a cloud_tasks Worker. Basic usage is identical to ``metadata-cumulative``;
 all cloud_tasks Worker arguments are also accepted.
 
 GCP VMs launched by ``metadata-cumulative-cloud`` invoke this entry point via the startup
-script.  For local runs, use this command directly:
+script. For local runs, use this command directly:
 
   metadata-cumulative-worker GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/
   metadata-cumulative-worker GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --volumes GO_0017
@@ -30,12 +30,29 @@ class _CumulativeTask:
 
     def __init__(self, host_id: str, template_name: str,
                  exclude: list[str] | None) -> None:
+        """Store the task configuration.
+
+        Parameters:
+            host_id: The host identifier (e.g. ``'GO_0xxx'``).
+            template_name: The host's label template name.
+            exclude: Volume IDs to exclude from processing, or None.
+        """
         self._host_id = host_id
         self._template_name = template_name
         self._exclude = exclude
 
     def __call__(self, _task_id: str, task_data: dict[str, Any],
                  worker_data: Any) -> tuple[bool, Any]:
+        """Generate the cumulative tables for the volume tree.
+
+        Parameters:
+            _task_id: The cloud_tasks task ID (unused).
+            task_data: Task payload (unused; cumulative runs have a single task).
+            worker_data: Worker context providing the parsed command-line ``args``.
+
+        Returns:
+            A ``(retry, result)`` tuple; always ``(False, None)``.
+        """
         set_host(self._host_id)
         from copy import copy
 

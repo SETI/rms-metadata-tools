@@ -61,6 +61,10 @@ def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
 
     Returns:
         Formatted column.
+
+    Raises:
+        RuntimeError: If a formatted value overflows the column width and cannot
+            be clipped to fit.
     """
 
     # Interpret the format

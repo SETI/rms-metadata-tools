@@ -1,6 +1,7 @@
 ################################################################################
 # tests/test_geometry.py
 ################################################################################
+"""Geometry table and label tests against pre-generated $RMS_METADATA holdings."""
 import numpy as np
 import pdsparser
 import pdstable
@@ -17,6 +18,7 @@ pytestmark = pytest.mark.requires_archive
 #===============================================================================
 # test inventory file
 def test_inventory() -> None:
+    """Every inventory label parses as a PDS label."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_inventory.lbl')  # type: ignore[arg-type]
@@ -32,6 +34,7 @@ def test_inventory() -> None:
 #===============================================================================
 # test cumulative geometry file
 def test_geometry_cumulative() -> None:
+    """At least one cumulative summary label exists and parses as a PdsTable."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
@@ -60,6 +63,7 @@ def test_geometry_cumulative() -> None:
 #===============================================================================
 # test geometry common fields
 def test_geometry_common() -> None:
+    """Every summary table has consistent counts and string identifier columns."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
@@ -83,6 +87,7 @@ def test_geometry_common() -> None:
 #===============================================================================
 # test geometry body fields
 def test_geometry_body() -> None:
+    """Body summary angle and latitude columns lie within their physical bounds."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
@@ -122,6 +127,7 @@ def test_geometry_body() -> None:
 #===============================================================================
 # test geometry ring fields
 def test_geometry_ring() -> None:
+    """Ring summary angle and elevation columns lie within their physical bounds."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*ring_summary.lbl')  # type: ignore[arg-type]
@@ -165,6 +171,7 @@ def test_geometry_ring() -> None:
 #===============================================================================
 # test geometry sky fields
 def test_geometry_sky() -> None:
+    """Sky summary right ascension and declination lie within physical bounds."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*sky_summary.lbl')  # type: ignore[arg-type]

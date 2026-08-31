@@ -8,7 +8,8 @@ and the latitude-banded tiling used for detailed tabulations.
 
 These definitions are gathered and re-exported by ``columns/__init__.py`` and
 consumed by the geometry Record/prep code, which evaluates each backplane key
-and formats the result via FORMAT_DICT in ``geometry_support.py``.
+and formats the result via FORMAT_DICT in the ``geometry_support`` package (defined
+in its ``formats`` module).
 """
 from typing import Any
 

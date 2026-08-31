@@ -2,16 +2,16 @@
 
 Two modes are supported:
 
-**Scan mode** — HOST_ID and a tree path are given; volumes are discovered by walking
-the tree.  ``--output`` defaults to ``./tasks.json``, where the ``metadata-*-cloud``
+**Scan mode**: HOST_ID and a tree path are given; volumes are discovered by walking
+the tree. ``--output`` defaults to ``./tasks.json``, where the ``metadata-*-cloud``
 commands pick it up as the default ``--task-file``; relative paths are plain
 cwd-relative, so run it from the run directory:
 
     metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/
     metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output retry_tasks.json
 
-**Explicit mode** — no HOST_ID; volumes are specified directly (the task file is written
-to the current working directory):
+**Explicit mode**: no HOST_ID; volumes are specified directly and the task file is
+written to the required ``--output`` path (cwd-relative unless absolute):
 
     metadata-task-list --volumes GO_0001 GO_0002 --output tasks.json
 """

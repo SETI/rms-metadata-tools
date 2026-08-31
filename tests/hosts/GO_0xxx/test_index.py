@@ -1,6 +1,7 @@
 ################################################################################
 # GOSSI-specific metadata index unit tests
 ################################################################################
+"""GOSSI supplemental index tests against pre-generated $RMS_METADATA holdings."""
 import numpy as np
 import pdstable
 import pytest
@@ -16,6 +17,7 @@ pytestmark = pytest.mark.requires_archive
 #===============================================================================
 # test supplemental index fields
 def test_supplemental_index_gossi() -> None:
+    """Each supplemental index column parses with the expected dtype in every label."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_supplemental_index.lbl')  # type: ignore[arg-type]

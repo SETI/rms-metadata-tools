@@ -5,7 +5,7 @@
 
 These helpers drive the geometry-column assembly: they substitute the ``BODYX``
 placeholder for a real body name throughout a nested tuple tree and evaluate
-embedded dictionary references. The tests are hermetic — they need no SPICE or
+embedded dictionary references. The tests are hermetic; they need no SPICE or
 environment variables.
 """
 
@@ -77,7 +77,7 @@ def test_resolve_dict_ref_rejects_unknown_module() -> None:
 
 
 def test_resolve_dict_ref_rejects_unrecognized_pattern() -> None:
-    """``_resolve_dict_ref`` raises ValueError for strings that don't match the pattern."""
+    """``_resolve_dict_ref`` raises ValueError for strings not matching the pattern."""
     with pytest.raises(ValueError, match='Unrecognized column reference'):
         util._resolve_dict_ref('defs.RING_SYSTEM_RADII[SATURN]')
 

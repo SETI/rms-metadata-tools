@@ -20,9 +20,12 @@ FormatTuple = tuple[str, int, int, str, str | None, float | str, float, float, i
 #
 # where...
 #
-#   flag = "RAD" = convert values from radians to degrees;
-#        = "360" = convert to degrees, with 360-deg periodicity;
-#        = ""    = do not modify value.
+#   flag = "DEG"  = convert values from radians to degrees;
+#        = "360"  = convert to degrees; report cyclic coverage in the range (0,360);
+#        = "-180" = convert to degrees; report cyclic coverage in the range (-180,180);
+#        = "ISO"  = format TAI seconds as an ISO date-time string;
+#        = "KM"   = tabulate values in km, with no unit conversion applied;
+#        = ""     = do not modify value.
 #
 #   link_id is a positive integer id that can be used to link multiple columns via
 #   the specified link function. All columns with the same link function and

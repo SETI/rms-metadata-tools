@@ -29,7 +29,7 @@ def key__volume_id(label_path: str | Path | FCPath,
 #===============================================================================
 def key__file_specification_name(label_path: str | Path | FCPath,
                                  label_dict: dict[str, Any]) -> FCPath:
-    """Key function for FILE_SPECIFICATION_NAME.  The return value will appear in
+    """Key function for FILE_SPECIFICATION_NAME. The return value will appear in
     the index file under FILE_SPECIFICATION_NAME.
 
     Parameters:

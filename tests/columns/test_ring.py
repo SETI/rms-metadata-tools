@@ -41,7 +41,7 @@ def test_obs_longitude_uses_180_alt_format(ring_module: ModuleType) -> None:
 
 
 def test_body_diameter_resolves_ring_system_radius(ring_module: ModuleType) -> None:
-    """The former eval'd dict reference resolves to the ring-system radius."""
+    """The embedded dict reference resolves to the ring-system radius."""
     cols = ring_module.RING_SUMMARY_DICT['JUPITER']
     diam = [c for c in cols if c[0][0] == 'body_diameter_in_pixels']
     assert len(diam) == 1

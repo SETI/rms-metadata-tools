@@ -1,9 +1,9 @@
 ################################################################################
 # geometry_support/bodies_select.py - Body selection and primary lookup.
 #
-# Free functions taking an explicit `record` argument (read-only access to the
-# record's state) so they can be exercised without constructing a full
-# SPICE-backed Record.
+# Free functions taking an explicit `record` argument so they can be exercised
+# without constructing a full SPICE-backed Record. Most access the record's
+# state read-only; inventory() may set record.pointing_available.
 ################################################################################
 """Body visibility and selection utilities for geometry table generation."""
 import re
@@ -29,7 +29,14 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
         bodies: Bodies to test.
 
     Returns:
-        List of inventory bodies.
+        List of inventory bodies. An empty list is returned if the inventory
+        cannot be computed; when the failure indicates missing pointing data,
+        record.pointing_available is also set to False.
+
+    Raises:
+        AssertionError: Re-raised, after logging, when raised unexpectedly by the
+            inventory computation; likewise for AttributeError, IndexError,
+            KeyError, LookupError, TypeError, and ValueError.
     """
     logger = com.get_logger()
 
@@ -71,7 +78,7 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
           there are selections, then only the selected children are considered.
        3. If there is no primary, all selections that intersect the FOV are
           included.
-       4. The target is always included.
+       4. The target is included whenever it is registered with oops.
        5. If the target is a satellite, the parent is included.
        6. Additions are included whenever they intersect the FOV, regardless of
           the primary.
@@ -153,8 +160,10 @@ def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
 
     Parameters:
         record: The geometry record.
-        exceptions: List of regular expressions to test against the observation
-            ID.
+        exceptions: List of exception specifiers. An entry that is a Python
+            identifier names a geometry-config predicate function applied to
+            the observation; any other entry is a regular expression tested
+            against the observation ID.
 
     Returns:
         True if the observation is excluded.
@@ -195,7 +204,8 @@ def get_primary(record: 'Record', table: list[Any],
         the name of the primary corresponding to the given SCLK value,
         secondaries holds the names of any secondaries, selections holds the
         names of any selected bodies, and additions holds the names of any added
-        bodies.
+        bodies. If the observation is excluded or no table row spans the given
+        SCLK value, ('', [], [], []) is returned.
     """
     fail: tuple[str, list[str], list[str], list[str]] = ('', [], [], [])
     sclk_ticks = util.sclk_to_ticks(sclk, get_geometry_config().SC)
