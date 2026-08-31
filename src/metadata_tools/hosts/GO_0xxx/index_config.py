@@ -103,7 +103,9 @@ def key__product_creation_time(label_path: str | Path | FCPath,
         label_dict: Dictionary containing the PDS label fields.
 
     Returns:
-        Value to write in the index file under PRODUCT_CREATION_TIME.
+        Value to write in the index file under PRODUCT_CREATION_TIME, or None if
+        the image cannot be retrieved (for reasons other than file-not-found) or
+        its VICAR label cannot be parsed.
 
     Raises:
         FileNotFoundError: If the corresponding VICAR image file cannot be found.

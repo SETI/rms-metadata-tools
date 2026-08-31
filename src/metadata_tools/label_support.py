@@ -20,15 +20,22 @@ def create(filepath: str | Path | FCPath,
            *,
            use_global_template: bool = False,
            table_type: str | None = '') -> None:
-    """Create a label for a given geometry table.
+    """Create a PDS3 label for a metadata table.
+
+    If filepath does not refer to an existing file, the function returns without
+    writing anything.
 
     Parameters:
         filepath: Path to the local or remote table.
-        host_template_path: Path to the host template.
+        host_template_path: Path to the host template. If None, it is treated as
+            an empty path; a real host template path is needed only when
+            use_global_template is False.
         system: Name of system, for rings and moons.
         use_global_template: If True, the label template is to be found in the
             global template directory.
-        table_type: BODY, RING, SKY, SUPPLEMENTAL_INDEX, INVENTORY.
+        table_type: One of BODY_SUMMARY, RING_SUMMARY, SKY_SUMMARY,
+            SUPPLEMENTAL_INDEX, or INVENTORY; case-insensitive (the value is
+            uppercased). None is treated as an empty string.
     """
     filepath = FCPath(filepath)
     if not filepath.is_file():

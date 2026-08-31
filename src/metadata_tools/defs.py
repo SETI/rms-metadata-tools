@@ -16,7 +16,7 @@ from filecache import FCPath
 _metadata = sys.modules[__name__]
 
 PARENT_DIR = FCPath(_metadata.__file__).parent
-"""Directory containing the installed package."""
+"""The installed metadata_tools package directory."""
 
 GLOBAL_TEMPLATE_PATH = PARENT_DIR / 'templates'
 """Directory holding the package's shared PDS3 label-template fragments."""

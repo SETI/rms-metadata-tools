@@ -1,6 +1,7 @@
 ################################################################################
 # GOSSI-specific metadata geometry unit tests
 ################################################################################
+"""GOSSI geometry table tests against pre-generated $RMS_METADATA holdings."""
 import numpy as np
 import pdstable
 import pytest
@@ -16,6 +17,7 @@ pytestmark = pytest.mark.requires_archive
 #===============================================================================
 # test geometry common fields
 def test_geometry_common() -> None:
+    """Every summary table's VOLUME_ID column matches the volume in the filename."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
@@ -35,6 +37,7 @@ def test_geometry_common() -> None:
 #===============================================================================
 # test geometry body fields
 def test_geometry_body() -> None:
+    """Body summary tables exist and their BODY_NAME column holds string values."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
@@ -54,6 +57,7 @@ def test_geometry_body() -> None:
 #===============================================================================
 # test geometry ring fields
 def test_geometry_ring() -> None:
+    """Ring summary values honor the GOSSI-specific angle bounds."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*ring_summary.lbl')  # type: ignore[arg-type]

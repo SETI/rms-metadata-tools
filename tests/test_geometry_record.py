@@ -1,6 +1,7 @@
 ################################################################################
 # tests/test_geometry_record.py: Record helpers + bodies_select functions.
 ################################################################################
+"""Tests for Record helpers and the bodies_select functions."""
 import types
 from collections.abc import Callable
 from typing import Any
@@ -24,6 +25,13 @@ def _make_record(monkeypatch: pytest.MonkeyPatch, moon: str) -> Record:
     Patches the SPICE-facing seams (primary/inventory/body selection, meshgrid,
     Backplane, bodies registry) so __init__ executes end to end without kernels;
     the conftest fake host registry supplies get_geometry_config().
+
+    Parameters:
+        monkeypatch: The pytest monkeypatch fixture.
+        moon: Irregular-moon target name for the observation.
+
+    Returns:
+        The constructed Record.
     """
     monkeypatch.setattr(col, 'get_bodies_registry',
                         lambda: {'JUPITER': types.SimpleNamespace(ring_frame=None)})
@@ -62,7 +70,7 @@ def test_body_dict_addition_does_not_mutate_shared_cache(
     assert 'FAKE_MOON_B' in rec_b.dicts['body']
     assert 'FAKE_MOON_A' not in rec_b.dicts['body']
 
-    # The "shared" fake dict is unchanged — only the per-Record copies were mutated.
+    # The "shared" fake dict is unchanged; only the per-Record copies were mutated.
     assert set(fake_shared.keys()) == {'IO'}
 
 
@@ -94,11 +102,13 @@ def test_body_tile_dict_addition_does_not_mutate_shared_cache(
 # get_backplane_key
 #===============================================================================
 def test_get_backplane_key_tuple_event_key() -> None:
+    """A (key, target) tuple event key yields the bare backplane key."""
     desc = (('phase_angle', 'IO'), ('', '', ''))
     assert Record.get_backplane_key(desc) == 'phase_angle'
 
 
 def test_get_backplane_key_plain_event_key() -> None:
+    """A plain string event key is returned as the backplane key."""
     desc = ('phase_angle', ('', '', ''))
     assert Record.get_backplane_key(desc) == 'phase_angle'
 
@@ -108,6 +118,7 @@ def test_get_backplane_key_plain_event_key() -> None:
 #===============================================================================
 def test_get_key_map_slices_last_ndata_columns(
         record_stub: Callable[..., Any]) -> None:
+    """The key map covers the last n-data columns, one key per data column."""
     record = record_stub(backplane_keys={}, dicts={
         'body': [(('center_coordinate', 'IO', 'u'), ('', '', '')),
                  (('center_coordinate', 'IO', 'v'), ('', '', ''))]})
@@ -118,17 +129,19 @@ def test_get_key_map_slices_last_ndata_columns(
 
 
 def test_get_key_map_caches_per_qualifier(record_stub: Callable[..., Any]) -> None:
+    """The second call returns the cached key list for the qualifier."""
     record = record_stub(backplane_keys={}, dicts={
         'sky': [(('right_ascension', 'SKY'), ('', '', ''))]})
     record.get_key_map(['"v"', 'x'], 'sky')
     assert record.backplane_keys['sky'] == ['right_ascension']
-    # Second call uses the cached value (mutating dicts must not matter now).
+    # Second call uses the cached value; mutating dicts afterwards has no effect.
     record.dicts['sky'] = 'ignored'
     keys, _ = record.get_key_map(['"v"', 'y'], 'sky')
     assert keys == ['right_ascension']
 
 
 def test_get_key_map_handles_dict_of_named_lists(record_stub: Callable[..., Any]) -> None:
+    """A dict of named column lists is flattened across its values."""
     record = record_stub(backplane_keys={}, dicts={
         'ring': {'SATURN': [(('ring_radius', 'SATURN'), ('', '', ''))]}})
     keys, _ = record.get_key_map(['"v"', 'r'], 'ring')
@@ -140,6 +153,7 @@ def test_get_key_map_handles_dict_of_named_lists(record_stub: Callable[..., Any]
 #===============================================================================
 def test_postprocess_propagates_null_across_linked_columns(
         record_stub: Callable[..., Any]) -> None:
+    """A null in one linked column propagates null to its partners."""
     record = record_stub(backplane_keys={}, dicts={
         'body': [(('center_coordinate', 'IO', 'u'), ('', '', '')),
                  (('center_coordinate', 'IO', 'v'), ('', '', ''))]})
@@ -151,6 +165,7 @@ def test_postprocess_propagates_null_across_linked_columns(
 
 def test_postprocess_leaves_non_null_linked_columns(
         record_stub: Callable[..., Any]) -> None:
+    """Linked columns with no null values are left unchanged."""
     record = record_stub(backplane_keys={}, dicts={
         'body': [(('center_coordinate', 'IO', 'u'), ('', '', '')),
                  (('center_coordinate', 'IO', 'v'), ('', '', ''))]})
@@ -163,7 +178,12 @@ def test_postprocess_leaves_non_null_linked_columns(
 # bodies_select.get_system
 #===============================================================================
 def _fake_registry(monkeypatch: pytest.MonkeyPatch, mapping: dict[str, str]) -> None:
-    """Install a fake oops.Body.BODY_REGISTRY of name -> object(parent.name)."""
+    """Install a fake oops.Body.BODY_REGISTRY of name -> object(parent.name).
+
+    Parameters:
+        monkeypatch: The pytest monkeypatch fixture.
+        mapping: Body name to parent body name.
+    """
     registry = {}
     for name, parent in mapping.items():
         registry[name] = types.SimpleNamespace(
@@ -172,22 +192,25 @@ def _fake_registry(monkeypatch: pytest.MonkeyPatch, mapping: dict[str, str]) -> 
 
 
 def test_get_system_returns_parent_for_satellite(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A satellite's system is its parent planet."""
     _fake_registry(monkeypatch, {'IO': 'JUPITER', 'JUPITER': 'SUN'})
     assert bodies_select.get_system('IO') == 'JUPITER'
 
 
 def test_get_system_returns_self_for_planet(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A planet (child of SUN) is its own system."""
     _fake_registry(monkeypatch, {'JUPITER': 'SUN'})
     assert bodies_select.get_system('JUPITER') == 'JUPITER'
 
 
 def test_get_system_unknown_body_is_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An unregistered body has no system."""
     _fake_registry(monkeypatch, {})
     assert bodies_select.get_system('NOPE') is None
 
 
 def test_get_system_root_body_is_self(monkeypatch: pytest.MonkeyPatch) -> None:
-    # A root body such as the Sun has no parent; its system is itself.
+    """A root body with no parent, such as the Sun, is its own system."""
     registry = {'SUN': types.SimpleNamespace(parent=None)}
     monkeypatch.setattr(oops.Body, 'BODY_REGISTRY', registry)
     assert bodies_select.get_system('SUN') == 'SUN'
@@ -197,12 +220,14 @@ def test_get_system_root_body_is_self(monkeypatch: pytest.MonkeyPatch) -> None:
 # bodies_select.obs_excluded
 #===============================================================================
 def test_obs_excluded_empty_is_false() -> None:
+    """An empty exception list excludes nothing."""
     # `record` is a SimpleNamespace stub standing in for a Record.
     record = types.SimpleNamespace(observation=object())
     assert bodies_select.obs_excluded(record, []) is False  # type: ignore[arg-type]
 
 
 def test_obs_excluded_regex_match(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A regex exception matching the observation ID excludes the observation."""
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123CAL')
     record = types.SimpleNamespace(observation=object())
     assert bodies_select.obs_excluded(record, ['.*CAL']) is True  # type: ignore[arg-type]
@@ -210,6 +235,7 @@ def test_obs_excluded_regex_match(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_obs_excluded_identifier_calls_config_function(
         monkeypatch: pytest.MonkeyPatch) -> None:
+    """An identifier exception calls the named geometry-config function."""
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123')
     config = get_geometry_config()
     monkeypatch.setattr(config, 'always_true_fn', lambda obs: True, raising=False)
@@ -219,17 +245,17 @@ def test_obs_excluded_identifier_calls_config_function(
 
 
 def test_obs_excluded_identifier_then_regex(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The observation is excluded if any exception matches, identifier or regex."""
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123CAL')
     config = get_geometry_config()
     monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
     record = types.SimpleNamespace(observation=object())
-    # The first (identifier) exception does not match, but a later regex does;
-    # the observation is excluded if *any* exception matches.
     assert bodies_select.obs_excluded(
         record, ['always_false_fn', '.*CAL']) is True  # type: ignore[arg-type]
 
 
 def test_obs_excluded_no_exception_matches(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no matching exception, the observation is not excluded."""
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123')
     config = get_geometry_config()
     monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
@@ -242,6 +268,7 @@ def test_obs_excluded_no_exception_matches(monkeypatch: pytest.MonkeyPatch) -> N
 # bodies_select.get_primary
 #===============================================================================
 def test_get_primary_in_range(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An SCLK inside a row's range returns that row's primary and body lists."""
     monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: 150)
     table: list[Any] = [((100, 200), [], 'JUPITER', ['IO'], ['EUROPA'], ['ADRASTEA'])]
     record = types.SimpleNamespace(observation=object())
@@ -251,6 +278,7 @@ def test_get_primary_in_range(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_get_primary_no_match_returns_fail(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An SCLK outside every range returns the empty-primary failure tuple."""
     monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: 999)
     table: list[Any] = [((100, 200), [], 'JUPITER', ['IO'], [], [])]
     record = types.SimpleNamespace(observation=object())
@@ -260,6 +288,7 @@ def test_get_primary_no_match_returns_fail(monkeypatch: pytest.MonkeyPatch) -> N
 
 def test_get_primary_excluded_observation_short_circuits(
         monkeypatch: pytest.MonkeyPatch) -> None:
+    """A row whose exceptions exclude the observation returns the failure tuple."""
     monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: 150)
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0CAL')
     table: list[Any] = [((100, 200), ['.*CAL'], 'JUPITER', ['IO'], [], [])]

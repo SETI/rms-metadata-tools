@@ -36,6 +36,10 @@ class IndexTable(com.Table):
                  **kwargs: Any) -> None:
         """Constructor for an IndexTable object.
 
+        If input_dir is None or empty, the constructor returns after the base-class
+        initialization, producing a stub table with no file list (create() is then a
+        no-op); cumulative table generation relies on such stubs.
+
         Parameters:
             input_dir: Directory containing the volume, specifically the data
                 labels.
@@ -46,6 +50,8 @@ class IndexTable(com.Table):
             qualifier: Qualifying string identifying the type of index file to
                 create, e.g., 'supplemental'.
             glob: Glob pattern for data files.
+            **kwargs: Additional keyword arguments (e.g., volume_id) passed on to
+                the Table base class.
 
         Raises:
             FileNotFoundError: If a primary index is required but its label is
@@ -69,8 +75,8 @@ class IndexTable(com.Table):
         self.volume_id = get_host_config().get_volume_id(self.input_dir)
 
         # Get relevant filenames and paths
-        primary_index_name = util.get_index_name(self.input_dir, self.volume_id, '')
-        index_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
+        primary_index_name = util.get_index_name(self.volume_id, '')
+        index_name = util.get_index_name(self.volume_id, qualifier)
         self.index_path = self.metadata_dir/(index_name + '.tab')
 
         # If the index name is the same as the primary index name,
@@ -106,7 +112,7 @@ class IndexTable(com.Table):
         logger.info('New%s index for %s.', s, self.volume_id)
 
         # Extract relevant fields from the template
-        label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
+        label_name = util.get_index_name(self.volume_id, qualifier)
         label_path = self.output_dir / FCPath(label_name + '.lbl')
 
         # as_string is True, so the result is a single string.
@@ -121,7 +127,7 @@ class IndexTable(com.Table):
         """Create the index file for a single volume.
 
         Parameters:
-            labels_only: If True, labels are generated for any existing geometry
+            labels_only: If True, labels are generated for any existing index
                 tables.
             pattern: Glob pattern for sub-selecting files to process.
         """
@@ -169,7 +175,7 @@ class IndexTable(com.Table):
         """Write a single index file entry.
 
         Parameters:
-            root: Top of the directory tree containing the volume.
+            root: Directory containing the PDS label file.
             name: Name of PDS label.
         """
 

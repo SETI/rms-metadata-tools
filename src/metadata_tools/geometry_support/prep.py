@@ -33,21 +33,23 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
 
     The tiles argument supports detailed listings where a geometric region is
     broken down into separate subregions. If the tiles argument is empty (which
-    is the default), then this routine writes a summary file.
+    is the default), then this routine produces summary rows.
 
-    If the tiles argument is not empty, then the routine writes a detailed file,
-    which generally contains one record for each non-empty subregion. The tiles
-    argument must be a list of boolean backplane keys, each equal to True for
-    the pixels within the subregion. An additional column is added before the
-    geometry columns, containing the index value of the associated tile.
+    If the tiles argument is not empty, then the routine produces detailed rows,
+    generally one for each non-empty subregion. The tiles argument must be a
+    list of boolean backplane keys, each equal to True for the pixels within the
+    subregion. An additional column is added before the geometry columns,
+    containing the index value of the associated tile.
 
     The first backplane in the list is treated differently. It should evaluate
     to an area roughly equal to the union of all the other backplanes. It is
-    used as an overlay to all subsequent tiles.
+    used as an overlay to all subsequent tiles, and tiling is suppressed when
+    the number of True samples in it is smaller than tiling_min.
 
-    In a summary listing, this routine writes one record per call, even if all
-    values are null. In a detailed listing, only records associated with
-    non-empty regions of the meshgrid are written.
+    In a summary listing, at most one row is produced per call; if all values
+    are null, a row is produced only when allow_zero_rows is False. In a
+    detailed listing, only rows associated with non-empty regions of the
+    meshgrid are produced.
 
     Parameters:
         record: The geometry record.
@@ -60,12 +62,13 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         column_descs: A list of column descriptions.
         primary: Name of primary body, uppercase, e.g., "SATURN".
         target: Optionally, the target name to write into the record.
-        name_length: The character width of a column to contain body names. If
-            zero (which is the default), then no name is written into the
-            record.
+        name_length: The character width of a column to contain body names;
+            default defs.NAME_LENGTH. Body names are padded or truncated to
+            this width.
         tiles: An optional list of boolean backplane keys, used to support the
-            generation of detailed tabulations instead of summary tabulations.
-            See details above.
+            generation of detailed tabulations instead of summary tabulations,
+            or a tuple of such lists to process multiple tile sets. See details
+            above.
         tiling_min: The lower limit on the number of meshgrid points in a region
             before that region is subdivided into tiles.
         ignore_shadows: True to ignore any mask constraints applicable to
@@ -78,8 +81,9 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
 
     Returns:
         A tuple (rows, overrides), where rows holds the strings comprising the
-        resulting rows, and overrides holds dicts of column entries to override
-        in the label, one dict for each column, not including prefix columns.
+        resulting rows, and overrides holds one list per row, each containing
+        one dict per column (prefix columns excluded) of label entries to
+        override.
     """
     if tiles is None:
         tiles = []

@@ -1,7 +1,7 @@
 ################################################################################
 # geometry_support/tables.py - Geometry table classes.
 ################################################################################
-"""Geometry table classes: InventoryTable and summary table support."""
+"""Geometry table classes: InventoryTable, SkyTable, SunTable, RingTable, BodyTable."""
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -81,7 +81,7 @@ class SkyTable(com.Table):
 # SunTable class
 ################################################################################
 class SunTable(com.Table):
-    """Class describing a sun geometry table. EXPERIMENTAL: not yet wired in.
+    """Class describing a sun geometry table. Not wired into the pipeline.
 
     The Sun is a body like any other, so a sun table is structured like the body
     table (its rows carry the same SYSTEM_NAME/BODY_NAME prefixes) with a single
@@ -90,17 +90,17 @@ class SunTable(com.Table):
     omits every illumination-based quantity (phase, incidence, sub-solar, ...).
 
     This table is intentionally NOT wired into the pipeline, because ``oops``
-    cannot currently evaluate any Sun-surface backplane. ``oops`` models the Sun
+    cannot evaluate any Sun-surface backplane. ``oops`` models the Sun
     as the sole illumination source and prepends ``'SUN<'`` to every surface
     event key; when the target surface is itself the Sun,
     ``Backplane.standardize_event_key`` collapses the duplicate
     ``('SUN<', 'SUN')`` to the illegal length-1 key ``('SUN<',)`` and raises
     ``ValueError: illegal surface event key``. Every ``SUN_COLUMNS`` key hits
-    this, so no sun row can be generated. Resolving it requires new backplane
-    support (e.g. a self-illuminated / observer-only surface event key), not a
-    change here.
+    this, so no sun row can be generated. Resolving it requires additional
+    backplane support that ``oops`` does not provide (e.g. a self-illuminated /
+    observer-only surface event key), not a change here.
 
-    Enablement recipe, once ``oops`` supports Sun-surface geometry:
+    Enablement recipe, should ``oops`` gain support for Sun-surface geometry:
       1. In ``suite.Suite.add_tables``, add ``SunTable`` at the ``'summary'``
          level (the Sun has no per-body tiling, so no detailed variant), and add
          it to the ``self.tables`` type annotation.
@@ -134,7 +134,7 @@ class SunTable(com.Table):
 
         The Sun is treated as a body, so its row uses the same body-name
         prefixing as the body table, with a single fixed target. See the class
-        docstring: this is dead until ``oops`` can evaluate Sun-surface
+        docstring: this cannot run unless ``oops`` can evaluate Sun-surface
         backplanes.
 
         Parameters:
@@ -166,6 +166,9 @@ class RingTable(com.Table):
     #===========================================================================
     def add(self, record: 'Record') -> None:
         """Add a Ring row.
+
+        A row is added only when the record has a primary body and that primary
+        has rings.
 
         Parameters:
             record: Record describing the row to add.
@@ -199,10 +202,11 @@ class BodyTable(com.Table):
 
     #===========================================================================
     def add(self, record: 'Record') -> None:
-        """Add a Body row.
+        """Add a row for each body selected in the record.
 
         Parameters:
-            record: Record describing the row to add.
+            record: Record describing the rows to add; one row is added per
+                entry in record.bodies.
         """
         for name in record.bodies:
             self.rows += record.add(cast(str, self.qualifier), name=name, target=name)

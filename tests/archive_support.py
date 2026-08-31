@@ -1,6 +1,7 @@
 ################################################################################
 # Shared helpers for the $RMS_METADATA archive-backed tests
 ################################################################################
+"""Shared helpers for the $RMS_METADATA archive-backed tests."""
 import glob
 import os
 from typing import Any
@@ -55,19 +56,19 @@ def exclude(files: list[str], *patterns: str) -> list[str]:
 #===========================================================================
 def bounds(file: str, table: Any, key: str,
            min_val: float = 0, max_val: float = 360, minmax: bool = True) -> None:
-    """Test whether values exceed given minimum and maximum bounds.
+    """Assert that all non-null values of a column lie within the given bounds.
 
     Parameters:
         file (str): Name of data file.
-        table (pdsTable): PdsTable object containing the data table.
+        table (PdsTable): PdsTable object containing the data table.
         key (str):
-            Name of quantity to test.  If minmax==True, the "MINIMUM_" and
+            Name of quantity to test. If minmax==True, the "MINIMUM_" and
             "MAXIMUM_" prefixes must be omitted, and the function will add them
             and test both keys.
         min_val (float): Minimum allowable value.
         max_val (float): Maximum allowable value.
-        minmax (bool): If set, both the  are "MINIMUM_" and "MAXIMUM_" keys are
-                       tested.  In this case, those prefixes must be omitted
+        minmax (bool): If True, both the "MINIMUM_" and "MAXIMUM_" keys are
+                       tested. In this case, those prefixes must be omitted
                        from the key argument.
 
     Raises:

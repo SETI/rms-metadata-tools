@@ -1,6 +1,7 @@
 ################################################################################
 # tests/test_index.py
 ################################################################################
+"""Supplemental index label tests against pre-generated $RMS_METADATA holdings."""
 import numpy as np
 import pdstable
 import pytest
@@ -16,6 +17,7 @@ pytestmark = pytest.mark.requires_archive
 #===============================================================================
 # test cumulative file
 def test_supplemental_index__cumulative() -> None:
+    """Every cumulative volume's supplemental index label parses as a PdsTable."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_0999_supplemental_index.lbl')  # type: ignore[arg-type]
@@ -31,6 +33,7 @@ def test_supplemental_index__cumulative() -> None:
 #===============================================================================
 # test supplemental index common fields
 def test_supplemental_index_common() -> None:
+    """Every supplemental index has consistent counts and string common columns."""
 
     # Get labels to test
     files = support.match(support.METADATA, '*_supplemental_index.lbl')  # type: ignore[arg-type]

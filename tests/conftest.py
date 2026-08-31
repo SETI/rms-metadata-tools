@@ -12,6 +12,7 @@
 #     SCLK conversion; the fake geometry_config's MISSION_TABLE = [] makes that
 #     conversion a no-op.)
 ################################################################################
+"""Hermetic import shim and shared fixtures for the metadata_tools test suite."""
 import types
 from collections.abc import Callable, Sequence
 from pathlib import Path
@@ -60,6 +61,7 @@ class FakeWhere:
     """Stand-in for an oops boolean backplane result exposing ``.vals``."""
 
     def __init__(self, vals: npt.NDArray[np.bool_]) -> None:
+        """Store the boolean array exposed as ``.vals``."""
         self.vals = vals
 
 
@@ -72,6 +74,11 @@ class FakeBackplane:
     """
 
     def __init__(self, shape: tuple[int, ...] = (4, 4)) -> None:
+        """Create an all-False backplane stub of the given shape.
+
+        Parameters:
+            shape: Shape of the boolean arrays returned by the where_* methods.
+        """
         self.shape = shape
         self._false = np.zeros(shape, dtype=bool)
         # Per-method override registries keyed by the body-name arguments.
@@ -83,21 +90,27 @@ class FakeBackplane:
         self.evaluations: dict[tuple[Any, ...], Any] = {}
 
     def _lookup(self, registry: dict[Any, npt.NDArray[np.bool_]], key: Any) -> FakeWhere:
+        """Return a FakeWhere from the registry, defaulting to all-False."""
         return FakeWhere(registry.get(key, self._false))
 
     def where_in_back(self, target: str, obscurer: str) -> FakeWhere:
+        """Return the registered in-back mask for (target, obscurer)."""
         return self._lookup(self.in_back, (target, obscurer))
 
     def where_inside_shadow(self, target: str, shadower: str) -> FakeWhere:
+        """Return the registered shadow mask for (target, shadower)."""
         return self._lookup(self.inside_shadow, (target, shadower))
 
     def where_antisunward(self, target: str) -> FakeWhere:
+        """Return the registered antisunward mask for the target."""
         return self._lookup(self.antisunward, target)
 
     def where_sunward(self, target: str) -> FakeWhere:
+        """Return the registered sunward mask for the target."""
         return self._lookup(self.sunward, target)
 
     def evaluate(self, key: tuple[Any, ...]) -> Any:
+        """Return the registered evaluation for key, or an all-masked Scalar."""
         import oops
         if key in self.evaluations:
             return self.evaluations[key]
@@ -162,11 +175,14 @@ def record_stub() -> Callable[..., Any]:
 
 @pytest.fixture
 def tmp_volume_tree(tmp_path: Path) -> Callable[..., FCPath]:
-    """Build a tiny on-disk GO_0xxx/<volume>/... tree of stub files.
+    """Factory building a tiny on-disk GO_0xxx/<volume>/... tree of stub files.
 
-    Returns the collection root (the directory whose name is the collection,
-    e.g. 'GO_0xxx', containing volume subdirectories). Each volume gets the
-    requested table/label stub files.
+    Each volume gets the requested table/label stub files.
+
+    Returns:
+        A factory callable; the factory returns the collection root (the
+        directory whose name is the collection, e.g. 'GO_0xxx', containing the
+        volume subdirectories).
     """
     def _make(collection: str = 'GO_0xxx',
               volumes: Sequence[str] = ('GO_0001', 'GO_0002'),

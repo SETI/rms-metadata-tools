@@ -1,4 +1,9 @@
-"""Shared host-directory injection for CLI entry points."""
+"""Shared helpers for CLI entry points.
+
+Covers host-directory injection, sys.argv defaulting and path resolution, GCP
+startup-script construction, cloud dispatch via ``cloud_tasks run``, and local
+Worker execution.
+"""
 import argparse
 import asyncio
 import contextlib
@@ -21,12 +26,15 @@ def load_host(host_id: str) -> Path:
     ``metadata_tools.config.set_host(host_id)`` to register that host's config
     modules (see issue #112).
 
+    Parameters:
+        host_id: The host identifier (e.g. ``'GO_0xxx'``).
+
     Returns:
         Absolute path to the resolved host directory.
     """
     host_dir = Path(__file__).parent.parent / 'hosts' / host_id
     if not host_dir.is_dir():
-        sys.exit(f'Unknown host: {host_id!r} — no directory at {host_dir}')
+        sys.exit(f'Unknown host: {host_id!r}; no directory at {host_dir}')
     sys.argv = [sys.argv[0]] + sys.argv[2:]
     return host_dir
 
@@ -39,6 +47,12 @@ def host_dir_for(host_id: str) -> Path:
         host_dir=$(python -c "
             from metadata_tools.cli._host import host_dir_for
             print(host_dir_for('GO_0xxx'))")
+
+    Parameters:
+        host_id: The host identifier (e.g. ``'GO_0xxx'``).
+
+    Returns:
+        Absolute path to the host directory (not validated to exist).
     """
     return Path(__file__).parent.parent / 'hosts' / host_id
 
@@ -47,15 +61,21 @@ def cloud_dir_for(host_id: str) -> Path:
     """Return the absolute cloud deployment directory path for *host_id*.
 
     Resolves ``cloud/<host_id>/`` relative to the repository root (four levels
-    above this file in an editable install).  Only valid in a development checkout;
+    above this file in an editable install). Only valid in a development checkout;
     a regular ``pip install`` lands this file in site-packages where the ``cloud/``
     tree is not present.
+
+    Parameters:
+        host_id: The host identifier (e.g. ``'GO_0xxx'``).
+
+    Returns:
+        Absolute path to the ``cloud/<host_id>/`` directory (not validated to exist).
     """
     return Path(__file__).parent.parent.parent.parent / 'cloud' / host_id
 
 
 def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
-    """Rewrite relative ``--config`` and ``--task-file`` values in sys.argv to absolute paths.
+    """Rewrite relative --config and --task-file values in sys.argv to absolute paths.
 
     For either ``--config`` or ``--task-file``:
 
@@ -64,12 +84,19 @@ def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
       directory can be selected even though its bare name would resolve elsewhere.
     * **Bare filenames** (no directory components) are resolved against *cloud_dir* (if
       provided) or *host_dir*.
-    * **Relative paths with directory components** that do not exist from the current working
-      directory are resolved against the repository root (two levels above *cloud_dir*), so
-      paths like ``cloud/GO_0xxx/gcp_cumulative_config.yml`` work regardless of cwd.
+    * **Relative paths with directory components** that do not exist from the current
+      working directory are resolved against the repository root (two levels above
+      *cloud_dir*), so paths like ``cloud/GO_0xxx/gcp_cumulative_config.yml`` work
+      regardless of cwd.
 
     Absolute paths and cloud URLs (``gs://``, ``s3://``, ``https://``, etc.) are left
     unchanged.
+
+    Parameters:
+        host_dir: The host directory (from :func:`load_host`) used to resolve bare
+            filenames when *cloud_dir* is not given.
+        cloud_dir: Optional cloud deployment directory; when given, bare filenames
+            resolve against it and repository-root fallback resolution is enabled.
     """
     base = cloud_dir if cloud_dir is not None else host_dir
     for i, arg in enumerate(sys.argv[:-1]):
@@ -94,18 +121,13 @@ def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
                     sys.argv[i + 1] = str(candidate)
 
 
-def resolve_task_file(host_dir: Path) -> None:
-    """Alias for :func:`resolve_host_paths`; kept for backwards compatibility."""
-    resolve_host_paths(host_dir)
-
-
 def default_config_arg(host_id: str, config_type: str) -> Path:
     """Default ``--config`` to the host's conventional GCP config file.
 
     When ``--config`` is absent from sys.argv and the conventional
     ``cloud/<host_id>/gcp_<config_type>_config.yml`` exists, append it so cloud
-    dispatch can be invoked without naming the config explicitly.  A missing
-    default is not an error here — the entry point's own ``--config`` check
+    dispatch can be invoked without naming the config explicitly. A missing
+    default is not an error here; the entry point's own ``--config`` check
     reports it, using the returned path.
 
     Parameters:
@@ -126,7 +148,7 @@ def default_task_file_arg() -> Path:
     """Default ``--task-file`` to ``tasks.json`` in the current working directory.
 
     Supports the run-directory workflow: dispatching from a directory holding a
-    ``tasks.json`` needs no ``--task-file`` flag.  Skipped when a task source is
+    ``tasks.json`` needs no ``--task-file`` flag. Skipped when a task source is
     already given (``--task-file`` or ``--volumes``), when ``--continue`` resumes
     an existing run, or when ``./tasks.json`` does not exist.
 
@@ -142,8 +164,14 @@ def default_task_file_arg() -> Path:
 def pop_argv_flag(flag: str) -> str | None:
     """Remove *flag* and its value from sys.argv and return the value.
 
-    Returns ``None`` if *flag* is absent.  Calls ``sys.exit`` with an error
-    message if *flag* is present but has no following value.
+    Calls ``sys.exit`` with an error message if *flag* is present but has no
+    following value.
+
+    Parameters:
+        flag: The command-line flag to remove (e.g. ``'--config'``).
+
+    Returns:
+        The flag's value, or ``None`` if *flag* is absent.
     """
     if flag not in sys.argv:
         return None
@@ -156,7 +184,14 @@ def pop_argv_flag(flag: str) -> str | None:
 
 
 def pop_argv_bool_flag(flag: str) -> bool:
-    """Remove *flag* from sys.argv if present and return whether it was found."""
+    """Remove *flag* from sys.argv if present and return whether it was found.
+
+    Parameters:
+        flag: The command-line flag to remove.
+
+    Returns:
+        True if *flag* was found (and removed), False otherwise.
+    """
     if flag not in sys.argv:
         return False
     sys.argv.remove(flag)
@@ -167,9 +202,16 @@ def _strip_cloud_args(argv: list[str], cloud_args: list[str]) -> list[str]:
     """Remove cloud_args elements from argv in order, returning what remains.
 
     Walks both lists in tandem, consuming each cloud_args element the first time
-    it appears in argv.  This correctly handles flag+value pairs (e.g.
+    it appears in argv. This correctly handles flag+value pairs (e.g.
     ``['--config', 'foo.yml']``) because argparse returns them as consecutive
     entries in the extras list and they appear consecutively in argv too.
+
+    Parameters:
+        argv: The full argument list to filter.
+        cloud_args: The arguments to remove, in the order they appear in *argv*.
+
+    Returns:
+        The elements of *argv* not consumed as *cloud_args*.
     """
     cloud_iter = iter(cloud_args)
     next_drop = next(cloud_iter, None)
@@ -192,7 +234,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
 
     Combines the startup template with a worker command reconstructed from the
     metadata_tools arguments in ``sys.argv`` (unknown flags, including any
-    cloud_tasks or ``--create-startup-file`` flags, are stripped).  The git
+    cloud_tasks or ``--create-startup-file`` flags, are stripped). The git
     branch to clone is injected as ``BRANCH``.
 
     Parameters:
@@ -202,15 +244,15 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
         worker_cmd_name: Name of the worker console script to embed. Defaults to
             the name of the current executable.
         startup_template: Path to the startup template file to use instead of the
-            default ``cloud/gcp_common_startup.sh``.  Falls back to the
+            default ``cloud/gcp_common_startup.sh``. Falls back to the
             ``GCP_STARTUP_TEMPLATE`` environment variable when ``None``.
         oops_resources: Name of the persistent disk to mount as OOPS resources,
-            injected as ``OOPS_RESOURCES_DISK`` in the script header.  Falls back
+            injected as ``OOPS_RESOURCES_DISK`` in the script header. Falls back
             to the ``OOPS_RESOURCES_DISK`` environment variable when ``None``.
             Calls ``sys.exit`` if neither is provided.
         debug_branch: Git branch to clone on the GCP VM, injected as ``BRANCH``
-            in the script header.  Falls back to the ``GCP_DEBUG_BRANCH``
-            environment variable.  When neither is set the startup template
+            in the script header. Falls back to the ``GCP_DEBUG_BRANCH``
+            environment variable. When neither is set the startup template
             installs from PyPI instead of cloning the repository.
         for_ssh: When ``True``, produce an SSH-pastable variant: replace
             ``cd /root`` with ``cd ~``; recover ``--task-file`` (normally
@@ -244,7 +286,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
         # GOOGLE_CLOUD_QUOTA_PROJECT.  google-auth's _apply_quota_project_id() reads this
         # env var via with_quota_project_from_environment() and sets quota_project_id on the
         # credentials, which causes the x-goog-user-project header to be included in every
-        # GCS request.  This is the correct mechanism for requester-pays bucket access —
+        # GCS request.  This is the correct mechanism for requester-pays bucket access;
         # GOOGLE_CLOUD_PROJECT alone is not sufficient because filecache does not pass
         # user_project to client.bucket().
         header_lines.append(
@@ -265,7 +307,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
         template_body = template_body.replace('cd /root', 'cd ~')
 
     # In SSH paste mode: (1) recover --task-file, which build_startup_script strips as a
-    # cloud_tasks arg — embed local files as a heredoc so the instance has a local copy,
+    # cloud_tasks arg: embed local files as a heredoc so the instance has a local copy,
     # and pass remote URLs (gs://, s3://, ...) through as-is; (2) cancel set -e before
     # the worker command so a worker failure does not terminate the interactive shell session.
     task_file_inject = ''
@@ -305,7 +347,7 @@ def dispatch_cloud_run_if_config(host_id: str,
 
     Generates the GCP instance startup script at runtime by combining the startup
     template with a worker command reconstructed from the metadata_tools arguments
-    in ``sys.argv``.  The current git branch is detected and injected as ``BRANCH``
+    in ``sys.argv``. The current git branch is detected and injected as ``BRANCH``
     so the VM clones the same code that dispatched it.
 
     The startup script is delivered to cloud_tasks by injecting ``startup_script_file``
@@ -313,7 +355,7 @@ def dispatch_cloud_run_if_config(host_id: str,
     cloud_tasks reads the startup script from the YAML, not from a CLI flag.
 
     If ``--config`` is absent, returns ``None`` and the caller continues with
-    normal local Worker execution.  If ``--config`` is present, invokes::
+    normal local Worker execution. If ``--config`` is present, invokes::
 
         cloud_tasks run <cloud_tasks_args (with --config replaced by temp YAML)>
 
@@ -330,7 +372,7 @@ def dispatch_cloud_run_if_config(host_id: str,
             flags (kept in the startup script worker command) from cloud_tasks
             flags (passed to ``cloud_tasks run``).
         worker_cmd_name: Name of the worker console script to embed in the GCP
-            startup script (e.g. ``'metadata-index-worker'``).  Defaults to the
+            startup script (e.g. ``'metadata-index-worker'``). Defaults to the
             name of the current executable (``Path(sys.argv[0]).name``), which
             is appropriate when the dispatcher and worker share the same entry
             point name.
@@ -339,15 +381,24 @@ def dispatch_cloud_run_if_config(host_id: str,
         oops_resources: Persistent disk name passed to :func:`build_startup_script`;
             see that function for details.
         service_account: GCP service account to pass to ``cloud_tasks run`` via
-            ``--service-account``.  Takes precedence over the ``GCP_SERVICE_ACCOUNT``
+            ``--service-account``. Takes precedence over the ``GCP_SERVICE_ACCOUNT``
             environment variable.
         debug_branch: Git branch passed to :func:`build_startup_script`; see that
             function for details.
+
+    Returns:
+        ``None`` if ``--config`` is absent (the caller continues with normal local
+        Worker execution); otherwise the ``cloud_tasks run`` subprocess exit code,
+        for the caller to pass to ``sys.exit()``.
+
+    Raises:
+        TypeError: If the config YAML's provider section is not a mapping.
     """
     if '--config' not in sys.argv:
         return None
 
-    # Split argv into metadata_tools args (→ startup script) and cloud_tasks args (→ dispatch).
+    # Split argv into metadata_tools args (-> startup script) and cloud_tasks args
+    # (-> dispatch).
     _ns, cloud_args = parser.parse_known_args(sys.argv[1:])
 
     startup = build_startup_script(host_id, parser, worker_cmd_name, startup_template,
@@ -360,7 +411,7 @@ def dispatch_cloud_run_if_config(host_id: str,
     # sh_tmp is closed (but not deleted); clean up in the outer finally.
     try:
         # cloud_tasks reads the startup script from startup_script_file in the config
-        # YAML — passing --startup-script-file on the CLI has no effect.  Inject the
+        # YAML; passing --startup-script-file on the CLI has no effect.  Inject the
         # field into a modified copy of the config YAML and swap the --config path.
         import yaml  # only needed on the GCP dispatch path (cloud extra)
 
@@ -369,7 +420,7 @@ def dispatch_cloud_run_if_config(host_id: str,
         if config_path.startswith('-'):
             sys.exit(
                 f'Error: --config value looks like a flag ({config_path!r}). '
-                'The argparser consumed the config path as a positional argument — '
+                'The argparser consumed the config path as a positional argument; '
                 'check that all required positional arguments are provided before --config.'
             )
         with open(config_path, encoding='utf-8') as cfg_f:
@@ -413,10 +464,13 @@ def dispatch_cloud_run_if_config(host_id: str,
 def single_task_as_task_file() -> Iterator[None]:
     """Context manager: inject a single-task file when ``--task-file`` is absent.
 
-    Cumulative runs always consist of exactly one task.  When ``--task-file`` is
+    Cumulative runs always consist of exactly one task. When ``--task-file`` is
     not already in sys.argv, write a minimal one-task JSON to a temp file and
     add ``--task-file <path>`` to sys.argv so the Worker has a task source.
     The temp file is deleted automatically when the ``with`` block exits.
+
+    Yields:
+        None.
     """
     if '--task-file' in sys.argv:
         yield
@@ -432,14 +486,17 @@ def single_task_as_task_file() -> Iterator[None]:
 
 @contextlib.contextmanager
 def volumes_as_task_file() -> Iterator[None]:
-    """Context manager: convert ``--volumes`` to a temp task file when ``--config`` is also present.
+    """Context manager: convert --volumes to a temp task file when --config is present.
 
-    ``cloud_tasks run`` does not understand ``--volumes``.  When both flags are
-    present (GCP dispatch with an inline volume list), materialise the volumes
+    ``cloud_tasks run`` does not understand ``--volumes``. When both flags are
+    present (GCP dispatch with an inline volume list), materialize the volumes
     into a temporary JSON task file, rewrite sys.argv to use ``--task-file``
     instead, and drop the ``--volumes`` entries so dispatch proceeds normally.
     The temp file is deleted automatically when the ``with`` block exits, even
     on interrupt.
+
+    Yields:
+        None.
     """
     if '--volumes' not in sys.argv or '--config' not in sys.argv:
         yield

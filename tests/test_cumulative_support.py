@@ -1,6 +1,7 @@
 ################################################################################
 # tests/test_cumulative_support.py: _cat_rows walk + create_cumulative_indexes.
 ################################################################################
+"""Tests for cumulative_support: _cat_rows and create_cumulative_indexes."""
 import argparse
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ hconf = get_host_config()
 #===============================================================================
 def test_cat_rows_concatenates_volumes(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
+    """Rows from every volume are concatenated into the cumulative table file."""
     root = tmp_path / 'GO_0xxx'
     for vol, line in [('GO_0001', 'a'), ('GO_0002', 'b')]:
         vdir = root / vol
@@ -46,6 +48,7 @@ def test_cat_rows_concatenates_volumes(
 
 def test_cat_rows_excludes_volume(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
+    """Volumes listed in exclude contribute no rows."""
     root = tmp_path / 'GO_0xxx'
     for vol in ('GO_0001', 'GO_0002'):
         vdir = root / vol
@@ -61,12 +64,12 @@ def test_cat_rows_excludes_volume(
     cum._cat_rows(FCPath(root), FCPath(cumulative_dir), FCPath('/tmpl.lbl'),
                   'GO_0[0-9][0-9][0-9]', geom.SkyTable(level='summary'),
                   exclude=['GO_0002'])
-    # Only GO_0001 contributes a row.
     assert written['content'] == ['x']
 
 
 def test_cat_rows_inventory_uses_csv(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
+    """The inventory table is written with a .csv suffix."""
     root = tmp_path / 'GO_0xxx'
     vdir = root / 'GO_0001'
     vdir.mkdir(parents=True)
@@ -85,6 +88,7 @@ def test_cat_rows_inventory_uses_csv(
 
 def test_cat_rows_skips_missing_table(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
+    """A volume without the table file contributes nothing; nothing is written."""
     root = tmp_path / 'GO_0xxx'
     (root / 'GO_0001').mkdir(parents=True)  # no table file present
     cumulative_dir = root / 'GO_0999'
@@ -95,7 +99,6 @@ def test_cat_rows_skips_missing_table(
     monkeypatch.setattr(lab, 'create', lambda *a, **k: None)
     cum._cat_rows(FCPath(root), FCPath(cumulative_dir), FCPath('/tmpl.lbl'),
                   'GO_0[0-9][0-9][0-9]', geom.SkyTable(level='summary'))
-    # No content -> nothing written.
     assert wrote == []
 
 
