@@ -32,7 +32,7 @@ def test_select_dir_skips_collection_when_already_tail() -> None:
 #===============================================================================
 def test_get_index_name_with_type() -> None:
     """The index name is <volume>_<type>_index."""
-    name = util.get_index_name(FCPath('/x/GO_0001'), 'GO_0001', 'supplemental')
+    name = util.get_index_name('GO_0001', 'supplemental')
     assert name == 'GO_0001_supplemental_index'
 
 
@@ -42,7 +42,7 @@ def test_get_index_name_without_type() -> None:
     index_type is annotated str, but None is accepted at runtime; this test
     deliberately exercises that path.
     """
-    name = util.get_index_name(FCPath('/x/GO_0001'), 'GO_0001', None)  # type: ignore[arg-type]
+    name = util.get_index_name('GO_0001', None)
     assert name == 'GO_0001_index'
 
 

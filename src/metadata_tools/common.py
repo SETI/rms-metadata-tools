@@ -141,7 +141,7 @@ class Table:
     def __init__(self, output_dir: str | Path | FCPath | None = None,
                  template_path: str | Path | FCPath | None = None,
                  volume_id: str | None = None, level: str | None = None,
-                 qualifier: str | None = None, prefix: str | None = None,
+                 qualifier: str | None = None,
                  suffix: str | None = None, use_global_template: bool = False) -> None:
         """Constructor for a table object.
 
@@ -152,8 +152,6 @@ class Table:
             level: Processing level: "summary", "detailed", or "index".
             qualifier: "sky", "sun", "ring", "body", "inventory", or
                 "supplemental".
-            prefix: Ignored. The output file prefix is always derived from
-                output_dir and volume_id.
             suffix: File name suffix.
             use_global_template: If True, the label template is to be found in the
                 global template directory.

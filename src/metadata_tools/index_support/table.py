@@ -75,8 +75,8 @@ class IndexTable(com.Table):
         self.volume_id = get_host_config().get_volume_id(self.input_dir)
 
         # Get relevant filenames and paths
-        primary_index_name = util.get_index_name(self.input_dir, self.volume_id, '')
-        index_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
+        primary_index_name = util.get_index_name(self.volume_id, '')
+        index_name = util.get_index_name(self.volume_id, qualifier)
         self.index_path = self.metadata_dir/(index_name + '.tab')
 
         # If the index name is the same as the primary index name,
@@ -112,7 +112,7 @@ class IndexTable(com.Table):
         logger.info('New%s index for %s.', s, self.volume_id)
 
         # Extract relevant fields from the template
-        label_name = util.get_index_name(self.input_dir, self.volume_id, qualifier)
+        label_name = util.get_index_name(self.volume_id, qualifier)
         label_path = self.output_dir / FCPath(label_name + '.lbl')
 
         # as_string is True, so the result is a single string.

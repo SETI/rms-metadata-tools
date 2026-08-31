@@ -78,8 +78,7 @@ class Suite:
         index_filename = index_filenames[0]
         ext = index_filename.suffix
         self.volume_id = config.get_volume_id(self.input_dir)
-        supplemental_index_name = util.get_index_name(self.input_dir,
-                                                      self.volume_id, 'supplemental')
+        supplemental_index_name = util.get_index_name(self.volume_id, 'supplemental')
         supplemental_index_filename = \
             self.input_dir.joinpath(supplemental_index_name+ext)
 
@@ -99,6 +98,7 @@ class Suite:
             return
 
         # Initialize data tables
+        self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = []
         for level in self.levels:
             self.add_tables(output_dir, level)
 
@@ -166,19 +166,22 @@ class Suite:
 
     #===========================================================================
     def add_tables(self, output_dir: str | Path | FCPath, level: str) -> None:
-        """Create the set of tables for one processing level.
+        """Create the tables for one processing level and append them to ``self.tables``.
 
-        Assigns a fresh list to ``self.tables``, so tables created by any earlier call
-        are discarded; only the tables from the most recent call are retained.
+        The level-independent InventoryTable is created once, on the first call;
+        each call appends the Sky, Ring, and Body tables for *level*, so a Suite
+        with both processing levels accumulates one table set per level.
 
         Parameters:
             output_dir: Directory in which to write the geometry files.
             level: 'summary' or 'detailed'.
         """
-        # A SunTable would be inserted here (summary level only); it is not yet
+        # A SunTable would be inserted here (summary level only); it is not
         # wired in. See tables.SunTable for the blocker and enablement recipe.
-        self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = [
-            InventoryTable(output_dir, self.template_path, volume_id=self.volume_id),
+        if not any(isinstance(table, InventoryTable) for table in self.tables):
+            self.tables.append(
+                InventoryTable(output_dir, self.template_path, volume_id=self.volume_id))
+        self.tables += [
             SkyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
             RingTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
             BodyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level)
@@ -208,13 +211,22 @@ class Suite:
     def add(self, records: list[Record]) -> None:
         """Add a row to all tables.
 
+        Each level-specific table receives the record whose level matches; a
+        level-independent table (the InventoryTable) receives only the first
+        record, so its rows are not duplicated when both processing levels are
+        active.
+
         Parameters:
             records: Records describing the rows to add, one for each processing
                 level.
         """
         for table in self.tables:
+            if table.level is None:
+                if records:
+                    table.add(records[0])
+                continue
             for record in records:
-                if (record.level == table.level) | (table.level is None):
+                if record.level == table.level:
                     table.add(record)
 
     #===========================================================================

@@ -47,20 +47,18 @@ def select_dir(tree: FCPath, col: str, vol: str) -> FCPath:
     return tree / vol
 
 #===============================================================================
-def get_index_name(tree: FCPath, vol_id: str, index_type: str) -> str:
+def get_index_name(vol_id: str, index_type: str | None) -> str:
     """Determine the name of the index file.
 
     Parameters:
-        tree: Ignored. The result depends only on vol_id and index_type.
         vol_id: Volume ID.
-        index_type: Index type.
+        index_type: Index type, or None or '' for the primary index.
 
     Returns:
         Index name.
     """
 
     # Name starts with volume id
-    tree = tree.absolute()
     name = vol_id
 
     # Add type if given
