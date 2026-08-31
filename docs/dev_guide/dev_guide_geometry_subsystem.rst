@@ -87,12 +87,26 @@ formats keyed by ``(column_name, alt_format_tag)``.
 Body selection
 ==============
 
-:mod:`metadata_tools.geometry_support.bodies_select` decides which bodies appear
-in a record: the primary and secondaries are always included; children of the
-primary and any additions are included when they intersect the field of view;
-the target and its parent are always included. It also produces the
-field-of-view inventory and, when SPICE pointing is unavailable, sets the
-record's ``pointing_available`` flag so the row is written with null geometry.
+The candidates come from the host's **mission table**
+(``MISSION_TABLE`` in ``geometry_config.py``): one row per mission phase, giving
+an SCLK range, exception patterns for observations to skip, and that phase's
+primary, secondaries, selections, and additions.
+:func:`~metadata_tools.geometry_support.formats.get_mission_table` converts the
+SCLK strings to ticks once per host and caches the result (the conversion needs
+SPICE), and :func:`~metadata_tools.geometry_support.bodies_select.get_primary`
+picks the row whose SCLK range contains the observation's clock count — an
+observation matching a row's exceptions gets no primary and is written with
+null geometry.
+
+:mod:`metadata_tools.geometry_support.bodies_select` then decides which bodies
+appear in the record: the primary and secondaries are always included; children
+of the primary are included when they intersect the field of view (restricted
+to the selections when the row lists any); with no primary, the selections that
+intersect the field of view are used instead; additions are included whenever
+they intersect the field of view; and the target and, for a satellite, its
+parent are always included. It also produces the field-of-view inventory and,
+when SPICE pointing is unavailable, sets the record's ``pointing_available``
+flag so the row is written with null geometry.
 
 Important invariants
 ====================

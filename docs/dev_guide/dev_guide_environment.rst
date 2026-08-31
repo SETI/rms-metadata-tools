@@ -21,10 +21,17 @@ override that.
 Environment variables
 =====================
 
-The engine reads no environment variable directly; path arguments are expanded
-for ``$NAME`` references at runtime (see
-:doc:`/user_guide/user_guide_installation`). For development the relevant
-variables are those the **test suite** reads at import time:
+The processing engine (``index_support``, ``geometry_support``,
+``cumulative_support``) reads no environment variable directly; path arguments
+are expanded for ``$NAME`` references at runtime (see
+:doc:`/user_guide/user_guide_installation`). The **cloud dispatch layer**
+(``cli/``) does read environment variables as fallbacks for its flags —
+``GCP_SERVICE_ACCOUNT``, ``OOPS_RESOURCES_DISK``, ``GCP_STARTUP_TEMPLATE``, and
+``GCP_DEBUG_BRANCH`` — and importing ``metadata_tools`` loads a git-ignored
+``.env`` file at the repository root as defaults for unset variables (see the
+environment-variable table in :doc:`/user_guide/user_guide_cloud`). For
+development the other relevant variables are those the **test suite** reads at
+import time:
 
 .. list-table::
    :header-rows: 1
@@ -102,7 +109,7 @@ The individual tools, run from the repository root inside the venv:
    bandit -c pyproject.toml -r src -q
    vulture src tests
    python -m pyroma .
-   pip audit
+   pip-audit --skip-editable
    sphinx-build -W -b html docs docs/_build
    sphinx-build -n -b html docs docs/_build
    pymarkdown scan docs/ README.md CONTRIBUTING.md
@@ -124,7 +131,9 @@ The ``Run Tests`` GitHub Actions workflow runs on pull requests to ``main``,
 pushes to ``main``, a weekly schedule, and manual dispatch. It has two jobs:
 
 - **lint** (Python 3.11): ``ruff check``, ``mypy``, ``bandit``, ``vulture``,
-  ``pyroma``, ``pip audit``, the ``sphinx-build -W`` docs build, and ``pymarkdown``.
+  ``pyroma``, ``pip-audit``, the ``sphinx-build -W`` docs build, and ``pymarkdown``.
+  ``pip-audit`` queries the PyPI advisory database, so it runs in CI only and has
+  no ``run-all-checks.sh`` counterpart.
 - **test**: the pytest suite with coverage across Python 3.11, 3.12, and 3.13,
   uploading coverage to Codecov.
 
