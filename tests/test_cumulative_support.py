@@ -127,18 +127,6 @@ def test_create_cumulative_indexes_fires_eight_cat_rows(
     assert ('IndexTable', 'index') in calls
 
 
-def test_create_cumulative_indexes_empty_volumes_overrides_args(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
-    """An explicit empty volumes list is honored instead of falling back to args.volumes."""
-    volumes_seen: list[list[str] | None] = []
-    monkeypatch.setattr(cum, '_cat_rows',
-                        lambda *a, **k: volumes_seen.append(k.get('volumes')))
-    args = argparse.Namespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
-                              volumes=['GO_0001'], exclude=None)
-    cum.create_cumulative_indexes('GO_0xxx_supplemental_index', volumes=[], args=args)
-    assert volumes_seen == [[]] * 8
-
-
 def test_create_cumulative_indexes_uses_args_exclude_over_parameter(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
     """A user-supplied --exclude (args.exclude) must override the exclude= parameter."""

@@ -35,9 +35,7 @@ def _cat_rows(volume_tree: FCPath,
         volume_glob: Glob pattern for volume identification.
         table: Table object.
         exclude: List of volumes to exclude.
-        volumes: List of volume ids to process; an explicit list (even empty)
-            selects exactly those volumes, while None processes every
-            discovered volume.
+        volumes: If given, only these volumes are processed.
     """
     logger = com.get_logger()
     hconf = get_host_config()
@@ -79,8 +77,7 @@ def _cat_rows(volume_tree: FCPath,
 
         # Test whether this root is a volume
         if fnmatch.filter([vol], volume_glob):
-            # volumes=None means all volumes; an explicit list (even empty) is a filter.
-            if volumes is None or vol in volumes:
+            if not volumes or vol in volumes:
                 if vol != cumulative_dir.name:
                     volume_id = hconf.get_volume_id(root)
                     cumulative_id = hconf.get_volume_id(cumulative_dir)
@@ -145,8 +142,8 @@ def create_cumulative_indexes(template_name: str,
 
     Parameters:
         template_name: Name of index template.
-        volumes: List of volume ids to process; an explicit list (even empty)
-            overrides args.volumes, while None falls back to args.volumes.
+        volumes: List of volume ids to process. A non-empty list overrides
+            args.volumes; an empty list or None falls back to args.volumes.
         args: Parsed arguments.
         exclude: List of volumes to exclude.
     """
@@ -158,8 +155,7 @@ def create_cumulative_indexes(template_name: str,
         parser = get_args(host=host, exclude=exclude)
         args = parser.parse_args()
 
-    # An explicit volumes list, including an empty one, overrides args.volumes.
-    if volumes is None:
+    if not volumes:
         volumes = args.volumes
 
     # A user-supplied --exclude on the command line takes precedence over the

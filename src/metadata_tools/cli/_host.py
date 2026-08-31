@@ -121,15 +121,6 @@ def resolve_host_paths(host_dir: Path, cloud_dir: Path | None = None) -> None:
                     sys.argv[i + 1] = str(candidate)
 
 
-def resolve_task_file(host_dir: Path) -> None:
-    """Alias for :func:`resolve_host_paths`.
-
-    Parameters:
-        host_dir: The host directory used to resolve bare filenames.
-    """
-    resolve_host_paths(host_dir)
-
-
 def default_config_arg(host_id: str, config_type: str) -> Path:
     """Default ``--config`` to the host's conventional GCP config file.
 
