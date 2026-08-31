@@ -21,10 +21,17 @@ override that.
 Environment variables
 =====================
 
-The engine reads no environment variable directly; path arguments are expanded
-for ``$NAME`` references at runtime (see
-:doc:`/user_guide/user_guide_installation`). For development the relevant
-variables are those the **test suite** reads at import time:
+The processing engine (``index_support``, ``geometry_support``,
+``cumulative_support``) reads no environment variable directly; path arguments
+are expanded for ``$NAME`` references at runtime (see
+:doc:`/user_guide/user_guide_installation`). The **cloud dispatch layer**
+(``cli/``) does read environment variables as fallbacks for its flags —
+``GCP_SERVICE_ACCOUNT``, ``OOPS_RESOURCES_DISK``, ``GCP_STARTUP_TEMPLATE``, and
+``GCP_DEBUG_BRANCH`` — and importing ``metadata_tools`` loads a git-ignored
+``.env`` file at the repository root as defaults for unset variables (see the
+environment-variable table in :doc:`/user_guide/user_guide_cloud`). For
+development the other relevant variables are those the **test suite** reads at
+import time:
 
 .. list-table::
    :header-rows: 1
