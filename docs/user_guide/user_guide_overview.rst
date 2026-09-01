@@ -42,9 +42,9 @@ output of the previous one.
     Geometric quantities (positions, angles, ranges, and resolutions for
     bodies, rings, the sky, and the Sun) computed from SPICE through the
     ``oops`` library, using pointing taken from the index table or the PDS3
-    label. Each observation yields a *summary* table (one row per observation)
-    and, optionally, a *detailed* table (one row per spatial subregion, or
-    "tile"). Geometry tables are produced by
+    label. Each volume yields a *summary* table (at most one row per
+    observation) and, optionally, a *detailed* table (one row per spatial
+    subregion, or "tile"). Geometry tables are produced by
     :func:`~metadata_tools.geometry_support.process.process_tables`.
 
 **Cumulative tables**

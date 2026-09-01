@@ -27,10 +27,11 @@ Suite
 
 :class:`~metadata_tools.geometry_support.suite.Suite` reads the volume's
 observations through the host's ``from_index`` hook, builds the per-mode
-meshgrids once, and creates a list of tables for each requested level (an
-inventory table plus sky, ring, and body tables). It loops over observations,
-building a :class:`~metadata_tools.geometry_support.record.Record` per level and
-dispatching each record to every table whose level matches. A ``RuntimeError`` is
+meshgrids once, and builds the table list: one level-independent inventory
+table plus sky, ring, and body tables for each requested level. It loops over
+observations, building a :class:`~metadata_tools.geometry_support.record.Record`
+per level and dispatching each record to every table whose level matches; the
+inventory table receives one record per observation. A ``RuntimeError`` is
 raised if a volume contains more than one index file.
 
 Record and prep
@@ -77,9 +78,10 @@ name to a ten-element tuple:
    (flag, number_of_values, column_width, standard_format, overflow_format,
     null_value, valid_minimum, valid_maximum, link_id, link)
 
-where ``flag`` controls unit conversion (``"RAD"``/``"DEG"`` radians to degrees,
+where ``flag`` controls unit conversion (``"DEG"`` radians to degrees,
 ``"360"`` degrees with 360-degree periodicity, ``"-180"`` the
-``(-180, 180)`` range, ``"ISO"`` time, ``""`` no change), and ``link_id`` /
+``(-180, 180)`` range, ``"ISO"`` time, ``"KM"`` kilometers, ``""`` no change),
+and ``link_id`` /
 ``link`` tie columns together for null-linking.
 :data:`~metadata_tools.geometry_support.formats.ALT_FORMAT_DICT` holds alternate
 formats keyed by ``(column_name, alt_format_tag)``.
@@ -112,7 +114,7 @@ Important invariants
 ====================
 
 - **Units.** Backplane values are in radians; columns whose ``flag`` is
-  ``"RAD"``, ``"DEG"``, ``"360"``, or ``"-180"`` are converted to degrees by
+  ``"DEG"``, ``"360"``, or ``"-180"`` are converted to degrees by
   :func:`~metadata_tools.geometry_support.formatting.formatted_column`. Do not
   pre-convert.
 - **Column-description tuples.** A column description is
@@ -122,9 +124,10 @@ Important invariants
   ``""``. These tuples live in the :mod:`metadata_tools.columns` package.
 - **Meshgrids** are built once per :class:`~metadata_tools.geometry_support.suite.Suite`
   and selected per observation by telemetry mode; they are not rebuilt per row.
-- **Summary vs. detailed.** A summary call writes exactly one row per
-  observation, even if every value is null; a detailed call writes only rows for
-  non-empty tiles.
+- **Summary vs. detailed.** A summary call produces at most one row per
+  observation; with the default ``allow_zero_rows=True`` an all-null row is
+  dropped (pass ``allow_zero_rows=False`` to force it). A detailed call
+  produces rows only for non-empty tiles.
 
 API reference
 =============

@@ -66,28 +66,36 @@ each supported collection gets a directory under `src/metadata_tools/hosts/<HOST
 
 Core engine modules:
 
-- `index_support.py` — `IndexTable` and `process_index()`; builds supplemental index tables.
-- `geometry_support.py` — geometry table generation. Contains `FORMAT_DICT`, the master map
-  from column name to formatting/units/null/range/link metadata.
+- `index_support/` — `IndexTable` (`table.py`), `process_index()`/`get_args()` (`process.py`),
+  and the built-in `key__<NAME>` functions (`key_fns.py`); builds supplemental index tables.
+- `geometry_support/` — geometry table generation: `process.py` (entry point), `suite.py`
+  (`Suite`), `record.py` (`Record`), `tables.py` (the table classes), `prep.py`, `masks.py`,
+  `formatting.py`, `bodies_select.py`, and `formats.py`, which holds `FORMAT_DICT`, the master
+  map from column name to formatting/units/null/range/link metadata.
 - `cumulative_support.py` — walks a volume tree and concatenates per-volume tables.
 - `label_support.py` — generates PDS3 `.lbl` labels from templates using `rms-pdstemplate`.
-- `columns.py` / `column/COLUMNS_*.py` — geometry column definitions. `columns.py`
-  dynamically `exec()`s every `COLUMNS_{BODY,RING,SKY,SUN}.py` to register backplane columns.
-- `common.py` — `Table` base class, the global `PdsLogger`, and cloud-task plumbing.
+- `columns/` — geometry column definitions (`body.py`, `ring.py`, `sky.py`, `sun.py`), plain
+  modules re-exported by the package `__init__`.
+- `config.py` — the host config registry (`set_host()` / `get_*_config()`).
+- `task_list_support.py` — task-file generation for cloud/Worker runs.
+- `common.py` — `Table` base class, the global `PdsLogger`, and the shared argument parser.
 - `util.py`, `defs.py` — utilities and constants (body lists, ring radii, paths).
 
 **Console entry points** (`src/metadata_tools/cli/`) take `HOST_ID` as the first argument and
 dispatch to the appropriate engine:
 
-- `metadata-index HOST_ID ...` / `metadata-index-cloud HOST_ID ...`
-- `metadata-geometry HOST_ID ...` / `metadata-geometry-cloud HOST_ID ...`
-- `metadata-cumulative HOST_ID ...` / `metadata-cumulative-cloud HOST_ID ...`
-- `metadata-task-list HOST_ID TREE --output FILE`
+- `metadata-index HOST_ID ...` / `metadata-index-worker ...` / `metadata-index-cloud ...`
+- `metadata-geometry HOST_ID ...` / `metadata-geometry-worker ...` / `metadata-geometry-cloud ...`
+- `metadata-cumulative HOST_ID ...` / `metadata-cumulative-worker ...` / `metadata-cumulative-cloud ...`
+- `metadata-task-list HOST_ID TREE [--output FILE]` (default output `./tasks.json`)
 
 Each entry point calls `load_host(host_id)` (strips `HOST_ID` from `sys.argv`, validates the
 host directory) and `set_host(host_id)` (registers that host's config modules) before invoking
-the engine. Cloud variants also accept `cloud_tasks` options (`--config`, `--task-file`, etc.);
-GCP dispatch is paired with `cloud/<HOST>/gcp_*_config.yml` and `cloud/<HOST>/gcp_*_startup.sh`.
+the engine. Cloud variants accept `cloud_tasks` options; `--config` defaults to
+`cloud/<HOST>/gcp_<type>_config.yml` and `--task-file` to `./tasks.json` when those files
+exist. GCP instance startup scripts are generated at dispatch time from
+`cloud/gcp_common_startup.sh`; only the `gcp_*_config.yml` machine/queue configs live in
+`cloud/<HOST>/`.
 
 **Per-host directory** (`src/metadata_tools/hosts/<HOST>/`) contains config modules and templates:
 
@@ -96,7 +104,7 @@ GCP dispatch is paired with `cloud/<HOST>/gcp_*_config.yml` and `cloud/<HOST>/gc
   column; backplane functions for geometry).
 - `host_init.py` — initializes the host's `oops` host module (side-effect import).
 - `templates/` — PDS3 label templates (`host_defs.lbl`, `*_supplemental_index.lbl`,
-  `*_{body,ring,sky}_summary.lbl`); shared template fragments are in
+  `*_{body,ring,sky,sun}_summary.lbl`); shared template fragments are in
   `src/metadata_tools/templates/`.
 
 **Config registry:** the generic engine never imports a host's config modules directly (see
@@ -112,12 +120,14 @@ package-qualified or relative import (e.g. `from metadata_tools.hosts.GO_0xxx im
 host_config`), not a bare `import host_config`.
 
 **Adding a new host:** copy an existing `hosts/<HOST>/` directory and edit the config modules
-and `templates/`. See the README "Generating New Metadata Tables" section.
+and `templates/`. See "Adding a new host" in the developer guide
+(`docs/dev_guide/dev_guide_extending.rst`).
 
-**Adding a geometry column:** (1) add a definition to the relevant `column/COLUMNS_*.py`,
-(2) add the backplane function, (3) add a `FORMAT_DICT` row in `geometry_support.py`, (4) add
-the column description to the host's summary label template, (5) update tests. (See the comment
-block at the top of `geometry_support.py`.)
+**Adding a geometry column:** (1) add a definition to the relevant `columns/<kind>.py`,
+(2) add the backplane function, (3) add a `FORMAT_DICT` row in
+`geometry_support/formats.py`, (4) add the column description to the host's summary label
+template, (5) update tests. (See "Adding a geometry column" in
+`docs/dev_guide/dev_guide_extending.rst` and the comment block at the top of `formats.py`.)
 
 ## Conventions (from `.cursor/rules/`)
 
