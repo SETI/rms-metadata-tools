@@ -3,8 +3,8 @@
 ##########################################################################################
 """Common classes and functions shared across the metadata tools.
 
-Provides the global ``PdsLogger``, cloud-task plumbing, the shared argument parser,
-and the ``Table`` base class used by the index and geometry table generators.
+Provides the global ``PdsLogger``, the shared argument parser, and the ``Table``
+base class used by the index and geometry table generators.
 """
 import argparse
 import re
