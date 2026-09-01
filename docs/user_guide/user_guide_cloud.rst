@@ -104,6 +104,18 @@ The ``gcp_*_config.yml`` machine/queue configuration files live in
 The instance startup script is generated at dispatch time and delivered to
 ``cloud_tasks`` via the config YAML; it is not stored on disk.
 
+Each host carries two config tiers. The default (unsuffixed)
+``gcp_<type>_config.yml`` files describe a small single-instance setup for
+testing; the ``gcp_<type>_prod_config.yml`` files are tuned for throughput
+over the full collection (multi-instance spot fleets sized so the whole task
+queue runs in one wave, per-stage runtimes and boot-disk sizing, preemption
+retry, and a price cap). Select a production config explicitly:
+
+.. code-block:: bash
+
+   metadata-index-cloud GO_0xxx <paths...> --use-spot \
+       --config gcp_index_prod_config.yml --task-file ./tasks.json
+
 Previewing the startup script
 ------------------------------
 

@@ -1,0 +1,45 @@
+# Production GCP config for the GO_0xxx supplemental-index stage.
+#
+# Tuned for throughput over the full 23-volume collection (one task per
+# volume; observed 140-630 s/task on one n2 vCPU with the test config).
+# Three 8-vCPU spot instances give 24 single-CPU task slots, so the whole
+# queue runs in one wave while keeping the spot-preemption blast radius to
+# a third of the fleet. Dispatch with:
+#
+#   metadata-index-cloud GO_0xxx <paths...> --use-spot \
+#       --config gcp_index_prod_config.yml --task-file ./tasks.json
+#
+# The default (unsuffixed) gcp_index_config.yml remains the small test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-index-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  # Modern general-purpose families; the selector picks the cheapest fit.
+  instance_types:           ["^n2-standard-.*", "^n4-standard-.*", "^c4-standard-.*"]
+  min_cpu:                  8
+  max_cpu:                  8
+  max_instances:            3
+  cpus_per_task:            1
+  min_memory_per_task:      8            # GB; matches the tested test-config value
+
+  # Index tasks finish well under an hour; anything longer is wedged.
+  max_runtime:              3600
+
+  # Per-task FileCache holds one volume's labels and .IMG files at a time.
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      20           # GB: OS + venv + clone/pip install
+  boot_disk_per_task:       5            # GB per concurrent task slot
+
+  # Spot fleet hygiene: re-queue tasks lost to preemption, but do not loop
+  # tasks that fail on their own.
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  # Cost guard: three 8-vCPU spot instances are far below this ceiling; the
+  # cap only bites if spot pricing spikes or the selector falls back to
+  # on-demand capacity.
+  max_total_price_per_hour: 3.00         # USD/hour
