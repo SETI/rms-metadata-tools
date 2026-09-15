@@ -205,8 +205,10 @@ horizontally adjacent pixels have a different j, where - 255 <= j <= 255."
     FORMAT                      = "A26"
     UNKNOWN_CONSTANT            = "UNK"
     DESCRIPTION                 = "The start time of the image exposure as
-derived from the IMAGE_TIME (midtime) and exposure duration in the label. The
-format is YYYY-MM-DDThh:mm:ss.ffffff."
+derived from the IMAGE_TIME (midtime) and exposure duration in the label. If the
+label gives no IMAGE_TIME, the time is derived from SPACECRAFT_CLOCK_START_COUNT
+instead and is accurate to a few seconds. The format is
+YYYY-MM-DDThh:mm:ss.ffffff."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
@@ -214,8 +216,10 @@ format is YYYY-MM-DDThh:mm:ss.ffffff."
     FORMAT                      = "A26"
     UNKNOWN_CONSTANT            = "UNK"
     DESCRIPTION                 = "The stop time of the image exposure as
-derived from the IMAGE_TIME (midtime) and exposure duration in the label. The
-format is YYYY-MM-DDThh:mm:ss.ffffff."
+derived from the IMAGE_TIME (midtime) and exposure duration in the label. If the
+label gives no IMAGE_TIME, the time is derived from SPACECRAFT_CLOCK_START_COUNT
+instead and is accurate to a few seconds. The format is
+YYYY-MM-DDThh:mm:ss.ffffff."
   END_OBJECT                    = COLUMN
 
   OBJECT                        = COLUMN
