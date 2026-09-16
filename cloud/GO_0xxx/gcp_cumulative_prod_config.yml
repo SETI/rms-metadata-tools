@@ -1,0 +1,37 @@
+# Production GCP config for the GO_0xxx cumulative stage.
+#
+# The cumulative stage is a single task that concatenates every volume's
+# tables, so there is nothing to parallelize: one modest instance with a
+# boot disk large enough for the per-task cache to hold all volumes' table
+# files at once. Spot is still used (the task is cheap to restart and
+# retry_on_exit re-queues it). Dispatch with:
+#
+#   metadata-cumulative-cloud GO_0xxx <output_dir> --use-spot \
+#       --config gcp_cumulative_prod_config.yml
+#
+# The default (unsuffixed) gcp_cumulative_config.yml remains the test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-cumulative-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  instance_types:           ["^n2-standard-.*", "^n4-standard-.*"]
+  min_cpu:                  4
+  max_cpu:                  4
+  max_instances:            1
+  cpus_per_task:            1
+  min_memory_per_task:      8            # GB
+
+  # Pure I/O and concatenation; two hours is generous.
+  max_runtime:              7200
+
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      50           # GB: room for every volume's tables
+
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  max_total_price_per_hour: 1.00         # USD/hour

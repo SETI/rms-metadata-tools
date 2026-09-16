@@ -1,0 +1,47 @@
+# Production GCP config for the GO_0xxx geometry stage.
+#
+# Geometry is the long, CPU-bound stage: each of the 23 volumes is one task
+# driving SPICE/oops backplane evaluation. Each task gets 4 vCPUs and 16 GB
+# (headroom for oops/numpy working sets); three 32-vCPU spot instances give
+# 24 task slots, so the whole collection runs in one wave. Newer CPU
+# families (c4, n4) noticeably speed up the numeric kernels. Dispatch with:
+#
+#   metadata-geometry-cloud GO_0xxx <paths...> --use-spot \
+#       --config gcp_geometry_prod_config.yml --task-file ./tasks.json
+#
+# The default (unsuffixed) gcp_geometry_config.yml remains the small test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-geometry-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  # Prefer the newest general-purpose/compute families for per-core speed.
+  instance_types:           ["^c4-standard-.*", "^n4-standard-.*", "^n2-standard-.*"]
+  min_cpu:                  32
+  max_cpu:                  32
+  max_instances:            3
+  cpus_per_task:            4
+  min_memory_per_task:      16           # GB
+
+  # Long SPICE-bound tasks; six hours flags a genuinely wedged volume
+  # without killing a slow-but-live one.
+  max_runtime:              21600
+
+  # Per-task FileCache holds the volume's index and label data; the OOPS
+  # resources (SPICE kernels) live on the separately attached persistent
+  # disk named by $OOPS_RESOURCES_DISK, not the boot disk.
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      20           # GB: OS + venv + clone/pip install
+  boot_disk_per_task:       5            # GB per concurrent task slot
+
+  # Spot fleet hygiene: re-queue tasks lost to preemption, but do not loop
+  # tasks that fail on their own.
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  # Cost guard: three 32-vCPU spot instances typically land well under this;
+  # the cap bites only on spot price spikes or on-demand fallback.
+  max_total_price_per_hour: 6.00         # USD/hour
