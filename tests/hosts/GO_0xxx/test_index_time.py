@@ -7,6 +7,7 @@ from typing import Any
 
 import julian
 import pytest
+from oops.hosts.galileo import Galileo
 
 from metadata_tools.hosts.GO_0xxx import index_config
 
@@ -61,8 +62,8 @@ def test_known_image_time_is_untouched() -> None:
     assert _tai(stop) == pytest.approx(midtime + 0.4, abs=1.e-6)
 
     # The clock count agrees with IMAGE_TIME to seconds on a frame that has both
-    from_sclk = index_config._tai_from_sclk_count(
-                                    KNOWN_TIME_LABEL['SPACECRAFT_CLOCK_START_COUNT'])
+    from_sclk = julian.tai_from_tdb(
+                    Galileo.tdb_from_sclk(KNOWN_TIME_LABEL['SPACECRAFT_CLOCK_START_COUNT']))
     assert abs(from_sclk - midtime) < 10.
 
 
