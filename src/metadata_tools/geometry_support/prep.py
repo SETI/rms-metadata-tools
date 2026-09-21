@@ -192,7 +192,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
 
             # Fill in the backplane array
             if event_key[1] == defs.NULL:
-                values = oops.Scalar(0., True)
+                values: Any = oops.Scalar(0., True)
             else:
                 if record.pointing_available:
                     values = backplane.evaluate(event_key)
