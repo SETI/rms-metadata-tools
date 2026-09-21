@@ -10,6 +10,7 @@ from typing import Any, cast
 import oops
 import pytest
 
+import metadata_tools
 import metadata_tools.columns as col
 import metadata_tools.common as com
 from metadata_tools.config import get_geometry_config
@@ -125,12 +126,9 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
                         lambda meshgrids, obs: object(), raising=False)
     monkeypatch.setattr(oops.backplane, 'Backplane',
                         lambda obs, meshgrid: 'BACKPLANE')
-    # Body registry and dicts are lazy (built from SPICE on first call); stub
-    # them out so Record.__init__ can run without a SPICE-initialized host. Use
-    # a singleton dict so identity assertions in callers remain meaningful.
-    _fake_summary: dict[str, Any] = {}
+    # The body registry is lazy (built from SPICE on first call); stub it out so
+    # Record.__init__ can run without a SPICE-initialized host.
     monkeypatch.setattr(col, 'get_bodies_registry', lambda: {})
-    monkeypatch.setattr(col, 'get_body_summary_dict', lambda: _fake_summary)
 
 
 def _observation(target: str = 'SKY') -> Any:
@@ -152,7 +150,6 @@ def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
     assert record.prefixes[0] == '"GO_0001"'
     # The .IMG suffix is rewritten to .LBL in the file-spec prefix.
     assert '.LBL' in record.prefixes[1]
-    assert record.dicts['ring'] is col.RING_SUMMARY_DICT
 
 
 def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -197,8 +194,17 @@ def test_suite_init_builds_tables_and_meshgrids(
                         lambda idx, supp: ['obs'], raising=False)
     monkeypatch.setattr(config, 'meshgrids', lambda sampling: {'m': 1}, raising=False)
     monkeypatch.setattr(com, 'init_logger', lambda d, t: None)
-    suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
+    # The real host template, so the tables resolve their schemas from it just
+    # as they do in a run; a tmp_path stand-in has no COLUMN objects to read.
+    template = (Path(metadata_tools.__file__).parent / 'hosts' / 'GO_0xxx' /
+                'templates' / 'GO_0xxx_supplemental_index.lbl')
+    suite = Suite(tmp_path, tmp_path, template, metadata_dir=meta,
                   index_glob='*_index.tab')
     assert suite.observations == ['obs']
     assert suite.meshgrids == {'m': 1}
     assert [t.qualifier for t in suite.tables] == ['inventory', 'sky', 'ring', 'body']
+    # Each geometry table resolved its column set from that template directory.
+    by_qualifier: dict[Any, Any] = {t.qualifier: t for t in suite.tables}
+    assert len(by_qualifier['sky'].schema.columns) == 2
+    assert len(by_qualifier['ring'].schema.columns) == 43
+    assert len(by_qualifier['body'].schema.columns) == 28

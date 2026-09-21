@@ -26,7 +26,7 @@ NULL = "null"
 
 BODYX = "bodyx"
 """Placeholder body name, substituted per body by the column-definition
-replacement helpers (see :func:`metadata_tools.util.replacement_dict`)."""
+replacement helpers (see :func:`metadata_tools.util.replace`)."""
 
 NAME_LENGTH = 12
 """Character width of a column that holds a body name."""

@@ -2,27 +2,29 @@
 # geometry_support/prep.py - Row preparation for a geometry record.
 ################################################################################
 """Row preparation and body-prefix utilities for geometry table generation."""
-from typing import TYPE_CHECKING, Any
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import oops
 import polymath
 
 import metadata_tools.defs as defs
-from metadata_tools.geometry_support import bodies_select, formats, formatting, masks
+from metadata_tools.geometry_support import bodies_select, formatting, masks
 
 if TYPE_CHECKING:
+    from metadata_tools.geometry_support.label_schema import ResolvedColumn
     from metadata_tools.geometry_support.record import Record
 
 
 #===============================================================================
 def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
-             blocker: str | None, column_descs: Any, *,
+             blocker: str | None, columns: Sequence['ResolvedColumn'], *,
              primary: str | None = None, target: str | None = None,
              name_length: int = defs.NAME_LENGTH,
              ignore_shadows: bool = False,
              allow_zero_rows: bool = True, no_mask: bool = False,
-             no_body: bool = False) -> tuple[list[list[str]], list[list[dict[str, Any]]]]:
+             no_body: bool = False) -> list[list[str]]:
     """Generate the geometry and return a list of lists of strings.
 
     The inner list contains string representations for each column in one row of
@@ -40,7 +42,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         backplane: Backplane for the observation.
         blocker: The name of one body that may be able to block or shadow other
             bodies.
-        column_descs: A list of column descriptions.
+        columns: The table's resolved columns, in template order: each pairs a
+            catalog spec with the label metadata for the values it writes.
         primary: Name of primary body, uppercase, e.g., "SATURN".
         target: Optionally, the target name to write into the record.
         name_length: The character width of a column to contain body names;
@@ -54,17 +57,14 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         no_body: True to suppress body prefixes.
 
     Returns:
-        A tuple (rows, overrides), where rows holds the strings comprising the
-        resulting rows, and overrides holds one list per row, each containing
-        one dict per column (prefix columns excluded) of label entries to
-        override.
+        The rows produced, each a list of column strings.
     """
     # Create all the needed pixel masks
     excluded_mask_dict: dict[tuple[Any, ...], polymath.Boolean] = {}
     if record.pointing_available and not no_mask:
-        for column_desc in column_descs:
-            event_key = column_desc[0]
-            mask_desc = column_desc[1]
+        for column in columns:
+            event_key = column.spec.key
+            mask_desc = column.spec.mask
             mask_target = event_key[1]
 
             key = (mask_target,) + mask_desc
@@ -89,13 +89,13 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
 
     # Append the backplane columns
     data_columns = []
-    row_overrides = []
     nothing_found = True
 
     # For each column...
-    for column_desc in column_descs:
-        event_key = column_desc[0]
-        mask_desc = column_desc[1]
+    for column in columns:
+        event_key = column.spec.key
+        mask_desc = column.spec.mask
+        stubs = column.stubs
         null_flag = False
 
         # Fill in the backplane array
@@ -118,30 +118,22 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         if not np.all(values.mask):
             nothing_found = False
 
-        # Save the column using the specified format
-        if len(column_desc) > 2:
-            fmt = formats.ALT_FORMAT_DICT[(event_key[0], column_desc[2])]
-        else:
-            fmt = formats.FORMAT_DICT[event_key[0]]
-
-        (_,_,_,_,_, null_value, valid_minimum, valid_maximum, _, _) = fmt
+        # Save the column, formatted as its label template declares
+        null_value = stubs[0].null_value
         if null_flag:
             if isinstance(null_value, str):
                 values = null_value
             else:
-                values = oops.Scalar(null_value, False)
-        data_columns.append(formatting.formatted_column(values, fmt, record.sampling))
-
-        # Save this column's label override.
-        row_overrides.append({'NULL_VALUE': null_value,
-                              'VALID_MINIMUM': valid_minimum,
-                              'VALID_MAXIMUM': valid_maximum})
+                # resolve_schema guarantees every data column declares a null.
+                values = oops.Scalar(cast(float, null_value), False)
+        data_columns.append(
+            formatting.formatted_column(values, column.spec.format, stubs, record.sampling))
 
     # An all-null row is dropped unless the caller demands a row regardless
     if nothing_found and allow_zero_rows:
-        return ([], [])
+        return []
 
-    return ([prefix_columns + data_columns], [row_overrides])
+    return [prefix_columns + data_columns]
 
 #===============================================================================
 def append_body_prefix(prefix_columns: list[str], body: str | None, length: int) -> None:

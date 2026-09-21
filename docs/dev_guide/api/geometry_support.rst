@@ -70,6 +70,18 @@ documented on its submodule's page.
    :undoc-members:
    :show-inheritance:
 
+``metadata_tools.geometry_support.label_schema``
+================================================
+
+.. automodule:: metadata_tools.geometry_support.label_schema
+   :members:
+   :show-inheritance:
+
+..
+   :undoc-members: is omitted here: the dataclass fields are already described
+   in each class's Attributes section, and autodoc would emit them a second
+   time as undocumented members.
+
 ``metadata_tools.geometry_support.formats``
 ===========================================
 

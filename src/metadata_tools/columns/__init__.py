@@ -1,47 +1,38 @@
-"""Assemble and re-export the geometry column definitions.
+"""The geometry column computation catalogs.
 
-This package gathers the body, ring, sky, and sun geometry column definitions
-from its submodules (``body``, ``ring``, ``sky``, ``sun``) and re-exports them,
-along with the bodies registry accessor, under a single namespace. Callers import it as
-``import metadata_tools.columns as col`` and reference the assembled column
-lists and replacement dictionaries used to build the geometry tables.
+This package says how to *compute* each geometry column; the host's label
+templates say which columns exist, in what order, and with what width, null
+value, and valid range. :mod:`metadata_tools.geometry_support.label_schema`
+joins the two on the column NAME.
+
+Callers import it as ``import metadata_tools.columns as col`` and reach the
+catalogs through :func:`~metadata_tools.columns.catalog.get_catalog` and
+:func:`~metadata_tools.columns.catalog.name_map`.
+
+Nothing in this package may import ``metadata_tools.geometry_support``:
+``geometry_support.record`` imports this package, so the dependency has to run
+one way only. ``tests/test_columns_import_lint.py`` enforces it.
 """
 from metadata_tools.bodies import get_bodies_registry
-from metadata_tools.columns.body import (
-    BODY_COLUMNS,
-    BODY_GRIDLESS_COLUMNS,
-    BODY_SUMMARY_COLUMNS,
-    get_body_summary_dict,
+from metadata_tools.columns.body import BODY_CATALOG
+from metadata_tools.columns.catalog import (
+    ColumnSpec,
+    get_catalog,
+    name_map,
 )
-from metadata_tools.columns.ring import (
-    ANSA_COLUMNS,
-    RING_COLUMNS,
-    RING_GRIDLESS_COLUMNS,
-    RING_SUMMARY_COLUMNS,
-    RING_SUMMARY_DICT,
-)
-from metadata_tools.columns.sky import (
-    SKY_COLUMNS,
-)
-from metadata_tools.columns.sun import (
-    SUN_COLUMNS,
-    SUN_GRIDLESS_COLUMNS,
-    SUN_SUMMARY_COLUMNS,
-)
+from metadata_tools.columns.formats import FormatTuple
+from metadata_tools.columns.ring import RING_CATALOG
+from metadata_tools.columns.sky import SKY_CATALOG
+from metadata_tools.columns.sun import SUN_CATALOG
 
 __all__ = [
-    'ANSA_COLUMNS',
-    'BODY_COLUMNS',
-    'BODY_GRIDLESS_COLUMNS',
-    'BODY_SUMMARY_COLUMNS',
-    'RING_COLUMNS',
-    'RING_GRIDLESS_COLUMNS',
-    'RING_SUMMARY_COLUMNS',
-    'RING_SUMMARY_DICT',
-    'SKY_COLUMNS',
-    'SUN_COLUMNS',
-    'SUN_GRIDLESS_COLUMNS',
-    'SUN_SUMMARY_COLUMNS',
+    'BODY_CATALOG',
+    'RING_CATALOG',
+    'SKY_CATALOG',
+    'SUN_CATALOG',
+    'ColumnSpec',
+    'FormatTuple',
     'get_bodies_registry',
-    'get_body_summary_dict',
+    'get_catalog',
+    'name_map',
 ]

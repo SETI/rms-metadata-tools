@@ -1,105 +1,73 @@
-"""Column definitions for body geometry tables.
+"""Column computation catalog for body geometry tables.
 
-This module defines the backplane columns describing the geometry of a body's
-surface (moons and the planet): per-pixel quantities (BODY_COLUMNS), gridless
-whole-body quantities (BODY_GRIDLESS_COLUMNS), and the summary column list
-assembled from them. It also builds the per-body replacement dictionary.
+This module names every body geometry column this package knows how to compute
+and says how: the backplane key describing a body's surface (moons and the
+planet), the bodies that mask it, and the unit conversion applied to the result.
 
-These definitions are gathered and re-exported by ``columns/__init__.py`` and
-consumed by the geometry Record/prep code, which evaluates each backplane key
-and formats the result via FORMAT_DICT in the ``geometry_support`` package (defined
-in its ``formats`` module).
+Whether a column is actually produced -- and in what order, with what width,
+null value, and valid range -- is decided by the host's label template, not
+here. An entry no template names is simply unused. See
+:mod:`metadata_tools.columns.catalog`.
 """
-from typing import Any
-
 import metadata_tools.defs as defs
-import metadata_tools.util as util
-from metadata_tools.bodies import get_bodies_registry
+from metadata_tools.columns.catalog import ColumnSpec, minmax, single
 
-################################################################################
-# *COLUMN description tuples are
-#
-#   (backplane_key, (masker, shadower, face), alt_format)
-#
-# where...
-#
-#   backplane_key   tuple passed to Backplane.evaluate().
-#
-#   masker          a string indicating which bodies obscure the surface. It is
-#                   constructed by concatenating any of these characters:
-#                       "P" = let the planet mask the surface;
-#                       "R" = let the rings mask the surface;
-#                       "M" = let the moon mask the surface.
-#
-#   shadower        a string indicating which bodies shadow the surface. It is
-#                   constructed by concatenating any of these characters:
-#                       "P" = let the planet shadow the surface;
-#                       "R" = let the rings shadow the surface;
-#                       "M" = let the moon shadow the surface.
-#
-#   face            a string indicating which face of the surface to include:
-#                       "D" = include only the day side of the body;
-#                       "N" = include only the night side of the body;
-#                       ""  = include both faces of the body.
-#
-#   alt_format      if present, this is an extra tag used to identify the output
-#                   format of the column.
-#                       "-180" = use the range (-180,180) instead of (0,360).
-#
-################################################################################
-BODY_COLUMNS = [
-    (("latitude",               defs.BODYX, "centric"),         ("RM", "R",  "D")),
-    (("latitude",               defs.BODYX, "graphic"),         ("RM", "R",  "D")),
-    (("longitude",              defs.BODYX, "iau", "west"),     ("RM", "R",  "D")),
-#    (("longitude",              defs.BODYX, "iau", "east"),     ("RM", "R",  "D")),
-    (("longitude",              defs.BODYX, "sha", "east"),     ("RM", "R",  "")),
-    (("longitude",              defs.BODYX, "obs", "west"),
-                                                            ("RM", "R",  "D"), "-180"),
-#    (("longitude",              defs.BODYX, "obs", "east"),
-#                                                            ("RM", "R",  "D"), "-180"),
-    (("finest_resolution",      defs.BODYX),                    ("RM", "R",  "D")),
-    (("coarsest_resolution",    defs.BODYX),                    ("RM", "R",  "D")),
-    (("distance",               defs.BODYX),                    ("RM", "",   "")),
-#    (("phase_angle",            defs.BODYX),                    ("RM", "",   "D")),
-    (("phase_angle",            defs.BODYX),                    ("RM", "",   "")),
-    (("incidence_angle",        defs.BODYX),                    ("RM", "",   "")),
-    (("emission_angle",         defs.BODYX),                    ("RM", "",   "")),
-    (("limb_altitude",          defs.BODYX, -0.01, 3, True),    ("",   "",  "")),
-    (("limb_clock_angle",       ("limb_altitude", defs.BODYX, -0.01, 3, True)), ("",   "",  "")),
-    (("event_time",             defs.BODYX),                    ("RM", "", ""))]
-
-BODY_GRIDLESS_COLUMNS = [
-    (("sub_solar_latitude",     defs.BODYX, "centric"),         ("",   "",  "")),
-    (("sub_solar_latitude",     defs.BODYX, "graphic"),         ("",   "",  "")),
-    (("sub_observer_latitude",  defs.BODYX, "centric"),         ("",   "",  "")),
-    (("sub_observer_latitude",  defs.BODYX, "graphic"),         ("",   "",  "")),
-    (("sub_solar_longitude",    defs.BODYX, "iau", "west"),     ("",   "",  "")),
-#    (("sub_solar_longitude",    defs.BODYX, "iau", "east"),     ("",   "",  "")),
-    (("sub_observer_longitude", defs.BODYX, "iau", "west"),     ("",   "",  "")),
-#    (("sub_observer_longitude", defs.BODYX, "iau", "east"),     ("",   "",  "")),
-    (("center_resolution",      defs.BODYX, "u"),               ("",   "",  "")),
-    (("center_distance",        defs.BODYX, "obs"),             ("",   "",  "")),
-    (("center_phase_angle",     defs.BODYX),                    ("",   "",  "")),
-    (("body_diameter_in_pixels",defs.BODYX),                    ("",   "",  "")),
-    (("pole_clock_angle",       defs.BODYX),                    ("",   "",  "")),
-    (("pole_position_angle",    defs.BODYX),                    ("",   "",  "")),
-    (("center_coordinate",      defs.BODYX, "u"),               ("",   "",  "")),
-    (("center_coordinate",      defs.BODYX, "v"),               ("",   "",  ""))]
-
-# Assemble the column lists for each type of file for the moons and planet
-
-BODY_SUMMARY_COLUMNS  = BODY_COLUMNS + BODY_GRIDLESS_COLUMNS
-
-_BODY_SUMMARY_DICT: dict[str, Any] | None = None
-
-
-def get_body_summary_dict() -> dict[str, Any]:
-    """Return the per-body summary column replacement dict, building it on first call."""
-    global _BODY_SUMMARY_DICT
-    if _BODY_SUMMARY_DICT is None:
-        summary: dict[str, Any] = {}
-        for body in get_bodies_registry():
-            summary.update(util.replacement_dict(BODY_SUMMARY_COLUMNS, defs.BODYX, [body]))
-        _BODY_SUMMARY_DICT = summary
-    return _BODY_SUMMARY_DICT
-################################################################################
+BODY_CATALOG: tuple[ColumnSpec, ...] = (
+    minmax('PLANETOCENTRIC_LATITUDE', ('latitude', defs.BODYX, 'centric'),
+           ('RM', 'R', 'D')),
+    minmax('PLANETOGRAPHIC_LATITUDE', ('latitude', defs.BODYX, 'graphic'),
+           ('RM', 'R', 'D')),
+    minmax('IAU_LONGITUDE', ('longitude', defs.BODYX, 'iau', 'west'),
+           ('RM', 'R', 'D')),
+    minmax('LOCAL_HOUR_ANGLE', ('longitude', defs.BODYX, 'sha', 'east'),
+           ('RM', 'R', '')),
+    minmax('LONGITUDE_WRT_OBSERVER', ('longitude', defs.BODYX, 'obs', 'west'),
+           ('RM', 'R', 'D'), alt='-180'),
+    minmax('FINEST_SURFACE_RESOLUTION', ('finest_resolution', defs.BODYX),
+           ('RM', 'R', 'D')),
+    minmax('COARSEST_SURFACE_RESOLUTION', ('coarsest_resolution', defs.BODYX),
+           ('RM', 'R', 'D')),
+    minmax('SURFACE_DISTANCE', ('distance', defs.BODYX),
+           ('RM', '', '')),
+    minmax('PHASE_ANGLE', ('phase_angle', defs.BODYX),
+           ('RM', '', '')),
+    minmax('INCIDENCE_ANGLE', ('incidence_angle', defs.BODYX),
+           ('RM', '', '')),
+    minmax('EMISSION_ANGLE', ('emission_angle', defs.BODYX),
+           ('RM', '', '')),
+    minmax('LIMB_ALTITUDE', ('limb_altitude', defs.BODYX, -0.01, 3, True),
+           ('', '', '')),
+    minmax('LIMB_CLOCK_ANGLE', ('limb_clock_angle', ('limb_altitude', defs.BODYX, -0.01, 3, True)),
+           ('', '', '')),
+    minmax('SURFACE_INTERCEPT_TIME', ('event_time', defs.BODYX),
+           ('RM', '', '')),
+    minmax('PLANETOCENTRIC_SUB_SOLAR_LATITUDE', ('sub_solar_latitude', defs.BODYX, 'centric'),
+           ('', '', '')),
+    minmax('PLANETOGRAPHIC_SUB_SOLAR_LATITUDE', ('sub_solar_latitude', defs.BODYX, 'graphic'),
+           ('', '', '')),
+    minmax('PLANETOCENTRIC_SUB_OBSERVER_LATITUDE', ('sub_observer_latitude', defs.BODYX, 'centric'),
+           ('', '', '')),
+    minmax('PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE', ('sub_observer_latitude', defs.BODYX, 'graphic'),
+           ('', '', '')),
+    minmax('SUB_SOLAR_IAU_LONGITUDE', ('sub_solar_longitude', defs.BODYX, 'iau', 'west'),
+           ('', '', '')),
+    minmax('SUB_OBSERVER_IAU_LONGITUDE', ('sub_observer_longitude', defs.BODYX, 'iau', 'west'),
+           ('', '', '')),
+    minmax('CENTER_RESOLUTION', ('center_resolution', defs.BODYX, 'u'),
+           ('', '', '')),
+    minmax('CENTER_DISTANCE', ('center_distance', defs.BODYX, 'obs'),
+           ('', '', '')),
+    minmax('CENTER_PHASE_ANGLE', ('center_phase_angle', defs.BODYX),
+           ('', '', '')),
+    single('DIAMETER_IN_PIXELS', ('body_diameter_in_pixels', defs.BODYX),
+           ('', '', '')),
+    single('NORTH_POLE_CLOCK_ANGLE', ('pole_clock_angle', defs.BODYX),
+           ('', '', '')),
+    single('NORTH_POLE_POSITION_ANGLE', ('pole_position_angle', defs.BODYX),
+           ('', '', '')),
+    single('CENTER_X_COORDINATE', ('center_coordinate', defs.BODYX, 'u'),
+           ('', '', '')),
+    single('CENTER_Y_COORDINATE', ('center_coordinate', defs.BODYX, 'v'),
+           ('', '', '')),
+)
+"""Every body column this package can compute, keyed by template NAME."""

@@ -77,7 +77,7 @@ observation and feeds it to each table.
            +bodies
            +backplane
            +add(qualifier)
-           +postprocess(columns, qualifier)
+           +postprocess(columns, resolved)
        }
 
        Table <|-- IndexTable

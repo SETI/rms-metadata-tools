@@ -27,12 +27,11 @@ Suite
 
 :class:`~metadata_tools.geometry_support.suite.Suite` reads the volume's
 observations through the host's ``from_index`` hook, builds the per-mode
-meshgrids once, and builds the table list: one level-independent inventory
-table plus sky, ring, and body tables for each requested level. It loops over
-observations, building a :class:`~metadata_tools.geometry_support.record.Record`
-per level and dispatching each record to every table whose level matches; the
-inventory table receives one record per observation. A ``RuntimeError`` is
-raised if a volume contains more than one index file.
+meshgrids once, and builds the table list: an inventory table plus the sky,
+ring, and body tables. It loops over observations, building one
+:class:`~metadata_tools.geometry_support.record.Record` each and dispatching it
+to every table. A ``RuntimeError`` is raised if a volume contains more than one
+index file.
 
 Record and prep
 ===============
@@ -40,9 +39,9 @@ Record and prep
 :class:`~metadata_tools.geometry_support.record.Record` holds one observation's
 state: the primary body (from
 :func:`~metadata_tools.geometry_support.bodies_select.get_primary`), the selected
-bodies, the ``oops`` backplane, and the level-specific column dictionaries from
-the :mod:`metadata_tools.columns` package.
-:meth:`~metadata_tools.geometry_support.record.Record.add` calls
+bodies, and the ``oops`` backplane. Each table passes its own resolved columns
+to :meth:`~metadata_tools.geometry_support.record.Record.add`, which binds the
+``BODYX`` placeholder to the body being written and calls
 :func:`~metadata_tools.geometry_support.prep.prep_row`, which evaluates each
 column's backplane key, applies the excluded-pixel mask, and formats the result;
 :meth:`~metadata_tools.geometry_support.record.Record.postprocess` then applies
@@ -62,29 +61,67 @@ Formatting and formats
 :func:`~metadata_tools.geometry_support.formatting.formatted_column` turns a
 masked ``oops`` scalar into one or two formatted column strings, converting
 radians to degrees, handling cyclic (longitude) ranges, ISO times, null values,
-valid-range clipping, and overflow. It is driven by an entry from
-:data:`~metadata_tools.geometry_support.formats.FORMAT_DICT`.
+valid-range clipping, and overflow. It is driven by two things: the column's
+catalog entry, which supplies the unit-conversion flag and the overflow format,
+and its label stubs, which supply the field width, print format, null value,
+and valid range.
 
 .. _format-dict-contract:
 
-The format-dictionary contract
-==============================
+Where a column's metadata comes from
+====================================
 
-:data:`~metadata_tools.geometry_support.formats.FORMAT_DICT` maps each column
-name to a ten-element tuple:
+Geometry column metadata is split by what a PDS3 label can express.
+
+The **label template** is the source of truth for everything it can state: which
+columns exist, in what order, and each column's ``NAME``, ``FORMAT`` (from which
+the field width and print format are derived), ``NULL_CONSTANT``, and
+``VALID_MINIMUM`` / ``VALID_MAXIMUM``.
+:func:`~metadata_tools.geometry_support.label_schema.resolve_schema` reads it
+back. This is the same arrangement as the index pipeline, where
+:class:`~metadata_tools.index_support.table.IndexTable` derives its columns from
+its own template.
+
+The **catalog** in :mod:`metadata_tools.columns` holds what a label cannot say:
+the backplane key to evaluate, the masker/shadower/face codes, and a short
+format tuple
 
 .. code-block:: text
 
-   (flag, number_of_values, column_width, standard_format, overflow_format,
-    null_value, valid_minimum, valid_maximum, link_id, link)
+   (flag, overflow_format, link_id, link)
 
-where ``flag`` controls unit conversion (``"DEG"`` radians to degrees,
-``"360"`` degrees with 360-degree periodicity, ``"-180"`` the
-``(-180, 180)`` range, ``"ISO"`` time, ``"KM"`` kilometers, ``""`` no change),
-and ``link_id`` /
-``link`` tie columns together for null-linking.
-:data:`~metadata_tools.geometry_support.formats.ALT_FORMAT_DICT` holds alternate
-formats keyed by ``(column_name, alt_format_tag)``.
+where ``flag`` controls unit conversion (``"DEG"`` radians to degrees, ``"360"``
+degrees with 360-degree periodicity, ``"-180"`` the ``(-180, 180)`` range,
+``"ISO"`` time, ``"KM"`` kilometers, ``""`` no change), ``overflow_format`` is
+substituted when a value will not fit its field, and ``link_id`` / ``link`` tie
+columns together for null-linking.
+
+Label schema pull
+=================
+
+:func:`~metadata_tools.geometry_support.label_schema.resolve_schema` parses a
+host's summary template, skips the fixed prefix columns (``VOLUME_ID``,
+``FILE_SPECIFICATION_NAME``, and, per table kind, ``SYSTEM_NAME`` and
+``BODY_NAME``), and joins each remaining ``COLUMN``'s ``NAME`` against the
+qualifier's catalog. Template order is output order. The result is cached per
+(template directory, qualifier) and resolved once, when the table is
+constructed.
+
+A catalog entry no template names is simply unused; that is how a host trims
+columns it does not want. The reverse is an error, and so are several other
+shapes, all raised at construction rather than allowed to misalign a row per
+observation:
+
+* a ``NAME`` absent from the catalog, so nothing can compute it;
+* a two-valued column whose halves are not adjacent and in ``MINIMUM``,
+  ``MAXIMUM`` order;
+* prefix columns that differ from the expected run for that table kind;
+* a geometry column with no null keyword, or with no ``FORMAT``;
+* ``VALID_MINIMUM == VALID_MAXIMUM``, which would null every value.
+
+Because nothing exercises the generated tables by default -- the end-to-end
+comparisons are archive-gated -- ``tests/test_geometry_schema.py`` is the
+guard that a template and its catalog have not drifted apart.
 
 Body selection
 ==============
@@ -117,9 +154,9 @@ Important invariants
   ``"DEG"``, ``"360"``, or ``"-180"`` are converted to degrees by
   :func:`~metadata_tools.geometry_support.formatting.formatted_column`. Do not
   pre-convert.
-- **Column-description tuples.** A column description is
-  ``(backplane_key, (masker, shadower, face))`` with an optional trailing
-  alternate-format tag. The masker/shadower strings concatenate ``"P"`` (planet),
+- **Column specifications.** A :class:`~metadata_tools.columns.catalog.ColumnSpec`
+  carries the template ``NAME`` of each value it produces, the backplane key, the
+  mask, and the format tuple. The masker/shadower strings concatenate ``"P"`` (planet),
   ``"R"`` (rings), and ``"M"`` (blocker body); the face is ``"D"``, ``"N"``, or
   ``""``. These tuples live in the :mod:`metadata_tools.columns` package.
 - **Meshgrids** are built once per :class:`~metadata_tools.geometry_support.suite.Suite`

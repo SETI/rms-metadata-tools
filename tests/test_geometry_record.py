@@ -9,7 +9,7 @@ from typing import Any
 import oops
 import pytest
 
-import metadata_tools.columns as col
+import metadata_tools.defs as defs
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select
@@ -17,137 +17,78 @@ from metadata_tools.geometry_support.record import Record
 
 
 #===============================================================================
-# Shared-cache isolation: irregular-moon dict additions
+# BODYX substitution
 #===============================================================================
-def _make_record(monkeypatch: pytest.MonkeyPatch, moon: str) -> Record:
-    """Run the real Record.__init__ hermetically for an irregular-moon target.
+def test_substitute_binds_bodyx_in_every_key(make_column: Callable[..., Any]) -> None:
+    """Record.substitute resolves the BODYX placeholder in each column's key."""
+    columns = [make_column(key=('latitude', defs.BODYX, 'centric')),
+               make_column(key=('phase_angle', defs.BODYX))]
+    bound = Record.substitute(columns, 'IO')
 
-    Patches the SPICE-facing seams (primary/inventory/body selection, meshgrid,
-    Backplane, bodies registry) so __init__ executes end to end without kernels;
-    the conftest fake host registry supplies get_geometry_config().
+    assert [c.spec.key for c in bound] == [('latitude', 'IO', 'centric'),
+                                           ('phase_angle', 'IO')]
+    # The originals are untouched, so one body's binding cannot leak into another.
+    assert [c.spec.key for c in columns] == [('latitude', defs.BODYX, 'centric'),
+                                             ('phase_angle', defs.BODYX)]
+    # Stubs ride along unchanged; only the key is rebound.
+    assert bound[0].stubs == columns[0].stubs
 
-    Parameters:
-        monkeypatch: The pytest monkeypatch fixture.
-        moon: Irregular-moon target name for the observation.
 
-    Returns:
-        The constructed Record.
+def test_substitute_resolves_embedded_dict_reference(
+        make_column: Callable[..., Any]) -> None:
+    """A key holding a dictionary reference resolves once the body is known.
+
+    The ring diameter column's key carries a RING_SYSTEM_RADII lookup keyed by
+    the placeholder. util.replace resolves such a reference only inside a nested
+    list or tuple leaf, which is why substitute wraps the key before replacing.
     """
-    monkeypatch.setattr(col, 'get_bodies_registry',
-                        lambda: {'JUPITER': types.SimpleNamespace(ring_frame=None)})
-    monkeypatch.setattr(bodies_select, 'get_primary',
-                        lambda rec, table, sclk: ('JUPITER', [], [], []))
-    monkeypatch.setattr(bodies_select, 'inventory', lambda rec, reg: [moon])
-    monkeypatch.setattr(bodies_select, 'select_bodies', lambda rec, reg: [moon])
-    monkeypatch.setattr(Record, '_meshgrid',
-                        staticmethod(lambda observation, meshgrids: 'MESH'))
-    monkeypatch.setattr(oops.backplane, 'Backplane', lambda obs, meshgrid: object())
-    observation = types.SimpleNamespace(dict={
-        'SPACECRAFT_CLOCK_START_COUNT': '1/00000000:00',
-        'FILE_SPECIFICATION_NAME': 'GO_0001/C012345/C0123456789R.IMG',
-        'TARGET_NAME': moon,
-    })
-    return Record(observation, 'GO_0001', {}, 8)
-
-
-def test_body_dict_addition_does_not_mutate_shared_cache(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """Record.__init__ body-dict additions for irregular moons must not pollute the cache.
-
-    Two Records with different irregular-moon targets are constructed through the
-    real initializer; each expands only its own copy of the body column dict, and
-    the shared cached dict (a monkeypatched fake here) is identical afterwards.
-    """
-    fake_shared: dict[str, Any] = {'IO': [('io_col_desc',)]}
-    monkeypatch.setattr(col, 'get_body_summary_dict', lambda: fake_shared)
-
-    rec_a = _make_record(monkeypatch, 'FAKE_MOON_A')
-    rec_b = _make_record(monkeypatch, 'FAKE_MOON_B')
-
-    # Each per-record dict independently holds only its own target moon.
-    assert 'FAKE_MOON_A' in rec_a.dicts['body']
-    assert 'FAKE_MOON_B' not in rec_a.dicts['body']
-    assert 'FAKE_MOON_B' in rec_b.dicts['body']
-    assert 'FAKE_MOON_A' not in rec_b.dicts['body']
-
-    # The "shared" fake dict is unchanged; only the per-Record copies were mutated.
-    assert set(fake_shared.keys()) == {'IO'}
-
-
-#===============================================================================
-# get_backplane_key
-#===============================================================================
-def test_get_backplane_key_tuple_event_key() -> None:
-    """A (key, target) tuple event key yields the bare backplane key."""
-    desc = (('phase_angle', 'IO'), ('', '', ''))
-    assert Record.get_backplane_key(desc) == 'phase_angle'
-
-
-def test_get_backplane_key_plain_event_key() -> None:
-    """A plain string event key is returned as the backplane key."""
-    desc = ('phase_angle', ('', '', ''))
-    assert Record.get_backplane_key(desc) == 'phase_angle'
-
-
-#===============================================================================
-# get_key_map
-#===============================================================================
-def test_get_key_map_slices_last_ndata_columns(
-        record_stub: Callable[..., Any]) -> None:
-    """The key map covers the last n-data columns, one key per data column."""
-    record = record_stub(backplane_keys={}, dicts={
-        'body': [(('center_coordinate', 'IO', 'u'), ('', '', '')),
-                 (('center_coordinate', 'IO', 'v'), ('', '', ''))]})
-    columns = ['"vol"', '"file"', ' a', ' b']
-    keys, data = record.get_key_map(columns, 'body')
-    assert keys == ['center_coordinate', 'center_coordinate']
-    assert data == [' a', ' b']
-
-
-def test_get_key_map_caches_per_qualifier(record_stub: Callable[..., Any]) -> None:
-    """The second call returns the cached key list for the qualifier."""
-    record = record_stub(backplane_keys={}, dicts={
-        'sky': [(('right_ascension', 'SKY'), ('', '', ''))]})
-    record.get_key_map(['"v"', 'x'], 'sky')
-    assert record.backplane_keys['sky'] == ['right_ascension']
-    # Second call uses the cached value; mutating dicts afterwards has no effect.
-    record.dicts['sky'] = 'ignored'
-    keys, _ = record.get_key_map(['"v"', 'y'], 'sky')
-    assert keys == ['right_ascension']
-
-
-def test_get_key_map_handles_dict_of_named_lists(record_stub: Callable[..., Any]) -> None:
-    """A dict of named column lists is flattened across its values."""
-    record = record_stub(backplane_keys={}, dicts={
-        'ring': {'SATURN': [(('ring_radius', 'SATURN'), ('', '', ''))]}})
-    keys, _ = record.get_key_map(['"v"', 'r'], 'ring')
-    assert keys == ['ring_radius']
+    key = ('body_diameter_in_pixels', defs.BODYX + ':RING',
+           util.replacement_fn('defs.RING_SYSTEM_RADII', defs.BODYX))
+    bound = Record.substitute([make_column(key=key)], 'JUPITER')
+    assert bound[0].spec.key[2] == defs.RING_SYSTEM_RADII['JUPITER']
 
 
 #===============================================================================
 # postprocess / link_null
 #===============================================================================
+def _linked_columns(make_column: Callable[..., Any]) -> list[Any]:
+    """Return the two single-valued, null-linked center-coordinate columns."""
+    return [make_column(key=('center_coordinate', 'IO', 'u'),
+                        names=['CENTER_X_COORDINATE'], flag='', overflow='%12.5e',
+                        link_id=1, link='null', width=12, print_format='%12.3f',
+                        null_value=-99999.),
+            make_column(key=('center_coordinate', 'IO', 'v'),
+                        names=['CENTER_Y_COORDINATE'], flag='', overflow='%12.5e',
+                        link_id=1, link='null', width=12, print_format='%12.3f',
+                        null_value=-99999.)]
+
+
 def test_postprocess_propagates_null_across_linked_columns(
-        record_stub: Callable[..., Any]) -> None:
+        record_stub: Callable[..., Any], make_column: Callable[..., Any]) -> None:
     """A null in one linked column propagates null to its partners."""
-    record = record_stub(backplane_keys={}, dicts={
-        'body': [(('center_coordinate', 'IO', 'u'), ('', '', '')),
-                 (('center_coordinate', 'IO', 'v'), ('', '', ''))]})
+    record = record_stub()
     # The first linked column is null (-99999); both must end up null.
     columns = ['"vol"', '"file"', '  -99999.000', '      5.000']
-    result = record.postprocess(columns, 'body')
+    result = record.postprocess(columns, _linked_columns(make_column))
     assert result[-2:] == ['  -99999.000', '  -99999.000']
 
 
 def test_postprocess_leaves_non_null_linked_columns(
-        record_stub: Callable[..., Any]) -> None:
+        record_stub: Callable[..., Any], make_column: Callable[..., Any]) -> None:
     """Linked columns with no null values are left unchanged."""
-    record = record_stub(backplane_keys={}, dicts={
-        'body': [(('center_coordinate', 'IO', 'u'), ('', '', '')),
-                 (('center_coordinate', 'IO', 'v'), ('', '', ''))]})
+    record = record_stub()
     columns = ['"vol"', '"file"', '      3.000', '      5.000']
-    result = record.postprocess(columns, 'body')
+    result = record.postprocess(columns, _linked_columns(make_column))
     assert result[-2:] == ['      3.000', '      5.000']
+
+
+def test_postprocess_ignores_unlinked_columns(
+        record_stub: Callable[..., Any], make_column: Callable[..., Any]) -> None:
+    """Columns with no link id are left alone even when one holds a null."""
+    record = record_stub()
+    columns = ['"vol"', '"file"', '-999.000', '   5.000']
+    unlinked = [make_column(names=['A']), make_column(names=['B'])]
+    assert record.postprocess(list(columns), unlinked)[-2:] == ['-999.000', '   5.000']
 
 
 #===============================================================================

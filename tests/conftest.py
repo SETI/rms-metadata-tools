@@ -158,6 +158,49 @@ def make_scalar() -> Callable[..., Any]:
 
 
 @pytest.fixture
+def make_stub() -> Callable[..., Any]:
+    """Factory building a ColumnStub, i.e. one column's label metadata.
+
+    Defaults describe the commonest geometry column: an 8-wide "%8.3f" field
+    with a -999. null and no declared valid range.
+    """
+    from metadata_tools.geometry_support.label_schema import ColumnStub
+
+    def _make(name: str = 'COLUMN', width: int = 8, print_format: str = '%8.3f',
+              null_value: Any = -999., valid_minimum: float | None = None,
+              valid_maximum: float | None = None) -> ColumnStub:
+        return ColumnStub(name=name, width=width, print_format=print_format,
+                          null_value=null_value, valid_minimum=valid_minimum,
+                          valid_maximum=valid_maximum)
+
+    return _make
+
+
+@pytest.fixture
+def make_column(make_stub: Callable[..., Any]) -> Callable[..., Any]:
+    """Factory building a ResolvedColumn: a catalog spec plus its label stubs.
+
+    This is what the template pull hands to prep/record/formatting, so tests
+    build one directly rather than resolving a real template.
+    """
+    from metadata_tools.columns.catalog import ColumnSpec
+    from metadata_tools.geometry_support.label_schema import ResolvedColumn
+
+    def _make(key: tuple[Any, ...] = ('phase_angle', 'IO'),
+              mask: tuple[str, str, str] = ('', '', ''),
+              names: Sequence[str] = ('MINIMUM_PHASE_ANGLE', 'MAXIMUM_PHASE_ANGLE'),
+              flag: str = 'DEG', overflow: str | None = None,
+              link_id: int = 0, link: str = '',
+              **stub_kwargs: Any) -> ResolvedColumn:
+        spec = ColumnSpec(names=tuple(names), key=key, mask=mask,
+                          format=(flag, overflow, link_id, link))
+        stubs = tuple(make_stub(name=name, **stub_kwargs) for name in names)
+        return ResolvedColumn(spec=spec, stubs=stubs)
+
+    return _make
+
+
+@pytest.fixture
 def record_stub() -> Callable[..., Any]:
     """Factory building a bare Record via __new__ with chosen attributes.
 

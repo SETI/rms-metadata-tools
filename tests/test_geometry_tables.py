@@ -11,6 +11,7 @@ import oops
 import pytest
 
 import metadata_tools.common as com
+import metadata_tools.defs as defs
 from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import suite as suite_mod
 from metadata_tools.geometry_support import tables
@@ -25,13 +26,13 @@ class RecordingRecord:
 
     def __init__(self, **attrs: Any) -> None:
         """Store attributes and start an empty call log."""
-        self.calls: list[tuple[str, dict[str, Any]]] = []
+        self.calls: list[tuple[Any, dict[str, Any]]] = []
         self.__dict__.update(attrs)
 
-    def add(self, qualifier: str, **kwargs: Any) -> list[str]:
+    def add(self, columns: Any, **kwargs: Any) -> list[str]:
         """Record the dispatch arguments and return a synthetic row."""
-        self.calls.append((qualifier, kwargs))
-        return [f'row:{qualifier}:{kwargs}']
+        self.calls.append((columns, kwargs))
+        return [f'row:{kwargs}']
 
 
 #===============================================================================
@@ -46,54 +47,60 @@ def test_inventory_table_add_formats_prefixes_and_list() -> None:
     assert table.rows == ['"vol","file","IO,EUROPA"']
 
 
+def _with_schema(table: Any, columns: Any = ('COLS',)) -> Any:
+    """Attach a stub schema to a bare table, standing in for a resolved template."""
+    table.schema = types.SimpleNamespace(columns=columns)
+    return table
+
+
 def test_sky_table_add_uses_no_body() -> None:
-    """SkyTable.add dispatches with no_body=True."""
-    table = tables.SkyTable(level='summary')
+    """SkyTable.add hands its resolved columns over with no_body=True."""
+    table = _with_schema(tables.SkyTable(level='summary'))
     record = RecordingRecord()
-    table.add(record)  # type: ignore[arg-type]
-    assert record.calls == [('sky', {'no_body': True})]
+    table.add(record)
+    assert record.calls == [(('COLS',), {'no_body': True})]
 
 
 def test_sun_table_add_targets_sun() -> None:
     """SunTable.add dispatches with the fixed target SUN (body-style prefix)."""
-    table = tables.SunTable(level='summary')
+    table = _with_schema(tables.SunTable(level='summary'))
     record = RecordingRecord()
-    table.add(record)  # type: ignore[arg-type]
-    assert record.calls == [('sun', {'target': 'SUN'})]
+    table.add(record)
+    assert record.calls == [(('COLS',), {'target': 'SUN'})]
 
 
 def test_ring_table_add_only_when_rings_present() -> None:
     """RingTable.add dispatches with the primary's name when rings are present."""
-    table = tables.RingTable(level='summary')
+    table = _with_schema(tables.RingTable(level='summary'))
     record = RecordingRecord(primary='JUPITER', rings_present=True)
-    table.add(record)  # type: ignore[arg-type]
-    assert record.calls == [('ring', {'name': 'JUPITER'})]
+    table.add(record)
+    assert record.calls == [(('COLS',), {'name': 'JUPITER'})]
 
 
 def test_ring_table_add_skips_without_rings() -> None:
     """RingTable.add skips records without rings."""
-    table = tables.RingTable(level='summary')
+    table = _with_schema(tables.RingTable(level='summary'))
     record = RecordingRecord(primary='JUPITER', rings_present=False)
-    table.add(record)  # type: ignore[arg-type]
+    table.add(record)
     assert record.calls == []
 
 
 def test_ring_table_add_skips_without_primary() -> None:
     """RingTable.add skips records without a primary."""
-    table = tables.RingTable(level='summary')
+    table = _with_schema(tables.RingTable(level='summary'))
     record = RecordingRecord(primary='', rings_present=True)
-    table.add(record)  # type: ignore[arg-type]
+    table.add(record)
     assert record.calls == []
 
 
 def test_body_table_add_iterates_bodies() -> None:
     """BodyTable.add dispatches once per body with matching name and target."""
-    table = tables.BodyTable(level='summary')
+    table = _with_schema(tables.BodyTable(level='summary'))
     record = RecordingRecord(bodies=['IO', 'EUROPA'])
-    table.add(record)  # type: ignore[arg-type]
+    table.add(record)
     assert record.calls == [
-        ('body', {'name': 'IO', 'target': 'IO'}),
-        ('body', {'name': 'EUROPA', 'target': 'EUROPA'})]
+        (('COLS',), {'name': 'IO', 'target': 'IO'}),
+        (('COLS',), {'name': 'EUROPA', 'target': 'EUROPA'})]
 
 
 #===============================================================================
@@ -123,28 +130,41 @@ class _Backplane:
 
 
 def test_record_add_builds_summary_line(
-        record_stub: Callable[..., Record],
+        record_stub: Callable[..., Record], make_column: Callable[..., Any],
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """add('sky') formats prefixes plus the evaluated backplane column."""
+    """add() formats prefixes plus the evaluated backplane column."""
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     record = record_stub(
-        pointing_available=True, sampling=8, backplane_keys={}, blocker=None,
-        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane(),
-        dicts={'sky': [(('phase_angle', 'IO'), ('', '', ''))]})
-    lines = record.add('sky', no_body=True)
+        pointing_available=True, sampling=8, blocker=None,
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane())
+    columns = [make_column(key=('phase_angle', 'IO'), flag='DEG',
+                           valid_minimum=0., valid_maximum=180.)]
+    lines = record.add(columns, no_body=True)
     assert lines == ['"vol","file",  28.648,  57.296']
 
 
-def test_record_add_named_column_dict(
-        record_stub: Callable[..., Record],
+def test_record_add_binds_the_body_name(
+        record_stub: Callable[..., Record], make_column: Callable[..., Any],
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """A named column dict selects the list under the given name."""
+    """A name binds the BODYX placeholder before the backplane is evaluated."""
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
+    seen: list[Any] = []
+
+    class _Recording(_Backplane):
+        """A backplane that records the keys it is asked to evaluate."""
+
+        def evaluate(self, key: Any) -> Any:
+            """Record the key, then defer to the fixed stub value."""
+            seen.append(key)
+            return super().evaluate(key)
+
     record = record_stub(
-        pointing_available=True, sampling=8, backplane_keys={}, blocker=None,
-        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane(),
-        dicts={'ring': {'JUPITER': [(('phase_angle', 'IO'), ('', '', ''))]}})
-    lines = record.add('ring', name='JUPITER', no_body=True)
+        pointing_available=True, sampling=8, blocker=None,
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Recording())
+    columns = [make_column(key=('phase_angle', defs.BODYX), flag='DEG',
+                           valid_minimum=0., valid_maximum=180.)]
+    lines = record.add(columns, name='JUPITER', no_body=True)
+    assert seen == [('phase_angle', 'JUPITER')]
     assert lines[0].endswith('  28.648,  57.296')
 
 
