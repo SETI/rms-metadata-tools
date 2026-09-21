@@ -19,6 +19,7 @@ tests, docs, and tooling.
        run-all-checks.sh       # single source of truth for the quality gates
                                # (CI adds pip-audit, which is network-only)
        read-docs.sh            # build the docs (-W) and open them in a browser
+       build-gcp-image.sh      # bake the reusable GCP worker VM image
      docs/                     # Sphinx documentation source (this site)
        conf.py                 # single Sphinx configuration
        index.rst               # documentation root
