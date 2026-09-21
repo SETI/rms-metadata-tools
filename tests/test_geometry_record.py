@@ -82,6 +82,28 @@ def test_postprocess_leaves_non_null_linked_columns(
     assert result[-2:] == ['      3.000', '      5.000']
 
 
+def test_postprocess_indexes_by_column_not_by_value(
+        record_stub: Callable[..., Any], make_column: Callable[..., Any]) -> None:
+    """Link positions count columns, not values.
+
+    prep_row appends one string per column, with a min/max column's two values
+    already comma-joined inside it. Counting values instead overstates the data
+    width, which walks the link positions off the end of the row. It takes
+    several two-valued columns ahead of the linked pair for the overcount to
+    exceed the row length, which is why the real body table hit this and a
+    two-column test did not.
+    """
+    record = record_stub()
+    pair_values = ['  28.648,  57.296', '   1.000,   2.000', '   3.000,   4.000']
+    columns = ['"vol"', '"file"', *pair_values, '  -99999.000', '      5.000']
+    resolved = [make_column(), make_column(), make_column()] + _linked_columns(make_column)
+
+    result = record.postprocess(columns, resolved)
+
+    assert result == ['"vol"', '"file"', *pair_values,
+                      '  -99999.000', '  -99999.000']
+
+
 def test_postprocess_ignores_unlinked_columns(
         record_stub: Callable[..., Any], make_column: Callable[..., Any]) -> None:
     """Columns with no link id are left alone even when one holds a null."""

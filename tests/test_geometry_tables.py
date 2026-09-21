@@ -183,6 +183,28 @@ def test_suite_add_tables_creates_four_tables() -> None:
     assert qualifiers == ['inventory', 'sky', 'ring', 'body']
 
 
+def test_suite_add_tables_names_summary_files(tmp_path: Any) -> None:
+    """The suite's geometry tables carry level='summary', so they name real files.
+
+    The level feeds both the output file name and the label template name, so a
+    missing level yields <volume>_<kind>_None.tab and a template that does not
+    exist -- invisible until a write is attempted.
+    """
+    suite = Suite.__new__(Suite)
+    suite.template_path = None  # type: ignore[assignment]
+    suite.volume_id = 'GO_0001'
+    suite.tables = []
+    suite.add_tables(tmp_path)
+
+    by_qualifier = {t.qualifier: t for t in suite.tables}
+    for qualifier in ('sky', 'ring', 'body'):
+        assert by_qualifier[qualifier].level == 'summary'
+        assert by_qualifier[qualifier].filename.name == f'GO_0001_{qualifier}_summary.tab'
+    # The inventory table is level-free and names a .csv.
+    assert by_qualifier['inventory'].level is None
+    assert by_qualifier['inventory'].filename.name == 'GO_0001_inventory.csv'
+
+
 def test_suite_make_record_builds_one_record(monkeypatch: pytest.MonkeyPatch) -> None:
     """make_record builds a single Record from the indexed observation."""
     suite = Suite.__new__(Suite)

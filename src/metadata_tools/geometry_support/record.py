@@ -142,19 +142,21 @@ class Record:
             'null': link_null,
         }
 
-        # Group the data-column positions by link function and link id. A group
-        # spans every slot of every column sharing that (link, link_id).
+        # Group the data-column positions by link function and link id.
+        #
+        # These are positions in the *row*, which holds one entry per column,
+        # not per value: prep_row appends a single string per column, and a
+        # min/max column's two values are already comma-joined inside it. So a
+        # column advances the position by one however many values it carries.
         groups: dict[tuple[str, int], tuple[list[int], Any]] = {}
-        offset = 0
-        for column in resolved:
+        for position, column in enumerate(resolved):
             (_, _, link_id, link) = column.spec.format
             if link_id:
                 indices, _null = groups.setdefault((link, link_id),
                                                    ([], column.stubs[0].null_value))
-                indices.extend(range(offset, offset + len(column.stubs)))
-            offset += len(column.stubs)
+                indices.append(position)
 
-        ndata = offset
+        ndata = len(resolved)
         if not ndata:
             return columns
         data_columns = columns[-ndata:]

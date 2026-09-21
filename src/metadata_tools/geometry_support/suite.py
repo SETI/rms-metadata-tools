@@ -102,11 +102,17 @@ class Suite:
         """
         # A SunTable would be inserted here; it is not wired in. See
         # tables.SunTable for the blocker and enablement recipe.
+        # level='summary' names the output file and its template
+        # (<volume>_<qualifier>_summary.tab). The inventory table sets its own
+        # level and suffix.
         self.tables += [
             InventoryTable(output_dir, self.template_path, volume_id=self.volume_id),
-            SkyTable(output_dir, self.template_path, volume_id=self.volume_id),
-            RingTable(output_dir, self.template_path, volume_id=self.volume_id),
-            BodyTable(output_dir, self.template_path, volume_id=self.volume_id)
+            SkyTable(output_dir, self.template_path, volume_id=self.volume_id,
+                     level='summary'),
+            RingTable(output_dir, self.template_path, volume_id=self.volume_id,
+                      level='summary'),
+            BodyTable(output_dir, self.template_path, volume_id=self.volume_id,
+                      level='summary')
             ]
 
     #===========================================================================
