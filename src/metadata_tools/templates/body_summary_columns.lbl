@@ -429,7 +429,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_LIMB_ALTITUDE
-    FORMAT                      = "F9.2"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -99999.
     DESCRIPTION                 = "Limb altitude is the perpendicular distance
@@ -447,7 +447,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_LIMB_ALTITUDE
-    FORMAT                      = "F9.2"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -99999.
     DESCRIPTION                 = "Limb altitude is the perpendicular distance
@@ -512,6 +512,7 @@ $ONCE(night_override = False)
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
+    FORMAT                      = "A23"
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photon left a point on the body's
@@ -526,6 +527,7 @@ $ONCE(night_override = False)
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
+    FORMAT                      = "A23"
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photon left a point on the body's
@@ -871,7 +873,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = DIAMETER_IN_PIXELS
-    FORMAT                      = "F10.3"
+    FORMAT                      = "F12.3"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The physical diameter of the body,
       converted to pixels.
@@ -917,7 +919,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = CENTER_X_COORDINATE
-    FORMAT                      = "F9.2"
+    FORMAT                      = "F12.3"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
@@ -931,7 +933,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = CENTER_Y_COORDINATE
-    FORMAT                      = "F9.2"
+    FORMAT                      = "F12.3"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
