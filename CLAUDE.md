@@ -95,7 +95,10 @@ the engine. Cloud variants accept `cloud_tasks` options; `--config` defaults to
 `cloud/<HOST>/gcp_<type>_config.yml` and `--task-file` to `./tasks.json` when those files
 exist. GCP instance startup scripts are generated at dispatch time from
 `cloud/gcp_common_startup.sh`; only the `gcp_*_config.yml` machine/queue configs live in
-`cloud/<HOST>/`.
+`cloud/<HOST>/`. Production configs pin `image: metadata-tools`, a baked VM image family
+built by `scripts/build-gcp-image.sh` (venv preinstalled; the startup script detects
+`/root/venv` and replaces the apt/pip install with an upgrade-if-needed staleness
+check, so a stale image never silently runs an old release).
 
 **Per-host directory** (`src/metadata_tools/hosts/<HOST>/`) contains config modules and templates:
 

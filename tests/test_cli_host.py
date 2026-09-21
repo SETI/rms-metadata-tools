@@ -513,6 +513,31 @@ def test_build_startup_ssh_paste_replaces_cd_root(
     assert 'SSH-pastable' in script
 
 
+def test_build_startup_ssh_paste_real_template_needs_no_root(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The real template, rendered for SSH paste, touches nothing under /root.
+
+    The other SSH-paste tests use synthetic templates, so they cannot catch a
+    root-only path added to the shipped one. An SSH-pasted script runs as an
+    ordinary user who can neither create nor write /root, so every executable
+    line must stay relocatable -- which is what exporting VENV_DIR buys.
+    """
+    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
+    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  oops_resources='my-disk', for_ssh=True)
+
+    assert 'export VENV_DIR="$HOME/venv"' in script
+    # The VENV_DIR default is the one permitted mention: the header above
+    # overrides it before the ${VENV_DIR:-...} expansion is ever reached.
+    offenders = [line for line in script.splitlines()
+                 if '/root' in line
+                 and not line.lstrip().startswith('#')
+                 and 'VENV_DIR:-' not in line]
+    assert offenders == []
+
+
 def test_build_startup_ssh_paste_false_keeps_cd_root(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Non-SSH mode keeps 'cd /root' and omits the SSH-pastable marker."""

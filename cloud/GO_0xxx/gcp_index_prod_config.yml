@@ -17,6 +17,10 @@ gcp:
   region:                   us-central1
   zone:                     us-central1-a
 
+  # Baked worker image (family name; resolves to the newest image, built by
+  # scripts/build-gcp-image.sh) so instances skip the apt/pip install at boot.
+  image:                    metadata-tools
+
   # Modern general-purpose families; the selector picks the cheapest fit.
   instance_types:           ["^n2-standard-.*", "^n4-standard-.*", "^c4-standard-.*"]
   min_cpu:                  8

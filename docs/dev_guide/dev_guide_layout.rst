@@ -19,6 +19,7 @@ tests, docs, and tooling.
        run-all-checks.sh       # single source of truth for the quality gates
                                # (CI adds pip-audit, which is network-only)
        read-docs.sh            # build the docs (-W) and open them in a browser
+       build-gcp-image.sh      # bake the reusable GCP worker VM image
      docs/                     # Sphinx documentation source (this site)
        conf.py                 # single Sphinx configuration
        index.rst               # documentation root
@@ -101,11 +102,13 @@ GCP deployment files live outside the package and are not installed with the whe
 .. code-block:: text
 
    cloud/
-     gcp_common_startup.sh     # shared VM bootstrap template
+     gcp_common_startup.sh     # shared VM bootstrap template (skips the install
+                               # when a baked image ships /root/venv)
      GO_0xxx/
        gcp_index_config.yml        # GCP machine/queue config for the index stage
        gcp_geometry_config.yml     # GCP machine/queue config for the geometry stage
        gcp_cumulative_config.yml   # GCP machine/queue config for the cumulative stage
+       gcp_*_prod_config.yml       # production tiers (spot fleets, baked image)
        tasks.json                 # example/output task file
 
 GCP instance startup scripts are generated at runtime by
