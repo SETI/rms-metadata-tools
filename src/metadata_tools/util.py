@@ -249,27 +249,6 @@ def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> A
         return new_tree
 
 #===============================================================================
-def replacement_dict(tree: list[Any], placeholder: str, names: list[str]) -> dict[str, Any]:
-    """Create a dictionary of copies of the tree of objects, where each
-    dictionary entry is keyed by a name in the list and returns a copy of the
-    tree using that name as the replacement.
-
-    Parameters:
-        tree: List containing the tree.
-        placeholder: Placeholder to replace.
-        names: List of replacement strings.
-
-    Returns:
-        New dictionary.
-    """
-
-    result: dict[str, Any] = {}
-    for name in names:
-        result[name] = replace(tree, placeholder, name)
-
-    return result
-
-#===============================================================================
 def replacement_fn(dict_name: str, name: str) -> str:
     """Create a replacement-able dictionary reference.
 

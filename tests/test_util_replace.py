@@ -82,12 +82,6 @@ def test_resolve_dict_ref_rejects_unrecognized_pattern() -> None:
         util._resolve_dict_ref('defs.RING_SYSTEM_RADII[SATURN]')
 
 
-def test_replacement_dict_keys_each_tree_by_name() -> None:
-    """``replacement_dict`` returns one substituted tree per name."""
-    result = util.replacement_dict([('latitude', 'bodyx')], 'bodyx', ['JUPITER', 'SATURN'])
-    assert result == {'JUPITER': [('latitude', 'JUPITER')], 'SATURN': [('latitude', 'SATURN')]}
-
-
 def test_replacement_fn_builds_dict_reference_string() -> None:
     """``replacement_fn`` formats a ``dict["key"]`` reference string."""
     result = util.replacement_fn('defs.RING_SYSTEM_RADII', 'bodyx')

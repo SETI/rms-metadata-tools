@@ -1,69 +1,52 @@
-"""Column definitions for sun geometry tables.
+"""Column computation catalog for sun geometry tables.
 
-This module defines the backplane columns describing the geometry of the Sun as
-seen in each observation: per-pixel solar surface quantities (SUN_COLUMNS),
-gridless whole-disk quantities (SUN_GRIDLESS_COLUMNS), and the summary column
-list assembled from them.
+This module names every sun geometry column this package knows how to compute
+and says how: the backplane key describing the Sun as seen in each observation,
+and the unit conversion applied to the result.
 
-These definitions are gathered and re-exported by ``columns/__init__.py`` and
-consumed by the geometry Record/prep code, which evaluates each backplane key
-and formats the result via FORMAT_DICT in the ``geometry_support`` package (defined
-in its ``formats`` module).
+The sun table is not wired into the pipeline; see
+:class:`metadata_tools.geometry_support.tables.SunTable` for the blocker. The
+catalog and its template are kept in step so enabling it stays a small change.
+
+Whether a column is actually produced -- and in what order, with what width,
+null value, and valid range -- is decided by the host's label template, not
+here. An entry no template names is simply unused. See
+:mod:`metadata_tools.columns.catalog`.
 """
+from metadata_tools.columns.catalog import ColumnSpec, minmax, single
 
-################################################################################
-# *COLUMN description tuples are
-#
-#   (backplane_key, (masker, shadower, face), alt_format)
-#
-# where...
-#
-#   backplane_key   tuple passed to Backplane.evaluate().
-#
-#   masker          a string indicating which bodies obscure the surface. It is
-#                   constructed by concatenating any of these characters:
-#                       "P" = let the planet mask the surface;
-#                       "R" = let the rings mask the surface;
-#                       "M" = let the moon mask the surface.
-#
-#   shadower        a string indicating which bodies shadow the surface. It is
-#                   constructed by concatenating any of these characters:
-#                       "P" = let the planet shadow the surface;
-#                       "R" = let the rings shadow the surface;
-#                       "M" = let the moon shadow the surface.
-#
-#   face            a string indicating which face of the surface to include:
-#                       "D" = include only the day side of the body;
-#                       "N" = include only the night side of the body;
-#                       ""  = include both faces of the body.
-#
-#   alt_format      if present, this is an extra tag used to identify the output
-#                   format of the column.
-#                       "-180" = use the range (-180,180) instead of (0,360).
-#
-################################################################################
-SUN_COLUMNS = [
-    (("latitude",               "SUN", "centric"),           ("",  "",  "")),
-    (("latitude",               "SUN", "graphic"),           ("",  "",  "")),
-    (("longitude",              "SUN", "iau", "west"),       ("",  "",  "")),
-#     (("longitude",              "SUN", "iau", "east"),      ("",  "",  "")),
-    (("longitude",              "SUN", "obs", "west", -180), ("",  "",  ""), "-180"),
-#     (("longitude",              "SUN", "obs", "east", -180), ("",  "",  ""), "-180"),
-    (("finest_resolution",      "SUN"),                      ("",  "",  "")),
-    (("coarsest_resolution",    "SUN"),                      ("",  "",  "")),
-    (("distance",               "SUN"),                      ("",  "",  "")),
-    (("event_time",             "SUN"),                      ("", "", ""))]
-
-SUN_GRIDLESS_COLUMNS = [
-    (("sub_observer_latitude",  "SUN", "centric"),           ("",   "",  "")),
-    (("sub_observer_latitude",  "SUN", "graphic"),           ("",   "",  "")),
-    (("sub_observer_longitude", "SUN", "iau", "west"),       ("",   "",  "")),
-#     (("sub_observer_longitude", "SUN", "iau", "east"),      ("",   "",  "")),
-    (("center_resolution",      "SUN", "u"),                 ("",   "",  "")),
-    (("center_distance",        "SUN", "obs"),               ("",   "",  "")),
-    (("radius_in_pixels",       "SUN"),                      ("",   "",  "")),
-    (("center_coordinate",      "SUN", "x"),                 ("",   "",  "")),
-    (("center_coordinate",      "SUN", "y"),                 ("",   "",  ""))]
-
-SUN_SUMMARY_COLUMNS  = SUN_COLUMNS + SUN_GRIDLESS_COLUMNS
-################################################################################
+SUN_CATALOG: tuple[ColumnSpec, ...] = (
+    minmax('PLANETOCENTRIC_LATITUDE', ('latitude', 'SUN', 'centric'),
+           ('', '', '')),
+    minmax('PLANETOGRAPHIC_LATITUDE', ('latitude', 'SUN', 'graphic'),
+           ('', '', '')),
+    minmax('IAU_LONGITUDE', ('longitude', 'SUN', 'iau', 'west'),
+           ('', '', '')),
+    minmax('LONGITUDE_WRT_OBSERVER', ('longitude', 'SUN', 'obs', 'west', -180),
+           ('', '', ''), alt='-180'),
+    minmax('FINEST_SURFACE_RESOLUTION', ('finest_resolution', 'SUN'),
+           ('', '', '')),
+    minmax('COARSEST_SURFACE_RESOLUTION', ('coarsest_resolution', 'SUN'),
+           ('', '', '')),
+    minmax('SURFACE_DISTANCE', ('distance', 'SUN'),
+           ('', '', '')),
+    minmax('SURFACE_INTERCEPT_TIME', ('event_time', 'SUN'),
+           ('', '', '')),
+    minmax('PLANETOCENTRIC_SUB_OBSERVER_LATITUDE', ('sub_observer_latitude', 'SUN', 'centric'),
+           ('', '', '')),
+    minmax('PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE', ('sub_observer_latitude', 'SUN', 'graphic'),
+           ('', '', '')),
+    minmax('SUB_OBSERVER_IAU_LONGITUDE', ('sub_observer_longitude', 'SUN', 'iau', 'west'),
+           ('', '', '')),
+    minmax('CENTER_RESOLUTION', ('center_resolution', 'SUN', 'u'),
+           ('', '', '')),
+    minmax('CENTER_DISTANCE', ('center_distance', 'SUN', 'obs'),
+           ('', '', '')),
+    minmax('RADIUS_IN_PIXELS', ('radius_in_pixels', 'SUN'),
+           ('', '', '')),
+    single('CENTER_X_COORDINATE', ('center_coordinate', 'SUN', 'x'),
+           ('', '', '')),
+    single('CENTER_Y_COORDINATE', ('center_coordinate', 'SUN', 'y'),
+           ('', '', '')),
+)
+"""Every sun column this package can compute, keyed by template NAME."""

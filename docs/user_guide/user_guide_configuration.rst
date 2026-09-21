@@ -70,6 +70,11 @@ configure them directly:
 
 Each ``.tab``/``.csv`` file is accompanied by a ``.lbl`` PDS3 label generated
 from the host's label template (or a shared template in the package's global
-``templates/`` directory). The set of columns in an index table is itself
-defined by the supplemental label template; see
+``templates/`` directory).
+
+The label templates also define the columns themselves, for geometry tables as
+well as index tables. A host's ``<HOST>_<kind>_summary.lbl`` decides which
+geometry columns it writes and in what order, and each column's null value,
+valid range, and field width come from that same ``COLUMN`` object. To add or
+drop a column for a host, edit its template; see
 :doc:`/dev_guide/dev_guide_extending`.

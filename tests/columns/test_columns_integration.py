@@ -22,13 +22,6 @@ def test_package_reexports_every_public_name() -> None:
     assert missing == []
 
 
-def test_body_summary_dict_is_populated() -> None:
-    """The body summary dict is keyed by the resolved oops body names."""
-    import metadata_tools.columns as col
-
-    assert len(col.get_body_summary_dict()) > 0
-
-
 def test_bodies_registry_is_shared_with_bodies_module() -> None:
     """``col.get_bodies_registry()`` and ``bodies.get_bodies_registry()`` return the same object."""
     import metadata_tools.bodies as bodies_mod

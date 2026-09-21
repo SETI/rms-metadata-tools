@@ -8,9 +8,33 @@ from typing import TYPE_CHECKING, Any, cast
 from filecache import FCPath
 
 import metadata_tools.common as com
+from metadata_tools.geometry_support.label_schema import TableSchema, resolve_schema
 
 if TYPE_CHECKING:
     from metadata_tools.geometry_support.record import Record
+
+
+#===============================================================================
+def _resolve(output_dir: str | Path | FCPath | None,
+             template_path: str | Path | FCPath | None,
+             qualifier: str) -> TableSchema | None:
+    """Resolve a table's column schema from its host template, when it has one.
+
+    Cumulative tables are built bare, with neither an output directory nor a
+    template path, purely to name the per-volume files to concatenate; they
+    never build a row, so they need no schema.
+
+    Parameters:
+        output_dir: The table's output directory, if any.
+        template_path: Path to the host template, if any.
+        qualifier: The table kind.
+
+    Returns:
+        The resolved schema, or None for a bare table.
+    """
+    if not template_path or not output_dir:
+        return None
+    return resolve_schema(FCPath(template_path).parent, qualifier)
 
 
 ################################################################################
@@ -66,6 +90,7 @@ class SkyTable(com.Table):
         """
         super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sky',
                          **kwargs)
+        self.schema = _resolve(output_dir, template_path, 'sky')
 
     #===============================================================================
     def add(self, record: 'Record') -> None:
@@ -74,7 +99,7 @@ class SkyTable(com.Table):
         Parameters:
             record: Record describing the row to add.
         """
-        self.rows += record.add(cast(str, self.qualifier), no_body=True)
+        self.rows += record.add(cast(TableSchema, self.schema).columns, no_body=True)
 
 
 ################################################################################
@@ -124,6 +149,7 @@ class SunTable(com.Table):
         """
         super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sun',
                          **kwargs)
+        self.schema = _resolve(output_dir, template_path, 'sun')
 
     #===========================================================================
     def add(self, record: 'Record') -> None:
@@ -137,7 +163,7 @@ class SunTable(com.Table):
         Parameters:
             record: Record describing the row to add.
         """
-        self.rows += record.add(cast(str, self.qualifier), target='SUN')
+        self.rows += record.add(cast(TableSchema, self.schema).columns, target='SUN')
 
 
 ################################################################################
@@ -159,6 +185,7 @@ class RingTable(com.Table):
         """
         super().__init__(output_dir=output_dir, template_path=template_path, qualifier='ring',
                          **kwargs)
+        self.schema = _resolve(output_dir, template_path, 'ring')
 
     #===========================================================================
     def add(self, record: 'Record') -> None:
@@ -174,7 +201,8 @@ class RingTable(com.Table):
         # Add record
         if record.primary:
             if record.rings_present:
-                self.rows += record.add(cast(str, self.qualifier), name=record.primary)
+                self.rows += record.add(cast(TableSchema, self.schema).columns,
+                                        name=record.primary)
 
 
 ################################################################################
@@ -196,6 +224,7 @@ class BodyTable(com.Table):
         """
         super().__init__(output_dir=output_dir, template_path=template_path, qualifier='body',
                          **kwargs)
+        self.schema = _resolve(output_dir, template_path, 'body')
 
     #===========================================================================
     def add(self, record: 'Record') -> None:
@@ -206,4 +235,5 @@ class BodyTable(com.Table):
                 entry in record.bodies.
         """
         for name in record.bodies:
-            self.rows += record.add(cast(str, self.qualifier), name=name, target=name)
+            self.rows += record.add(cast(TableSchema, self.schema).columns,
+                                    name=name, target=name)

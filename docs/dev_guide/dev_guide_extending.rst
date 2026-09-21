@@ -115,18 +115,26 @@ label field) is described in :doc:`dev_guide_index_subsystem`.
 Adding a geometry column
 ========================
 
-Adding a geometry column touches the column definition, the backplane, the
-format dictionary, the label template, and the tests:
+The label template decides which columns a host writes, so that is where a new
+column starts. The catalog then says how to compute it.
 
-#. Add a column-description tuple to the relevant module in the
-   :mod:`metadata_tools.columns` package (``body``, ``ring``, ``sky``, or
-   ``sun``). The tuple is ``(backplane_key, (masker, shadower, face))`` with an
-   optional alternate-format tag (see :doc:`dev_guide_geometry_subsystem`).
-#. Add the corresponding backplane function in ``oops`` if the backplane key is
-   new.
-#. Add a row for the column to
-   :data:`~metadata_tools.geometry_support.formats.FORMAT_DICT` (the ten-element
-   format tuple described in :ref:`format-dict-contract`).
-#. Add the column description(s) to the host's summary label template, e.g.
-   ``GO_0xxx_body_summary.lbl``.
+#. Add the ``COLUMN`` object(s) to the host's summary label template, e.g.
+   ``GO_0xxx_body_summary.lbl`` (or the shared fragment it includes). This is
+   what makes the column exist, fixes its position, and declares its ``NAME``,
+   ``FORMAT``, ``NULL_CONSTANT``, and valid range. A two-valued column needs
+   both halves, adjacent and in ``MINIMUM``/``MAXIMUM`` order.
+#. Add a :class:`~metadata_tools.columns.catalog.ColumnSpec` to the qualifier's
+   catalog (``body``, ``ring``, ``sky``, or ``sun`` in
+   :mod:`metadata_tools.columns`), using
+   :func:`~metadata_tools.columns.catalog.minmax`,
+   :func:`~metadata_tools.columns.catalog.pair`, or
+   :func:`~metadata_tools.columns.catalog.single`. Its names must match the
+   template exactly; that name is the join between the two.
+#. If the backplane quantity is new, add its conversion entry to
+   ``_FORMAT_DICT`` in :mod:`metadata_tools.columns.formats`, and add the
+   corresponding backplane function in ``oops``.
 #. Run the host's geometry program and update the unit tests.
+
+Removing a column for one host is a template-only edit: delete the ``COLUMN``
+object(s) and the catalog entry simply goes unused. Nothing else needs to
+change, and no other host is affected.

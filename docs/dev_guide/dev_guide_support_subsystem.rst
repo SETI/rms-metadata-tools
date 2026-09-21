@@ -82,9 +82,9 @@ is excluded from the hermetic test coverage and stubbed in the test fixtures.
 :func:`~metadata_tools.util.parse_template_name`,
 :func:`~metadata_tools.util.get_volume_glob`), text-file read/write helpers that
 work for local and remote paths, spacecraft-clock parsing/formatting, the
-placeholder-substitution helpers used by the columns package
-(:func:`~metadata_tools.util.replace`,
-:func:`~metadata_tools.util.replacement_dict`), and the cyclic-range estimator
+placeholder-substitution helpers used to bind a body name into a column's
+backplane key (:func:`~metadata_tools.util.replace`,
+:func:`~metadata_tools.util.replacement_fn`), and the cyclic-range estimator
 used by longitude columns.
 
 :mod:`metadata_tools.defs` holds the constants: the planet name list
