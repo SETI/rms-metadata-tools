@@ -5,7 +5,7 @@
 """Tests for SPICE-bound constructors, using monkeypatching instead of real kernels."""
 import types
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import oops
 import pytest
@@ -148,7 +148,9 @@ def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
     _patch_record_spice(monkeypatch, primary='')
     record = Record(_observation(), 'GO_0001', {}, 8, 'summary')
     assert record.primary == ''
-    assert record.backplane == 'BACKPLANE'
+    # The patched Backplane constructor returns a string sentinel; compare as Any
+    # since the attribute is typed as a real oops Backplane.
+    assert cast(Any, record.backplane) == 'BACKPLANE'
     assert record.prefixes[0] == '"GO_0001"'
     # The .IMG suffix is rewritten to .LBL in the file-spec prefix.
     assert '.LBL' in record.prefixes[1]

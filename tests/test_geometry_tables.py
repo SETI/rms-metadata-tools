@@ -102,6 +102,8 @@ def test_body_table_add_iterates_bodies() -> None:
 class _Backplane:
     """A minimal Backplane stub returning fixed Scalars and empty masks."""
     shape = (4, 4)
+    # masks.py reads backplane.meshgrid.shape (oops >= 0.3 interface).
+    meshgrid = types.SimpleNamespace(shape=(4, 4))
 
     def evaluate(self, key: Any) -> Any:
         """Return a fixed two-value Scalar for any key."""

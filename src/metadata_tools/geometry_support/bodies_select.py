@@ -42,8 +42,13 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
 
     # Attempt to obtain inventory
     try:
-        inventory = record.observation.inventory(
-            bodies, expand=get_geometry_config().EXPAND, cache=False)
+        try:
+            inventory = record.observation.inventory(
+                bodies, expand=get_geometry_config().EXPAND, cache=False)
+        except TypeError:
+            # oops >= 0.3 dropped the cache option (removed in the src restructure)
+            inventory = record.observation.inventory(
+                bodies, expand=get_geometry_config().EXPAND)
         return cast(list[str], inventory)
 
     # A RuntimeError is probably caused by missing spice data. There is
@@ -149,7 +154,7 @@ def get_system(body: str) -> str | None:
     # A root body such as the Sun has no parent; it is its own system.
     if parent_body is None:
         return body
-    parent = cast(str, parent_body.name)
+    parent = parent_body.name
     if parent != 'SUN':
         return parent
     return body

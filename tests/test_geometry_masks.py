@@ -32,7 +32,7 @@ def test_planet_masker_ors_in_back(exists_true: None, fake_backplane: Any) -> No
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('P', '', ''), ignore_shadows=True)
     assert isinstance(result, polymath.Boolean)
-    assert result.vals.sum() == 1
+    assert np.asarray(result.vals).sum() == 1
 
 
 def test_ring_masker_only_for_saturn(exists_true: None, fake_backplane: Any) -> None:
@@ -40,7 +40,7 @@ def test_ring_masker_only_for_saturn(exists_true: None, fake_backplane: Any) -> 
     fake_backplane.in_back[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'SATURN', ('R', '', ''), ignore_shadows=True)
-    assert result.vals.sum() == 1
+    assert np.asarray(result.vals).sum() == 1
 
 
 def test_moon_blocker_masker(exists_true: None, fake_backplane: Any) -> None:
@@ -49,7 +49,7 @@ def test_moon_blocker_masker(exists_true: None, fake_backplane: Any) -> None:
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('M', '', ''),
         blocker='EUROPA', ignore_shadows=True)
-    assert result.vals.sum() == 1
+    assert np.asarray(result.vals).sum() == 1
 
 
 def test_target_cannot_block_itself(exists_true: None, fake_backplane: Any) -> None:
@@ -83,7 +83,7 @@ def test_shadowers_applied_when_not_ignored(exists_true: None, fake_backplane: A
     fake_backplane.inside_shadow[('IO', 'JUPITER')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('', 'P', ''), ignore_shadows=False)
-    assert result.vals.sum() == 1
+    assert np.asarray(result.vals).sum() == 1
 
 
 def test_pluto_primary_also_masks_charon(exists_true: None, fake_backplane: Any) -> None:
@@ -94,7 +94,7 @@ def test_pluto_primary_also_masks_charon(exists_true: None, fake_backplane: Any)
     fake_backplane.in_back[('IO', 'CHARON')] = charon
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'PLUTO', ('P', '', ''), ignore_shadows=True)
-    assert result.vals.sum() == 2
+    assert np.asarray(result.vals).sum() == 2
 
 
 def test_ring_shadower_for_saturn(exists_true: None, fake_backplane: Any) -> None:
@@ -102,7 +102,7 @@ def test_ring_shadower_for_saturn(exists_true: None, fake_backplane: Any) -> Non
     fake_backplane.inside_shadow[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'SATURN', ('', 'R', ''), ignore_shadows=False)
-    assert result.vals.sum() == 1
+    assert np.asarray(result.vals).sum() == 1
 
 
 def test_moon_shadower(exists_true: None, fake_backplane: Any) -> None:
@@ -111,7 +111,7 @@ def test_moon_shadower(exists_true: None, fake_backplane: Any) -> None:
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('', 'M', ''),
         blocker='EUROPA', ignore_shadows=False)
-    assert result.vals.sum() == 1
+    assert np.asarray(result.vals).sum() == 1
 
 
 def test_pluto_shadower_also_shadows_charon(exists_true: None, fake_backplane: Any) -> None:
@@ -122,7 +122,7 @@ def test_pluto_shadower_also_shadows_charon(exists_true: None, fake_backplane: A
     fake_backplane.inside_shadow[('IO', 'CHARON')] = charon
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'PLUTO', ('', 'P', ''), ignore_shadows=False)
-    assert result.vals.sum() == 2
+    assert np.asarray(result.vals).sum() == 2
 
 
 def test_night_face_masks_sunward(exists_true: None, fake_backplane: Any) -> None:
@@ -130,7 +130,7 @@ def test_night_face_masks_sunward(exists_true: None, fake_backplane: Any) -> Non
     fake_backplane.sunward['IO'] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'JUPITER', ('', '', 'N'), ignore_shadows=False)
-    assert result.vals.sum() == 1
+    assert np.asarray(result.vals).sum() == 1
 
 
 def test_all_false_returns_boolean_false(exists_true: None, fake_backplane: Any) -> None:

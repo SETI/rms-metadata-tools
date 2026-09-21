@@ -58,7 +58,9 @@ def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
 
     (masker, shadower, face) = mask_desc
 
-    excluded = np.zeros(backplane.shape, dtype='bool')
+    # backplane.meshgrid.shape works for every oops version; Backplane.shape went
+    # private (_shape) in oops >= 0.3
+    excluded = np.zeros(backplane.meshgrid.shape, dtype='bool')
 
     # Handle maskers
     if "R" in masker and primary == "SATURN":

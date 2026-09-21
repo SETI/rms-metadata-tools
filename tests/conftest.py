@@ -80,6 +80,9 @@ class FakeBackplane:
             shape: Shape of the boolean arrays returned by the where_* methods.
         """
         self.shape = shape
+        # oops >= 0.3 exposes the shape through the meshgrid (Backplane.shape
+        # went private); masks.py reads backplane.meshgrid.shape.
+        self.meshgrid = types.SimpleNamespace(shape=shape)
         self._false = np.zeros(shape, dtype=bool)
         # Per-method override registries keyed by the body-name arguments.
         self.in_back: dict[tuple[str, str], npt.NDArray[np.bool_]] = {}
