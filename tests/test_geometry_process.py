@@ -24,7 +24,7 @@ def _args(tree: FCPath, **over: Any) -> types.SimpleNamespace:
     """
     ns = types.SimpleNamespace(
         metadata_tree=str(tree), output_tree=str(tree), new_only=False,
-        labels=False, volumes=None, selection='S', first=None, sampling=8,
+        labels=False, volumes=None, first=None, sampling=8,
         pattern=None)
     for k, v in over.items():
         setattr(ns, k, v)
@@ -47,11 +47,9 @@ def _tree(tmp_path: Path) -> FCPath:
 # get_args
 #===============================================================================
 def test_get_args_defaults_and_parse() -> None:
-    """--selection and --sampling parse over the provided defaults."""
-    parser = proc.get_args(host='GO', selection='S', sampling=8)
-    args = parser.parse_args(['/meta', '/out', '--selection', 'SD',
-                              '--sampling', '4'])
-    assert args.selection == 'SD'
+    """--sampling parses over the provided default."""
+    parser = proc.get_args(host='GO', sampling=8)
+    args = parser.parse_args(['/meta', '/out', '--sampling', '4'])
     assert args.sampling == 4
 
 

@@ -127,6 +127,6 @@ format dictionary, the label template, and the tests:
 #. Add a row for the column to
    :data:`~metadata_tools.geometry_support.formats.FORMAT_DICT` (the ten-element
    format tuple described in :ref:`format-dict-contract`).
-#. Add the column description(s) to the host's summary (or detailed) label
-   template, e.g. ``GO_0xxx_body_summary.lbl``.
+#. Add the column description(s) to the host's summary label template, e.g.
+   ``GO_0xxx_body_summary.lbl``.
 #. Run the host's geometry program and update the unit tests.

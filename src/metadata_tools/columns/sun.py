@@ -2,8 +2,8 @@
 
 This module defines the backplane columns describing the geometry of the Sun as
 seen in each observation: per-pixel solar surface quantities (SUN_COLUMNS),
-gridless whole-disk quantities (SUN_GRIDLESS_COLUMNS), and the summary/detailed
-column lists assembled from them.
+gridless whole-disk quantities (SUN_GRIDLESS_COLUMNS), and the summary column
+list assembled from them.
 
 These definitions are gathered and re-exported by ``columns/__init__.py`` and
 consumed by the geometry Record/prep code, which evaluates each backplane key
@@ -66,5 +66,4 @@ SUN_GRIDLESS_COLUMNS = [
     (("center_coordinate",      "SUN", "y"),                 ("",   "",  ""))]
 
 SUN_SUMMARY_COLUMNS  = SUN_COLUMNS + SUN_GRIDLESS_COLUMNS
-SUN_DETAILED_COLUMNS = SUN_COLUMNS
 ################################################################################

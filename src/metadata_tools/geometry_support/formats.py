@@ -107,12 +107,7 @@ FORMAT_DICT: dict[str, FormatTuple] = {
     "ring_emission_angle"       : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
     "center_emission_angle"     : ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 90, 0, ''),
     "ring_center_emission_angle": ("DEG", 2,  8, "%8.3f",  None,     -999., 0, 180, 0, ''),
-    "ring_elevation"            : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90, 0, ''),
-
-    "where_inside_shadow"       : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
-    "where_in_front"            : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
-    "where_in_back"             : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, ''),
-    "where_antisunward"         : ("",    2,  1, "%1d",    None,        0, 0, 0, 0, '')}
+    "ring_elevation"            : ("DEG", 2,  8, "%8.3f",  None,     -999., -90, 90, 0, '')}
 """Maps each geometry column name to its ten-element format tuple of formatting,
 units, null value, valid range, and null-link metadata."""
 

@@ -101,14 +101,11 @@ class SunTable(com.Table):
     observer-only surface event key), not a change here.
 
     Enablement recipe, should ``oops`` gain support for Sun-surface geometry:
-      1. In ``suite.Suite.add_tables``, add ``SunTable`` at the ``'summary'``
-         level (the Sun has no per-body tiling, so no detailed variant), and add
-         it to the ``self.tables`` type annotation.
-      2. In ``suite.Suite.get_overrides``, add
-         ``overrides['sun'] = Suite.get_override(record, 'sun')``.
-      3. In ``cumulative_support.create_cumulative_indexes``, add
+      1. In ``suite.Suite.add_tables``, add ``SunTable`` to the table list and
+         to the ``self.tables`` type annotation.
+      2. In ``cumulative_support.create_cumulative_indexes``, add
          ``geom.SunTable(level='summary')`` to the table list.
-      4. The label templates already exist and are validated:
+      3. The label templates already exist and are validated:
          ``hosts/GO_0xxx/templates/GO_0xxx_sun_summary.lbl`` and the shared
          ``templates/sun_summary_columns.lbl`` (guarded by
          ``tests/test_geometry_sun_label.py``).

@@ -47,7 +47,7 @@ def _make_record(monkeypatch: pytest.MonkeyPatch, moon: str) -> Record:
         'FILE_SPECIFICATION_NAME': 'GO_0001/C012345/C0123456789R.IMG',
         'TARGET_NAME': moon,
     })
-    return Record(observation, 'GO_0001', {}, 8, 'summary')
+    return Record(observation, 'GO_0001', {}, 8)
 
 
 def test_body_dict_addition_does_not_mutate_shared_cache(
@@ -72,30 +72,6 @@ def test_body_dict_addition_does_not_mutate_shared_cache(
 
     # The "shared" fake dict is unchanged; only the per-Record copies were mutated.
     assert set(fake_shared.keys()) == {'IO'}
-
-
-def test_body_tile_dict_addition_does_not_mutate_shared_cache(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """Record.__init__ tile-dict additions for irregular moons must not pollute
-    BODY_TILE_DICT.
-
-    Two Records with different irregular-moon targets are constructed through the
-    real initializer; each gets its own expanded tile dict, and the module-level
-    col.BODY_TILE_DICT is identical before and after.
-    """
-    monkeypatch.setattr(col, 'get_body_summary_dict', lambda: {})
-    shared_keys_before: frozenset[str] = frozenset(col.BODY_TILE_DICT)
-
-    rec_a = _make_record(monkeypatch, 'FAKE_MOON_A')
-    rec_b = _make_record(monkeypatch, 'FAKE_MOON_B')
-
-    # Each per-record tile dict holds its own moon (from the JUPITER template).
-    assert 'FAKE_MOON_A' in rec_a.body_tile_dict
-    assert 'FAKE_MOON_B' not in rec_a.body_tile_dict
-    assert 'FAKE_MOON_B' in rec_b.body_tile_dict
-
-    # The shared module-level dict is unchanged.
-    assert frozenset(col.BODY_TILE_DICT) == shared_keys_before
 
 
 #===============================================================================

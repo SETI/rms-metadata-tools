@@ -3,16 +3,14 @@
 This module defines the backplane columns describing ring-plane and ansa
 geometry: per-pixel ring quantities (RING_COLUMNS), ansa quantities
 (ANSA_COLUMNS), gridless whole-ring quantities (RING_GRIDLESS_COLUMNS), and the
-summary/detailed column lists assembled from them. It also builds the per-body
-replacement dictionaries and the azimuth-banded tiling (inner and outer ring)
-used for detailed tabulations.
+summary column list assembled from them. It also builds the per-body
+replacement dictionary.
 
 These definitions are gathered and re-exported by ``columns/__init__.py`` and
 consumed by the geometry Record/prep code, which evaluates each backplane key
 and formats the result via FORMAT_DICT in the ``geometry_support`` package (defined
 in its ``formats`` module).
 """
-import numpy as np
 
 import metadata_tools.defs as defs
 import metadata_tools.util as util
@@ -113,72 +111,14 @@ RING_GRIDLESS_COLUMNS = [
     (("center_coordinate",       defs.BODYX, "u"),                ("",   "",  "")),
     (("center_coordinate",       defs.BODYX, "v"),                ("",   "",  ""))]
 
-# Assemble the column lists for each type of file for the rings and for Saturn
+# Assemble the column list for the rings and for Saturn
 RING_SUMMARY_COLUMNS  = (RING_COLUMNS + ANSA_COLUMNS +
                          RING_GRIDLESS_COLUMNS)
-RING_DETAILED_COLUMNS = RING_COLUMNS + ANSA_COLUMNS
 
 # Create a dictionary for the columns of each planet
 RING_SUMMARY_DICT = {}
-RING_DETAILED_DICT = {}
 for body in defs.BODY_NAMES:
     RING_SUMMARY_DICT.update(util.replacement_dict(RING_SUMMARY_COLUMNS,
                                                          defs.BODYX, [body]))
-    RING_DETAILED_DICT.update(util.replacement_dict(RING_DETAILED_COLUMNS,
-                                                         defs.BODYX, [body]))
-
-################################################################################
-# Define the tiling for detailed listings
-#
-# The first item in the list defines a region to test for a suitable pixel
-# count. The remaining items define a sequence of tiles to use in a
-# detailed tabulation.
-################################################################################
-RING_AZ = ("ring_azimuth", planet_ring, "obs")
-
-RING_TILES = {}
-for body in defs.BODY_NAMES:
-    RING_TILES[body] = [
-        ("where_all",                                   # mask over remaining tiles
-            ("where_in_front", planet_ring, defs.BODYX),
-            ("where_outside_shadow", planet_ring, defs.BODYX),
-            ("where_below", ("ring_radius", planet_ring), 150000.)),
-        ("where_between", RING_AZ, 0.20 * np.pi, 0.45 * np.pi),
-        ("where_between", RING_AZ, 0.45 * np.pi, 0.55 * np.pi),
-        ("where_between", RING_AZ, 0.55 * np.pi, 0.80 * np.pi),
-        ("where_between", RING_AZ, 0.80 * np.pi, 1.20 * np.pi),
-        ("where_between", RING_AZ, 1.20 * np.pi, 1.45 * np.pi),
-        ("where_between", RING_AZ, 1.45 * np.pi, 1.55 * np.pi),
-        ("where_between", RING_AZ, 1.55 * np.pi, 1.80 * np.pi),
-        ("where_any",
-            ("where_below", RING_AZ, 0.20 * np.pi),
-            ("where_above", RING_AZ, 1.80 * np.pi)),
-    ]
-
-OUTER_RING_TILES = {}
-for body in defs.BODY_NAMES:
-    OUTER_RING_TILES[body] = [
-        ("where_all",                                   # mask over remaining tiles
-                ("where_in_front", planet_ring, defs.BODYX),
-        ("where_above", ("ring_radius", planet_ring), 150000.)),
-        ("where_between", RING_AZ, 0.20 * np.pi, 0.45 * np.pi),
-        ("where_between", RING_AZ, 0.45 * np.pi, 0.55 * np.pi),
-        ("where_between", RING_AZ, 0.55 * np.pi, 0.80 * np.pi),
-        ("where_between", RING_AZ, 0.80 * np.pi, 1.20 * np.pi),
-        ("where_between", RING_AZ, 1.20 * np.pi, 1.45 * np.pi),
-        ("where_between", RING_AZ, 1.45 * np.pi, 1.55 * np.pi),
-        ("where_between", RING_AZ, 1.55 * np.pi, 1.80 * np.pi),
-        ("where_any",
-            ("where_below", RING_AZ, 0.20 * np.pi),
-            ("where_above", RING_AZ, 1.80 * np.pi)),
-    ]
-
-RING_TILE_DICT = {}
-for body in defs.BODY_NAMES:
-    RING_TILE_DICT[body] = util.replace(RING_TILES[body], defs.BODYX, body)
-
-OUTER_RING_TILE_DICT = {}
-for body in defs.BODY_NAMES:
-    OUTER_RING_TILE_DICT[body] = util.replace(OUTER_RING_TILES[body], defs.BODYX, body)
 
 ################################################################################

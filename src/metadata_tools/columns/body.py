@@ -2,9 +2,8 @@
 
 This module defines the backplane columns describing the geometry of a body's
 surface (moons and the planet): per-pixel quantities (BODY_COLUMNS), gridless
-whole-body quantities (BODY_GRIDLESS_COLUMNS), and the summary/detailed column
-lists assembled from them. It also builds the per-body replacement dictionaries
-and the latitude-banded tiling used for detailed tabulations.
+whole-body quantities (BODY_GRIDLESS_COLUMNS), and the summary column list
+assembled from them. It also builds the per-body replacement dictionary.
 
 These definitions are gathered and re-exported by ``columns/__init__.py`` and
 consumed by the geometry Record/prep code, which evaluates each backplane key
@@ -12,8 +11,6 @@ and formats the result via FORMAT_DICT in the ``geometry_support`` package (defi
 in its ``formats`` module).
 """
 from typing import Any
-
-import oops
 
 import metadata_tools.defs as defs
 import metadata_tools.util as util
@@ -92,57 +89,17 @@ BODY_GRIDLESS_COLUMNS = [
 # Assemble the column lists for each type of file for the moons and planet
 
 BODY_SUMMARY_COLUMNS  = BODY_COLUMNS + BODY_GRIDLESS_COLUMNS
-BODY_DETAILED_COLUMNS = BODY_COLUMNS
 
 _BODY_SUMMARY_DICT: dict[str, Any] | None = None
-_BODY_DETAILED_DICT: dict[str, Any] | None = None
 
 
 def get_body_summary_dict() -> dict[str, Any]:
     """Return the per-body summary column replacement dict, building it on first call."""
-    global _BODY_SUMMARY_DICT, _BODY_DETAILED_DICT
+    global _BODY_SUMMARY_DICT
     if _BODY_SUMMARY_DICT is None:
         summary: dict[str, Any] = {}
-        detailed: dict[str, Any] = {}
         for body in get_bodies_registry():
             summary.update(util.replacement_dict(BODY_SUMMARY_COLUMNS, defs.BODYX, [body]))
-            detailed.update(util.replacement_dict(BODY_DETAILED_COLUMNS, defs.BODYX, [body]))
         _BODY_SUMMARY_DICT = summary
-        _BODY_DETAILED_DICT = detailed
     return _BODY_SUMMARY_DICT
-
-
-def get_body_detailed_dict() -> dict[str, Any]:
-    """Return the per-body detailed column replacement dict, building it on first call."""
-    get_body_summary_dict()  # ensures both caches are populated
-    assert _BODY_DETAILED_DICT is not None  # nosec B101 - type-narrowing invariant
-    return _BODY_DETAILED_DICT
-################################################################################
-# Define the tiling for detailed listings
-#
-# The first item in the list defines a region to test for a suitable pixel
-# count. The remaining items define a sequence of tiles to use in a
-# detailed tabulation.
-################################################################################
-BODY_TILES = {}
-for body in defs.BODY_NAMES:
-    BODY_TILES[body] = [
-        ("where_all", ("where_in_front", defs.BODYX, body),  # mask over remaining tiles
-                      ("where_sunward",  defs.BODYX)),
-        ("where_below",   ("latitude", defs.BODYX), -70. * oops.RPD),
-        ("where_between", ("latitude", defs.BODYX), -70. * oops.RPD, -50. * oops.RPD),
-        ("where_between", ("latitude", defs.BODYX), -50. * oops.RPD, -30. * oops.RPD),
-        ("where_between", ("latitude", defs.BODYX), -30. * oops.RPD, -10. * oops.RPD),
-        ("where_between", ("latitude", defs.BODYX), -10. * oops.RPD,  10. * oops.RPD),
-        ("where_between", ("latitude", defs.BODYX),  10. * oops.RPD,  30. * oops.RPD),
-        ("where_between", ("latitude", defs.BODYX),  30. * oops.RPD,  50. * oops.RPD),
-        ("where_between", ("latitude", defs.BODYX),  50. * oops.RPD,  70. * oops.RPD),
-        ("where_above",   ("latitude", defs.BODYX),  70. * oops.RPD)
-    ]
-
-BODY_TILE_DICT: dict[str, object] = {}
-
-for body in defs.BODY_NAMES:
-    BODY_TILE_DICT[body] = {}
-    BODY_TILE_DICT[body] = util.replace(BODY_TILES[body], defs.BODYX, body)
 ################################################################################

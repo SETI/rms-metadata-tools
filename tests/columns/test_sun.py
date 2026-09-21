@@ -12,11 +12,6 @@ def test_summary_is_columns_plus_gridless(sun_module: ModuleType) -> None:
     assert expected == sun_module.SUN_SUMMARY_COLUMNS
 
 
-def test_detailed_equals_base_columns(sun_module: ModuleType) -> None:
-    """Detailed = base sun columns, without the gridless columns."""
-    assert sun_module.SUN_DETAILED_COLUMNS == sun_module.SUN_COLUMNS
-
-
 def test_obs_longitude_uses_180_alt_format(sun_module: ModuleType) -> None:
     """The observer sun-longitude column carries the '-180' alt-format tag."""
     obs = [c for c in sun_module.SUN_COLUMNS if c[0][:2] == ('longitude', 'SUN') and 'obs' in c[0]]

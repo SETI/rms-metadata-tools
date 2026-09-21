@@ -127,12 +127,10 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
                         lambda obs, meshgrid: 'BACKPLANE')
     # Body registry and dicts are lazy (built from SPICE on first call); stub
     # them out so Record.__init__ can run without a SPICE-initialized host. Use
-    # distinct singleton dicts so identity assertions in callers remain meaningful.
+    # a singleton dict so identity assertions in callers remain meaningful.
     _fake_summary: dict[str, Any] = {}
-    _fake_detailed: dict[str, Any] = {}
     monkeypatch.setattr(col, 'get_bodies_registry', lambda: {})
     monkeypatch.setattr(col, 'get_body_summary_dict', lambda: _fake_summary)
-    monkeypatch.setattr(col, 'get_body_detailed_dict', lambda: _fake_detailed)
 
 
 def _observation(target: str = 'SKY') -> Any:
@@ -146,7 +144,7 @@ def _observation(target: str = 'SKY') -> Any:
 def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
     """Without a primary, Record still builds backplane, prefixes, and dicts."""
     _patch_record_spice(monkeypatch, primary='')
-    record = Record(_observation(), 'GO_0001', {}, 8, 'summary')
+    record = Record(_observation(), 'GO_0001', {}, 8)
     assert record.primary == ''
     # The patched Backplane constructor returns a string sentinel; compare as Any
     # since the attribute is typed as a real oops Backplane.
@@ -157,20 +155,12 @@ def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
     assert record.dicts['ring'] is col.RING_SUMMARY_DICT
 
 
-def test_record_init_detailed_selects_detailed_dicts(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The 'detailed' level selects the detailed ring and body dicts."""
-    _patch_record_spice(monkeypatch, primary='')
-    record = Record(_observation(), 'GO_0001', {}, 8, 'detailed')
-    assert record.dicts['ring'] is col.RING_DETAILED_DICT
-    assert record.dicts['body'] is col.get_body_detailed_dict()
-
-
 def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) -> None:
     """A primary with a ring frame sets rings_present."""
     _patch_record_spice(monkeypatch, primary='JUPITER')
     fake_bodies = {'JUPITER': types.SimpleNamespace(ring_frame=object())}
     monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
-    record = Record(_observation(), 'GO_0001', {}, 8, 'summary')
+    record = Record(_observation(), 'GO_0001', {}, 8)
     assert record.rings_present is True
     assert record.primary == 'JUPITER'
 
@@ -181,9 +171,8 @@ def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) ->
 def test_suite_init_returns_without_index(tmp_path: Path) -> None:
     """With no index file, __init__ returns early and never builds observations."""
     suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path,
-                  selection='S', index_glob='*_index.tab')
+                  index_glob='*_index.tab')
     assert not hasattr(suite, 'observations')
-    assert suite.levels == ['summary']
 
 
 def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
@@ -194,7 +183,7 @@ def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
     (meta / 'GO_0002_index.tab').write_text('b', encoding='utf-8')
     with pytest.raises(RuntimeError, match='index files'):
         Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
-              selection='SD', index_glob='*_index.tab')
+              index_glob='*_index.tab')
 
 
 def test_suite_init_builds_tables_and_meshgrids(
@@ -209,7 +198,7 @@ def test_suite_init_builds_tables_and_meshgrids(
     monkeypatch.setattr(config, 'meshgrids', lambda sampling: {'m': 1}, raising=False)
     monkeypatch.setattr(com, 'init_logger', lambda d, t: None)
     suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
-                  selection='S', index_glob='*_index.tab')
+                  index_glob='*_index.tab')
     assert suite.observations == ['obs']
     assert suite.meshgrids == {'m': 1}
     assert [t.qualifier for t in suite.tables] == ['inventory', 'sky', 'ring', 'body']

@@ -45,7 +45,6 @@ know what they control.
     - ``SC`` — the NAIF spacecraft ID.
     - ``glob`` / ``index_glob`` — patterns selecting data labels and the
       supplemental index file.
-    - ``selection`` — default table levels (``"S"`` summary, ``"D"`` detailed).
     - ``exclude`` — re-exported from ``host_config.exclude`` (see above).
     - ``MISSION_TABLE`` and ``EXCEPTIONS`` — the mapping from spacecraft-clock
       ranges to the primary body, secondaries, and other selected bodies, with
@@ -67,7 +66,6 @@ configure them directly:
 - Index: ``<volume>_supplemental_index.tab`` / ``.lbl``.
 - Geometry summary: ``<volume>_<kind>_summary.tab`` for ``sky``, ``body``, and
   ``ring``; the inventory is ``<volume>_inventory.csv``.
-- Geometry detailed: ``<volume>_<kind>_detailed.tab``.
 - Cumulative: the same names with the cumulative directory's volume ID.
 
 Each ``.tab``/``.csv`` file is accompanied by a ``.lbl`` PDS3 label generated

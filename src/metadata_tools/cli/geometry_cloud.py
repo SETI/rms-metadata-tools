@@ -95,7 +95,7 @@ def main() -> None:
     from metadata_tools.geometry_support import get_args
 
     host, _, _ = util.parse_template_name(hconf.template_name)
-    parser = get_args(host=host, selection=config.selection, exclude=config.exclude)
+    parser = get_args(host=host, exclude=config.exclude)
 
     if create_startup_file is not None:
         Path(create_startup_file).write_text(

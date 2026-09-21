@@ -28,7 +28,7 @@ class _GeometryTask:
     """Picklable callable passed to Worker; safe to use with multiprocessing spawn."""
 
     def __init__(self, host_id: str, template_name: str, glob: str | None,
-                 index_glob: str | None, selection: str | None,
+                 index_glob: str | None,
                  exclude: list[str] | None) -> None:
         """Store the task configuration.
 
@@ -38,15 +38,12 @@ class _GeometryTask:
             glob: Filename glob for selecting PDS labels, or None for the default.
             index_glob: Filename glob for locating index label files, or None for
                 the default.
-            selection: Summary/detailed table selection string, or None for the
-                default.
             exclude: Volume IDs to exclude from processing, or None.
         """
         self._host_id = host_id
         self._template_name = template_name
         self._glob = glob
         self._index_glob = index_glob
-        self._selection = selection
         self._exclude = exclude
 
     def __call__(self, _task_id: str, task_data: dict[str, Any],
@@ -78,7 +75,6 @@ class _GeometryTask:
             process_tables(self._template_name,
                            glob=self._glob,
                            index_glob=self._index_glob,
-                           selection=self._selection,
                            exclude=self._exclude,
                            args=args,
                            volumes=[task_data['volume_id']])
@@ -101,8 +97,8 @@ def main() -> None:
     from metadata_tools.geometry_support import get_args
 
     host, _, _ = util.parse_template_name(hconf.template_name)
-    parser = get_args(host=host, selection=config.selection, exclude=config.exclude)
+    parser = get_args(host=host, exclude=config.exclude)
 
     run_cloud_worker(parser, _GeometryTask(host_id, hconf.template_name,
                                            config.glob, config.index_glob,
-                                           config.selection, config.exclude))
+                                           config.exclude))

@@ -48,11 +48,6 @@ Table selection
 
    * - Option
      - Description
-   * - ``--selection SEL``
-     - Which table levels to generate: ``"S"`` for summary tables (one row per
-       observation), ``"D"`` for detailed tables (one row per spatial tile), or
-       both (``"SD"``). Default: the host's configured selection (``"S"`` for
-       the shipped hosts). Case-sensitive.
    * - ``--sampling N``, ``-s``
      - Pixel sampling density used when building the meshgrids. Default: 8.
 
@@ -126,9 +121,7 @@ For each processed volume the program writes, into the volume's output
 directory:
 
 - ``<volume>_sky_summary.tab``, ``<volume>_body_summary.tab``, and
-  ``<volume>_ring_summary.tab`` (when summary tables are selected);
-- the corresponding ``*_detailed.tab`` files (when detailed tables are
-  selected);
+  ``<volume>_ring_summary.tab``;
 - ``<volume>_inventory.csv`` listing the bodies in each field of view;
 - a matching ``.lbl`` label for each table; and
 - a processing log named ``<volume>_geometry-log.txt``.
