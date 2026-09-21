@@ -543,6 +543,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The planetocentric sub-solar point is the
       point where a photon from the Sun toward the body's center intercepts
       the surface. The planetocentric latitude is the angle between the body's
@@ -562,6 +563,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The planetocentric sub-solar point is the
       point where a photon from the Sun toward the body's center intercepts
       the surface. The planetocentric latitude is the angle between the body's
@@ -581,6 +583,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The planetographic sub-solar point is the
       point on a body's surface where a photon from the Sun intercepts the
       surface along a path parallel to the local normal vector. The
@@ -600,6 +603,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The planetographic sub-solar point is the
       point on a body's surface where a photon from the Sun intercepts the
       surface along a path parallel to the local normal vector. The
@@ -619,6 +623,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The planetocentric sub-observer point is
       the point where a photon path from the center of a body toward the
       observer intercepts the body's surface. The planetocentric latitude is
@@ -638,6 +643,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The planetocentric sub-observer point is
       the point where a photon path from the center of a body toward the
       observer intercepts the body's surface. The planetocentric latitude is
@@ -657,6 +663,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The planetographic sub-observer point is
       the point on a body's surface where a photon toward the observer departs
       along a path parallel to the local normal vector. The planetographic
@@ -676,6 +683,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The planetographic sub-observer point is
       the point on a body's surface where a photon toward the observer departs
       along a path parallel to the local normal vector. The planetographic
@@ -695,6 +703,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The sub-solar point is the point where a
       photon path from the Sun toward a body's center intercepts the surface.
       The IAU longitude is the angle, projected perpendicular to a body's
@@ -717,6 +726,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The sub-solar point is the point where a
       photon path from the Sun toward a body's center intercepts the surface.
       The IAU longitude is the angle, projected perpendicular to a body's
@@ -739,6 +749,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The sub-observer point is the point where a
       photon path from the center of a body toward the observer intercepts the
       body's surface. The IAU longitude is the angle, projected perpendicular
@@ -761,6 +772,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The sub-observer point is the point where a
       photon path from the center of a body toward the observer intercepts the
       body's surface. The IAU longitude is the angle, projected perpendicular
@@ -781,6 +793,7 @@ $ONCE(night_override = False)
     NAME                        = MINIMUM_CENTER_RESOLUTION
     FORMAT                      = "F10.5"
     UNIT                        = "km"
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Center resolution is the linear size of a
       pixel as projected at the distance of the center of the body.
 
@@ -792,6 +805,7 @@ $ONCE(night_override = False)
     NAME                        = MAXIMUM_CENTER_RESOLUTION
     FORMAT                      = "F10.5"
     UNIT                        = "km"
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Center resolution is the linear size of a
       pixel as projected at the distance of the center of the body.
 
@@ -803,6 +817,7 @@ $ONCE(night_override = False)
     NAME                        = MINIMUM_CENTER_DISTANCE
     FORMAT                      = "F12.3"
     UNIT                        = "km"
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Center distance is the distance from the
       observer to the center of the body.
 
@@ -814,6 +829,7 @@ $ONCE(night_override = False)
     NAME                        = MAXIMUM_CENTER_DISTANCE
     FORMAT                      = "F12.3"
     UNIT                        = "km"
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Center distance is the distance from the
       observer to the center of the body.
 
@@ -827,6 +843,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Center phase angle is the angle, measured
       at the center of the body, between the direction of an incoming photon
       from the Sun and the negative direction of the outgoing photon to the
@@ -842,6 +859,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Center phase angle is the angle, measured
       at the center of the body, between the direction of an incoming photon
       from the Sun and the negative direction of the outgoing photon to the
@@ -854,6 +872,7 @@ $ONCE(night_override = False)
   OBJECT                        = COLUMN
     NAME                        = DIAMETER_IN_PIXELS
     FORMAT                      = "F10.3"
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The physical diameter of the body,
       converted to pixels.
 
@@ -870,6 +889,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The north pole clock angle is the projected
       direction of the body's pole vector on the sky, measured as an angle
       clockwise from celestial north (i.e., toward celestial west).
@@ -884,6 +904,7 @@ $ONCE(night_override = False)
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The north pole position angle is the
       projected direction of the body's pole vector on the sky, measured as an
       angle counterclockwise from celestial north (i.e., toward celestial

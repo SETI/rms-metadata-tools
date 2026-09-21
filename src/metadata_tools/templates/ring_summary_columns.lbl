@@ -38,6 +38,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "FINEST_RING_INTERCEPT_RESOLUTION"
+    FORMAT                      = "F10.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring intercept resolution is the size of
@@ -704,6 +705,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_OBSERVER_RING_ELEVATION"
+    FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
@@ -724,6 +726,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_INTERCEPT_TIME"
+    DATA_TYPE                   = TIME
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photons left the ring intercept point.
@@ -737,6 +740,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_INTERCEPT_TIME"
+    DATA_TYPE                   = TIME
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photons left the ring intercept point.
@@ -1407,6 +1411,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "RING_DIAMETER_IN_PIXELS"
     FORMAT                      = "F10.3"
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Projected diameter of the main ring system
       along their longest projected direction, converted to pixels. This
       diameter is computed based on the body's current distance, but as if it
@@ -1422,6 +1427,7 @@ $END_NOTE
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The ring pole clock angle is the projected
       direction of the ring system's pole (angular momentum) vector on the
       sky, measured as an angle clockwise from celestial north (i.e., toward
@@ -1438,6 +1444,7 @@ $END_NOTE
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The ring pole position angle is the
       projected direction of the ring system's pole (angular momentum) vector
       on the sky, measured as an angle counterclockwise from celestial north
