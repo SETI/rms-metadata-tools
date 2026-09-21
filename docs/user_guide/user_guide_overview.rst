@@ -42,9 +42,8 @@ output of the previous one.
     Geometric quantities (positions, angles, ranges, and resolutions for
     bodies, rings, the sky, and the Sun) computed from SPICE through the
     ``oops`` library, using pointing taken from the index table or the PDS3
-    label. Each volume yields a *summary* table (at most one row per
-    observation) and, optionally, a *detailed* table (one row per spatial
-    subregion, or "tile"). Geometry tables are produced by
+    label. Each volume yields a *summary* table, with at most one row per
+    observation. Geometry tables are produced by
     :func:`~metadata_tools.geometry_support.process.process_tables`.
 
 **Cumulative tables**
@@ -66,7 +65,7 @@ console script that takes the host ID as its first argument
        I --> IT[(Supplemental<br/>index table + label)]
        IT --> G[Stage 2: geometry<br/>metadata-geometry HOST_ID]
        SPICE[SPICE kernels<br/>via oops] --> G
-       G --> GT[(Geometry tables<br/>summary/detailed + labels)]
+       G --> GT[(Geometry tables<br/>summary + labels)]
        IT --> C[Stage 3: cumulative<br/>metadata-cumulative HOST_ID]
        GT --> C
        C --> CT[(Cumulative tables + labels)]
@@ -74,8 +73,7 @@ console script that takes the host ID as its first argument
 1. **Index** reads each data product's PDS3 label and writes a supplemental
    index table for every volume in the tree.
 2. **Geometry** reads the supplemental index table for each volume, computes the
-   geometry backplanes with ``oops``, and writes the summary (and optionally
-   detailed) geometry tables.
+   geometry backplanes with ``oops``, and writes the summary geometry tables.
 3. **Cumulative** walks the whole tree and concatenates the per-volume index and
    geometry tables into cumulative tables.
 

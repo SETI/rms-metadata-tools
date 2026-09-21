@@ -124,10 +124,59 @@ Important invariants
   ``""``. These tuples live in the :mod:`metadata_tools.columns` package.
 - **Meshgrids** are built once per :class:`~metadata_tools.geometry_support.suite.Suite`
   and selected per observation by telemetry mode; they are not rebuilt per row.
-- **Summary vs. detailed.** A summary call produces at most one row per
-  observation; with the default ``allow_zero_rows=True`` an all-null row is
-  dropped (pass ``allow_zero_rows=False`` to force it). A detailed call
-  produces rows only for non-empty tiles.
+- **One row per observation.** A call produces at most one row; with the
+  default ``allow_zero_rows=True`` an all-null row is dropped (pass
+  ``allow_zero_rows=False`` to force it).
+
+Removed capability: detailed (tiled) tables
+===========================================
+
+The subsystem once carried a second processing level, *detailed*, removed
+because it had never been wired up. This section records what it was, so that
+the design is not lost if it is ever wanted again.
+
+**What it was.** Alongside each ``<vol>_<kind>_summary.tab`` a detailed run
+would emit ``<vol>_<kind>_detailed.tab`` holding one row per non-empty spatial
+subregion ("tile") per observation, rather than one row per observation. An
+extra tile-index column was inserted after the body-name prefix columns. The
+level was chosen with ``--selection``, which accepted ``"S"``, ``"D"``, or
+``"SD"``; ``Suite`` built one table set per selected level and one ``Record``
+per level, and dispatched each record to the tables whose level matched.
+
+**Column sets.** Every detailed list was a strict prefix of the corresponding
+summary list — the per-pixel columns without the gridless ones, since a
+whole-body quantity like the sub-solar longitude does not vary across tiles.
+``BODY_DETAILED_COLUMNS`` was ``BODY_COLUMNS``; ``RING_DETAILED_COLUMNS`` was
+``RING_COLUMNS + ANSA_COLUMNS``; ``SUN_DETAILED_COLUMNS`` was ``SUN_COLUMNS``;
+sky shared a single list.
+
+**Tiling definitions.** Bodies were tiled into latitude bands every 20° between
+±70°, with a ``where_in_front`` / ``where_sunward`` overlay. Rings were tiled
+into azimuth bands spanning 0.20π–1.80π, split into inner and outer sets at a
+ring radius of 150,000 km. Sky declination bands existed but were never tested.
+The first entry of each tile list was not a tile but a global area: if its
+sample count fell below ``tiling_min`` (default 100), tiling was suppressed and
+a single untiled row was produced instead. Passing a *tuple* of tile lists
+processed several tile sets in one call, chaining their indices through
+``start_index``.
+
+**Wiring status at removal.** The plumbing was complete from ``Record.add``
+down through ``prep_row``, but nothing ever drove it: no ``Table.add``
+implementation passed ``tiles=``, ``record.ring_tile_dict`` was assigned and
+never read, and no host shipped a detailed label template. The feature could
+not have worked even if called — the tile keys the tile tables actually used
+(``where_all``, ``where_below``, ``where_between``, ``where_above``, ...) had
+no ``FORMAT_DICT`` rows at all, so formatting a tiled row would have raised
+``KeyError``. It emitted no tiled row in any shipped configuration.
+
+**Reintroducing it.** Under the template-pull design the templates define the
+column set, so a detailed variant is mostly a second template: add
+``<HOST>_<kind>_detailed.lbl`` listing the per-pixel columns plus a tile-index
+``COLUMN``, then restore the tile catalog, the ``tiles=`` path through
+``Record.add``/``prep_row``, and the detailed table wiring in ``Suite`` and
+``cumulative_support``. The removal commit in the template-pull PR carries the
+full deleted code; because the repository squash-merges, retrieve it from the
+pull request rather than from ``main``'s history.
 
 API reference
 =============

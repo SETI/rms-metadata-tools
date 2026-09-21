@@ -1,15 +1,13 @@
 """Column definitions for sky geometry tables.
 
 This module defines the backplane columns describing the inertial pointing of
-each pixel on the sky (right ascension and declination) in SKY_COLUMNS, plus
-the declination-banded tiling used for detailed tabulations.
+each pixel on the sky (right ascension and declination) in SKY_COLUMNS.
 
 These definitions are gathered and re-exported by ``columns/__init__.py`` and
 consumed by the geometry Record/prep code, which evaluates each backplane key
 and formats the result via FORMAT_DICT in the ``geometry_support`` package (defined
 in its ``formats`` module).
 """
-import oops
 
 ################################################################################
 # *COLUMN description tuples are
@@ -45,26 +43,5 @@ import oops
 SKY_COLUMNS = [
     (("right_ascension",        ()),                        ("",  "",  "")),
     (("declination",            ()),                        ("",  "",  ""))]
-
-################################################################################
-# Define the tiling for detailed listings
-#
-# The first item in the list defines a region to test for a suitable pixel
-# count. The remaining items define a sequence of tiles to use in a
-# detailed tabulation.
-################################################################################
-###TODO: not tested...
-SKY_TILES = [
-    ("where_all", ""),                      # mask over remaining tiles
-    ("where_below",   ("declination", ""), -70. * oops.RPD),
-    ("where_between", ("declination", ""), -70. * oops.RPD, -50. * oops.RPD),
-    ("where_between", ("declination", ""), -50. * oops.RPD, -30. * oops.RPD),
-    ("where_between", ("declination", ""), -30. * oops.RPD, -10. * oops.RPD),
-    ("where_between", ("declination", ""), -10. * oops.RPD,  10. * oops.RPD),
-    ("where_between", ("declination", ""),  10. * oops.RPD,  30. * oops.RPD),
-    ("where_between", ("declination", ""),  30. * oops.RPD,  50. * oops.RPD),
-    ("where_between", ("declination", ""),  50. * oops.RPD,  70. * oops.RPD),
-    ("where_above",   ("declination", ""),  70. * oops.RPD)
-]
 
 ################################################################################

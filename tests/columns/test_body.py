@@ -31,7 +31,6 @@ def fake_registry(monkeypatch: pytest.MonkeyPatch) -> list[int]:
         return {name: object() for name in _FAKE_BODY_NAMES}
 
     monkeypatch.setattr(body, '_BODY_SUMMARY_DICT', None)
-    monkeypatch.setattr(body, '_BODY_DETAILED_DICT', None)
     monkeypatch.setattr(body, 'get_bodies_registry', registry)
     return calls
 
@@ -53,34 +52,6 @@ def test_summary_dict_is_cached(fake_registry: list[int]) -> None:
     assert len(fake_registry) == 1
 
 
-def test_detailed_dict_excludes_gridless_columns(fake_registry: list[int]) -> None:
-    """Detailed entries hold only the per-pixel columns, not the gridless ones."""
-    detailed = body.get_body_detailed_dict()
-
-    assert set(detailed) == set(_FAKE_BODY_NAMES)
-    assert len(detailed['MIMAS']) == len(body.BODY_DETAILED_COLUMNS)
-
-
-def test_detailed_dict_first_populates_both_caches(fake_registry: list[int]) -> None:
-    """Calling the detailed accessor first builds both dicts from one registry pass."""
-    detailed = body.get_body_detailed_dict()
-
-    assert body.get_body_detailed_dict() is detailed
-    assert body.get_body_summary_dict() is not None
-    assert len(fake_registry) == 1
-
-
 def test_summary_columns_are_columns_plus_gridless() -> None:
     """Summary = per-pixel + gridless columns (the assembly invariant)."""
     assert body.BODY_SUMMARY_COLUMNS == body.BODY_COLUMNS + body.BODY_GRIDLESS_COLUMNS
-    assert body.BODY_DETAILED_COLUMNS == body.BODY_COLUMNS
-
-
-def test_tile_dict_covers_all_body_names() -> None:
-    """The latitude-band tiling is built for every configured body, placeholder-free."""
-    assert set(body.BODY_TILE_DICT) == set(defs.BODY_NAMES)
-    for name in defs.BODY_NAMES:
-        tiles = body.BODY_TILE_DICT[name]
-        assert isinstance(tiles, list)
-        assert len(tiles) == len(body.BODY_TILES[name])
-        assert not any(defs.BODYX in str(tile) for tile in tiles)

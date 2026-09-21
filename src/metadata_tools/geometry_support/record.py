@@ -23,7 +23,7 @@ class Record:
 
     #===========================================================================
     def __init__(self, observation: Any, volume_id: str, meshgrids: dict[str, Any],
-                 sampling: int, level: str) -> None:
+                 sampling: int) -> None:
         """Construct a geometry record.
 
         Parameters:
@@ -31,7 +31,6 @@ class Record:
             volume_id: Volume ID.
             meshgrids: All meshgrids associated with this host.
             sampling: Pixel sampling density.
-            level: Processing level: 'summary' or 'detailed'.
         """
         self.observation = observation
         self.backplane_keys: dict[str, list[Any]] = {}
@@ -41,24 +40,16 @@ class Record:
         sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
         self.primary, self.secondaries, self.selections, self.additions = \
             bodies_select.get_primary(self, formats.get_mission_table(), sclk)
-        self.level = level
         self.sampling = sampling
         self.pointing_available = True
 
-        # Level-specific column dictionaries
-        self.dicts: dict[str, Any] = {'sky' : col.SKY_COLUMNS}
-        if level == 'summary':
-            self.dicts |= {
-                'sun'    : col.SUN_SUMMARY_COLUMNS,
-                'ring'   : col.RING_SUMMARY_DICT,
-                'body'   : col.get_body_summary_dict(),
-            }
-        else:
-            self.dicts |= {
-                'sun'    : col.SUN_DETAILED_COLUMNS,
-                'ring'   : col.RING_DETAILED_DICT,
-                'body'   : col.get_body_detailed_dict()
-            }
+        # Column dictionaries
+        self.dicts: dict[str, Any] = {
+            'sky'    : col.SKY_COLUMNS,
+            'sun'    : col.SUN_SUMMARY_COLUMNS,
+            'ring'   : col.RING_SUMMARY_DICT,
+            'body'   : col.get_body_summary_dict(),
+        }
 
         # Set up planet-based geometry
         self.bodies: list[str] = []
@@ -67,10 +58,6 @@ class Record:
         if self.primary:
             registry = col.get_bodies_registry()
             self.rings_present: bool = registry[self.primary].ring_frame is not None
-            self.ring_tile_dict: Any = col.RING_TILE_DICT[self.primary]
-            # Per-Record copy so that irregular-moon additions below do not mutate
-            # the shared module-level BODY_TILE_DICT.
-            self.body_tile_dict: dict[str, Any] = dict(col.BODY_TILE_DICT)
 
         # Determine target
         self.target = str(config.target_name(observation.dict))
@@ -98,16 +85,14 @@ class Record:
             if blocker:
                 self.blocker = blocker[0]
 
-        # Add a targeted irregular moon to the dictionaries if present.
-        # Both assignments copy the shared cached dicts first so that irregular-moon
+        # Add a targeted irregular moon to the dictionary if present. The
+        # assignment copies the shared cached dict first so that irregular-moon
         # targets accumulated in one Record do not leak into sibling Records or
         # persist across observations.
         if self.target in self.bodies and self.target not in self.dicts['body']:
             self.dicts['body'] = dict(self.dicts['body'])
             self.dicts['body'][self.target] = \
                 util.replace(col.BODY_SUMMARY_COLUMNS, defs.BODYX, self.target)
-            self.body_tile_dict[self.target] = \
-                util.replace(col.BODY_TILES[self.primary], defs.BODYX, self.target)
 
     #===========================================================================
     @staticmethod
@@ -241,48 +226,20 @@ class Record:
     #===============================================================================
     def add(self, qualifier: str, *,
                   name: str | None = None, target: str | None = None,
-                  tiles: list[Any] | tuple[Any, ...] | None = None, tiling_min: int = 100,
-                  ignore_shadows: bool = False, start_index: int = 1,
+                  ignore_shadows: bool = False,
                   allow_zero_rows: bool = True, no_mask: bool = False,
                   no_body: bool = False) -> list[str]:
         """Generate the geometry for one row, given a list of column descriptions.
 
-        The tiles argument supports detailed listings where a geometric region is
-        broken down into separate subregions. If the tiles argument is empty (which
-        is the default), then this routine produces summary rows.
-
-        If the tiles argument is not empty, then the routine produces detailed rows,
-        generally one for each non-empty subregion. The tiles argument must be a
-        list of boolean backplane keys, each equal to True for the pixels within
-        the subregion. An additional column is added before the geometry columns,
-        containing the index value of the associated tile.
-
-        The first backplane in the list is treated differently. It should evaluate
-        to an area roughly equal to the union of all the other backplanes. It is
-        used to ensure that tiling is suppressed when the region to be tiled is too
-        small. If the number of meshgrid samples that are equal to True in this
-        backplane is smaller than the limit specified by argument tiling_min, then
-        tiling is suppressed and a single untiled record (still carrying a
-        subregion index column) is produced instead.
-
-        In a summary listing, at most one record is produced per call; if all
-        values are null, a record is produced only when allow_zero_rows is False.
-        In a detailed listing, only records associated with non-empty regions of
-        the meshgrid are produced.
+        At most one record is produced per call; if all values are null, a record
+        is produced only when allow_zero_rows is False.
 
         Parameters:
             qualifier: 'sky', 'sun', 'ring', or 'body'.
             name: Name identifying a specific column description.
             target: Optionally, the target name to write into the record.
-            tiles: An optional list of boolean backplane keys, used to support
-                the generation of detailed tabulations instead of summary
-                tabulations, or a tuple of such lists to process multiple tile
-                sets. See details above.
-            tiling_min: The lower limit on the number of meshgrid points in a
-                region before that region is subdivided into tiles.
             ignore_shadows: True to ignore any mask constraints applicable to
                 shadowing or to the sunlit faces of surfaces.
-            start_index: Index to use for first subregion. Default 1.
             allow_zero_rows: True to allow the function to return no rows. If
                 False, a row filled with null values will be returned if
                 necessary.
@@ -292,9 +249,6 @@ class Record:
         Returns:
             The formatted output rows.
         """
-        if tiles is None:
-            tiles = []
-
         # Get the column descriptions
         column_descs = self.dicts[qualifier]
         if name:
@@ -304,9 +258,8 @@ class Record:
         rows, _overrides = prep.prep_row(self, self.prefixes, self.backplane, self.blocker,
                                 column_descs,
                                 primary=self.primary, target=target,
-                                tiles=tiles, tiling_min=tiling_min,
                                 ignore_shadows=ignore_shadows,
-                                start_index=start_index, allow_zero_rows=allow_zero_rows,
+                                allow_zero_rows=allow_zero_rows,
                                 no_mask=no_mask,
                                 no_body=no_body)
 

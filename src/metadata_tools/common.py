@@ -149,7 +149,7 @@ class Table:
             output_dir: Directory in which to write the index files.
             template_path: Path to the host template.
             volume_id: Volume ID.
-            level: Processing level: "summary", "detailed", or "index".
+            level: Processing level: "summary" or "index".
             qualifier: "sky", "sun", "ring", "body", "inventory", or
                 "supplemental".
             suffix: File name suffix.

@@ -73,17 +73,23 @@ def test_every_col_reference_is_exported() -> None:
     assert not missing, f'geometry_support references undefined columns names: {missing}'
 
 
-def test_detailed_path_dicts_are_exported() -> None:
-    """The detailed-geometry path selects real, exported callables/dicts."""
+def test_summary_path_dicts_are_exported() -> None:
+    """The geometry path selects real, exported callables/dicts."""
     exported = _columns_all()
-    assert 'RING_DETAILED_DICT' in exported
-    assert 'get_body_detailed_dict' in exported
+    assert 'RING_SUMMARY_DICT' in exported
+    assert 'get_body_summary_dict' in exported
 
 
-def test_garbled_summary_detailed_names_are_gone() -> None:
-    """The original typo'd names are not referenced anywhere."""
+def test_detailed_names_are_gone() -> None:
+    """Neither the removed detailed/tiling names nor the original typos survive."""
     used = _col_attributes(_GEOMETRY_SUPPORT)
-    assert 'RING_SUMMARY_DETAILED' not in used
-    assert 'BODY_SUMMARY_DETAILED' not in used
+    exported = _columns_all()
+    for name in ('RING_DETAILED_DICT', 'RING_DETAILED_COLUMNS', 'BODY_DETAILED_COLUMNS',
+                 'SUN_DETAILED_COLUMNS', 'get_body_detailed_dict', 'BODY_TILES',
+                 'BODY_TILE_DICT', 'RING_TILES', 'RING_TILE_DICT', 'OUTER_RING_TILES',
+                 'OUTER_RING_TILE_DICT', 'SKY_TILES', 'RING_AZ',
+                 'RING_SUMMARY_DETAILED', 'BODY_SUMMARY_DETAILED'):
+        assert name not in used, f'geometry_support still references col.{name}'
+        assert name not in exported, f'columns still exports {name}'
     # BODYX is a defs constant, never a columns attribute.
     assert 'BODYX' not in used

@@ -176,13 +176,10 @@ def create_cumulative_indexes(template_name: str,
     # Build the cumulative tables
     tables = [
         geom.SkyTable(level='summary'),
-        geom.SkyTable(level='detailed'),
         # geom.SunTable(level='summary') would go here; not yet wired in
         # (see geometry_support.tables.SunTable).
         geom.BodyTable(level='summary'),
-        geom.BodyTable(level='detailed'),
         geom.RingTable(level='summary'),
-        geom.RingTable(level='detailed'),
         geom.InventoryTable(),
         idx.IndexTable(qualifier='supplemental'),
     ]

@@ -23,11 +23,8 @@ object per table kind, with no output directory:
 
    tables = [
        geom.SkyTable(level='summary'),
-       geom.SkyTable(level='detailed'),
        geom.BodyTable(level='summary'),
-       geom.BodyTable(level='detailed'),
        geom.RingTable(level='summary'),
-       geom.RingTable(level='detailed'),
        geom.InventoryTable(),
        idx.IndexTable(qualifier='supplemental'),
    ]

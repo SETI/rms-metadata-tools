@@ -26,12 +26,6 @@ def test_summary_columns_are_columns_plus_ansa_plus_gridless(
     assert expected == ring_module.RING_SUMMARY_COLUMNS
 
 
-def test_detailed_columns_exclude_gridless(ring_module: ModuleType) -> None:
-    """Detailed = ring + ansa columns, without the gridless columns."""
-    expected = ring_module.RING_COLUMNS + ring_module.ANSA_COLUMNS
-    assert expected == ring_module.RING_DETAILED_COLUMNS
-
-
 def test_obs_longitude_uses_180_alt_format(ring_module: ModuleType) -> None:
     """The observer ring-longitude column carries the '-180' alt-format tag."""
     cols = ring_module.RING_SUMMARY_DICT['JUPITER']
@@ -52,9 +46,3 @@ def test_no_placeholder_survives_substitution(ring_module: ModuleType) -> None:
     """No ``BODYX`` sentinel leaks into the assembled summary dict."""
     assert defs.BODYX not in repr(ring_module.RING_SUMMARY_DICT)
 
-
-def test_outer_ring_tile_dict_has_no_duplicate_tiles(ring_module: ModuleType) -> None:
-    """Every per-body tile list in OUTER_RING_TILE_DICT must contain unique tuples."""
-    for body, tiles in ring_module.OUTER_RING_TILE_DICT.items():
-        seen = [tuple(t) for t in tiles]
-        assert len(seen) == len(set(seen)), f'{body} has duplicate tiles in OUTER_RING_TILE_DICT'
