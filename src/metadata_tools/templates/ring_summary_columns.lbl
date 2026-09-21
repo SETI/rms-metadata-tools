@@ -727,6 +727,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_INTERCEPT_TIME"
     DATA_TYPE                   = TIME
+    FORMAT                      = "A23"
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photons left the ring intercept point.
@@ -741,6 +742,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_INTERCEPT_TIME"
     DATA_TYPE                   = TIME
+    FORMAT                      = "A23"
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photons left the ring intercept point.
@@ -1022,7 +1024,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_CENTER_DISTANCE"
-    FORMAT                      = "F8.3"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring center distance is the distance from
@@ -1034,7 +1036,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_CENTER_DISTANCE"
-    FORMAT                      = "F8.3"
+    FORMAT                      = "F12.3"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring center distance is the distance from
@@ -1410,7 +1412,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "RING_DIAMETER_IN_PIXELS"
-    FORMAT                      = "F10.3"
+    FORMAT                      = "F12.3"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Projected diameter of the main ring system
       along their longest projected direction, converted to pixels. This
@@ -1457,7 +1459,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "RING_CENTER_X_COORDINATE"
-    FORMAT                      = "F9.2"
+    FORMAT                      = "F12.3"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
@@ -1471,7 +1473,7 @@ $END_NOTE
 
   OBJECT                        = COLUMN
     NAME                        = "RING_CENTER_Y_COORDINATE"
-    FORMAT                      = "F9.2"
+    FORMAT                      = "F12.3"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.

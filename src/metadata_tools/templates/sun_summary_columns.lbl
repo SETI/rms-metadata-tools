@@ -228,6 +228,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
+    FORMAT                      = "A23"
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photon left a point on the Sun's
@@ -240,6 +241,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
+    FORMAT                      = "A23"
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photon left a point on the Sun's
