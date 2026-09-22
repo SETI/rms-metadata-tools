@@ -12,9 +12,11 @@ here. An entry no template names is simply unused. See
 from metadata_tools.columns.catalog import ColumnSpec, minmax
 
 SKY_CATALOG: tuple[ColumnSpec, ...] = (
-    minmax('RIGHT_ASCENSION', ('right_ascension', ()),
-           ('', '', '')),
-    minmax('DECLINATION', ('declination', ()),
-           ('', '', '')),
+    minmax('RIGHT_ASCENSION',
+           ('right_ascension', ()),
+           ('', '', ''), flag='360', overflow='%10.5f'),
+    minmax('DECLINATION',
+           ('declination', ()),
+           ('', '', ''), flag='DEG', overflow='%10.5f'),
 )
 """Every sky column this package can compute, keyed by template NAME."""

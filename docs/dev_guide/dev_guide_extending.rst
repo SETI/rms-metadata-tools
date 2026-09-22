@@ -130,9 +130,10 @@ column starts. The catalog then says how to compute it.
    :func:`~metadata_tools.columns.catalog.pair`, or
    :func:`~metadata_tools.columns.catalog.single`. Its names must match the
    template exactly; that name is the join between the two.
-#. If the backplane quantity is new, add its conversion entry to
-   ``_FORMAT_DICT`` in :mod:`metadata_tools.columns.formats`, and add the
-   corresponding backplane function in ``oops``.
+#. State the column's conversion flag, overflow format, and null link inline on
+   that spec (``flag=``, ``overflow=``, ``link_id=``/``link=``); these are the
+   only things a PDS3 label cannot express. Add the corresponding backplane
+   function in ``oops`` if the quantity is new.
 #. Run the host's geometry program and update the unit tests.
 
 Removing a column for one host is a template-only edit: delete the ``COLUMN``

@@ -17,10 +17,10 @@ from metadata_tools.bodies import get_bodies_registry
 from metadata_tools.columns.body import BODY_CATALOG
 from metadata_tools.columns.catalog import (
     ColumnSpec,
+    FormatTuple,
     get_catalog,
     name_map,
 )
-from metadata_tools.columns.formats import FormatTuple
 from metadata_tools.columns.ring import RING_CATALOG
 from metadata_tools.columns.sky import SKY_CATALOG
 from metadata_tools.columns.sun import SUN_CATALOG

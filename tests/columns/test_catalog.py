@@ -9,13 +9,19 @@ of how to compute each column -- so these run without a host or kernels.
 These guard the catalog in isolation. That it agrees with the shipped label
 templates is a separate question, checked in ``tests/test_geometry_schema.py``.
 """
-from typing import Any
 
 import pytest
 
 import metadata_tools.defs as defs
-from metadata_tools.columns.catalog import ColumnSpec, get_catalog, minmax, name_map, single
-from metadata_tools.columns.formats import _ALT_FORMAT_DICT, _FORMAT_DICT, resolve_format
+from metadata_tools.columns.catalog import (
+    ColumnSpec,
+    _format,
+    get_catalog,
+    minmax,
+    name_map,
+    pair,
+    single,
+)
 
 QUALIFIERS = ('body', 'ring', 'sky', 'sun')
 
@@ -146,51 +152,69 @@ def test_column_spec_is_frozen() -> None:
 
 
 #===============================================================================
-# The format tables
+# The inline format fields
 #===============================================================================
-def test_no_format_entry_is_unreachable() -> None:
-    """Every format entry is claimed by some catalog spec.
-
-    An entry no spec references cannot be reached: resolve_format is only ever
-    called with a spec's backplane quantity, at catalog build time. Such an
-    entry is dead weight that reads like a supported column.
-    """
-    used = {spec.key[0] for qualifier in QUALIFIERS for spec in get_catalog(qualifier)}
-    assert sorted(set(_FORMAT_DICT) - used) == []
-
-
-def test_no_alt_format_entry_is_unreachable() -> None:
-    """Every alternate entry is claimed by some catalog spec."""
-    claimed = {(key, tag)
-               for qualifier in QUALIFIERS for spec in get_catalog(qualifier)
-               for (key, tag), value in _ALT_FORMAT_DICT.items()
-               if key == spec.key[0] and value == spec.format}
-    assert sorted(set(_ALT_FORMAT_DICT) - claimed) == []
+@pytest.mark.parametrize('qualifier', QUALIFIERS)
+def test_format_fields_are_well_formed(qualifier: str) -> None:
+    """Each spec's inline format tuple holds the four documented fields."""
+    for spec in get_catalog(qualifier):
+        assert len(spec.format) == 4
+        flag, overflow, link_id, link = spec.format
+        assert flag in ('', 'DEG', '360', '-180', 'ISO', 'KM')
+        assert overflow is None or overflow.startswith('%')
+        assert isinstance(link_id, int)
+        assert isinstance(link, str)
 
 
-def test_resolve_format_prefers_the_tagged_variant() -> None:
-    """An alternate tag selects the variant entry, not the base one."""
-    assert resolve_format('ring_longitude') == _FORMAT_DICT['ring_longitude']
-    assert resolve_format('ring_longitude', '-180') == \
-        _ALT_FORMAT_DICT[('ring_longitude', '-180')]
-
-
-def test_resolve_format_raises_on_an_unknown_key() -> None:
-    """An unknown backplane quantity is an error, not a default."""
-    with pytest.raises(KeyError):
-        resolve_format('no_such_backplane_quantity')
-
-
-def test_every_format_entry_is_a_four_tuple() -> None:
-    """The format tuples hold only what a PDS3 label cannot express."""
-    for entry in list(_FORMAT_DICT.values()) + list(_ALT_FORMAT_DICT.values()):
-        assert len(entry) == 4
-
-
-def test_only_center_coordinate_is_linked() -> None:
+def test_only_the_centre_coordinates_are_linked() -> None:
     """The null link groups the centre coordinates and nothing else."""
-    linked: list[Any] = [key for key, entry in _FORMAT_DICT.items() if entry[2]]
-    assert linked == ['center_coordinate']
+    linked = {name
+              for qualifier in QUALIFIERS for spec in get_catalog(qualifier)
+              for name in spec.names
+              if spec.format[2]}
+    assert linked == {'CENTER_X_COORDINATE', 'CENTER_Y_COORDINATE',
+                      'RING_CENTER_X_COORDINATE', 'RING_CENTER_Y_COORDINATE'}
+
+
+def test_linked_columns_share_a_group_within_a_qualifier() -> None:
+    """Columns that go null together carry the same link id and function."""
+    for qualifier in QUALIFIERS:
+        groups = {spec.format[2:4] for spec in get_catalog(qualifier) if spec.format[2]}
+        assert len(groups) <= 1, f'{qualifier} has several link groups: {groups}'
+
+
+def test_format_rejects_a_half_specified_link() -> None:
+    """A link id without a function, or vice versa, is a construction error."""
+    with pytest.raises(ValueError, match='must be given together'):
+        _format('', None, 1, '')
+    with pytest.raises(ValueError, match='must be given together'):
+        _format('', None, 0, 'null')
+
+
+def test_format_defaults_to_no_conversion_and_no_link() -> None:
+    """A spec that states nothing gets the inert format tuple."""
+    spec = minmax('PHASE_ANGLE', ('phase_angle', 'IO'), ('', '', ''))
+    assert spec.format == ('', None, 0, '')
+
+
+def test_inline_flags_replace_the_old_alt_format_keying() -> None:
+    """A variant column states its own flag rather than carrying a lookup tag.
+
+    These three used to need (quantity, tag) entries in a second dictionary,
+    because one quantity had to yield two different conversions.
+    """
+    ring = name_map('ring')
+    assert ring['MINIMUM_RING_LONGITUDE_WRT_OBSERVER'][0].format[0] == '-180'
+    assert ring['MINIMUM_RING_LONGITUDE'][0].format[0] == '360'
+    assert ring['FINEST_LONGITUDINAL_RESOLUTION_KM'][0].format[0] == 'KM'
+    assert ring['FINEST_LONGITUDINAL_RESOLUTION'][0].format[0] == 'DEG'
+
+
+def test_pair_builds_an_explicitly_named_two_value_spec() -> None:
+    """pair names both halves outright, for FINEST_/COARSEST_ style columns."""
+    spec = pair('FINEST_X', 'COARSEST_X', ('resolution', 'IO'), ('', '', ''))
+    assert spec.names == ('FINEST_X', 'COARSEST_X')
+    assert spec.number_of_values == 2
 
 
 def test_catalog_specs_are_column_specs() -> None:

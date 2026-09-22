@@ -53,4 +53,4 @@ def test_the_lint_has_something_to_check() -> None:
     """The glob really found the catalog modules, so the test is not vacuous."""
     found = {path.name for path in _COLUMNS.glob('*.py')}
     assert {'body.py', 'ring.py', 'sky.py', 'sun.py',
-            'catalog.py', 'formats.py', '__init__.py'} <= found
+            'catalog.py', '__init__.py'} <= found
