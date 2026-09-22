@@ -13,6 +13,7 @@ synthetic ones written to tmp_path. No SPICE, no holdings tree.
 """
 import re
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,7 @@ from metadata_tools.geometry_support import label_schema
 from metadata_tools.geometry_support.label_schema import (
     _PENDING_DD_UNITS,
     PREFIX_NAMES,
+    _check_overflow_width,
     canonical_unit,
     derive_flag,
     resolve_schema,
@@ -192,6 +194,43 @@ def test_every_shipped_unit_canonicalizes() -> None:
             for stub in column.stubs:
                 assert stub.unit is None or stub.unit == canonical_unit(
                     stub.unit, stub.name, TEMPLATE_DIR)
+
+
+#===============================================================================
+# Overflow formats
+#===============================================================================
+@pytest.mark.parametrize('qualifier', sorted(SHIPPED))
+def test_overflow_formats_fill_their_field(qualifier: str) -> None:
+    """Every shipped column's overflow format writes exactly its field width.
+
+    formatted_column substitutes the overflow format and truncates an over-wide
+    result, but never pads. A narrow one writes a short field and shifts every
+    later column on the row.
+    """
+    for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
+        if column.spec.overflow_format is None:
+            continue
+        for stub in column.stubs:
+            assert len(column.spec.overflow_format % 1.0) == stub.width, stub.name
+
+
+def test_narrow_overflow_format_is_an_error(make_column: Callable[..., Any]) -> None:
+    """A short overflow format is rejected rather than allowed to shift a row."""
+    column = make_column(overflow='%6.3e', width=10, print_format='%10.5f')
+    with pytest.raises(RuntimeError, match='must fill the field exactly'):
+        _check_overflow_width(column.spec, column.stubs, FCPath('t'))
+
+
+def test_matching_overflow_format_is_accepted(make_column: Callable[..., Any]) -> None:
+    """An overflow format that fills the field passes."""
+    column = make_column(overflow='%10.3e', width=10, print_format='%10.5f')
+    _check_overflow_width(column.spec, column.stubs, FCPath('t'))
+
+
+def test_absent_overflow_format_is_accepted(make_column: Callable[..., Any]) -> None:
+    """A column that cannot overflow declares no overflow format."""
+    column = make_column(overflow=None)
+    _check_overflow_width(column.spec, column.stubs, FCPath('t'))
 
 
 #===============================================================================

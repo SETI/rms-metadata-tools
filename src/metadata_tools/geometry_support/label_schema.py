@@ -334,6 +334,39 @@ def template_name_for(template_dir: FCPath, qualifier: str) -> str:
 
 
 #===============================================================================
+def _check_overflow_width(spec: ColumnSpec, stubs: tuple[ColumnStub, ...],
+                          template: FCPath) -> None:
+    """Verify a column's overflow format fills its field exactly.
+
+    ``formatted_column`` substitutes the overflow format when a value will not
+    fit, then truncates if the result is still too wide -- but it never pads. An
+    overflow format narrower than the field therefore writes a short field and
+    shifts every column after it on that row. printf pads to the stated width,
+    so the check is simply that a representative value comes out the right
+    length.
+
+    Parameters:
+        spec: The catalog entry supplying the overflow format.
+        stubs: The column's label metadata, carrying the field widths.
+        template: The template path, for the error message.
+
+    Raises:
+        RuntimeError: If the overflow format does not fill the field.
+    """
+    if spec.overflow_format is None:
+        return
+
+    for stub in stubs:
+        written = len(spec.overflow_format % 1.0)
+        if written != stub.width:
+            raise RuntimeError(
+                f'{template}: column {stub.name!r} has overflow format '
+                f'{spec.overflow_format!r}, which writes {written} characters into a '
+                f'{stub.width}-character field. An overflow format must fill the field '
+                f'exactly; a short one shifts every later column on the row.')
+
+
+#===============================================================================
 _schema_cache: dict[tuple[str, str], TableSchema] = {}
 
 
@@ -358,8 +391,8 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
         RuntimeError: If the prefix columns do not match, a NAME is absent from
             the catalog, a multi-value column's NAMEs are not adjacent and in
             slot order, its parts derive different conversions, a column
-            declares no null value or an unrecognized unit, or a column declares
-            an empty valid range.
+            declares no null value or an unrecognized unit, a column declares an
+            empty valid range, or an overflow format does not fill its field.
     """
     template_dir = FCPath(template_dir)
     cache_key = (template_dir.as_posix(), qualifier)
@@ -412,6 +445,8 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
                 f'{template_path}: column {spec.names[0]!r} must be followed immediately '
                 f'by {spec.names[1:]}, but the template has {actual[1:]}. A multi-value '
                 f'column\'s parts must appear together, in order.')
+
+        _check_overflow_width(spec, tuple(group), template_path)
 
         flags = {member.flag for member in group}
         if len(flags) > 1:

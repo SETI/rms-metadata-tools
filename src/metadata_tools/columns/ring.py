@@ -31,7 +31,7 @@ RING_CATALOG: tuple[ColumnSpec, ...] = (
     pair('FINEST_LONGITUDINAL_RESOLUTION',
          'COARSEST_LONGITUDINAL_RESOLUTION',
          ('ring_angular_resolution', planet_ring),
-         ('PM', 'P', ''), overflow='%6.3e'),
+         ('PM', 'P', ''), overflow='%10.3e'),
     pair('FINEST_LONGITUDINAL_RESOLUTION_KM',
          'COARSEST_LONGITUDINAL_RESOLUTION_KM',
          ('ring_angular_resolution', planet_ring, 'km'),
