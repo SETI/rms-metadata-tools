@@ -12,25 +12,25 @@ from pdstemplate.pds3table import pds3_table_preprocessor
 
 import metadata_tools.defs as defs
 import metadata_tools.util as util
+from metadata_tools.column_grammar import PRIVATE_KEYWORDS, merge_column_definitions
 
-# The private per-COLUMN keywords carrying the geometry computation spec; see
-# metadata_tools.geometry_support.label_schema.PRIVATE_KEYWORDS, which this
-# alternation must match. They are not PDS3 Data Dictionary keywords, so they
-# must never reach a shipped label. The line-start anchor matches the schema
-# reader's, so the read and strip can never disagree about what is a keyword
-# line.
+# The spec keywords carrying the geometry computation, from the grammar both
+# paths share. They are not PDS3 Data Dictionary keywords, so they must never
+# reach a shipped label. merge_column_definitions already keeps them out of
+# merged columns; this line-level strip is the belt-and-braces for one written
+# directly on a plain COLUMN. VALUES is retired grammar, swept up for free.
+# The line-start anchor matches the schema reader's, so the read and strip can
+# never disagree about what is a keyword line.
 _PRIVATE_KEYWORD_RE = re.compile(
-    r'^ *(BACKPLANE_KEY|MASK|VALUES|OVERFLOW_FORMAT|LINK_FN|LINK_ID) *=[^\n]*\n',
+    r'^ *(' + '|'.join(PRIVATE_KEYWORDS + ('VALUES',)) + r') *=[^\n]*\n',
     re.MULTILINE)
 
 
 #===============================================================================
 def _strip_private_keywords(template_path: object, content: str) -> str:
-    """Remove the private computation keywords from a template's content.
+    """Remove the spec keywords from a template's content.
 
-    Runs as a PdsTemplate preprocessor after ``pds3_table_preprocessor`` (which
-    must stay first: PdsTemplate hands its kwargs to the first preprocessor
-    only, and the private lines are inert to it).
+    Runs as a PdsTemplate preprocessor after ``pds3_table_preprocessor``.
 
     Parameters:
         template_path: The template path, unused; part of the preprocessor
@@ -38,9 +38,28 @@ def _strip_private_keywords(template_path: object, content: str) -> str:
         content: The template content, with LF line terminators.
 
     Returns:
-        The content with every private keyword line removed.
+        The content with every spec keyword line removed.
     """
     return _PRIVATE_KEYWORD_RE.sub('', content)
+
+
+#===============================================================================
+def _pds3_table_preprocessor(template_path: object, content: str) -> str:
+    """Run rms-pdstemplate's PDS3 table preprocessor with our fixed options.
+
+    A named wrapper because PdsTemplate hands its ``kwargs`` to the first
+    preprocessor only, and ``merge_column_definitions`` must run first: the
+    table preprocessor has to see the lowered, plain-COLUMN form.
+
+    Parameters:
+        template_path: The template path.
+        content: The template content.
+
+    Returns:
+        The preprocessed content.
+    """
+    return str(pds3_table_preprocessor(template_path, content,
+                                       formats=True, numbers=True, validate=False))
 
 
 #===============================================================================
@@ -95,9 +114,12 @@ def create(filepath: str | Path | FCPath,
         template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
         template_path = host_template_dir / (template_name + '.lbl')
 
-    # Default preprocessors. The inventory template has no COLUMN objects, so
-    # it takes neither the table preprocessor nor the private-keyword strip.
-    preprocess: list[Callable[..., object]] | None = [pds3_table_preprocessor,
+    # Default preprocessors: lower the definition/stub grammar to plain
+    # COLUMNs, run the PDS3 table preprocessor on the lowered form, then sweep
+    # any stray spec keyword. The inventory template has no COLUMN objects, so
+    # it takes none of them.
+    preprocess: list[Callable[..., object]] | None = [merge_column_definitions,
+                                                      _pds3_table_preprocessor,
                                                       _strip_private_keywords]
     if 'inventory' in body:
         preprocess = None
@@ -109,8 +131,7 @@ def create(filepath: str | Path | FCPath,
     # Generate label
     template = PdsTemplate(template_path, crlf=True,
                            preprocess=preprocess,
-                           includes=[defs.GLOBAL_TEMPLATE_PATH, host_template_dir],
-                           kwargs={'formats':True, 'numbers':True, 'validate':False})
+                           includes=[defs.GLOBAL_TEMPLATE_PATH, host_template_dir])
     template.write(fields, label_path=label_path, mode='repair')
 
     return

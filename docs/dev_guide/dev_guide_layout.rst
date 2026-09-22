@@ -36,6 +36,7 @@ tests, docs, and tooling.
          geometry_support/     # geometry engine (package)
          cumulative_support.py # cumulative table concatenation
          label_support.py      # PDS3 label generation from templates
+         column_grammar.py     # the definition/stub column grammar + its lowering
          cli/                  # installed console-script entry points
            index.py            # metadata-index
            geometry.py         # metadata-geometry

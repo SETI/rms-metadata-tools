@@ -313,27 +313,31 @@ def test_template_name_matches_the_write_path() -> None:
         assert read_name == write_name
 
 
-def test_write_path_strips_the_private_keywords() -> None:
-    """A generated label carries no trace of the computation keywords.
+def test_write_path_lowers_and_strips_the_grammar() -> None:
+    """The lowered fragment carries no trace of the authoring grammar.
 
-    This is the forgotten-strip tripwire: the private keywords are not PDS3
-    Data Dictionary keywords, so they must never reach a shipped label.
+    This is the forgotten-merge tripwire: neither block kind nor any spec
+    keyword is PDS3, so none of it may reach a shipped label.
     """
+    from metadata_tools.column_grammar import merge_column_definitions
     from metadata_tools.label_support import _strip_private_keywords
 
     fragment = (Path(metadata_tools.__file__).parent / 'templates' /
                 'ring_summary_columns.lbl').read_text()
-    stripped = _strip_private_keywords(None, fragment)
+    # The header $NOTE documents the grammar in prose; the shipped-label check
+    # concerns keyword lines and OBJECT kinds, which prose never forms.
+    lowered = _strip_private_keywords(None, merge_column_definitions(None, fragment))
     for keyword in label_schema.PRIVATE_KEYWORDS:
-        assert not re.search(r'(?m)^ *' + keyword + r' *=', stripped), keyword
+        assert not re.search(r'(?m)^ *' + keyword + r' *=', lowered), keyword
+    assert not re.search(r'(?m)^ *(END_)?OBJECT *= *COLUMN_(DEFINITION|STUB)', lowered)
 
-    # The strip removes nothing else: standard keyword lines survive untouched.
+    # Every shipped column emerges complete: one FORMAT and one null each.
     def lines(text: str, keyword: str) -> int:
         return len(re.findall(r'(?m)^ *' + keyword + r' *=', text))
 
-    assert lines(stripped, 'NULL_CONSTANT') == lines(fragment, 'NULL_CONSTANT')
-    assert lines(stripped, 'FORMAT') == lines(fragment, 'FORMAT')
-    assert lines(fragment, 'FORMAT') == 81
+    assert lines(lowered, 'FORMAT') == 81
+    assert lines(lowered, 'NULL_CONSTANT') == 81
+    assert len(re.findall(r'(?m)^ *OBJECT *= *COLUMN *$', lowered)) == 81
 
 
 def test_strip_alternation_matches_the_reader() -> None:
@@ -395,20 +399,20 @@ def test_the_shadowed_fragment_really_overrides(tmp_path: Path) -> None:
 
 
 def test_missing_backplane_key_is_an_error(tmp_path: Path) -> None:
-    """A data column that neither computes nor is absorbed fails loudly."""
+    """A definition without a BACKPLANE_KEY defines nothing computable."""
     host = _host_dir(tmp_path)
     tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
                             "    BACKPLANE_KEY               = ('right_ascension', ())\n",
                             '')
-    with pytest.raises(RuntimeError, match='has no BACKPLANE_KEY'):
+    with pytest.raises(RuntimeError, match='declares no BACKPLANE_KEY'):
         resolve_schema(tdir, 'sky')
 
 
-def test_group_keyword_on_absorbed_column_is_an_error(tmp_path: Path) -> None:
-    """A second group member carrying its own BACKPLANE_KEY is rejected.
+def test_spec_keyword_on_a_stub_is_an_error(tmp_path: Path) -> None:
+    """A stub carrying its own BACKPLANE_KEY is rejected.
 
-    Group-level keywords belong on the first column only; a stray one usually
-    means a VALUES count and the columns beneath it have drifted apart.
+    The computation belongs to the definition; a spec keyword on a stub
+    usually means a definition and its stubs have drifted apart.
     """
     host = _host_dir(tmp_path)
     tdir = _shadow_fragment(
@@ -416,20 +420,91 @@ def test_group_keyword_on_absorbed_column_is_an_error(tmp_path: Path) -> None:
         '    NAME                        = "MAXIMUM_RIGHT_ASCENSION"\n',
         '    NAME                        = "MAXIMUM_RIGHT_ASCENSION"\n'
         "    BACKPLANE_KEY               = ('right_ascension', ())\n")
-    with pytest.raises(RuntimeError, match='belong on the first column only'):
+    with pytest.raises(RuntimeError, match='belongs on its COLUMN_DEFINITION'):
         resolve_schema(tdir, 'sky')
 
 
-def test_values_overrun_is_an_error(tmp_path: Path) -> None:
-    """A VALUES count running past the end of the table is rejected."""
+def test_stub_without_a_definition_is_an_error(tmp_path: Path) -> None:
+    """A stub with no preceding definition cannot be computed."""
+    host = _host_dir(tmp_path)
+    source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
+    text = source.read_text(encoding='utf-8')
+    # Delete the right-ascension definition block, stranding its stubs.
+    start = text.index('  OBJECT                        = COLUMN_DEFINITION')
+    end = text.index('END_OBJECT                    = COLUMN_DEFINITION', start)
+    end = text.index('\n', end) + 1
+    (host / 'templates' / 'sky_summary_columns.lbl').write_text(
+        text[:start] + text[end:], encoding='utf-8')
+    with pytest.raises(RuntimeError, match='no preceding COLUMN_DEFINITION'):
+        resolve_schema(FCPath(host / 'templates'), 'sky')
+
+
+def test_definition_without_stubs_is_an_error(tmp_path: Path) -> None:
+    """A definition followed by no stubs defines nothing."""
+    host = _host_dir(tmp_path)
+    source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
+    extra = """
+  OBJECT                        = COLUMN_DEFINITION
+    NAME                        = "DANGLING"
+    FORMAT                      = "F10.3"
+    NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('dangling', ())
+  END_OBJECT                    = COLUMN_DEFINITION
+"""
+    (host / 'templates' / 'sky_summary_columns.lbl').write_text(
+        source.read_text(encoding='utf-8') + extra, encoding='utf-8')
+    with pytest.raises(RuntimeError, match='followed by no COLUMN_STUB'):
+        resolve_schema(FCPath(host / 'templates'), 'sky')
+
+
+def test_three_stubs_is_an_error(tmp_path: Path) -> None:
+    """No computation produces more than two values, so a third stub fails."""
+    host = _host_dir(tmp_path)
+    stub = """
+  OBJECT                        = COLUMN_STUB
+    NAME                        = "MEDIAN_DECLINATION"
+    DESCRIPTION                 = "A third value nothing computes."
+  END_OBJECT                    = COLUMN_STUB
+"""
+    source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
+    (host / 'templates' / 'sky_summary_columns.lbl').write_text(
+        source.read_text(encoding='utf-8') + stub, encoding='utf-8')
+    with pytest.raises(RuntimeError, match='no computation produces more than two'):
+        resolve_schema(FCPath(host / 'templates'), 'sky')
+
+
+def test_plain_column_in_the_data_region_is_an_error(tmp_path: Path) -> None:
+    """A plain COLUMN among the groups is neither prefix nor computed."""
+    host = _host_dir(tmp_path)
+    column = """
+  OBJECT                        = COLUMN
+    NAME                        = "LOOSE_COLUMN"
+    FORMAT                      = "F10.3"
+    NULL_CONSTANT               = -999.
+    DESCRIPTION                 = "A plain column where a group belongs."
+  END_OBJECT                    = COLUMN
+"""
+    source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
+    (host / 'templates' / 'sky_summary_columns.lbl').write_text(
+        source.read_text(encoding='utf-8') + column, encoding='utf-8')
+    with pytest.raises(RuntimeError, match='plain COLUMN'):
+        resolve_schema(FCPath(host / 'templates'), 'sky')
+
+
+def test_mismatched_object_kinds_are_an_error(tmp_path: Path) -> None:
+    """An OBJECT whose END_OBJECT names a different kind fails loudly.
+
+    The tokenizer would otherwise skip the malformed block silently, and a
+    skipped column is exactly the misalignment this module exists to prevent.
+    """
     host = _host_dir(tmp_path)
     tdir = _shadow_fragment(
         host, 'sky_summary_columns.lbl',
-        "    BACKPLANE_KEY               = ('declination', ())\n"
-        '    VALUES                      = 2\n',
-        "    BACKPLANE_KEY               = ('declination', ())\n"
-        '    VALUES                      = 3\n')
-    with pytest.raises(RuntimeError, match='runs past the end'):
+        '  OBJECT                        = COLUMN_STUB\n'
+        '    NAME                        = "MAXIMUM_DECLINATION"\n',
+        '  OBJECT                        = COLUMN\n'
+        '    NAME                        = "MAXIMUM_DECLINATION"\n')
+    with pytest.raises(RuntimeError, match='malformed COLUMN object'):
         resolve_schema(tdir, 'sky')
 
 
@@ -554,16 +629,18 @@ def test_empty_valid_range_is_an_error(tmp_path: Path) -> None:
         resolve_schema(tdir, 'sky')
 
 
-def test_halves_deriving_different_conversions_is_an_error(tmp_path: Path) -> None:
-    """A pair whose halves disagree on unit or range is rejected.
+def test_stubs_deriving_different_conversions_is_an_error(tmp_path: Path) -> None:
+    """A stub whose override changes the derived conversion is rejected.
 
-    The conversion is derived per column object, so halves that disagree would
-    tabulate one slot in degrees and the other in radians.
+    The conversion is derived per stub, so an override that disagrees would
+    tabulate one slot as cyclic coverage and the other as a plain min/max.
     """
     host = _host_dir(tmp_path)
-    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
-                            '    VALID_MAXIMUM               = 360.',
-                            '    VALID_MAXIMUM               = 180.', count=1)
+    tdir = _shadow_fragment(
+        host, 'sky_summary_columns.lbl',
+        '    NAME                        = "MAXIMUM_RIGHT_ASCENSION"\n',
+        '    NAME                        = "MAXIMUM_RIGHT_ASCENSION"\n'
+        '    VALID_MAXIMUM               = 180.\n')
     with pytest.raises(RuntimeError, match='derive different conversions'):
         resolve_schema(tdir, 'sky')
 
@@ -611,13 +688,17 @@ def test_a_host_may_rename_and_add_columns(tmp_path: Path) -> None:
     host = _host_dir(tmp_path)
     source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
     extra = """
-  OBJECT                        = COLUMN
-    NAME                        = "MEAN_SOMETHING_NEW"
+  OBJECT                        = COLUMN_DEFINITION
+    NAME                        = "SOMETHING_NEW"
     FORMAT                      = "F10.3"
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('something_new', ())
+  END_OBJECT                    = COLUMN_DEFINITION
+
+  OBJECT                        = COLUMN_STUB
+    NAME                        = "MEAN_SOMETHING_NEW"
     DESCRIPTION                 = "A host-local column."
-  END_OBJECT                    = COLUMN
+  END_OBJECT                    = COLUMN_STUB
 """
     (host / 'templates' / 'sky_summary_columns.lbl').write_text(
         source.read_text(encoding='utf-8') + extra, encoding='utf-8')
