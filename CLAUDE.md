@@ -131,8 +131,9 @@ carrying the shared label metadata (FORMAT hence width/print format, UNIT hence 
 conversion, NULL_CONSTANT, valid range, OVERFLOW_FORMAT) and the computation spec
 (`BACKPLANE_KEY` and `MASK` as Python literals parsed with `ast.literal_eval`, the
 `'bodyx'` token substituted per body at run time; `LINK_FN`/`LINK_ID` null-link groups) —
-followed by one `COLUMN_STUB` object per value, each carrying its NAME, DESCRIPTION, and
-any override. Group size is the stub count. `geometry_support/label_schema.py` parses and
+and the shared lead-in DESCRIPTION — followed by one `COLUMN_STUB` object per value,
+carrying its NAME, its own per-value DESCRIPTION (appended to the definition's at write
+time), and any override. Group size is the stub count. `geometry_support/label_schema.py` parses and
 validates it all loudly at table construction; the write path lowers every group to plain
 COLUMN objects (`merge_column_definitions`), so shipped labels never carry the grammar.
 

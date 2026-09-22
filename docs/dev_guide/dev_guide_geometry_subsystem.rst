@@ -74,12 +74,13 @@ Where a column's metadata comes from
 The **label template** is the single source of truth for a geometry column,
 declared in the definition/stub grammar of
 :mod:`metadata_tools.column_grammar`: each computed column is one
-``COLUMN_DEFINITION`` object -- carrying the computation spec and the label
-metadata shared by the column's values -- followed by one ``COLUMN_STUB``
-object per value, each carrying its ``NAME``, its ``DESCRIPTION``, and any
-keyword it overrides. Group size is the stub count; membership is declared by
-the stub's own object type, so no column can be assimilated into a group by
-accident.
+``COLUMN_DEFINITION`` object -- carrying the computation spec, the label
+metadata shared by the column's values, and the shared lead-in
+``DESCRIPTION`` -- followed by one ``COLUMN_STUB`` object per value, carrying
+its ``NAME``, any keyword it overrides, and its own ``DESCRIPTION``, which
+continues the definition's. Group size is the stub count; membership is
+declared by the stub's own object type, so no column can be assimilated into
+a group by accident.
 
 .. code-block:: text
 
@@ -91,16 +92,17 @@ accident.
        NULL_CONSTANT               = -999.
        BACKPLANE_KEY               = ('ring_radius', 'bodyx:RING')
        MASK                        = ('PM', 'P', '')
+       DESCRIPTION                 = "Ring radius is the distance from ..."
      END_OBJECT                    = COLUMN_DEFINITION
 
      OBJECT                        = COLUMN_STUB
        NAME                        = "MINIMUM_RING_RADIUS"
-       DESCRIPTION                 = "..."
+       DESCRIPTION                 = "This column tabulates the minimum ..."
      END_OBJECT                    = COLUMN_STUB
 
      OBJECT                        = COLUMN_STUB
        NAME                        = "MAXIMUM_RING_RADIUS"
-       DESCRIPTION                 = "..."
+       DESCRIPTION                 = "This column tabulates the maximum ..."
      END_OBJECT                    = COLUMN_STUB
 
 The spec keywords, allowed on definitions only (except ``OVERFLOW_FORMAT``,
@@ -126,9 +128,13 @@ single line, parsed with :func:`ast.literal_eval`; nothing ever parses these
 lines as ODL. Neither block kind nor any spec keyword is PDS3:
 :func:`~metadata_tools.label_support.create` lowers every group to plain
 ``COLUMN`` objects (via
-:func:`~metadata_tools.column_grammar.merge_column_definitions`, which copies
-the definition's shippable keywords into each stub) before a label is
-generated, so shipped labels are indistinguishable from hand-written ones.
+:func:`~metadata_tools.column_grammar.merge_column_definitions`) before a
+label is generated, so shipped labels are indistinguishable from hand-written
+ones. Descriptions *compose*: a shipped column's ``DESCRIPTION`` is the
+definition's shared lead-in followed by the stub's per-value prose, so the
+lead-in is written once per quantity while each extreme keeps its own
+paragraph. Either side may also stand alone -- a stub with no description
+ships the definition's, and vice versa.
 
 This is the same arrangement as the index pipeline, where
 :class:`~metadata_tools.index_support.table.IndexTable` derives its columns from

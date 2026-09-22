@@ -123,17 +123,19 @@ backplane function.
    e.g. ``GO_0xxx_body_summary.lbl`` (or the shared fragment it includes),
    naming the quantity and declaring what its values share: ``FORMAT``,
    ``UNIT`` (which drives the unit conversion), ``NULL_CONSTANT``, the valid
-   range, and the computation -- ``BACKPLANE_KEY`` (a Python tuple literal,
-   with ``'bodyx'`` where the body name goes), ``MASK`` if any bodies mask
-   it, ``OVERFLOW_FORMAT`` (in PDS3 FORMAT notation) if a value can outgrow
-   its field, and ``LINK_FN`` / ``LINK_ID`` if the column must go null
-   together with others.
+   range, the shared lead-in ``DESCRIPTION`` (what the quantity *is*), and
+   the computation -- ``BACKPLANE_KEY`` (a Python tuple literal, with
+   ``'bodyx'`` where the body name goes), ``MASK`` if any bodies mask it,
+   ``OVERFLOW_FORMAT`` (in PDS3 FORMAT notation) if a value can outgrow its
+   field, and ``LINK_FN`` / ``LINK_ID`` if the column must go null together
+   with others.
 #. Follow it with one ``COLUMN_STUB`` object per value -- one for a
    single-valued column, minimum then maximum for a pair -- each declaring
-   its ``NAME`` and ``DESCRIPTION``, plus any keyword it overrides. See
-   :doc:`dev_guide_geometry_subsystem` for the full grammar; the write path
-   lowers every group to plain ``COLUMN`` objects, so none of this reaches
-   the archive.
+   its ``NAME``, its own ``DESCRIPTION`` (what *this value* tabulates, which
+   the write path appends to the definition's lead-in), and any keyword it
+   overrides. See :doc:`dev_guide_geometry_subsystem` for the full grammar;
+   the write path lowers every group to plain ``COLUMN`` objects, so none of
+   this reaches the archive.
 #. Add the corresponding backplane function in ``oops`` if the quantity is new.
 #. Run the host's geometry program and update the unit tests.
 

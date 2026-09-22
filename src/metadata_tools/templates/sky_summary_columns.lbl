@@ -3,11 +3,13 @@ $NOTE
 # Column definitions for the sky summary geometry table.
 #
 # Column grammar: each computed column is one COLUMN_DEFINITION object --
-# holding the computation spec and the label metadata shared by the column's
-# values -- followed by one COLUMN_STUB object per value, each holding its
-# NAME, its DESCRIPTION, and any keyword it overrides. Group size is the stub
-# count. The label write path lowers every group to plain COLUMN objects, so
-# neither block kind nor any spec keyword ever reaches a shipped label.
+# holding the computation spec, the label metadata shared by the column's
+# values, and the shared lead-in DESCRIPTION -- followed by one COLUMN_STUB
+# object per value, holding its NAME, any keyword it overrides, and its own
+# DESCRIPTION, which the write path APPENDS to the definition's (either may
+# also stand alone). Group size is the stub count. The write path lowers
+# every group to plain COLUMN objects, so neither block kind nor any spec
+# keyword ever reaches a shipped label.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
@@ -36,28 +38,21 @@ $END_NOTE
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('right_ascension', ())
+    DESCRIPTION                 = "The minimum and maximum values for J2000
+      right ascension within the field of view sampled by this observation.
+
+      For fields of view that cross 360 degrees, the tabulated minimum value
+      will be greater than the maximum, meaning that the range of right
+      ascension is from the 'minimum' value to 360 and then from zero to the
+      'maximum'."
   END_OBJECT                    = COLUMN_DEFINITION
 
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RIGHT_ASCENSION"
-    DESCRIPTION                 = "The minimum value for J2000 right
-      ascension within the field of view sampled by this observation.
-
-      For fields of view that cross 360 degrees, the tabulated minimum value
-      will be greater than the maximum, meaning that the range of right
-      ascension is from the 'minimum' value to 360 and then from zero to the
-      'maximum'."
   END_OBJECT                    = COLUMN_STUB
 
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RIGHT_ASCENSION"
-    DESCRIPTION                 = "The maximum value for J2000 right
-      ascension within the field of view sampled by this observation.
-
-      For fields of view that cross 360 degrees, the tabulated minimum value
-      will be greater than the maximum, meaning that the range of right
-      ascension is from the 'minimum' value to 360 and then from zero to the
-      'maximum'."
   END_OBJECT                    = COLUMN_STUB
 
   OBJECT                        = COLUMN_DEFINITION
@@ -69,16 +64,14 @@ $END_NOTE
     VALID_MAXIMUM               =  90.
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('declination', ())
+    DESCRIPTION                 = "The minimum and maximum values for J2000
+      declination within the field of view sampled by the observation."
   END_OBJECT                    = COLUMN_DEFINITION
 
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_DECLINATION"
-    DESCRIPTION                 = "The minimum value for J2000 declination
-      within the field of view sampled by the observation."
   END_OBJECT                    = COLUMN_STUB
 
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_DECLINATION"
-    DESCRIPTION                 = "The maximum value for J2000 declination
-      within the field of view sampled by the observation."
   END_OBJECT                    = COLUMN_STUB
