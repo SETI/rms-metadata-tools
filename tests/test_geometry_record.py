@@ -25,11 +25,11 @@ def test_substitute_binds_bodyx_in_every_key(make_column: Callable[..., Any]) ->
                make_column(key=('phase_angle', defs.BODYX))]
     bound = Record.substitute(columns, 'IO')
 
-    assert [c.spec.key for c in bound] == [('latitude', 'IO', 'centric'),
-                                           ('phase_angle', 'IO')]
+    assert [c.key for c in bound] == [('latitude', 'IO', 'centric'),
+                                      ('phase_angle', 'IO')]
     # The originals are untouched, so one body's binding cannot leak into another.
-    assert [c.spec.key for c in columns] == [('latitude', defs.BODYX, 'centric'),
-                                             ('phase_angle', defs.BODYX)]
+    assert [c.key for c in columns] == [('latitude', defs.BODYX, 'centric'),
+                                        ('phase_angle', defs.BODYX)]
     # Stubs ride along unchanged; only the key is rebound.
     assert bound[0].stubs == columns[0].stubs
 
@@ -45,7 +45,7 @@ def test_substitute_resolves_embedded_dict_reference(
     key = ('body_diameter_in_pixels', defs.BODYX + ':RING',
            util.replacement_fn('defs.RING_SYSTEM_RADII', defs.BODYX))
     bound = Record.substitute([make_column(key=key)], 'JUPITER')
-    assert bound[0].spec.key[2] == defs.RING_SYSTEM_RADII['JUPITER']
+    assert bound[0].key[2] == defs.RING_SYSTEM_RADII['JUPITER']
 
 
 #===============================================================================
@@ -55,12 +55,12 @@ def _linked_columns(make_column: Callable[..., Any]) -> list[Any]:
     """Return the two single-valued, null-linked center-coordinate columns."""
     return [make_column(key=('center_coordinate', 'IO', 'u'),
                         names=['CENTER_X_COORDINATE'], flag='', overflow='%12.5e',
-                        link_id=1, link='null', width=12, print_format='%12.3f',
-                        null_value=-99999.),
+                        link_fn='null', link_id='LINK-CENTER_COORDINATE',
+                        width=12, print_format='%12.3f', null_value=-99999.),
             make_column(key=('center_coordinate', 'IO', 'v'),
                         names=['CENTER_Y_COORDINATE'], flag='', overflow='%12.5e',
-                        link_id=1, link='null', width=12, print_format='%12.3f',
-                        null_value=-99999.)]
+                        link_fn='null', link_id='LINK-CENTER_COORDINATE',
+                        width=12, print_format='%12.3f', null_value=-99999.)]
 
 
 def test_postprocess_propagates_null_across_linked_columns(

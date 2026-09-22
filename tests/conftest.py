@@ -169,37 +169,37 @@ def make_stub() -> Callable[..., Any]:
     def _make(name: str = 'COLUMN', width: int = 8, print_format: str = '%8.3f',
               null_value: Any = -999., valid_minimum: float | None = None,
               valid_maximum: float | None = None, unit: str | None = None,
-              flag: str = '') -> ColumnStub:
+              flag: str = '', overflow_format: str | None = None) -> ColumnStub:
         return ColumnStub(name=name, width=width, print_format=print_format,
                           null_value=null_value, valid_minimum=valid_minimum,
-                          valid_maximum=valid_maximum, unit=unit, flag=flag)
+                          valid_maximum=valid_maximum, unit=unit, flag=flag,
+                          overflow_format=overflow_format)
 
     return _make
 
 
 @pytest.fixture
 def make_column(make_stub: Callable[..., Any]) -> Callable[..., Any]:
-    """Factory building a ResolvedColumn: a catalog spec plus its label stubs.
+    """Factory building a ResolvedColumn: a computation plus its label stubs.
 
     This is what the template pull hands to prep/record/formatting, so tests
     build one directly rather than resolving a real template. Keyword arguments
     not named here go to the stubs, so ``flag=`` and ``unit=`` reach the label
     side where they belong.
     """
-    from metadata_tools.columns.catalog import ColumnSpec
     from metadata_tools.geometry_support.label_schema import ResolvedColumn
 
     def _make(key: tuple[Any, ...] = ('phase_angle', 'IO'),
               mask: tuple[str, str, str] = ('', '', ''),
               names: Sequence[str] = ('MINIMUM_PHASE_ANGLE', 'MAXIMUM_PHASE_ANGLE'),
-              overflow: str | None = None, link_id: int = 0, link: str = '',
+              overflow: str | None = None, link_fn: str = '', link_id: str = '',
               **stub_kwargs: Any) -> ResolvedColumn:
         # flag and unit belong to the stub: they are derived from the label.
         stub_kwargs.setdefault('flag', 'DEG')
-        spec = ColumnSpec(names=tuple(names), key=key, mask=mask,
-                          overflow_format=overflow, link_id=link_id, link=link)
-        stubs = tuple(make_stub(name=name, **stub_kwargs) for name in names)
-        return ResolvedColumn(spec=spec, stubs=stubs)
+        stubs = tuple(make_stub(name=name, overflow_format=overflow, **stub_kwargs)
+                      for name in names)
+        return ResolvedColumn(key=key, mask=mask, link_fn=link_fn, link_id=link_id,
+                              stubs=stubs)
 
     return _make
 

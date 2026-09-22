@@ -43,7 +43,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         blocker: The name of one body that may be able to block or shadow other
             bodies.
         columns: The table's resolved columns, in template order: each pairs a
-            catalog spec with the label metadata for the values it writes.
+            backplane computation with the label metadata for the values it
+            writes.
         primary: Name of primary body, uppercase, e.g., "SATURN".
         target: Optionally, the target name to write into the record.
         name_length: The character width of a column to contain body names;
@@ -63,8 +64,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     excluded_mask_dict: dict[tuple[Any, ...], polymath.Boolean] = {}
     if record.pointing_available and not no_mask:
         for column in columns:
-            event_key = column.spec.key
-            mask_desc = column.spec.mask
+            event_key = column.key
+            mask_desc = column.mask
             mask_target = event_key[1]
 
             key = (mask_target,) + mask_desc
@@ -93,8 +94,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
 
     # For each column...
     for column in columns:
-        event_key = column.spec.key
-        mask_desc = column.spec.mask
+        event_key = column.key
+        mask_desc = column.mask
         stubs = column.stubs
         null_flag = False
 
@@ -127,8 +128,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
                 # resolve_schema guarantees every data column declares a null.
                 values = oops.Scalar(cast(float, null_value), False)
         data_columns.append(
-            formatting.formatted_column(values, column.spec.overflow_format, stubs,
-                                        record.sampling))
+            formatting.formatted_column(values, stubs, record.sampling))
 
     # An all-null row is dropped unless the caller demands a row regardless
     if nothing_found and allow_zero_rows:
