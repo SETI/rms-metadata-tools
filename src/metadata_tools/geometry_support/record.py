@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import oops
 
-import metadata_tools.columns as col
+import metadata_tools.bodies as bodies_mod
 import metadata_tools.defs as defs
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
@@ -51,7 +51,7 @@ class Record:
         self.blocker: str | None = None
 
         if self.primary:
-            registry = col.get_bodies_registry()
+            registry = bodies_mod.get_bodies_registry()
             self.rings_present: bool = registry[self.primary].ring_frame is not None
 
         # Determine target
@@ -69,10 +69,10 @@ class Record:
         self.backplane = oops.backplane.Backplane(observation, meshgrid)
 
         # Get inventory for this record
-        self.inventory = bodies_select.inventory(self, col.get_bodies_registry())
+        self.inventory = bodies_select.inventory(self, bodies_mod.get_bodies_registry())
 
         # Select bodies for this record
-        self.bodies = bodies_select.select_bodies(self, col.get_bodies_registry())
+        self.bodies = bodies_select.select_bodies(self, bodies_mod.get_bodies_registry())
 
         # Define a blocker body, if any
         if self.target in self.bodies:
@@ -91,7 +91,7 @@ class Record:
             name: The body name to substitute.
 
         Returns:
-            The columns, with each spec's key bound to *name*.
+            The columns, with each backplane key bound to *name*.
         """
         out: list[ResolvedColumn] = []
         for column in columns:
