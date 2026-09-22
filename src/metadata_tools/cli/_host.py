@@ -252,14 +252,17 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
             Calls ``sys.exit`` if neither is provided.
         debug_branch: Git branch to clone on the GCP VM, injected as ``BRANCH``
             in the script header. Falls back to the ``GCP_DEBUG_BRANCH``
-            environment variable. When neither is set the startup template
-            installs from PyPI instead of cloning the repository.
+            environment variable. When neither is set the startup template uses
+            the release baked into the VM image (a preexisting ``/root/venv``,
+            upgraded in place when PyPI has a newer release) or, on a stock
+            image, installs from PyPI instead of cloning the repository.
         for_ssh: When ``True``, produce an SSH-pastable variant: replace
-            ``cd /root`` with ``cd ~``; recover ``--task-file`` (normally
-            stripped as a cloud_tasks arg) by embedding local files inline as a
-            heredoc or passing remote URLs through to the worker command; and
-            prepend ``set +e`` before the worker command so a worker failure
-            does not terminate the interactive shell session.
+            ``cd /root`` with ``cd ~`` and point ``VENV_DIR`` at ``$HOME/venv``
+            so nothing needs root; recover ``--task-file`` (normally stripped
+            as a cloud_tasks arg) by embedding local files inline as a heredoc
+            or passing remote URLs through to the worker command; and prepend
+            ``set +e`` before the worker command so a worker failure does not
+            terminate the interactive shell session.
 
     Returns:
         The complete startup script text.
@@ -294,6 +297,10 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
             '$(curl -sf "http://metadata.google.internal/computeMetadata/v1/project/project-id"'
             ' -H "Metadata-Flavor: Google")'
         )
+        # The template defaults VENV_DIR to /root/venv, which an ordinary SSH user can
+        # neither create nor write. Relocate it alongside the `cd /root` -> `cd ~`
+        # rewrite below so the whole script stays inside the user's home directory.
+        header_lines.append('export VENV_DIR="$HOME/venv"')
     if resolved_branch:
         header_lines.append(f'export BRANCH={shlex.quote(resolved_branch)}')
     header_lines.append(f'export OOPS_RESOURCES_DISK={shlex.quote(resolved_oops)}')

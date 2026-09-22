@@ -38,10 +38,13 @@ inside a ``rms-cloud-tasks`` Worker.
 
 Worker scripts start a local Worker directly. Cloud scripts shell out to
 ``cloud_tasks run``, which provisions GCP instances, generates and delivers a
-startup script to each VM, and monitors progress. The startup script
-pip-installs ``rms-metadata-tools`` from PyPI (or clones a specific git branch
-when ``--debug-branch`` / ``$GCP_DEBUG_BRANCH`` is set) and then runs the
-appropriate worker command.
+startup script to each VM, and monitors progress. On a stock Ubuntu image the
+startup script pip-installs ``rms-metadata-tools`` from PyPI; on a baked VM
+image (see "Baked VM images" below) the environment is preinstalled and the
+install step is replaced by a seconds-long upgrade-if-needed check against
+PyPI, so a stale image never silently runs an old release. Either way, when ``--debug-branch`` /
+``$GCP_DEBUG_BRANCH`` is set the named git branch is cloned and installed on
+top. The script then runs the appropriate worker command.
 
 Local parallel runs
 ====================
@@ -109,7 +112,10 @@ Each host carries two config tiers. The default (unsuffixed)
 testing; the ``gcp_<type>_prod_config.yml`` files are tuned for throughput
 over the full collection (multi-instance spot fleets sized so the whole task
 queue runs in one wave, per-stage runtimes and boot-disk sizing, preemption
-retry, and a price cap). Select a production config explicitly:
+retry, and a price cap). The production configs also pin
+``image: metadata-tools``, the baked VM image family (see "Baked VM images"
+below), so production instances boot with the worker environment
+preinstalled. Select a production config explicitly:
 
 .. code-block:: bash
 
@@ -129,6 +135,51 @@ actually dispatching, use ``--create-startup-file``:
 
 This writes the startup script to ``startup.sh`` and exits immediately. The
 ``--config`` flag is not required when ``--create-startup-file`` is used.
+
+Baked VM images
+---------------
+
+By default GCP instances boot a stock Ubuntu image and the startup script
+installs everything from scratch (``apt-get``, ``pip install``) on every boot —
+a cost paid again after every spot preemption, and a source of transient
+PyPI/apt failures. A *baked* image avoids this: the worker environment
+(``/root/venv`` with ``rms-metadata-tools[cloud]`` preinstalled) is built once
+into a reusable Compute Engine image, and the startup script detects the baked
+venv and replaces the from-scratch install with an upgrade-if-needed check: a
+current image proceeds after a seconds-long no-op resolve, while a stale image
+is upgraded in place to the current PyPI release before the worker starts.
+Rebuilding the image after a release is therefore an optimization (it re-bakes
+the new version into the boot path), not a correctness requirement.
+
+Build (or rebuild) the image with:
+
+.. code-block:: bash
+
+   scripts/build-gcp-image.sh [VERSION]
+
+The script creates a throwaway builder VM whose own startup script performs the
+bake and powers the VM off; the finished disk is published as a dated image
+(e.g. ``metadata-tools-20260902-1052``) in the ``metadata-tools`` image
+**family**, and the builder is deleted. ``VERSION`` pins the
+``rms-metadata-tools`` release to install (default: latest on PyPI);
+``PROJECT``, ``ZONE``, and ``FAMILY`` environment variables override the
+defaults. A failed or wedged bake times out after 10 minutes, saving the
+builder's serial-port log for diagnosis before cleaning up.
+
+Configs reference the image by family name (``image: metadata-tools``), which
+``cloud_tasks`` resolves to the newest image in the family at dispatch time —
+so rebuilding the image rotates the fleet automatically, with no config edits.
+Rebuild after each ``rms-metadata-tools`` release, since the baked image pins
+the code version installed at bake time. ``--debug-branch`` still works with a
+baked image: the branch is cloned and installed into the baked venv, which is
+fast because the heavy dependencies are already present.
+
+Two operational notes: the image's source disk size (10 GB, matching the stock
+Ubuntu image) is the *minimum* boot disk size any config may request, which is
+why the build script bakes from a 10 GB disk; and a dispatch can always fall
+back to the from-scratch path by overriding the image on the command line
+(e.g. ``--image ubuntu-2404-lts-amd64``) or omitting ``image:`` from the
+config — the startup script handles both environments.
 
 Worker options
 ==============
@@ -228,8 +279,9 @@ never contains committed credentials.
        Leave blank or unset to use the default.
    * - ``GCP_DEBUG_BRANCH``
      - Git branch to clone on GCP VMs. When unset and ``--debug-branch`` is not
-       given, the startup script pip-installs ``rms-metadata-tools`` from PyPI
-       instead of cloning. Overridden by ``--debug-branch``.
+       given, the startup script uses the release baked into the VM image, or
+       pip-installs ``rms-metadata-tools`` from PyPI on a stock image.
+       Overridden by ``--debug-branch``.
 
 A typical ``.env`` file:
 
