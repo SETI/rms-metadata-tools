@@ -148,6 +148,26 @@ def test_column_spec_is_frozen() -> None:
 #===============================================================================
 # The format tables
 #===============================================================================
+def test_no_format_entry_is_unreachable() -> None:
+    """Every format entry is claimed by some catalog spec.
+
+    An entry no spec references cannot be reached: resolve_format is only ever
+    called with a spec's backplane quantity, at catalog build time. Such an
+    entry is dead weight that reads like a supported column.
+    """
+    used = {spec.key[0] for qualifier in QUALIFIERS for spec in get_catalog(qualifier)}
+    assert sorted(set(_FORMAT_DICT) - used) == []
+
+
+def test_no_alt_format_entry_is_unreachable() -> None:
+    """Every alternate entry is claimed by some catalog spec."""
+    claimed = {(key, tag)
+               for qualifier in QUALIFIERS for spec in get_catalog(qualifier)
+               for (key, tag), value in _ALT_FORMAT_DICT.items()
+               if key == spec.key[0] and value == spec.format}
+    assert sorted(set(_ALT_FORMAT_DICT) - claimed) == []
+
+
 def test_resolve_format_prefers_the_tagged_variant() -> None:
     """An alternate tag selects the variant entry, not the base one."""
     assert resolve_format('ring_longitude') == _FORMAT_DICT['ring_longitude']
