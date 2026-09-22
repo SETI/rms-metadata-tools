@@ -11,7 +11,7 @@ import oops
 import pytest
 
 import metadata_tools
-import metadata_tools.columns as col
+import metadata_tools.bodies as bodies_mod
 import metadata_tools.common as com
 from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select
@@ -77,7 +77,7 @@ def test_select_bodies_primary_children_and_target(monkeypatch: pytest.MonkeyPat
         'IO': types.SimpleNamespace(children=[]),
         'EUROPA': types.SimpleNamespace(children=[]),
     }
-    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry', lambda: fake_bodies)
     monkeypatch.setattr(bodies_select, 'get_system', lambda body: 'JUPITER')
     # inventory keeps every body it is handed.
     monkeypatch.setattr(bodies_select, 'inventory',
@@ -92,7 +92,7 @@ def test_select_bodies_no_primary_uses_selections(monkeypatch: pytest.MonkeyPatc
     """Without a primary, the selections and secondaries drive body selection."""
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     fake_bodies = {'IO': object(), 'EUROPA': object()}
-    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry', lambda: fake_bodies)
     monkeypatch.setattr(bodies_select, 'get_system', lambda body: None)
     monkeypatch.setattr(bodies_select, 'inventory',
                         lambda record, bodies: list(bodies))
@@ -128,7 +128,7 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
                         lambda obs, meshgrid: 'BACKPLANE')
     # The body registry is lazy (built from SPICE on first call); stub it out so
     # Record.__init__ can run without a SPICE-initialized host.
-    monkeypatch.setattr(col, 'get_bodies_registry', lambda: {})
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry', lambda: {})
 
 
 def _observation(target: str = 'SKY') -> Any:
@@ -156,7 +156,7 @@ def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) ->
     """A primary with a ring frame sets rings_present."""
     _patch_record_spice(monkeypatch, primary='JUPITER')
     fake_bodies = {'JUPITER': types.SimpleNamespace(ring_frame=object())}
-    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry', lambda: fake_bodies)
     record = Record(_observation(), 'GO_0001', {}, 8)
     assert record.rings_present is True
     assert record.primary == 'JUPITER'

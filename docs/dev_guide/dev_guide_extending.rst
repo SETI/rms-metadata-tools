@@ -115,27 +115,28 @@ label field) is described in :doc:`dev_guide_index_subsystem`.
 Adding a geometry column
 ========================
 
-The label template decides which columns a host writes, so that is where a new
-column starts. The catalog then says how to compute it.
+The label template defines a geometry column end to end -- its label metadata
+and its computation -- so a new column is a template edit plus, at most, a new
+backplane function.
 
 #. Add the ``COLUMN`` object(s) to the host's summary label template, e.g.
-   ``GO_0xxx_body_summary.lbl`` (or the shared fragment it includes). This is
-   what makes the column exist, fixes its position, and declares its ``NAME``,
-   ``FORMAT``, ``NULL_CONSTANT``, and valid range. A two-valued column needs
-   both halves, adjacent and in ``MINIMUM``/``MAXIMUM`` order.
-#. Add a :class:`~metadata_tools.columns.catalog.ColumnSpec` to the qualifier's
-   catalog (``body``, ``ring``, ``sky``, or ``sun`` in
-   :mod:`metadata_tools.columns`), using
-   :func:`~metadata_tools.columns.catalog.minmax`,
-   :func:`~metadata_tools.columns.catalog.pair`, or
-   :func:`~metadata_tools.columns.catalog.single`. Its names must match the
-   template exactly; that name is the join between the two.
-#. State the column's conversion flag, overflow format, and null link inline on
-   that spec (``flag=``, ``overflow=``, ``link_id=``/``link=``); these are the
-   only things a PDS3 label cannot express. Add the corresponding backplane
-   function in ``oops`` if the quantity is new.
+   ``GO_0xxx_body_summary.lbl`` (or the shared fragment it includes). This
+   makes the column exist, fixes its position, and declares its ``NAME``,
+   ``FORMAT``, ``UNIT`` (which drives the unit conversion), ``NULL_CONSTANT``,
+   and valid range. A two-valued column needs both halves adjacent, first
+   (minimum) half first.
+#. On the first ``COLUMN`` of the group, state the computation in the private
+   keywords: ``BACKPLANE_KEY`` (a Python tuple literal, with ``'bodyx'`` where
+   the body name goes), ``MASK`` if any bodies mask it, and ``VALUES = 2`` for
+   a two-valued column. Add ``OVERFLOW_FORMAT`` (on every member, in PDS3
+   FORMAT notation) if a value can outgrow its field, and ``LINK_FN`` /
+   ``LINK_ID`` if the column must go null together with others. See
+   :doc:`dev_guide_geometry_subsystem` for the full keyword reference; the
+   keywords are stripped from generated labels, so they never reach the
+   archive.
+#. Add the corresponding backplane function in ``oops`` if the quantity is new.
 #. Run the host's geometry program and update the unit tests.
 
-Removing a column for one host is a template-only edit: delete the ``COLUMN``
-object(s) and the catalog entry simply goes unused. Nothing else needs to
+Removing a column for one host is likewise a template-only edit: delete the
+``COLUMN`` object(s) and the computation goes with them. Nothing else needs to
 change, and no other host is affected.

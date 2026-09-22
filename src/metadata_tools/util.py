@@ -249,19 +249,6 @@ def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> A
         return new_tree
 
 #===============================================================================
-def replacement_fn(dict_name: str, name: str) -> str:
-    """Create a replacement-able dictionary reference.
-
-    Parameters:
-        dict_name: Name of dictionary.
-        name: Dictionary key, which could be a placeholder string.
-
-    Returns:
-        Dictionary reference keyed by possible placeholder name.
-    """
-    return dict_name + '["' + name + '"]'
-
-#===============================================================================
 def get_volume_glob(col: str) -> str:
     """Build a glob string to match all volumes in a collection.
 

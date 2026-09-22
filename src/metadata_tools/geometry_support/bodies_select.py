@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, cast
 
 import oops
 
-import metadata_tools.columns as col
+import metadata_tools.bodies as bodies_mod
 import metadata_tools.common as com
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
@@ -102,7 +102,8 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
     # Add primary body and FOV/selected children
     if record.primary:
         body_names += [record.primary]
-        children = [child.name for child in col.get_bodies_registry()[record.primary].children
+        registry = bodies_mod.get_bodies_registry()
+        children = [child.name for child in registry[record.primary].children
                         if child.name in bodies]
         children = inventory(record, children)
         if record.selections:
@@ -131,7 +132,7 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
     body_names = list(dict.fromkeys(body_names))
 
     # Sort bodies based on occurrence in BODIES list
-    bodies_order = {name: i for i, name in enumerate(col.get_bodies_registry())}
+    bodies_order = {name: i for i, name in enumerate(bodies_mod.get_bodies_registry())}
     body_names.sort(key=lambda name: bodies_order.get(name, len(bodies_order)))
 
     return [body_name for body_name in body_names if oops.Body.exists(body_name)]

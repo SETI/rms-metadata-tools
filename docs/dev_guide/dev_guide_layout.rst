@@ -48,10 +48,6 @@ tests, docs, and tooling.
            cumulative_cloud.py # metadata-cumulative-cloud (GCP dispatch)
            task_list.py        # metadata-task-list
            _host.py            # shared host-directory injection helpers
-         columns/              # geometry column computation catalogs
-           catalog.py          # ColumnSpec + the minmax/pair/single helpers
-           formats.py          # conversion/overflow/link metadata per quantity
-           body.py ring.py sky.py sun.py   # the per-qualifier catalogs
          bodies.py             # builds the oops Body registry
          util.py               # path, text, time, and math utilities
          defs.py               # constants (body names, ring radii, paths)

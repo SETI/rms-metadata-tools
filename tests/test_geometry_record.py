@@ -43,7 +43,7 @@ def test_substitute_resolves_embedded_dict_reference(
     list or tuple leaf, which is why substitute wraps the key before replacing.
     """
     key = ('body_diameter_in_pixels', defs.BODYX + ':RING',
-           util.replacement_fn('defs.RING_SYSTEM_RADII', defs.BODYX))
+           'defs.RING_SYSTEM_RADII["bodyx"]')
     bound = Record.substitute([make_column(key=key)], 'JUPITER')
     assert bound[0].key[2] == defs.RING_SYSTEM_RADII['JUPITER']
 

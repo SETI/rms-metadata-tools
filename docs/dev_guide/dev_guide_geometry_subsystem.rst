@@ -71,30 +71,55 @@ and valid range.
 Where a column's metadata comes from
 ====================================
 
-Geometry column metadata is split by what a PDS3 label can express.
-
-The **label template** is the source of truth for everything it can state: which
-columns exist, in what order, and each column's ``NAME``, ``FORMAT`` (from which
-the field width and print format are derived), ``NULL_CONSTANT``, and
-``VALID_MINIMUM`` / ``VALID_MAXIMUM``.
-:func:`~metadata_tools.geometry_support.label_schema.resolve_schema` reads it
-back. This is the same arrangement as the index pipeline, where
-:class:`~metadata_tools.index_support.table.IndexTable` derives its columns from
-its own template.
-
-The **catalog** in :mod:`metadata_tools.columns` holds what a label cannot say:
-the backplane key to evaluate, the masker/shadower/face codes, and a short
-format tuple
+The **label template** is the single source of truth for a geometry column:
+which columns exist, in what order, each column's ``NAME``, ``FORMAT`` (from
+which the field width and print format are derived), ``UNIT`` (from which the
+unit conversion is derived), ``NULL_CONSTANT``, and ``VALID_MINIMUM`` /
+``VALID_MAXIMUM`` -- and, through six *private keywords*, how the column is
+computed:
 
 .. code-block:: text
 
-   (flag, overflow_format, link_id, link)
+     OBJECT                        = COLUMN
+       NAME                        = "MINIMUM_RING_RADIUS"
+       FORMAT                      = "F12.3"
+       OVERFLOW_FORMAT             = "E12.5"
+       UNIT                        = "km"
+       NULL_CONSTANT               = -999.
+       BACKPLANE_KEY               = ('ring_radius', 'bodyx:RING')
+       MASK                        = ('PM', 'P', '')
+       VALUES                      = 2
+       DESCRIPTION                 = "..."
+     END_OBJECT                    = COLUMN
 
-where ``flag`` controls unit conversion (``"DEG"`` radians to degrees, ``"360"``
-degrees with 360-degree periodicity, ``"-180"`` the ``(-180, 180)`` range,
-``"ISO"`` time, ``"KM"`` kilometers, ``""`` no change), ``overflow_format`` is
-substituted when a value will not fit its field, and ``link_id`` / ``link`` tie
-columns together for null-linking.
+* ``BACKPLANE_KEY`` -- the key handed to ``Backplane.evaluate()``, as a Python
+  tuple literal. The token ``'bodyx'`` (:data:`~metadata_tools.defs.BODYX`) is
+  substituted per body at row time, and a string of the form
+  ``'defs.<DICT>["bodyx"]'`` resolves to a ``defs`` dictionary lookup after
+  substitution. A column carrying this keyword opens a *computation group*.
+* ``VALUES`` (default 1) -- how many consecutive ``COLUMN`` objects the
+  computation fills; a min/max pair is 2. The following ``VALUES - 1`` columns
+  carry no group keywords and are absorbed as the remaining slots.
+* ``MASK`` (default ``('', '', '')``) -- the ``(masker, shadower, face)``
+  codes. The masker/shadower strings concatenate ``"P"`` (planet), ``"R"``
+  (rings), and ``"M"`` (blocker body); the face is ``"D"``, ``"N"``, or ``""``.
+* ``OVERFLOW_FORMAT`` -- the fallback format substituted when a value will not
+  fit its field, in the same PDS3 FORMAT notation as ``FORMAT`` itself, on
+  every member of a group. It must fill the field exactly.
+* ``LINK_FN`` / ``LINK_ID`` -- the link function and group token tying columns
+  that go null together. The id is an arbitrary string whose only meaning is
+  equality: columns in one table sharing ``(LINK_FN, LINK_ID)`` form one group.
+
+The right-hand side of ``BACKPLANE_KEY``, ``MASK``, and ``VALUES`` is a Python
+literal on a single line, parsed with :func:`ast.literal_eval`; nothing ever
+parses these lines as ODL. The keywords are not PDS3 Data Dictionary keywords,
+so :func:`~metadata_tools.label_support.create` strips them at write time and
+they never appear in a shipped label.
+
+This is the same arrangement as the index pipeline, where
+:class:`~metadata_tools.index_support.table.IndexTable` derives its columns from
+its own template -- here the template also carries the computation, so a host
+can define a column end to end with no engine edit.
 
 Label schema pull
 =================
@@ -102,26 +127,29 @@ Label schema pull
 :func:`~metadata_tools.geometry_support.label_schema.resolve_schema` parses a
 host's summary template, skips the fixed prefix columns (``VOLUME_ID``,
 ``FILE_SPECIFICATION_NAME``, and, per table kind, ``SYSTEM_NAME`` and
-``BODY_NAME``), and joins each remaining ``COLUMN``'s ``NAME`` against the
-qualifier's catalog. Template order is output order. The result is cached per
-(template directory, qualifier) and resolved once, when the table is
-constructed.
+``BODY_NAME``), and groups the remaining ``COLUMN`` objects into computations
+by their ``BACKPLANE_KEY`` and ``VALUES`` keywords. Template order is output
+order. The result is cached per (template directory, qualifier) and resolved
+once, when the table is constructed.
 
-A catalog entry no template names is simply unused; that is how a host trims
-columns it does not want. The reverse is an error, and so are several other
-shapes, all raised at construction rather than allowed to misalign a row per
+Removing a column removes its computation with it, so a host trims its column
+set by deleting ``COLUMN`` objects and nothing else. Malformed shapes are
+errors, all raised at construction rather than allowed to misalign a row per
 observation:
 
-* a ``NAME`` absent from the catalog, so nothing can compute it;
-* a two-valued column whose halves are not adjacent and in ``MINIMUM``,
-  ``MAXIMUM`` order;
+* a data column with no ``BACKPLANE_KEY`` that no preceding group absorbs;
+* a group keyword on an absorbed column, or a ``VALUES`` count that runs past
+  the end of the table;
+* a private keyword on a prefix column, or a duplicated private keyword;
+* only one of ``LINK_FN`` and ``LINK_ID``, or an unknown link function;
+* an ``OVERFLOW_FORMAT`` that does not fill its field exactly;
 * prefix columns that differ from the expected run for that table kind;
 * a geometry column with no null keyword, or with no ``FORMAT``;
 * ``VALID_MINIMUM == VALID_MAXIMUM``, which would null every value.
 
 Because nothing exercises the generated tables by default -- the end-to-end
 comparisons are archive-gated -- ``tests/test_geometry_schema.py`` is the
-guard that a template and its catalog have not drifted apart.
+guard that the shipped templates keep resolving to the expected shape.
 
 Body selection
 ==============
@@ -150,15 +178,16 @@ flag so the row is written with null geometry.
 Important invariants
 ====================
 
-- **Units.** Backplane values are in radians; columns whose ``flag`` is
+- **Units.** Backplane values are in radians; columns whose derived flag is
   ``"DEG"``, ``"360"``, or ``"-180"`` are converted to degrees by
   :func:`~metadata_tools.geometry_support.formatting.formatted_column`. Do not
-  pre-convert.
-- **Column specifications.** A :class:`~metadata_tools.columns.catalog.ColumnSpec`
-  carries the template ``NAME`` of each value it produces, the backplane key, the
-  mask, and the format tuple. The masker/shadower strings concatenate ``"P"`` (planet),
-  ``"R"`` (rings), and ``"M"`` (blocker body); the face is ``"D"``, ``"N"``, or
-  ``""``. These tuples live in the :mod:`metadata_tools.columns` package.
+  pre-convert. The flag is derived from each column's ``UNIT``, valid range,
+  and ``DATA_TYPE``, never stated directly.
+- **Column specifications.** A
+  :class:`~metadata_tools.geometry_support.label_schema.ResolvedColumn`
+  carries the backplane key, the mask, the link fields, and one
+  :class:`~metadata_tools.geometry_support.label_schema.ColumnStub` per value
+  it produces -- all of it parsed from the label template.
 - **Meshgrids** are built once per :class:`~metadata_tools.geometry_support.suite.Suite`
   and selected per observation by telemetry mode; they are not rebuilt per row.
 - **One row per observation.** A call produces at most one row; with the
@@ -218,4 +247,4 @@ pull request rather than from ``main``'s history.
 API reference
 =============
 
-See :doc:`api/geometry_support` and :doc:`api/columns`.
+See :doc:`api/geometry_support`.

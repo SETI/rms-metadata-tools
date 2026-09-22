@@ -3,13 +3,11 @@
 ################################################################################
 """The active host's mission table, with spacecraft-clock strings resolved.
 
-Column format metadata used to live here. It now lives in two places, each the
-natural home for its half: everything a PDS3 label can express -- the column
-set and order, widths, print formats, nulls, and valid ranges -- comes from the
-host's label templates via
-:mod:`metadata_tools.geometry_support.label_schema`, and the rest -- unit
-conversion, overflow formats, and null links -- lives beside the column
-catalogs in :mod:`metadata_tools.columns.catalog`.
+Column format metadata used to live here. All of it -- the column set and
+order, widths, print formats, overflow formats, nulls, valid ranges, unit
+conversions, backplane keys, masks, and null links -- now comes from the host's
+label templates, read back by
+:mod:`metadata_tools.geometry_support.label_schema`.
 """
 from typing import Any
 

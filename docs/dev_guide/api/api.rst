@@ -18,4 +18,3 @@ prose in :doc:`/dev_guide/dev_guide_extending`.
    index_support
    geometry_support
    cumulative_support
-   columns

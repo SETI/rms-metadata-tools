@@ -111,8 +111,8 @@ class SunTable(com.Table):
     The Sun is a body like any other, so a sun table is structured like the body
     table (its rows carry the same SYSTEM_NAME/BODY_NAME prefixes) with a single
     fixed target. It differs only in that the Sun is itself the illumination
-    source, so its column set (``SUN_SUMMARY_COLUMNS`` in ``columns/sun.py``)
-    omits every illumination-based quantity (phase, incidence, sub-solar, ...).
+    source, so its column set (``templates/sun_summary_columns.lbl``) omits
+    every illumination-based quantity (phase, incidence, sub-solar, ...).
 
     This table is intentionally NOT wired into the pipeline, because ``oops``
     cannot evaluate any Sun-surface backplane. ``oops`` models the Sun
@@ -120,7 +120,7 @@ class SunTable(com.Table):
     event key; when the target surface is itself the Sun,
     ``Backplane.standardize_event_key`` collapses the duplicate
     ``('SUN<', 'SUN')`` to the illegal length-1 key ``('SUN<',)`` and raises
-    ``ValueError: illegal surface event key``. Every ``SUN_COLUMNS`` key hits
+    ``ValueError: illegal surface event key``. Every sun-column key hits
     this, so no sun row can be generated. Resolving it requires additional
     backplane support that ``oops`` does not provide (e.g. a self-illuminated /
     observer-only surface event key), not a change here.
