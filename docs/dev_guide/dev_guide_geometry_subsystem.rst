@@ -61,10 +61,10 @@ Formatting and formats
 :func:`~metadata_tools.geometry_support.formatting.formatted_column` turns a
 masked ``oops`` scalar into one or two formatted column strings, converting
 radians to degrees, handling cyclic (longitude) ranges, ISO times, null values,
-valid-range clipping, and overflow. It is driven by two things: the column's
-catalog entry, which supplies the unit-conversion flag and the overflow format,
-and its label stubs, which supply the field width, print format, null value,
-and valid range.
+valid-range clipping, and overflow. It is driven entirely by the column's label
+stubs, which supply the field width, print format, overflow format, derived
+unit-conversion flag, null value, and valid range -- all read from the label
+template.
 
 .. _format-dict-contract:
 
