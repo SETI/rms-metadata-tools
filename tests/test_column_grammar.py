@@ -85,9 +85,41 @@ def test_lowering_falls_back_to_the_definition_description() -> None:
         '    DESCRIPTION                 = "Both extremes."\n')
     lowered = merge_column_definitions(None, template)
     minimum = next(b for b in tokenize(lowered) if '"MINIMUM_QUANTITY"' in b.body)
-    maximum = next(b for b in tokenize(lowered) if '"MAXIMUM_QUANTITY"' in b.body)
     assert '"Both extremes."' in minimum.body
-    assert '"The maximum."' in maximum.body
+
+
+def test_lowering_composes_definition_and_stub_descriptions() -> None:
+    """A stub's DESCRIPTION continues the definition's.
+
+    The definition carries the shared lead-in; the stub's per-value prose
+    follows after a blank line, re-flowed to house style, and the closing
+    quote comes from the stub's text.
+    """
+    template = _GROUP.replace(
+        "    MASK                        = ('PM', 'P', '')\n",
+        "    MASK                        = ('PM', 'P', '')\n"
+        '    DESCRIPTION                 = "The quantity, defined."\n')
+    lowered = merge_column_definitions(None, template)
+    minimum = next(b for b in tokenize(lowered) if '"MINIMUM_QUANTITY"' in b.body)
+    assert ('    DESCRIPTION                 = "The quantity, defined.\n'
+            '\n'
+            '      The minimum."\n') in minimum.body
+
+
+def test_lowering_keeps_a_directive_paragraph_verbatim() -> None:
+    """A $INCLUDE paragraph in a stub description is never re-flowed."""
+    template = _GROUP.replace(
+        "    MASK                        = ('PM', 'P', '')\n",
+        "    MASK                        = ('PM', 'P', '')\n"
+        '    DESCRIPTION                 = "The quantity, defined."\n')
+    template = template.replace(
+        '    DESCRIPTION                 = "The minimum."\n',
+        '    DESCRIPTION                 = "The minimum.\n'
+        '\n'
+        "      $INCLUDE('details.lbl')\n")
+    lowered = merge_column_definitions(None, template)
+    minimum = next(b for b in tokenize(lowered) if '"MINIMUM_QUANTITY"' in b.body)
+    assert "\n\n      $INCLUDE('details.lbl')\n" in minimum.body
 
 
 def test_lowering_passes_plain_templates_through() -> None:

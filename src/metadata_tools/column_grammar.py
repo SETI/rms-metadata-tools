@@ -4,10 +4,11 @@
 """The definition/stub grammar shared by the template read and write paths.
 
 A geometry summary template declares each computed column as a *group*: one
-``OBJECT = COLUMN_DEFINITION`` block carrying the computation spec and the
-label metadata shared by the group's values, followed by one ``OBJECT =
-COLUMN_STUB`` block per value, each carrying its NAME, its DESCRIPTION, and
-any keyword it overrides. Neither block type is PDS3: the write path lowers
+``OBJECT = COLUMN_DEFINITION`` block carrying the computation spec, the label
+metadata shared by the group's values, and the shared lead-in DESCRIPTION,
+followed by one ``OBJECT = COLUMN_STUB`` block per value, carrying its NAME,
+any keyword it overrides, and its own DESCRIPTION, which the lowering appends
+to the definition's. Neither block type is PDS3: the write path lowers
 every group to plain ``COLUMN`` objects (see :func:`merge_column_definitions`)
 before a label is generated, and the schema reader
 (:mod:`metadata_tools.geometry_support.label_schema`) parses the grammar
@@ -18,6 +19,7 @@ manipulation only -- so :mod:`metadata_tools.label_support` can import it
 without touching the geometry engine.
 """
 import re
+import textwrap
 from dataclasses import dataclass
 
 # The private keywords carrying the computation spec, allowed only inside
@@ -279,10 +281,62 @@ def _merged_column(stub: Block, def_lines: list[tuple[str, str]],
     for keyword, line in stub_lines:
         if keyword not in consumed and keyword not in _NOT_MERGED:
             lines.append(line)
-    # The stub's own trailing text (its DESCRIPTION) wins over the
-    # definition's.
-    rest = stub_rest if stub_rest.strip() else def_rest
+    # Descriptions compose: the definition's is the shared lead-in, the
+    # stub's continues it with the per-value prose. Either may stand alone.
+    if stub_rest.strip() and def_rest.strip():
+        rest = _compose_description(def_rest, stub_rest)
+    elif stub_rest.strip():
+        rest = stub_rest
+    else:
+        rest = def_rest
 
     header = stub.header.replace('COLUMN_STUB', 'COLUMN')
     footer = stub.footer.replace('COLUMN_STUB', 'COLUMN')
     return header + ''.join(lines) + rest + footer
+
+
+def _compose_description(def_rest: str, stub_rest: str) -> str:
+    """Append a stub's DESCRIPTION to its definition's.
+
+    The definition's text ships verbatim, minus its closing quote; the stub's
+    payload follows after a blank line, each prose paragraph re-flowed to the
+    house style (six-space indent, 78 columns) so the shipped wrap does not
+    depend on how the stub happened to be wrapped around its own DESCRIPTION
+    opener. A paragraph carrying a ``$`` template directive (an ``$INCLUDE``
+    of shared detail text) ships verbatim instead.
+
+    Parameters:
+        def_rest: The definition's description region.
+        stub_rest: The stub's description region.
+
+    Returns:
+        The composed description region.
+
+    Raises:
+        ValueError: If the stub's description does not start with the usual
+            opener.
+    """
+    # A self-contained definition description ends with its closing quote,
+    # which the composition removes; one whose last paragraph is a template
+    # directive (an $INCLUDE of shared prose) has no quote of its own.
+    head = def_rest.rstrip()
+    if head.endswith('"'):
+        head = head[:-1].rstrip()
+
+    opener = re.match(r' *DESCRIPTION *= *"', stub_rest)
+    if opener is None:
+        raise ValueError(
+            "a stub's DESCRIPTION must start with the usual 'DESCRIPTION = \"' "
+            'opener')
+    payload = stub_rest[opener.end():]
+
+    pieces: list[str] = []
+    for paragraph in re.split(r'\n[ \t]*\n', payload.rstrip('\n')):
+        if '$' in paragraph:
+            pieces.append(paragraph)
+        else:
+            text = re.sub(r'\s+', ' ', paragraph).strip()
+            pieces.append('\n'.join(textwrap.wrap(
+                text, width=78, initial_indent='      ',
+                subsequent_indent='      ', break_on_hyphens=False)))
+    return head + '\n\n' + '\n\n'.join(pieces) + '\n'

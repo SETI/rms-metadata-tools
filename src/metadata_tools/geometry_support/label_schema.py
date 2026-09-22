@@ -7,9 +7,10 @@
 The template is the single source of truth for a geometry column, declared in
 the definition/stub grammar of :mod:`metadata_tools.column_grammar`: each
 computed column is one ``COLUMN_DEFINITION`` block -- carrying the backplane
-key, mask, link fields, and the label metadata shared by the column's values
--- followed by one ``COLUMN_STUB`` block per value, each carrying its NAME,
-its DESCRIPTION, and any keyword it overrides. Group size is the stub count;
+key, mask, link fields, the label metadata shared by the column's values, and
+the shared lead-in DESCRIPTION -- followed by one ``COLUMN_STUB`` block per
+value, carrying its NAME, its own per-value DESCRIPTION, and any keyword it
+overrides. Group size is the stub count;
 there is no way to assimilate a column by miscounting, because membership is
 declared by the stub's own object type.
 
