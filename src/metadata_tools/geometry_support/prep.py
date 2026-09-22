@@ -127,7 +127,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
                 # resolve_schema guarantees every data column declares a null.
                 values = oops.Scalar(cast(float, null_value), False)
         data_columns.append(
-            formatting.formatted_column(values, column.spec.format, stubs, record.sampling))
+            formatting.formatted_column(values, column.spec.overflow_format, stubs,
+                                        record.sampling))
 
     # An all-null row is dropped unless the caller demands a row regardless
     if nothing_found and allow_zero_rows:

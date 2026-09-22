@@ -15,7 +15,6 @@ import pytest
 import metadata_tools.defs as defs
 from metadata_tools.columns.catalog import (
     ColumnSpec,
-    _format,
     get_catalog,
     minmax,
     name_map,
@@ -58,14 +57,12 @@ def test_value_count_is_pinned(qualifier: str) -> None:
 
 
 @pytest.mark.parametrize('qualifier', QUALIFIERS)
-def test_every_spec_carries_a_format(qualifier: str) -> None:
-    """Every spec resolved a format tuple, so no backplane key is unknown."""
+def test_overflow_and_link_are_well_formed(qualifier: str) -> None:
+    """Each spec's overflow format and link fields are self-consistent."""
     for spec in get_catalog(qualifier):
-        flag, overflow, link_id, link = spec.format
-        assert flag in ('', 'DEG', '360', '-180', 'ISO', 'KM')
-        assert overflow is None or overflow.startswith('%')
+        assert spec.overflow_format is None or spec.overflow_format.startswith('%')
         # A link id and a link function only make sense together.
-        assert bool(link_id) == bool(link)
+        assert bool(spec.link_id) == bool(spec.link)
 
 
 @pytest.mark.parametrize('qualifier', QUALIFIERS)
@@ -97,25 +94,6 @@ def test_ring_diameter_key_holds_a_dict_reference() -> None:
     """The ring diameter key defers a RING_SYSTEM_RADII lookup to substitution time."""
     spec = name_map('ring')['RING_DIAMETER_IN_PIXELS'][0]
     assert 'RING_SYSTEM_RADII' in str(spec.key)
-
-
-#===============================================================================
-# Alternate formats
-#===============================================================================
-def test_alt_format_columns_differ_from_the_base_entry() -> None:
-    """A column tagged with an alternate format resolves to the variant entry."""
-    # Ring longitude relative to the observer uses the (-180, 180) convention,
-    # unlike the other ring longitudes.
-    wrt_observer = name_map('ring')['MINIMUM_RING_LONGITUDE_WRT_OBSERVER'][0]
-    aries = name_map('ring')['MINIMUM_RING_LONGITUDE'][0]
-    assert wrt_observer.format[0] == '-180'
-    assert aries.format[0] == '360'
-
-
-def test_km_alt_format_on_longitudinal_resolution() -> None:
-    """The kilometre variant of the angular resolution resolves to the KM entry."""
-    spec = name_map('ring')['FINEST_LONGITUDINAL_RESOLUTION_KM'][0]
-    assert spec.format[0] == 'KM'
 
 
 #===============================================================================
@@ -152,26 +130,14 @@ def test_column_spec_is_frozen() -> None:
 
 
 #===============================================================================
-# The inline format fields
+# What the spec still carries
 #===============================================================================
-@pytest.mark.parametrize('qualifier', QUALIFIERS)
-def test_format_fields_are_well_formed(qualifier: str) -> None:
-    """Each spec's inline format tuple holds the four documented fields."""
-    for spec in get_catalog(qualifier):
-        assert len(spec.format) == 4
-        flag, overflow, link_id, link = spec.format
-        assert flag in ('', 'DEG', '360', '-180', 'ISO', 'KM')
-        assert overflow is None or overflow.startswith('%')
-        assert isinstance(link_id, int)
-        assert isinstance(link, str)
-
-
 def test_only_the_centre_coordinates_are_linked() -> None:
     """The null link groups the centre coordinates and nothing else."""
     linked = {name
               for qualifier in QUALIFIERS for spec in get_catalog(qualifier)
               for name in spec.names
-              if spec.format[2]}
+              if spec.link_id}
     assert linked == {'CENTER_X_COORDINATE', 'CENTER_Y_COORDINATE',
                       'RING_CENTER_X_COORDINATE', 'RING_CENTER_Y_COORDINATE'}
 
@@ -179,35 +145,34 @@ def test_only_the_centre_coordinates_are_linked() -> None:
 def test_linked_columns_share_a_group_within_a_qualifier() -> None:
     """Columns that go null together carry the same link id and function."""
     for qualifier in QUALIFIERS:
-        groups = {spec.format[2:4] for spec in get_catalog(qualifier) if spec.format[2]}
+        groups = {(spec.link, spec.link_id) for spec in get_catalog(qualifier)
+                  if spec.link_id}
         assert len(groups) <= 1, f'{qualifier} has several link groups: {groups}'
 
 
-def test_format_rejects_a_half_specified_link() -> None:
+def test_spec_rejects_a_half_specified_link() -> None:
     """A link id without a function, or vice versa, is a construction error."""
     with pytest.raises(ValueError, match='must be given together'):
-        _format('', None, 1, '')
+        ColumnSpec(('A',), ('k',), ('', '', ''), link_id=1)
     with pytest.raises(ValueError, match='must be given together'):
-        _format('', None, 0, 'null')
+        ColumnSpec(('A',), ('k',), ('', '', ''), link='null')
 
 
-def test_format_defaults_to_no_conversion_and_no_link() -> None:
-    """A spec that states nothing gets the inert format tuple."""
+def test_spec_defaults_are_inert() -> None:
+    """A spec that states nothing gets no overflow format and no link."""
     spec = minmax('PHASE_ANGLE', ('phase_angle', 'IO'), ('', '', ''))
-    assert spec.format == ('', None, 0, '')
+    assert (spec.overflow_format, spec.link_id, spec.link) == (None, 0, '')
 
 
-def test_inline_flags_replace_the_old_alt_format_keying() -> None:
-    """A variant column states its own flag rather than carrying a lookup tag.
+def test_the_catalog_states_no_conversion() -> None:
+    """Conversion is derived from the label, so no spec carries a flag.
 
-    These three used to need (quantity, tag) entries in a second dictionary,
-    because one quantity had to yield two different conversions.
+    This is the invariant the template pull rests on: the catalog says how to
+    compute a column, the template says how to present it.
     """
-    ring = name_map('ring')
-    assert ring['MINIMUM_RING_LONGITUDE_WRT_OBSERVER'][0].format[0] == '-180'
-    assert ring['MINIMUM_RING_LONGITUDE'][0].format[0] == '360'
-    assert ring['FINEST_LONGITUDINAL_RESOLUTION_KM'][0].format[0] == 'KM'
-    assert ring['FINEST_LONGITUDINAL_RESOLUTION'][0].format[0] == 'DEG'
+    for qualifier in QUALIFIERS:
+        for spec in get_catalog(qualifier):
+            assert not hasattr(spec, 'flag')
 
 
 def test_pair_builds_an_explicitly_named_two_value_spec() -> None:

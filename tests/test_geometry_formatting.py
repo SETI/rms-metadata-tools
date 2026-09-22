@@ -21,8 +21,8 @@ from metadata_tools.geometry_support import formatting
 def test_two_value_degree_pair(make_column: Callable[..., Any]) -> None:
     """A two-value degree column formats both radian values converted to degrees."""
     col = make_column(flag='DEG', valid_minimum=0., valid_maximum=180.)
-    result = formatting.formatted_column(oops.Scalar([0.5, 1.0]), col.spec.format,
-                                         col.stubs, 8)
+    result = formatting.formatted_column(oops.Scalar([0.5, 1.0]),
+                                         col.spec.overflow_format, col.stubs, 8)
     assert result == '  28.648,  57.296'
 
 
@@ -30,7 +30,7 @@ def test_single_value_masked_uses_null(make_column: Callable[..., Any]) -> None:
     """A masked single-value column formats as the null value."""
     col = make_column(names=['CENTER_X_COORDINATE'], flag='', overflow='%12.5e',
                       width=12, print_format='%12.3f', null_value=-99999.)
-    result = formatting.formatted_column(oops.Scalar(5.0, True), col.spec.format,
+    result = formatting.formatted_column(oops.Scalar(5.0, True), col.spec.overflow_format,
                                          col.stubs, 8)
     assert result.strip() == '-99999.000'
 
@@ -39,7 +39,7 @@ def test_single_value_unmasked_is_mean(make_column: Callable[..., Any]) -> None:
     """A single-value column formats the mean of the unmasked values."""
     col = make_column(names=['CENTER_X_COORDINATE'], flag='', overflow='%12.5e',
                       width=12, print_format='%12.3f', null_value=-99999.)
-    result = formatting.formatted_column(oops.Scalar([3.0, 5.0], False), col.spec.format,
+    result = formatting.formatted_column(oops.Scalar([3.0, 5.0], False), col.spec.overflow_format,
                                          col.stubs, 8)
     assert result.strip() == '4.000'
 
@@ -47,7 +47,7 @@ def test_single_value_unmasked_is_mean(make_column: Callable[..., Any]) -> None:
 def test_fully_masked_two_value_pair_is_double_null(make_column: Callable[..., Any]) -> None:
     """A fully masked two-value column formats as a null pair."""
     col = make_column(flag='', overflow='%12.5e', width=12, print_format='%12.3f')
-    result = formatting.formatted_column(oops.Scalar([1., 2.], True), col.spec.format,
+    result = formatting.formatted_column(oops.Scalar([1., 2.], True), col.spec.overflow_format,
                                          col.stubs, 8)
     assert result == '    -999.000,    -999.000'
 
@@ -56,7 +56,7 @@ def test_flag_360_routes_through_circle_coverage(make_column: Callable[..., Any]
     """The '360' flag reports cyclic coverage via circle_coverage."""
     col = make_column(flag='360', valid_minimum=0., valid_maximum=360.)
     result = formatting.formatted_column(
-        oops.Scalar(np.array([0.1, 0.2, 0.3]), False), col.spec.format, col.stubs, 8)
+        oops.Scalar(np.array([0.1, 0.2, 0.3]), False), col.spec.overflow_format, col.stubs, 8)
     assert result == '   0.000, 360.000'
 
 
@@ -65,7 +65,7 @@ def test_iso_route(make_column: Callable[..., Any]) -> None:
     col = make_column(flag='ISO', overflow='%25s', width=25, print_format='%25s',
                       null_value='NA')
     result = formatting.formatted_column(oops.Scalar([0.0, 60.0], False),
-                                         col.spec.format, col.stubs, 8)
+                                         col.spec.overflow_format, col.stubs, 8)
     assert result == '"2000-01-01T11:59:28.000","2000-01-01T12:00:28.000"'
 
 
@@ -78,8 +78,8 @@ def test_string_null_fills_every_slot(make_column: Callable[..., Any]) -> None:
     """
     col = make_column(flag='ISO', overflow='%25s', width=25, print_format='%25s',
                       null_value='NA')
-    unquoted = formatting.formatted_column('NA', col.spec.format, col.stubs, 8)
-    quoted = formatting.formatted_column('"NA"', col.spec.format, col.stubs, 8)
+    unquoted = formatting.formatted_column('NA', col.spec.overflow_format, col.stubs, 8)
+    quoted = formatting.formatted_column('"NA"', col.spec.overflow_format, col.stubs, 8)
     assert unquoted == quoted
     assert unquoted.split(',') == ['"NA' + ' ' * 21 + '"'] * 2
 
@@ -89,7 +89,7 @@ def test_nan_emits_warning_and_substitutes_null(make_column: Callable[..., Any])
     col = make_column(flag='', overflow='%12.5e', width=12, print_format='%12.3f')
     with pytest.warns(UserWarning, match='NaN encountered'):
         result = formatting.formatted_column(
-            oops.Scalar(np.array([np.nan, np.nan]), False), col.spec.format, col.stubs, 8)
+            oops.Scalar(np.array([np.nan, np.nan]), False), col.spec.overflow_format, col.stubs, 8)
     assert result == '    -999.000,    -999.000'
 
 
@@ -98,7 +98,7 @@ def test_infinity_emits_warning_and_substitutes_null(make_column: Callable[..., 
     col = make_column(flag='', overflow='%12.5e', width=12, print_format='%12.3f')
     with pytest.warns(UserWarning, match='infinity encountered'):
         result = formatting.formatted_column(
-            oops.Scalar(np.array([np.inf, np.inf]), False), col.spec.format, col.stubs, 8)
+            oops.Scalar(np.array([np.inf, np.inf]), False), col.spec.overflow_format, col.stubs, 8)
     assert result == '    -999.000,    -999.000'
 
 
@@ -107,7 +107,7 @@ def test_out_of_valid_range_becomes_null(make_column: Callable[..., Any]) -> Non
     col = make_column(flag='DEG', valid_minimum=0., valid_maximum=180.)
     # 10 rad -> ~573 deg, outside the valid maximum -> null substitution.
     result = formatting.formatted_column(
-        oops.Scalar(np.array([10.0, 10.0]), False), col.spec.format, col.stubs, 8)
+        oops.Scalar(np.array([10.0, 10.0]), False), col.spec.overflow_format, col.stubs, 8)
     assert result == '-999.000,-999.000'
 
 
@@ -119,7 +119,7 @@ def test_absent_valid_range_skips_the_check(make_column: Callable[..., Any]) -> 
     """
     col = make_column(flag='DEG', valid_minimum=None, valid_maximum=None)
     result = formatting.formatted_column(
-        oops.Scalar(np.array([10.0, 10.0]), False), col.spec.format, col.stubs, 8)
+        oops.Scalar(np.array([10.0, 10.0]), False), col.spec.overflow_format, col.stubs, 8)
     assert result == ' 572.958, 572.958'
 
 
@@ -161,5 +161,5 @@ def test_overflow_clips_and_warns(make_column: Callable[..., Any]) -> None:
     col = make_column(flag='', overflow='%10.4e', width=10, print_format='%10.5f')
     with pytest.warns(UserWarning, match='clipped to'):
         result = formatting.formatted_column(
-            oops.Scalar(np.array([1e120, 1e120]), False), col.spec.format, col.stubs, 8)
+            oops.Scalar(np.array([1e120, 1e120]), False), col.spec.overflow_format, col.stubs, 8)
     assert result == '9.9900e+99,9.9900e+99'

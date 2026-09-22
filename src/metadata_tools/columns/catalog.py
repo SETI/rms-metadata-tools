@@ -18,37 +18,17 @@ for the columns its template declares.
 from dataclasses import dataclass
 from typing import Any
 
-# A format tuple is (flag, overflow_format, link_id, link), holding the little
-# about a column that a PDS3 label cannot express. Everything a label *can*
-# express -- the column set and its order, each column's NAME, its width and
-# print format (from FORMAT), its null value, and its valid range -- lives in
-# the host's template and is read back by
-# metadata_tools.geometry_support.label_schema.
-#
-#   flag = "DEG"  = convert values from radians to degrees;
-#        = "360"  = convert to degrees; report cyclic coverage in the range (0,360);
-#        = "-180" = convert to degrees; report cyclic coverage in the range (-180,180);
-#        = "ISO"  = format TAI seconds as an ISO date-time string;
-#        = "KM"   = tabulate values in km, with no unit conversion applied;
-#        = ""     = do not modify value.
-#
-#   overflow_format is the print format substituted when a value overflows its
-#   field width, or None when the column cannot overflow.
-#
-#   link_id is a positive integer id that can be used to link multiple columns
-#   via the specified link function. All columns with the same link function and
-#   link id are linked together.
-#
-# To add a geometry column, see "Adding a geometry column" in the developer
-# guide; the label template is the starting point, not this file.
-
-FormatTuple = tuple[str, str | None, int, str]
-
 
 #===============================================================================
 @dataclass(frozen=True)
 class ColumnSpec:
     """How to compute one geometry column.
+
+    A spec holds only what a PDS3 label cannot state. Everything a label *can*
+    state -- which columns exist, in what order, and each column's NAME, width,
+    print format, null value, valid range, and unit conversion -- comes from the
+    host's template, read back by
+    :mod:`metadata_tools.geometry_support.label_schema`.
 
     Attributes:
         names: The template NAME of each value this column produces, in slot
@@ -60,15 +40,31 @@ class ColumnSpec:
         mask: ``(masker, shadower, face)``. The masker and shadower strings
             concatenate ``"P"`` (planet), ``"R"`` (rings), and ``"M"`` (blocker
             body); the face is ``"D"``, ``"N"``, or ``""``.
-        format: ``(flag, overflow_format, link_id, link)`` -- the conversion,
-            overflow, and link metadata a PDS3 label cannot express. See the
-            comment at the top of this module.
+        overflow_format: The print format substituted when a value will not fit
+            its field width, or None when the column cannot overflow. PDS3 has
+            no way to express a fallback format, so it lives here.
+        link_id: A positive id grouping columns that must go null together, or
+            0 when the column is unlinked. All columns sharing a link function
+            and id are linked.
+        link: The name of the link function, or '' when unlinked.
     """
 
     names: tuple[str, ...]
     key: tuple[Any, ...]
     mask: tuple[str, str, str]
-    format: FormatTuple
+    overflow_format: str | None = None
+    link_id: int = 0
+    link: str = ''
+
+    def __post_init__(self) -> None:
+        """Reject a half-specified link.
+
+        Raises:
+            ValueError: If only one of link_id and link is given.
+        """
+        if bool(self.link_id) != bool(self.link):
+            raise ValueError(f'link_id={self.link_id!r} and link={self.link!r} must be '
+                             f'given together or not at all')
 
     @property
     def number_of_values(self) -> int:
@@ -77,38 +73,14 @@ class ColumnSpec:
 
 
 #===============================================================================
-def _format(flag: str, overflow: str | None, link_id: int, link: str) -> FormatTuple:
-    """Assemble a format tuple, validating the link fields.
-
-    Parameters:
-        flag: Unit-conversion flag; see the module comment.
-        overflow: Print format used when a value overflows its field, or None.
-        link_id: Link group id, or 0 for an unlinked column.
-        link: Link function name, or '' for an unlinked column.
-
-    Returns:
-        The format tuple.
-
-    Raises:
-        ValueError: If only one of link_id and link is given.
-    """
-    if bool(link_id) != bool(link):
-        raise ValueError(
-            f'link_id={link_id!r} and link={link!r} must be given together or not at all')
-    return (flag, overflow, link_id, link)
-
-
-#===============================================================================
 def minmax(base: str, key: tuple[Any, ...], mask: tuple[str, str, str],
-           flag: str = '', overflow: str | None = None,
-           link_id: int = 0, link: str = '') -> ColumnSpec:
+           overflow: str | None = None, link_id: int = 0, link: str = '') -> ColumnSpec:
     """Build a spec for the usual ``MINIMUM_<base>`` / ``MAXIMUM_<base>`` pair.
 
     Parameters:
         base: The NAME stem shared by the two columns.
         key: The backplane key.
         mask: ``(masker, shadower, face)``.
-        flag: Unit-conversion flag; see the module comment.
         overflow: Print format used when a value overflows its field.
         link_id: Link group id, for columns that go null together.
         link: Link function name.
@@ -117,13 +89,12 @@ def minmax(base: str, key: tuple[Any, ...], mask: tuple[str, str, str],
         The column specification.
     """
     return ColumnSpec(('MINIMUM_' + base, 'MAXIMUM_' + base), key, mask,
-                      _format(flag, overflow, link_id, link))
+                      overflow, link_id, link)
 
 
 #===============================================================================
 def pair(low: str, high: str, key: tuple[Any, ...], mask: tuple[str, str, str],
-         flag: str = '', overflow: str | None = None,
-         link_id: int = 0, link: str = '') -> ColumnSpec:
+         overflow: str | None = None, link_id: int = 0, link: str = '') -> ColumnSpec:
     """Build a spec for a two-value column whose NAMEs are not MINIMUM/MAXIMUM.
 
     Used for the ring resolutions, which are named ``FINEST_``/``COARSEST_``.
@@ -136,7 +107,6 @@ def pair(low: str, high: str, key: tuple[Any, ...], mask: tuple[str, str, str],
         high: The NAME of the second (maximum) value.
         key: The backplane key.
         mask: ``(masker, shadower, face)``.
-        flag: Unit-conversion flag; see the module comment.
         overflow: Print format used when a value overflows its field.
         link_id: Link group id, for columns that go null together.
         link: Link function name.
@@ -144,20 +114,18 @@ def pair(low: str, high: str, key: tuple[Any, ...], mask: tuple[str, str, str],
     Returns:
         The column specification.
     """
-    return ColumnSpec((low, high), key, mask, _format(flag, overflow, link_id, link))
+    return ColumnSpec((low, high), key, mask, overflow, link_id, link)
 
 
 #===============================================================================
 def single(name: str, key: tuple[Any, ...], mask: tuple[str, str, str],
-           flag: str = '', overflow: str | None = None,
-           link_id: int = 0, link: str = '') -> ColumnSpec:
+           overflow: str | None = None, link_id: int = 0, link: str = '') -> ColumnSpec:
     """Build a spec for a single-valued column.
 
     Parameters:
         name: The column's template NAME.
         key: The backplane key.
         mask: ``(masker, shadower, face)``.
-        flag: Unit-conversion flag; see the module comment.
         overflow: Print format used when a value overflows its field.
         link_id: Link group id, for columns that go null together.
         link: Link function name.
@@ -165,7 +133,7 @@ def single(name: str, key: tuple[Any, ...], mask: tuple[str, str, str],
     Returns:
         The column specification.
     """
-    return ColumnSpec((name,), key, mask, _format(flag, overflow, link_id, link))
+    return ColumnSpec((name,), key, mask, overflow, link_id, link)
 
 
 #===============================================================================
