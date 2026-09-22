@@ -54,20 +54,16 @@ def circle_coverage(angles: Any, null_value: float | str, sampling: int,
                                   width=sampling+1, diffmin=1, alt_format=flag)
 
 #===============================================================================
-def formatted_column(values: Any, overflow_format: str | None,
-                     stubs: Sequence['ColumnStub'], sampling: int) -> str:
+def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
+                     sampling: int) -> str:
     """Return one formatted column (or a pair of columns) as a string.
 
     Parameters:
         values: A Scalar of values with its applied mask (or a string).
-        overflow_format: The print format substituted when a value will not fit
-            its field, or None when the column cannot overflow. PDS3 cannot
-            express a fallback format, so this is the one piece of formatting
-            the catalog still supplies.
         stubs: The label metadata for each value this column writes, in slot
             order; its length is the number of values. The unit conversion,
-            width, print format, null value, and valid range all come from
-            here, which is to say from the host's label template.
+            width, print format, overflow format, null value, and valid range
+            all come from here, which is to say from the host's label template.
         sampling: Pixel sampling density.
 
     Returns:
@@ -153,7 +149,7 @@ def formatted_column(values: Any, overflow_format: str | None,
         # handle formatting overflow
         if len(string) > column_width:
             # An overflow format is always defined for columns that can overflow.
-            overflow = cast(str, overflow_format)
+            overflow = cast(str, stub.overflow_format)
             string = overflow % number
 
             if len(string) > column_width:

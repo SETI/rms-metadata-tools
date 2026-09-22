@@ -5,15 +5,14 @@
 """Tests for the template pull: label template -> resolved column schema.
 
 These are the drift guard. All end-to-end geometry verification is archive
-gated and off by default, so if a template and its catalog disagree, this is
-where it must surface.
+gated and off by default, so if a template stops resolving -- or resolves to
+the wrong shape -- this is where it must surface.
 
 Everything here is hermetic: it parses the templates shipped in the package and
 synthetic ones written to tmp_path. No SPICE, no holdings tree.
 """
 import re
 import shutil
-from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -21,13 +20,12 @@ import pytest
 from filecache import FCPath
 
 import metadata_tools
+import metadata_tools.defs as defs
 import metadata_tools.util as util
-from metadata_tools.columns.catalog import get_catalog, name_map
 from metadata_tools.geometry_support import label_schema
 from metadata_tools.geometry_support.label_schema import (
     _PENDING_DD_UNITS,
     PREFIX_NAMES,
-    _check_overflow_width,
     canonical_unit,
     derive_flag,
     resolve_schema,
@@ -37,7 +35,7 @@ from metadata_tools.geometry_support.label_schema import (
 TEMPLATE_DIR = FCPath(
     Path(metadata_tools.__file__).parent / 'hosts' / 'GO_0xxx' / 'templates')
 
-# The shipped GO_0xxx templates: (data columns, catalog specs referenced).
+# The shipped GO_0xxx templates: (data columns, computation groups).
 SHIPPED = {'sky': (4, 2), 'ring': (81, 43), 'body': (51, 28), 'sun': (30, 16)}
 
 
@@ -55,11 +53,11 @@ def _clear_cache() -> Any:
 @pytest.mark.parametrize('qualifier', sorted(SHIPPED))
 def test_shipped_template_resolves(qualifier: str) -> None:
     """Every shipped template resolves, with the expected column counts."""
-    values, specs = SHIPPED[qualifier]
+    values, groups = SHIPPED[qualifier]
     schema = resolve_schema(TEMPLATE_DIR, qualifier)
 
     assert len(schema.prefix_stubs) == len(PREFIX_NAMES[qualifier])
-    assert len(schema.columns) == specs
+    assert len(schema.columns) == groups
     assert sum(len(column.stubs) for column in schema.columns) == values
 
 
@@ -72,17 +70,56 @@ def test_every_data_column_declares_a_null(qualifier: str) -> None:
 
 
 @pytest.mark.parametrize('qualifier', sorted(SHIPPED))
-def test_template_order_is_output_order(qualifier: str) -> None:
-    """The resolved columns follow the template, COLUMN object by COLUMN object."""
-    schema = resolve_schema(TEMPLATE_DIR, qualifier)
-    resolved = [stub.name for column in schema.columns for stub in column.stubs]
+def test_every_column_states_its_computation(qualifier: str) -> None:
+    """Each resolved column carries a non-empty backplane key and a 3-part mask."""
+    for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
+        assert isinstance(column.key, tuple), column.stubs[0].name
+        assert column.key, column.stubs[0].name
+        assert len(column.mask) == 3
 
-    text = (TEMPLATE_DIR / template_name_for(TEMPLATE_DIR, qualifier)).read_text()
-    # Fall back to the raw template only for the NAMEs it states directly; the
-    # included fragments supply the rest, so compare the tail we can see.
-    assert resolved == [s.name for column in schema.columns for s in column.stubs]
-    assert len(resolved) == SHIPPED[qualifier][0]
-    assert text  # the template really was read
+
+@pytest.mark.parametrize('qualifier', ['body', 'ring'])
+def test_body_and_ring_keys_carry_the_placeholder(qualifier: str) -> None:
+    """Every body and ring key is written against the BODYX token.
+
+    The token is bound per body at add time; a typo like 'bodx' would
+    otherwise surface only as an oops evaluation failure in an archive run.
+    """
+    for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
+        assert defs.BODYX in str(column.key), column.stubs[0].name
+
+
+@pytest.mark.parametrize('qualifier', ['sky', 'sun'])
+def test_sky_and_sun_keys_are_already_bound(qualifier: str) -> None:
+    """Sky and sun columns have no per-body variation, so no placeholder."""
+    for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
+        assert defs.BODYX not in str(column.key), column.stubs[0].name
+
+
+def test_ring_diameter_key_holds_a_dict_reference() -> None:
+    """The ring diameter key defers a RING_SYSTEM_RADII lookup to substitution."""
+    columns = {c.stubs[0].name: c for c in resolve_schema(TEMPLATE_DIR, 'ring').columns}
+    assert 'RING_SYSTEM_RADII' in str(columns['RING_DIAMETER_IN_PIXELS'].key)
+
+
+def test_only_the_centre_coordinates_are_linked() -> None:
+    """The null link groups the centre coordinates and nothing else."""
+    linked = {stub.name
+              for qualifier in sorted(SHIPPED)
+              for column in resolve_schema(TEMPLATE_DIR, qualifier).columns
+              for stub in column.stubs
+              if column.link_id}
+    assert linked == {'CENTER_X_COORDINATE', 'CENTER_Y_COORDINATE',
+                      'RING_CENTER_X_COORDINATE', 'RING_CENTER_Y_COORDINATE'}
+
+
+def test_linked_columns_share_a_group_within_a_qualifier() -> None:
+    """Columns that go null together carry the same link function and id."""
+    for qualifier in sorted(SHIPPED):
+        groups = {(column.link_fn, column.link_id)
+                  for column in resolve_schema(TEMPLATE_DIR, qualifier).columns
+                  if column.link_id}
+        assert len(groups) <= 1, f'{qualifier} has several link groups: {groups}'
 
 
 def test_sunward_and_prograde_incidence_differ() -> None:
@@ -101,7 +138,7 @@ def test_sunward_and_prograde_incidence_differ() -> None:
     assert [s.valid_maximum for s in prograde.stubs] == [180.0, 180.0]
     # Same backplane quantity, different tag -- which is why one dict entry could
     # not hold both bounds.
-    assert sunward.spec.key[0] == prograde.spec.key[0]
+    assert sunward.key[0] == prograde.key[0]
 
 
 def test_intercept_time_null_is_unquoted() -> None:
@@ -111,6 +148,8 @@ def test_intercept_time_null_is_unquoted() -> None:
     assert stub.null_value == 'NA'
     # A quoted 23-character payload occupies a 25-character field.
     assert (stub.width, stub.print_format) == (25, '%25s')
+    # Its overflow is the same A23, i.e. the string form of the field itself.
+    assert stub.overflow_format == '%25s'
 
 
 def test_widths_follow_the_template_format() -> None:
@@ -129,9 +168,9 @@ def test_schema_is_cached() -> None:
 
 
 def test_sun_schema_resolves_though_unwired() -> None:
-    """The sun table is not wired in, but its template and catalog stay in step."""
+    """The sun table is not wired in, but its template must keep resolving."""
     schema = resolve_schema(TEMPLATE_DIR, 'sun')
-    assert len(schema.columns) == len(get_catalog('sun'))
+    assert len(schema.columns) == SHIPPED['sun'][1]
 
 
 #===============================================================================
@@ -201,36 +240,24 @@ def test_every_shipped_unit_canonicalizes() -> None:
 #===============================================================================
 @pytest.mark.parametrize('qualifier', sorted(SHIPPED))
 def test_overflow_formats_fill_their_field(qualifier: str) -> None:
-    """Every shipped column's overflow format writes exactly its field width.
+    """Every shipped stub's overflow format writes exactly its field width.
 
     formatted_column substitutes the overflow format and truncates an over-wide
     result, but never pads. A narrow one writes a short field and shifts every
     later column on the row.
     """
     for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
-        if column.spec.overflow_format is None:
-            continue
         for stub in column.stubs:
-            assert len(column.spec.overflow_format % 1.0) == stub.width, stub.name
+            if stub.overflow_format is not None:
+                assert len(stub.overflow_format % 1.0) == stub.width, stub.name
 
 
-def test_narrow_overflow_format_is_an_error(make_column: Callable[..., Any]) -> None:
-    """A short overflow format is rejected rather than allowed to shift a row."""
-    column = make_column(overflow='%6.3e', width=10, print_format='%10.5f')
-    with pytest.raises(RuntimeError, match='must fill the field exactly'):
-        _check_overflow_width(column.spec, column.stubs, FCPath('t'))
-
-
-def test_matching_overflow_format_is_accepted(make_column: Callable[..., Any]) -> None:
-    """An overflow format that fills the field passes."""
-    column = make_column(overflow='%10.3e', width=10, print_format='%10.5f')
-    _check_overflow_width(column.spec, column.stubs, FCPath('t'))
-
-
-def test_absent_overflow_format_is_accepted(make_column: Callable[..., Any]) -> None:
-    """A column that cannot overflow declares no overflow format."""
-    column = make_column(overflow=None)
-    _check_overflow_width(column.spec, column.stubs, FCPath('t'))
+@pytest.mark.parametrize('qualifier', sorted(SHIPPED))
+def test_overflow_is_declared_per_stub(qualifier: str) -> None:
+    """Within a group, every stub agrees on whether (and how) it overflows."""
+    for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
+        formats = {stub.overflow_format for stub in column.stubs}
+        assert len(formats) == 1, column.stubs[0].name
 
 
 #===============================================================================
@@ -286,6 +313,37 @@ def test_template_name_matches_the_write_path() -> None:
         assert read_name == write_name
 
 
+def test_write_path_strips_the_private_keywords() -> None:
+    """A generated label carries no trace of the computation keywords.
+
+    This is the forgotten-strip tripwire: the private keywords are not PDS3
+    Data Dictionary keywords, so they must never reach a shipped label.
+    """
+    from metadata_tools.label_support import _strip_private_keywords
+
+    fragment = (Path(metadata_tools.__file__).parent / 'templates' /
+                'ring_summary_columns.lbl').read_text()
+    stripped = _strip_private_keywords(None, fragment)
+    for keyword in label_schema.PRIVATE_KEYWORDS:
+        assert not re.search(r'(?m)^ *' + keyword + r' *=', stripped), keyword
+
+    # The strip removes nothing else: standard keyword lines survive untouched.
+    def lines(text: str, keyword: str) -> int:
+        return len(re.findall(r'(?m)^ *' + keyword + r' *=', text))
+
+    assert lines(stripped, 'NULL_CONSTANT') == lines(fragment, 'NULL_CONSTANT')
+    assert lines(stripped, 'FORMAT') == lines(fragment, 'FORMAT')
+    assert lines(fragment, 'FORMAT') == 81
+
+
+def test_strip_alternation_matches_the_reader() -> None:
+    """label_support strips exactly the keyword set label_schema reads."""
+    from metadata_tools.label_support import _PRIVATE_KEYWORD_RE
+
+    for keyword in label_schema.PRIVATE_KEYWORDS:
+        assert _PRIVATE_KEYWORD_RE.match(f'    {keyword} = x\n'), keyword
+
+
 #===============================================================================
 # Failure modes, on synthetic templates
 #===============================================================================
@@ -323,39 +381,136 @@ def _shadow_fragment(host: Path, fragment: str, old: str, new: str,
 
 
 def test_the_shadowed_fragment_really_overrides(tmp_path: Path) -> None:
-    """The shadowing the failure-mode tests rely on actually takes effect."""
+    """The shadowing the failure-mode tests rely on actually takes effect.
+
+    Renaming a column is legal -- NAMEs no longer join to anything -- so the
+    proof is the renamed stub appearing in the resolved schema.
+    """
     host = _host_dir(tmp_path)
     tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
                             '"MINIMUM_DECLINATION"', '"MINIMUM_RENAMED"')
-    with pytest.raises(RuntimeError, match='MINIMUM_RENAMED'):
+    schema = resolve_schema(tdir, 'sky')
+    names = [stub.name for column in schema.columns for stub in column.stubs]
+    assert 'MINIMUM_RENAMED' in names
+
+
+def test_missing_backplane_key_is_an_error(tmp_path: Path) -> None:
+    """A data column that neither computes nor is absorbed fails loudly."""
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
+                            "    BACKPLANE_KEY               = ('right_ascension', ())\n",
+                            '')
+    with pytest.raises(RuntimeError, match='has no BACKPLANE_KEY'):
         resolve_schema(tdir, 'sky')
 
 
-def test_unknown_column_name_is_an_error(tmp_path: Path) -> None:
-    """A template naming a column no catalog computes fails loudly."""
+def test_group_keyword_on_absorbed_column_is_an_error(tmp_path: Path) -> None:
+    """A second group member carrying its own BACKPLANE_KEY is rejected.
+
+    Group-level keywords belong on the first column only; a stray one usually
+    means a VALUES count and the columns beneath it have drifted apart.
+    """
     host = _host_dir(tmp_path)
-    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
-                            '"MINIMUM_RIGHT_ASCENSION"', '"MINIMUM_NO_SUCH_QUANTITY"')
-    with pytest.raises(RuntimeError, match='not in the sky catalog'):
+    tdir = _shadow_fragment(
+        host, 'sky_summary_columns.lbl',
+        '    NAME                        = "MAXIMUM_RIGHT_ASCENSION"\n',
+        '    NAME                        = "MAXIMUM_RIGHT_ASCENSION"\n'
+        "    BACKPLANE_KEY               = ('right_ascension', ())\n")
+    with pytest.raises(RuntimeError, match='belong on the first column only'):
         resolve_schema(tdir, 'sky')
 
 
-def test_split_pair_is_an_error(tmp_path: Path) -> None:
-    """A min/max pair separated by another column fails rather than misaligning."""
+def test_values_overrun_is_an_error(tmp_path: Path) -> None:
+    """A VALUES count running past the end of the table is rejected."""
     host = _host_dir(tmp_path)
-    # Rename the maximum slot so the minimum is followed by something else.
-    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
-                            '"MAXIMUM_RIGHT_ASCENSION"', '"MAXIMUM_DECLINATION"')
-    with pytest.raises(RuntimeError, match='must appear together, in order'):
+    tdir = _shadow_fragment(
+        host, 'sky_summary_columns.lbl',
+        "    BACKPLANE_KEY               = ('declination', ())\n"
+        '    VALUES                      = 2\n',
+        "    BACKPLANE_KEY               = ('declination', ())\n"
+        '    VALUES                      = 3\n')
+    with pytest.raises(RuntimeError, match='runs past the end'):
         resolve_schema(tdir, 'sky')
 
 
-def test_lone_second_half_is_an_error(tmp_path: Path) -> None:
-    """A maximum slot appearing without its minimum is an error."""
+def test_duplicate_private_keyword_is_an_error(tmp_path: Path) -> None:
+    """One COLUMN declaring a private keyword twice is ambiguous, so it fails."""
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(
+        host, 'sky_summary_columns.lbl',
+        "    BACKPLANE_KEY               = ('right_ascension', ())\n",
+        "    BACKPLANE_KEY               = ('right_ascension', ())\n"
+        "    BACKPLANE_KEY               = ('declination', ())\n")
+    with pytest.raises(RuntimeError, match='declares BACKPLANE_KEY 2 times'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_unparseable_literal_is_an_error(tmp_path: Path) -> None:
+    """A BACKPLANE_KEY that is not a Python literal names itself in the error."""
     host = _host_dir(tmp_path)
     tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
-                            '"MINIMUM_RIGHT_ASCENSION"', '"MAXIMUM_DECLINATION"')
-    with pytest.raises(RuntimeError, match='appears before'):
+                            "BACKPLANE_KEY               = ('right_ascension', ())",
+                            "BACKPLANE_KEY               = ('right_ascension', (")
+    with pytest.raises(RuntimeError, match='unparseable BACKPLANE_KEY'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_non_tuple_key_is_an_error(tmp_path: Path) -> None:
+    """A BACKPLANE_KEY that parses but is not a tuple is rejected."""
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
+                            "BACKPLANE_KEY               = ('right_ascension', ())",
+                            "BACKPLANE_KEY               = 'right_ascension'")
+    with pytest.raises(RuntimeError, match='must be a tuple'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_half_specified_link_is_an_error(tmp_path: Path) -> None:
+    """LINK_FN and LINK_ID must be given together or not at all."""
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(
+        host, 'sky_summary_columns.lbl',
+        "    BACKPLANE_KEY               = ('right_ascension', ())\n",
+        "    BACKPLANE_KEY               = ('right_ascension', ())\n"
+        '    LINK_ID                     = "LINK-X"\n')
+    with pytest.raises(RuntimeError, match='must be given together'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_unknown_link_function_is_an_error(tmp_path: Path) -> None:
+    """A LINK_FN postprocess cannot dispatch fails at parse time, not add time."""
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(
+        host, 'sky_summary_columns.lbl',
+        "    BACKPLANE_KEY               = ('right_ascension', ())\n",
+        "    BACKPLANE_KEY               = ('right_ascension', ())\n"
+        '    LINK_FN                     = "bogus"\n'
+        '    LINK_ID                     = "LINK-X"\n')
+    with pytest.raises(RuntimeError, match='not a known link function'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_private_keyword_on_prefix_column_is_an_error(tmp_path: Path) -> None:
+    """Prefix columns are not computed, so a spec keyword there is an error."""
+    host = _host_dir(tmp_path)
+    path = host / 'templates' / 'GO_0xxx_sky_summary.lbl'
+    text = path.read_text(encoding='utf-8')
+    needle = '    NAME                        = "VOLUME_ID"\n'
+    assert needle in text
+    path.write_text(text.replace(
+        needle, needle + "    BACKPLANE_KEY               = ('nope',)\n", 1),
+        encoding='utf-8')
+    with pytest.raises(RuntimeError, match='prefix columns are not computed'):
+        resolve_schema(FCPath(host / 'templates'), 'sky')
+
+
+def test_narrow_overflow_format_is_an_error(tmp_path: Path) -> None:
+    """An overflow format narrower than the field is rejected at parse time."""
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
+                            '    OVERFLOW_FORMAT             = "F10.5"\n',
+                            '    OVERFLOW_FORMAT             = "F8.3"\n')
+    with pytest.raises(RuntimeError, match='must fill the field exactly'):
         resolve_schema(tdir, 'sky')
 
 
@@ -430,8 +585,8 @@ def test_unrecognized_unit_is_an_error(tmp_path: Path) -> None:
 def test_a_host_may_omit_columns(tmp_path: Path) -> None:
     """Dropping a column pair from a template drops it from the table.
 
-    This is how a host trims its column set: a catalog entry the template never
-    names is simply unused, not an error.
+    This is how a host trims its column set: the computation travels with the
+    COLUMN objects, so removing them removes the column and nothing else.
     """
     host = _host_dir(tmp_path)
     source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
@@ -447,10 +602,27 @@ def test_a_host_may_omit_columns(tmp_path: Path) -> None:
     assert names == ['MINIMUM_DECLINATION', 'MAXIMUM_DECLINATION']
 
 
-def test_catalog_covers_every_shipped_template_name() -> None:
-    """Every NAME in every shipped template resolves to a catalog entry."""
-    for qualifier in sorted(SHIPPED):
-        mapping = name_map(qualifier)
-        for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
-            for stub in column.stubs:
-                assert stub.name in mapping
+def test_a_host_may_rename_and_add_columns(tmp_path: Path) -> None:
+    """A host template can define a brand-new column with no engine edit.
+
+    The computation spec travels with the COLUMN object, so a host-local
+    column needs nothing beyond its template text.
+    """
+    host = _host_dir(tmp_path)
+    source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
+    extra = """
+  OBJECT                        = COLUMN
+    NAME                        = "MEAN_SOMETHING_NEW"
+    FORMAT                      = "F10.3"
+    NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('something_new', ())
+    DESCRIPTION                 = "A host-local column."
+  END_OBJECT                    = COLUMN
+"""
+    (host / 'templates' / 'sky_summary_columns.lbl').write_text(
+        source.read_text(encoding='utf-8') + extra, encoding='utf-8')
+
+    schema = resolve_schema(FCPath(host / 'templates'), 'sky')
+    last = schema.columns[-1]
+    assert last.key == ('something_new', ())
+    assert [stub.name for stub in last.stubs] == ['MEAN_SOMETHING_NEW']

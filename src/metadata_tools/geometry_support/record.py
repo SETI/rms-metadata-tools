@@ -98,9 +98,8 @@ class Record:
             # The key is wrapped in a list because util.replace resolves an
             # embedded dictionary reference -- the ring system radius lookup --
             # only inside a nested list or tuple leaf, never at the top level.
-            key = util.replace([column.spec.key], defs.BODYX, name)[0]
-            out.append(dataclass_replace(column,
-                                         spec=dataclass_replace(column.spec, key=key)))
+            key = util.replace([column.key], defs.BODYX, name)[0]
+            out.append(dataclass_replace(column, key=key))
         return out
 
     #===========================================================================
@@ -148,11 +147,10 @@ class Record:
         # not per value: prep_row appends a single string per column, and a
         # min/max column's two values are already comma-joined inside it. So a
         # column advances the position by one however many values it carries.
-        groups: dict[tuple[str, int], tuple[list[int], Any]] = {}
+        groups: dict[tuple[str, str], tuple[list[int], Any]] = {}
         for position, column in enumerate(resolved):
-            link_id = column.spec.link_id
-            if link_id:
-                indices, _null = groups.setdefault((column.spec.link, link_id),
+            if column.link_id:
+                indices, _null = groups.setdefault((column.link_fn, column.link_id),
                                                    ([], column.stubs[0].null_value))
                 indices.append(position)
 
@@ -162,8 +160,8 @@ class Record:
         data_columns = columns[-ndata:]
 
         # Call link functions
-        for (link, _link_id), (indices, null_value) in groups.items():
-            data_columns = _link_dispatch[link](indices, null_value, data_columns)
+        for (link_fn, _link_id), (indices, null_value) in groups.items():
+            data_columns = _link_dispatch[link_fn](indices, null_value, data_columns)
 
         # Substitute new data columns
         columns[-ndata:] = data_columns

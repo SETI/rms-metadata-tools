@@ -4,21 +4,32 @@
 ################################################################################
 """Resolve a geometry table's column schema from its PDS3 label template.
 
-The template is the source of truth for which geometry columns a host writes,
-in what order, and with what width, print format, null value, and valid range.
-This module parses it and joins each COLUMN's NAME against the computation
-catalog in :mod:`metadata_tools.columns`, producing the
+The template is the single source of truth for a geometry column: which columns
+exist, in what order, each column's width, print format, null value, valid
+range, and unit -- and, through a set of private per-COLUMN keywords, how the
+column is computed. This module parses all of it into the
 :class:`TableSchema` that :mod:`~metadata_tools.geometry_support.prep` walks
 when it builds a row.
+
+The private keywords are ``BACKPLANE_KEY``, ``MASK``, ``VALUES``,
+``OVERFLOW_FORMAT``, ``LINK_FN``, and ``LINK_ID``. They are written in the
+template like any other COLUMN keyword but are not PDS3 Data Dictionary
+keywords, so the label write path strips them; see
+:func:`metadata_tools.label_support.create`. The right-hand side of
+``BACKPLANE_KEY``, ``MASK``, and ``VALUES`` is a Python literal -- these lines
+are never parsed as ODL by anything -- while ``OVERFLOW_FORMAT`` uses the same
+PDS3 FORMAT notation as the FORMAT keyword and ``LINK_FN``/``LINK_ID`` hold
+quoted strings.
 
 This mirrors :class:`metadata_tools.index_support.table.IndexTable`, which
 already derives its columns from its own template.
 
 Validation is deliberately loud and happens once, when the table is
 constructed, rather than silently producing a misaligned row per observation.
-A template that names an unknown column, splits a min/max pair, or omits a
-null value fails the run immediately.
+A template whose column declares no computation, splits a multi-value group,
+or omits a null value fails the run immediately.
 """
+import ast
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -28,11 +39,10 @@ from pdstemplate import PdsTemplate
 from pdstemplate.pds3table import Pds3Table
 
 import metadata_tools.defs as defs
-from metadata_tools.columns.catalog import ColumnSpec, name_map
 
 # The prefix columns each table kind writes ahead of its geometry columns, in
 # order. These come from Record.prefixes and prep.append_body_prefix, not from
-# the catalog, so they are matched by name and skipped.
+# a backplane computation, so they are matched by name and skipped.
 PREFIX_NAMES: dict[str, tuple[str, ...]] = {
     'sky':  ('VOLUME_ID', 'FILE_SPECIFICATION_NAME'),
     'ring': ('VOLUME_ID', 'FILE_SPECIFICATION_NAME', 'SYSTEM_NAME'),
@@ -43,6 +53,14 @@ PREFIX_NAMES: dict[str, tuple[str, ...]] = {
 # Null keywords in priority order, matching IndexTable._get_null_value.
 _NULL_KEYWORDS = ('NULL_CONSTANT', 'UNKNOWN_CONSTANT', 'INVALID_CONSTANT',
                   'MISSING_CONSTANT', 'NOT_APPLICABLE_CONSTANT')
+
+# The private keywords carrying the computation spec. label_support strips
+# exactly this set from generated labels; keep the two lists in sync.
+PRIVATE_KEYWORDS = ('BACKPLANE_KEY', 'MASK', 'VALUES', 'OVERFLOW_FORMAT',
+                    'LINK_FN', 'LINK_ID')
+
+# The link functions Record.postprocess can dispatch to.
+_LINK_FUNCTIONS = frozenset({'null'})
 
 # "F12.3" -> ("F", "12", "3");  "A23" -> ("A", "23", None)
 _FORMAT_RE = re.compile(r'^([FAEI])(\d+)(?:\.(\d+))?$')
@@ -83,6 +101,9 @@ class ColumnStub:
         unit: The canonical PDS3 unit, or None if the column declares none.
         flag: The conversion derived from the unit, range, and data type; see
             :func:`derive_flag`.
+        overflow_format: The printf format substituted when a value will not
+            fit the field, from the OVERFLOW_FORMAT keyword; None when the
+            column cannot overflow.
     """
 
     name: str
@@ -93,21 +114,35 @@ class ColumnStub:
     valid_maximum: float | None
     unit: str | None = None
     flag: str = ''
+    overflow_format: str | None = None
 
 
 #===============================================================================
 @dataclass(frozen=True)
 class ResolvedColumn:
-    """One template column joined to the catalog entry that computes it.
+    """One computed geometry column and the label metadata of its values.
 
     Attributes:
-        spec: The catalog entry supplying the backplane key, mask, and
-            conversion flag.
-        stubs: The label metadata for each of the spec's values, in slot order.
+        key: The backplane key passed to ``Backplane.evaluate()``. May still
+            contain the ``defs.BODYX`` placeholder, substituted per body when
+            the row is built.
+        mask: ``(masker, shadower, face)``. The masker and shadower strings
+            concatenate ``"P"`` (planet), ``"R"`` (rings), and ``"M"`` (blocker
+            body); the face is ``"D"``, ``"N"``, or ``""``.
+        link_fn: The link function grouping columns that go null together, or
+            ``''`` when the column is unlinked.
+        link_id: The token naming the column's link group, or ``''`` when
+            unlinked. Its only meaning is equality: columns in one table
+            sharing ``(link_fn, link_id)`` form one group.
+        stubs: The label metadata for each value this column produces, in slot
+            order.
     """
 
-    spec: ColumnSpec
-    stubs: tuple[ColumnStub, ...]
+    key: tuple[Any, ...]
+    mask: tuple[str, str, str]
+    link_fn: str = ''
+    link_id: str = ''
+    stubs: tuple[ColumnStub, ...] = ()
 
 
 #===============================================================================
@@ -123,6 +158,49 @@ class TableSchema:
 
     prefix_stubs: tuple[ColumnStub, ...]
     columns: tuple[ResolvedColumn, ...]
+
+
+#===============================================================================
+@dataclass(frozen=True)
+class _SpecKeywords:
+    """The private computation keywords one COLUMN object carries, parsed.
+
+    Every field is None when the template omits the keyword.
+    """
+
+    backplane_key: tuple[Any, ...] | None
+    mask: tuple[str, str, str] | None
+    values: int | None
+    link_fn: str | None
+    link_id: str | None
+
+    def starts_group(self) -> bool:
+        """Whether this column opens a computation group."""
+        return self.backplane_key is not None
+
+    def group_fields(self) -> list[str]:
+        """The group-level keywords present, for error messages."""
+        present = []
+        if self.backplane_key is not None:
+            present.append('BACKPLANE_KEY')
+        if self.mask is not None:
+            present.append('MASK')
+        if self.values is not None:
+            present.append('VALUES')
+        if self.link_fn is not None:
+            present.append('LINK_FN')
+        if self.link_id is not None:
+            present.append('LINK_ID')
+        return present
+
+
+#===============================================================================
+@dataclass(frozen=True)
+class _RawColumn:
+    """One parsed COLUMN object: its label stub plus its private keywords."""
+
+    stub: ColumnStub
+    keywords: _SpecKeywords
 
 
 #===============================================================================
@@ -252,17 +330,145 @@ def _parse_format(name: str, fmt: str | None, template: FCPath) -> tuple[int, st
 
 
 #===============================================================================
-def _read_stubs(template_path: FCPath) -> list[ColumnStub]:
+def _keyword_value(body: str, keyword: str, name: str,
+                   template: FCPath) -> str | None:
+    """Return the raw right-hand side of one private keyword, or None.
+
+    The line-start anchor keeps uppercase words inside a DESCRIPTION from
+    matching; the write-time strip in ``label_support`` anchors the same way,
+    so the read and strip can never disagree about what is a keyword line.
+
+    Parameters:
+        body: One COLUMN object's text.
+        keyword: The private keyword to read.
+        name: The column NAME, for the error message.
+        template: The template path, for the error message.
+
+    Returns:
+        The right-hand side, trailing whitespace stripped, or None if the
+        keyword is absent.
+
+    Raises:
+        RuntimeError: If the keyword appears more than once.
+    """
+    matches = re.findall(r'(?m)^ *' + keyword + r' *= *([^\r\n]*)', body)
+    if not matches:
+        return None
+    if len(matches) > 1:
+        raise RuntimeError(
+            f'{template}: column {name!r} declares {keyword} {len(matches)} times')
+    return str(matches[0]).rstrip()
+
+
+#===============================================================================
+def _literal(text: str, keyword: str, name: str, template: FCPath) -> Any:
+    """Evaluate one private keyword's right-hand side as a Python literal.
+
+    Parameters:
+        text: The raw right-hand side.
+        keyword: The keyword, for the error message.
+        name: The column NAME, for the error message.
+        template: The template path, for the error message.
+
+    Returns:
+        The evaluated literal.
+
+    Raises:
+        RuntimeError: If the text is not a valid Python literal.
+    """
+    try:
+        return ast.literal_eval(text)
+    except (ValueError, SyntaxError) as error:
+        raise RuntimeError(
+            f'{template}: column {name!r} has unparseable {keyword} {text!r}: '
+            f'{error}') from None
+
+
+#===============================================================================
+def _parse_spec_keywords(body: str, name: str, width: int,
+                         template: FCPath) -> tuple[_SpecKeywords, str | None]:
+    """Parse one COLUMN object's private keywords.
+
+    Parameters:
+        body: The COLUMN object's text.
+        name: The column NAME, for error messages.
+        width: The column's field width, from FORMAT, against which the
+            overflow format is checked.
+        template: The template path, for error messages.
+
+    Returns:
+        A tuple of the parsed keywords and the overflow printf format (None
+        when the column declares no OVERFLOW_FORMAT).
+
+    Raises:
+        RuntimeError: If a keyword is malformed, or the overflow format does
+            not fill the field exactly.
+    """
+    raw = {keyword: _keyword_value(body, keyword, name, template)
+           for keyword in PRIVATE_KEYWORDS}
+
+    key: tuple[Any, ...] | None = None
+    if raw['BACKPLANE_KEY'] is not None:
+        key = _literal(raw['BACKPLANE_KEY'], 'BACKPLANE_KEY', name, template)
+        if not isinstance(key, tuple):
+            raise RuntimeError(
+                f'{template}: column {name!r} BACKPLANE_KEY must be a tuple, '
+                f'not {key!r}')
+
+    mask: tuple[str, str, str] | None = None
+    if raw['MASK'] is not None:
+        mask = _literal(raw['MASK'], 'MASK', name, template)
+        if (not isinstance(mask, tuple) or len(mask) != 3
+                or not all(isinstance(part, str) for part in mask)):
+            raise RuntimeError(
+                f'{template}: column {name!r} MASK must be a tuple of three '
+                f'strings (masker, shadower, face), not {mask!r}')
+
+    values: int | None = None
+    if raw['VALUES'] is not None:
+        values = _literal(raw['VALUES'], 'VALUES', name, template)
+        if not isinstance(values, int) or isinstance(values, bool) or values < 1:
+            raise RuntimeError(
+                f'{template}: column {name!r} VALUES must be a positive integer, '
+                f'not {values!r}')
+
+    overflow_format: str | None = None
+    if raw['OVERFLOW_FORMAT'] is not None:
+        overflow_width, overflow_format = _parse_format(
+            name, raw['OVERFLOW_FORMAT'], template)
+        if overflow_width != width:
+            raise RuntimeError(
+                f'{template}: column {name!r} has OVERFLOW_FORMAT '
+                f'{raw["OVERFLOW_FORMAT"]}, which writes {overflow_width} characters '
+                f'into a {width}-character field. An overflow format must fill the '
+                f'field exactly; a short one shifts every later column on the row.')
+
+    link_fn = raw['LINK_FN']
+    if link_fn is not None:
+        link_fn = link_fn.strip().strip('"')
+    link_id = raw['LINK_ID']
+    if link_id is not None:
+        link_id = link_id.strip().strip('"')
+
+    return (_SpecKeywords(backplane_key=key, mask=mask, values=values,
+                          link_fn=link_fn, link_id=link_id),
+            overflow_format)
+
+
+#===============================================================================
+def _read_columns(template_path: FCPath) -> list[_RawColumn]:
     """Parse every COLUMN object out of a label template, in order.
 
     Parameters:
         template_path: Path to the host's summary label template.
 
     Returns:
-        One stub per COLUMN object, in template order.
+        One raw column -- label stub plus private keywords -- per COLUMN
+        object, in template order.
 
     Raises:
-        RuntimeError: If a column's FORMAT is missing or unsupported.
+        RuntimeError: If a column's FORMAT is missing or unsupported, or a
+            private keyword is malformed.
     """
     template_dir = template_path.parent
     # PdsTemplate expands $INCLUDE into .content at construction; the column
@@ -274,7 +480,11 @@ def _read_stubs(template_path: FCPath) -> list[ColumnStub]:
     # its write, or the write path's own analysis would be displaced.
     pds3 = Pds3Table(template_path, template.content, validate=False, analyze_only=True)
 
-    stubs: list[ColumnStub] = []
+    # The same regex Pds3Table splits on, so this enumeration can never
+    # disagree with old_lookup's column numbering; the count is asserted below.
+    bodies = Pds3Table._OBJECT_COLUMN_REGEX.split(template.content)[2::4]
+
+    columns: list[_RawColumn] = []
     colnum = 1
     while True:
         try:
@@ -299,18 +509,28 @@ def _read_stubs(template_path: FCPath) -> list[ColumnStub]:
         valid_maximum = pds3.old_lookup('VALID_MAXIMUM', colnum)
         data_type = pds3.old_lookup('DATA_TYPE', colnum)
         unit = canonical_unit(pds3.old_lookup('UNIT', colnum), column_name, template_path)
-        stubs.append(ColumnStub(name=column_name,
-                                width=width,
-                                print_format=print_format,
-                                null_value=null,
-                                valid_minimum=valid_minimum,
-                                valid_maximum=valid_maximum,
-                                unit=unit,
-                                flag=derive_flag(unit, valid_minimum, valid_maximum,
-                                                 data_type)))
+        keywords, overflow_format = _parse_spec_keywords(
+            bodies[colnum - 1], column_name, width, template_path)
+        stub = ColumnStub(name=column_name,
+                          width=width,
+                          print_format=print_format,
+                          null_value=null,
+                          valid_minimum=valid_minimum,
+                          valid_maximum=valid_maximum,
+                          unit=unit,
+                          flag=derive_flag(unit, valid_minimum, valid_maximum,
+                                           data_type),
+                          overflow_format=overflow_format)
+        columns.append(_RawColumn(stub=stub, keywords=keywords))
         colnum += 1
 
-    return stubs
+    if len(bodies) != len(columns):
+        raise RuntimeError(
+            f'{template_path}: the private-keyword pass found {len(bodies)} COLUMN '
+            f'objects but Pds3Table found {len(columns)}; the two parsers have '
+            f'diverged')
+
+    return columns
 
 
 #===============================================================================
@@ -334,39 +554,6 @@ def template_name_for(template_dir: FCPath, qualifier: str) -> str:
 
 
 #===============================================================================
-def _check_overflow_width(spec: ColumnSpec, stubs: tuple[ColumnStub, ...],
-                          template: FCPath) -> None:
-    """Verify a column's overflow format fills its field exactly.
-
-    ``formatted_column`` substitutes the overflow format when a value will not
-    fit, then truncates if the result is still too wide -- but it never pads. An
-    overflow format narrower than the field therefore writes a short field and
-    shifts every column after it on that row. printf pads to the stated width,
-    so the check is simply that a representative value comes out the right
-    length.
-
-    Parameters:
-        spec: The catalog entry supplying the overflow format.
-        stubs: The column's label metadata, carrying the field widths.
-        template: The template path, for the error message.
-
-    Raises:
-        RuntimeError: If the overflow format does not fill the field.
-    """
-    if spec.overflow_format is None:
-        return
-
-    for stub in stubs:
-        written = len(spec.overflow_format % 1.0)
-        if written != stub.width:
-            raise RuntimeError(
-                f'{template}: column {stub.name!r} has overflow format '
-                f'{spec.overflow_format!r}, which writes {written} characters into a '
-                f'{stub.width}-character field. An overflow format must fill the field '
-                f'exactly; a short one shifts every later column on the row.')
-
-
-#===============================================================================
 _schema_cache: dict[tuple[str, str], TableSchema] = {}
 
 
@@ -374,9 +561,9 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     """Resolve one geometry table's column schema from its label template.
 
     Parses the host's summary template, skips the fixed prefix columns, and
-    joins each remaining COLUMN's NAME against the qualifier's computation
-    catalog. Template order becomes output order. A catalog entry the template
-    never names is simply unused, which is how a host drops a column.
+    groups the remaining COLUMN objects into computations: a column carrying
+    ``BACKPLANE_KEY`` opens a group and absorbs the following ``VALUES - 1``
+    columns as its remaining slots. Template order is output order.
 
     The result is cached per (template directory, qualifier).
 
@@ -388,11 +575,14 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
         The resolved schema.
 
     Raises:
-        RuntimeError: If the prefix columns do not match, a NAME is absent from
-            the catalog, a multi-value column's NAMEs are not adjacent and in
-            slot order, its parts derive different conversions, a column
-            declares no null value or an unrecognized unit, a column declares an
-            empty valid range, or an overflow format does not fill its field.
+        RuntimeError: If the prefix columns do not match or carry a private
+            keyword, a data column neither opens a group nor is absorbed by
+            one, an absorbed column carries a group-level keyword, a group
+            runs past the end of the table, only one of LINK_FN and LINK_ID is
+            given, LINK_FN is not a known link function, a group's parts
+            derive different conversions, a column declares no null value or
+            an unrecognized unit, a column declares an empty valid range, or
+            an overflow format does not fill its field.
     """
     template_dir = FCPath(template_dir)
     cache_key = (template_dir.as_posix(), qualifier)
@@ -400,76 +590,97 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
         return _schema_cache[cache_key]
 
     template_path = template_dir / template_name_for(template_dir, qualifier)
-    stubs = _read_stubs(template_path)
+    raws = _read_columns(template_path)
 
     # Consume the fixed prefix run.
     expected = PREFIX_NAMES[qualifier]
-    found = tuple(stub.name for stub in stubs[:len(expected)])
+    found = tuple(raw.stub.name for raw in raws[:len(expected)])
     if found != expected:
         raise RuntimeError(
             f'{template_path}: the {qualifier} table must begin with the prefix columns '
             f'{expected}, but the template begins with {found}')
-    prefix_stubs = tuple(stubs[:len(expected)])
-    data_stubs = stubs[len(expected):]
-
-    mapping = name_map(qualifier)
-    for stub in data_stubs:
-        if stub.name in expected:
+    for raw in raws[:len(expected)]:
+        present = raw.keywords.group_fields()
+        if raw.stub.overflow_format is not None:
+            present.append('OVERFLOW_FORMAT')
+        if present:
             raise RuntimeError(
-                f'{template_path}: prefix column {stub.name!r} reappears among the '
+                f'{template_path}: prefix column {raw.stub.name!r} carries the private '
+                f'keyword(s) {present}; prefix columns are not computed')
+    prefix_stubs = tuple(raw.stub for raw in raws[:len(expected)])
+    data = raws[len(expected):]
+
+    for raw in data:
+        if raw.stub.name in expected:
+            raise RuntimeError(
+                f'{template_path}: prefix column {raw.stub.name!r} reappears among the '
                 f'geometry columns')
 
     columns: list[ResolvedColumn] = []
     index = 0
-    while index < len(data_stubs):
-        stub = data_stubs[index]
-        try:
-            spec, slot = mapping[stub.name]
-        except KeyError:
+    while index < len(data):
+        raw = data[index]
+        keywords = raw.keywords
+        if not keywords.starts_group():
             raise RuntimeError(
-                f'{template_path}: column {stub.name!r} is not in the {qualifier} catalog, '
-                f'so nothing knows how to compute it. Add a ColumnSpec to '
-                f'metadata_tools.columns.{qualifier}, or remove the column from the '
-                f'template.') from None
+                f'{template_path}: column {raw.stub.name!r} has no BACKPLANE_KEY and is '
+                f'not absorbed by a preceding column, so nothing knows how to compute '
+                f'it. Give it a BACKPLANE_KEY, or raise the VALUES of the column it '
+                f'belongs to.')
 
-        if slot != 0:
+        values = keywords.values if keywords.values is not None else 1
+        group = data[index:index + values]
+        if len(group) < values:
             raise RuntimeError(
-                f'{template_path}: column {stub.name!r} is value {slot + 1} of '
-                f'{spec.names}, but appears before {spec.names[0]!r}. A multi-value '
-                f'column\'s parts must appear together, in order.')
+                f'{template_path}: column {raw.stub.name!r} declares VALUES = {values}, '
+                f'which runs past the end of the table')
 
-        group = data_stubs[index:index + spec.number_of_values]
-        actual = tuple(s.name for s in group)
-        if actual != spec.names:
+        for member in group[1:]:
+            present = member.keywords.group_fields()
+            if present:
+                raise RuntimeError(
+                    f'{template_path}: column {member.stub.name!r} carries {present} but '
+                    f'is value {group.index(member) + 1} of the column starting at '
+                    f'{raw.stub.name!r}. Group-level keywords belong on the first '
+                    f'column only.')
+
+        if (keywords.link_fn is None) != (keywords.link_id is None):
             raise RuntimeError(
-                f'{template_path}: column {spec.names[0]!r} must be followed immediately '
-                f'by {spec.names[1:]}, but the template has {actual[1:]}. A multi-value '
-                f'column\'s parts must appear together, in order.')
+                f'{template_path}: column {raw.stub.name!r} declares only one of '
+                f'LINK_FN and LINK_ID; they must be given together or not at all')
+        if keywords.link_fn is not None and keywords.link_fn not in _LINK_FUNCTIONS:
+            raise RuntimeError(
+                f'{template_path}: column {raw.stub.name!r} declares LINK_FN '
+                f'{keywords.link_fn!r}, which is not a known link function; known '
+                f'functions are {sorted(_LINK_FUNCTIONS)}')
 
-        _check_overflow_width(spec, tuple(group), template_path)
-
-        flags = {member.flag for member in group}
+        flags = {member.stub.flag for member in group}
         if len(flags) > 1:
             raise RuntimeError(
-                f'{template_path}: the parts of column {spec.names[0]!r} derive different '
-                f'conversions {sorted(flags)} from their labels. Both halves of a column '
-                f'must declare the same UNIT and valid range.')
+                f'{template_path}: the parts of column {raw.stub.name!r} derive '
+                f'different conversions {sorted(flags)} from their labels. All parts '
+                f'of a column must declare the same UNIT and valid range.')
 
         for member in group:
-            if member.null_value is None:
+            if member.stub.null_value is None:
                 raise RuntimeError(
-                    f'{template_path}: column {member.name!r} declares no null value. '
-                    f'Add NULL_CONSTANT; the pipeline writes one whenever the column has '
-                    f'nothing to report.')
-            if (member.valid_minimum is not None
-                    and member.valid_minimum == member.valid_maximum):
+                    f'{template_path}: column {member.stub.name!r} declares no null '
+                    f'value. Add NULL_CONSTANT; the pipeline writes one whenever the '
+                    f'column has nothing to report.')
+            if (member.stub.valid_minimum is not None
+                    and member.stub.valid_minimum == member.stub.valid_maximum):
                 raise RuntimeError(
-                    f'{template_path}: column {member.name!r} declares an empty valid '
-                    f'range (VALID_MINIMUM == VALID_MAXIMUM == {member.valid_minimum}), '
-                    f'which would null every value. Omit both to skip the range check.')
+                    f'{template_path}: column {member.stub.name!r} declares an empty '
+                    f'valid range (VALID_MINIMUM == VALID_MAXIMUM == '
+                    f'{member.stub.valid_minimum}), which would null every value. Omit '
+                    f'both to skip the range check.')
 
-        columns.append(ResolvedColumn(spec=spec, stubs=tuple(group)))
-        index += spec.number_of_values
+        columns.append(ResolvedColumn(key=keywords.backplane_key or (),
+                                      mask=keywords.mask or ('', '', ''),
+                                      link_fn=keywords.link_fn or '',
+                                      link_id=keywords.link_id or '',
+                                      stubs=tuple(member.stub for member in group)))
+        index += values
 
     schema = TableSchema(prefix_stubs=prefix_stubs, columns=tuple(columns))
     _schema_cache[cache_key] = schema

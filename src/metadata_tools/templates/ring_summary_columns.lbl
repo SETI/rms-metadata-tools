@@ -4,13 +4,39 @@ $NOTE
 #   is_visual:      True if this product was taken in visual light. If so,
 #                   regions on the dark side of target bodies are ignored;
 #                   otherwise, they are included.
+#
+# Computation-spec keywords: each first COLUMN of a computation group carries
+# private keywords stating how the column is computed. They are read by
+# geometry_support/label_schema.py and stripped from generated labels by
+# label_support.py, so they never reach a shipped .lbl:
+#
+#   BACKPLANE_KEY = <Python tuple literal>  the Backplane.evaluate() key; the
+#                   token 'bodyx' (defs.BODYX) is substituted per body at run
+#                   time, and a string 'defs.<DICT>["bodyx"]' resolves to a
+#                   defs dictionary lookup after substitution
+#   MASK          = ('<maskers>', '<shadowers>', '<face>'), letters P/R/M and
+#                   face D/N; omitted when no mask applies
+#   VALUES        = <int>, how many consecutive COLUMN objects this
+#                   computation fills (a min/max pair is 2); default 1 -- the
+#                   following VALUES-1 COLUMNs carry no spec keywords
+#   OVERFLOW_FORMAT = the fallback format when a value overflows the field,
+#                   in PDS3 FORMAT notation, on every member of the group
+#   LINK_FN / LINK_ID = the function and group token linking columns that go
+#                   null together; the id's only meaning is equality
+#
+# The right-hand side of BACKPLANE_KEY, MASK, and VALUES is a Python literal
+# on a single line; nothing ever parses these lines as ODL.
 ##############################################################################
 $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_RADIUS"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_radius', 'bodyx:RING')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring radius is the distance from the center
       of the planet to the point where a line of sight intercepts the ring
       plane.
@@ -24,6 +50,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_RADIUS"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring radius is the distance from the center
@@ -39,8 +66,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "FINEST_RING_INTERCEPT_RESOLUTION"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('resolution', 'bodyx:RING', 'v')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring intercept resolution is the size of
       a pixel at the distance of the ring intercept point. If the pixel shape
       is not square, it is defined by the smaller of the two edges. Unlike the
@@ -57,6 +88,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_RING_INTERCEPT_RESOLUTION"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring intercept resolution is the size of
@@ -75,8 +107,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "FINEST_RADIAL_RESOLUTION"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_radial_resolution', 'bodyx:RING')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Radial resolution is related to the
       gradient of the ring intercept radius. It is equal to the largest
       change in the radius resulting from a one-pixel shift of the line of
@@ -93,6 +129,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_RADIAL_RESOLUTION"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Radial resolution is related to the
@@ -111,8 +148,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "FINEST_LONGITUDINAL_RESOLUTION"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.3"
     UNIT                        = "deg/pixel"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_angular_resolution', 'bodyx:RING')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Longitudinal resolution is related to the
       gradient of the ring intercept longitude. It is equal to the largest
       change in longitude resulting from a one-pixel shift of the line of
@@ -129,6 +170,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_LONGITUDINAL_RESOLUTION"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.3"
     UNIT                        = "deg/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Longitudinal resolution is related to the
@@ -147,8 +189,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "FINEST_LONGITUDINAL_RESOLUTION_KM"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_angular_resolution', 'bodyx:RING', 'km')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Longitudinal resolution in km is related to
       the gradient of the ring intercept longitude. It is equal to the largest
       change in position along the ring circumference resulting from a
@@ -165,6 +211,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_LONGITUDINAL_RESOLUTION_KM"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Longitudinal resolution in km is related to
@@ -183,8 +230,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_DISTANCE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('distance', 'bodyx:RING')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring distance equals the separation between
       the observer and the point where a line of sight intercepts the ring
       plane.
@@ -198,6 +249,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_DISTANCE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring distance equals the separation between
@@ -217,6 +269,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_longitude', 'bodyx:RING', 'aries')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring longitude specifies the inertial
       longitude of the ring plane intercept point. Values are defined by a
       broken angle from the J2000 First Point of Aries (right ascension = 0),
@@ -263,6 +318,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_longitude', 'bodyx:RING', 'node')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring longitude with respect to the node is
       an angle referenced to the ascending node of the ring system's
       invariable plane on the J2000 x-y plane. It is measured in the prograde
@@ -307,6 +365,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_longitude', 'bodyx:RING', 'sha')
+    MASK                        = ('PM', '', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Solar hour angle specifies the longitude of
       the ring plane intercept point relative to the anti-solar direction.
       Longitudes increase in the direction of prograde motion, so at 90
@@ -351,6 +412,9 @@ $END_NOTE
     VALID_MINIMUM               = -180.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_longitude', 'bodyx:RING', 'obs')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring longitude with respect to the observer
       specifies the longitude of the ring plane intercept point relative to
       the direction to the observer. Longitudes increase in the direction of
@@ -399,6 +463,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_azimuth', 'bodyx:RING', 'obs')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring azimuth specifies the angle, measured
       at the ring intercept point, between the direction to the observer and
       the local radial direction. This angle is projected into the ring plane
@@ -453,6 +520,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('phase_angle', 'bodyx:RING')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring phase angle is the angle, measured at
       the ring intercept point, between the direction to the Sun and the
       direction to the observer.
@@ -487,6 +557,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_incidence_angle', 'bodyx:RING')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring incidence angle is the angle, measured
       at the ring intercept point, between the local surface normal vector on
       the sunlit side of the ring plane and the direction to the Sun. Note
@@ -523,6 +596,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_incidence_angle', 'bodyx:RING', 'prograde')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "North-based ring incidence angle is the
       angle, measured at the ring intercept point, between the local surface
       normal vector on the north side of the ring plane and the direction to
@@ -565,6 +641,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_emission_angle', 'bodyx:RING')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring emission angle is the angle, measured
       at the ring intercept point, between the local surface normal vector on
       the sunlit side of the ring plane and the direction to the observer. It
@@ -603,6 +682,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_emission_angle', 'bodyx:RING', 'prograde')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "North-based ring emission angle is the
       angle, measured at the ring intercept point, between the local surface
       normal vector on the north side of the ring plane and the direction to
@@ -647,6 +729,9 @@ $END_NOTE
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_elevation', 'bodyx:RING', 'sun')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Solar ring elevation is the angle, measured
       at the ring intercept point, between the ring plane and the direction to
       the Sun. The value is positive on the north side of the rings and
@@ -689,6 +774,9 @@ $END_NOTE
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_elevation', 'bodyx:RING', 'obs')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Observer ring elevation is the angle,
       measured at the ring intercept point, between the ring plane and the
       direction to the observer. The value is positive on the north side of
@@ -728,7 +816,11 @@ $END_NOTE
     NAME                        = "MINIMUM_RING_INTERCEPT_TIME"
     DATA_TYPE                   = TIME
     FORMAT                      = "A23"
+    OVERFLOW_FORMAT             = "A23"
     NULL_CONSTANT               = "NA"
+    BACKPLANE_KEY               = ('event_time', 'bodyx:RING')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photons left the ring intercept point.
       It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss.
@@ -743,6 +835,7 @@ $END_NOTE
     NAME                        = "MAXIMUM_RING_INTERCEPT_TIME"
     DATA_TYPE                   = TIME
     FORMAT                      = "A23"
+    OVERFLOW_FORMAT             = "A23"
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photons left the ring intercept point.
@@ -757,8 +850,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_RING_RADIUS"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ansa_radius', 'bodyx:ANSA')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Edge-on ring radius is the distance from
       the planet's rotation pole to the edge-on ring intercept point.
       $INCLUDE('edge_on_definition.lbl')
@@ -772,6 +869,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_RING_RADIUS"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on ring radius is the distance from
@@ -787,8 +885,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_RING_ALTITUDE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -9.99e+09
+    BACKPLANE_KEY               = ('ansa_altitude', 'bodyx:ANSA')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Edge-on ring altitude is the distance from
       the ring plane to the edge-on ring intercept point.
       $INCLUDE('edge_on_definition.lbl')
@@ -802,6 +904,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_RING_ALTITUDE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -9.99e+09
     DESCRIPTION                 = "Edge-on ring altitude is the distance from
@@ -817,8 +920,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "FINEST_EDGE_ON_RADIAL_RESOLUTION"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ansa_radial_resolution', 'bodyx:ANSA')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Edge-on radial resolution is related to the
       gradient of the edge-on ring radius. It is equal to the largest change
       in the radius resulting from a one-pixel shift of the line of sight. In
@@ -836,6 +943,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "COARSEST_EDGE_ON_RADIAL_RESOLUTION"
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on radial resolution is related to the
@@ -855,8 +963,12 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_EDGE_ON_INTERCEPT_DISTANCE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('distance', 'bodyx:ANSA')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Edge-on intercept distance is distance from
       the observer to the edge-on intercept point.
       $INCLUDE('edge_on_definition.lbl')
@@ -870,6 +982,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_EDGE_ON_INTERCEPT_DISTANCE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Edge-on intercept distance is distance from
@@ -889,6 +1002,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ansa_longitude', 'bodyx:ANSA', 'aries')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Edge-on ring longitude is the inertial
       longitude of the edge-on intercept point. Longitudes are defined by a
       broken angle from the J2000 First Point of Aries (right ascension = 0),
@@ -937,6 +1053,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ansa_longitude', 'bodyx:ANSA', 'node')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Edge-on ring longitude with respect to the
       node is an angle referenced to the ascending node of the ring system's
       invariable plane on the J2000 x-y plane. It is measured in the prograde
@@ -983,6 +1102,9 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ansa_longitude', 'bodyx:ANSA', 'sha')
+    MASK                        = ('PM', 'P', '')
+    VALUES                      = 2
     DESCRIPTION                 = "Edge-on solar hour angle specifies the
       longitude of the edge-on intercept point relative to the anti-solar
       direction. Longitudes increase in the direction of prograde motion, so
@@ -1025,8 +1147,11 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RING_CENTER_DISTANCE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('center_distance', 'bodyx:RING', 'obs')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring center distance is the distance from
       the observer to the center of the ring system.
 
@@ -1037,6 +1162,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RING_CENTER_DISTANCE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Ring center distance is the distance from
@@ -1053,6 +1179,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_sub_solar_longitude', 'bodyx:RING', 'aries')
+    VALUES                      = 2
     DESCRIPTION                 = "Sub-solar ring longitude is the inertial
       longitude of the sub-solar point on the ring plane. Values are defined
       by a broken angle from the J2000 First Point of Aries (right ascension =
@@ -1089,6 +1217,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_sub_solar_longitude', 'bodyx:RING', 'node')
+    VALUES                      = 2
     DESCRIPTION                 = "Sub-solar ring longitude with respect to
       the node is an angle referenced to the ascending node of the ring
       system's invariable plane on the J2000 x-y plane. It is measured in the
@@ -1121,6 +1251,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_sub_observer_longitude', 'bodyx:RING', 'aries')
+    VALUES                      = 2
     DESCRIPTION                 = "Sub-observer ring longitude is the inertial
       longitude of the sub-observer point on the ring plane. Values are
       defined by a broken angle from the J2000 First Point of Aries (right
@@ -1157,6 +1289,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_sub_observer_longitude', 'bodyx:RING', 'node')
+    VALUES                      = 2
     DESCRIPTION                 = "Sub-observer ring longitude with respect to
       the node is the longitude of the sub-observer point on the ring plane
       relative to the ascending node of the ring system's invariable plane on
@@ -1191,6 +1325,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('center_phase_angle', 'bodyx:RING')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring center phase angle is the angle
       between the direction to the Sun and the direction to the observer as
       measured at the center of the ring system.
@@ -1221,6 +1357,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_center_incidence_angle', 'bodyx:RING')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring center incidence angle is the angle,
       measured at the center of the ring system, between the local surface
       normal vector on the sunlit side of the ring plane and the direction to
@@ -1253,6 +1391,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_center_incidence_angle', 'bodyx:RING', 'prograde')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring center north-based incidence angle is
       the angle, measured at the center of the ring system, between the
       prograde rotation axis and the direction to the Sun. It is > 90 degrees
@@ -1287,6 +1427,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_center_emission_angle', 'bodyx:RING')
+    VALUES                      = 2
     DESCRIPTION                 = "Ring center emission angle is the angle,
       measured at the center of the ring system, from the positive rotation
       axis to the direction to the observer. It is > 90 degrees when observing
@@ -1319,6 +1461,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('ring_center_emission_angle', 'bodyx:RING', 'prograde')
+    VALUES                      = 2
     DESCRIPTION                 = "North-based ring center emission angle is
       the angle, measured at the center of the ring system, between the
       prograde rotation axis and the direction to the observer. It is > 90
@@ -1353,6 +1497,8 @@ $END_NOTE
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('sub_solar_latitude', 'bodyx:RING')
+    VALUES                      = 2
     DESCRIPTION                 = "Solar ring center opening angle is the
       angle, measured at the center of the ring system, between the ring plane
       and the direction to the Sun. It is positive on the north (positive
@@ -1385,6 +1531,8 @@ $END_NOTE
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('sub_observer_latitude', 'bodyx:RING')
+    VALUES                      = 2
     DESCRIPTION                 = "Observer ring center opening angle is the
       angle, measured at the center of the ring system, between the ring plane
       and the direction to the observer. It is positive on the north (positive
@@ -1413,7 +1561,9 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "RING_DIAMETER_IN_PIXELS"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('body_diameter_in_pixels', 'bodyx:RING', 'defs.RING_SYSTEM_RADII["bodyx"]')
     DESCRIPTION                 = "Projected diameter of the main ring system
       along their longest projected direction, converted to pixels. This
       diameter is computed based on the body's current distance, but as if it
@@ -1430,6 +1580,7 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('pole_clock_angle', 'bodyx')
     DESCRIPTION                 = "The ring pole clock angle is the projected
       direction of the ring system's pole (angular momentum) vector on the
       sky, measured as an angle clockwise from celestial north (i.e., toward
@@ -1447,6 +1598,7 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('pole_position_angle', 'bodyx')
     DESCRIPTION                 = "The ring pole position angle is the
       projected direction of the ring system's pole (angular momentum) vector
       on the sky, measured as an angle counterclockwise from celestial north
@@ -1460,9 +1612,13 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "RING_CENTER_X_COORDINATE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
+    LINK_FN                     = "null"
+    LINK_ID                     = "LINK-CENTER_COORDINATE"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
+    BACKPLANE_KEY               = ('center_coordinate', 'bodyx', 'u')
     DESCRIPTION                 = "Ring center X coordinate is the predicted
       horizontal coordinate of the center of the ring system within this data
       product. A fractional value of 0.5 indicates the center of the pixel.
@@ -1474,9 +1630,13 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "RING_CENTER_Y_COORDINATE"
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
+    LINK_FN                     = "null"
+    LINK_ID                     = "LINK-CENTER_COORDINATE"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
+    BACKPLANE_KEY               = ('center_coordinate', 'bodyx', 'v')
     DESCRIPTION                 = "Ring center Y coordinate is the predicted
       vertical coordinate of the center of the ring system within this data
       product. A fractional value of 0.5 indicates the center of the pixel.

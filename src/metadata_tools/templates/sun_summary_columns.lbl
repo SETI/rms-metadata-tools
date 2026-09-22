@@ -9,6 +9,28 @@ $NOTE
 #
 # Formats, units, valid ranges, and null constants mirror the entries in
 # geometry_support/formats.py FORMAT_DICT for the corresponding backplane keys.
+#
+# Computation-spec keywords: each first COLUMN of a computation group carries
+# private keywords stating how the column is computed. They are read by
+# geometry_support/label_schema.py and stripped from generated labels by
+# label_support.py, so they never reach a shipped .lbl:
+#
+#   BACKPLANE_KEY = <Python tuple literal>  the Backplane.evaluate() key; the
+#                   token 'bodyx' (defs.BODYX) is substituted per body at run
+#                   time, and a string 'defs.<DICT>["bodyx"]' resolves to a
+#                   defs dictionary lookup after substitution
+#   MASK          = ('<maskers>', '<shadowers>', '<face>'), letters P/R/M and
+#                   face D/N; omitted when no mask applies
+#   VALUES        = <int>, how many consecutive COLUMN objects this
+#                   computation fills (a min/max pair is 2); default 1 -- the
+#                   following VALUES-1 COLUMNs carry no spec keywords
+#   OVERFLOW_FORMAT = the fallback format when a value overflows the field,
+#                   in PDS3 FORMAT notation, on every member of the group
+#   LINK_FN / LINK_ID = the function and group token linking columns that go
+#                   null together; the id's only meaning is equality
+#
+# The right-hand side of BACKPLANE_KEY, MASK, and VALUES is a Python literal
+# on a single line; nothing ever parses these lines as ODL.
 ##############################################################################
 $END_NOTE
   OBJECT                        = COLUMN
@@ -18,6 +40,8 @@ $END_NOTE
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('latitude', 'SUN', 'centric')
+    VALUES                      = 2
     DESCRIPTION                 = "Planetocentric latitude is the angle
       between the Sun's equator plane and a vector from its center to a point
       on the surface. Values are positive in the Sun's northern hemisphere and
@@ -50,6 +74,8 @@ $END_NOTE
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('latitude', 'SUN', 'graphic')
+    VALUES                      = 2
     DESCRIPTION                 = "Planetographic latitude is the angle
       between the Sun's equator plane and the normal vector at a point on the
       surface. Values are positive in the Sun's northern hemisphere and
@@ -82,6 +108,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('longitude', 'SUN', 'iau', 'west')
+    VALUES                      = 2
     DESCRIPTION                 = "IAU longitude is the angle, projected
       perpendicular to the Sun's rotation axis, from the prime meridian to a
       vector pointing from the Sun's center to a surface point. Longitudes
@@ -120,6 +148,8 @@ $END_NOTE
     VALID_MINIMUM               = -180.
     VALID_MAXIMUM               = 180.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('longitude', 'SUN', 'obs', 'west', -180)
+    VALUES                      = 2
     DESCRIPTION                 = "Longitude with respect to the observer is
       the longitude of a point on the Sun's surface minus the sub-observer
       longitude. Values are modulo 360 degrees and are shifted to the range
@@ -148,8 +178,11 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_FINEST_SURFACE_RESOLUTION
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('finest_resolution', 'SUN')
+    VALUES                      = 2
     DESCRIPTION                 = "Finest surface resolution is the shorter
       dimension of a pixel as projected onto the Sun's surface at the intercept
       point. It defines the approximate size of the smallest linear feature
@@ -162,6 +195,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_FINEST_SURFACE_RESOLUTION
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Finest surface resolution is the shorter
@@ -176,8 +210,11 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_COARSEST_SURFACE_RESOLUTION
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('coarsest_resolution', 'SUN')
+    VALUES                      = 2
     DESCRIPTION                 = "Coarsest surface resolution is the longer
       dimension of a pixel as projected onto the Sun's surface at the intercept
       point. This is larger than the finest surface resolution due to
@@ -190,6 +227,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_COARSEST_SURFACE_RESOLUTION
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Coarsest surface resolution is the longer
@@ -204,8 +242,11 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_SURFACE_DISTANCE
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('distance', 'SUN')
+    VALUES                      = 2
     DESCRIPTION                 = "Surface distance is the distance between the
       observer and the intercept point on the Sun's surface.
 
@@ -216,6 +257,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_SURFACE_DISTANCE
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Surface distance is the distance between the
@@ -229,7 +271,10 @@ $END_NOTE
     NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
     FORMAT                      = "A23"
+    OVERFLOW_FORMAT             = "A23"
     NULL_CONSTANT               = "NA"
+    BACKPLANE_KEY               = ('event_time', 'SUN')
+    VALUES                      = 2
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photon left a point on the Sun's
       surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss.
@@ -242,6 +287,7 @@ $END_NOTE
     NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
     DATA_TYPE                   = TIME
     FORMAT                      = "A23"
+    OVERFLOW_FORMAT             = "A23"
     NULL_CONSTANT               = "NA"
     DESCRIPTION                 = "Surface intercept time is the International
       Atomic Time (TAI) when the received photon left a point on the Sun's
@@ -258,6 +304,8 @@ $END_NOTE
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('sub_observer_latitude', 'SUN', 'centric')
+    VALUES                      = 2
     DESCRIPTION                 = "The planetocentric sub-observer point is the
       point where a photon path from the center of the Sun toward the observer
       intercepts the surface. The planetocentric latitude is the angle between
@@ -290,6 +338,8 @@ $END_NOTE
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               = 90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('sub_observer_latitude', 'SUN', 'graphic')
+    VALUES                      = 2
     DESCRIPTION                 = "The planetographic sub-observer point is the
       point on the Sun's surface where a photon toward the observer departs
       along a path parallel to the local normal vector. The planetographic
@@ -322,6 +372,8 @@ $END_NOTE
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('sub_observer_longitude', 'SUN', 'iau', 'west')
+    VALUES                      = 2
     DESCRIPTION                 = "The sub-observer point is the point where a
       photon path from the center of the Sun toward the observer intercepts the
       surface. The IAU longitude is the angle, projected perpendicular to the
@@ -356,8 +408,11 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_CENTER_RESOLUTION
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('center_resolution', 'SUN', 'u')
+    VALUES                      = 2
     DESCRIPTION                 = "Center resolution is the linear size of a
       pixel as projected at the distance of the center of the Sun.
 
@@ -368,6 +423,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_CENTER_RESOLUTION
     FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Center resolution is the linear size of a
@@ -380,8 +436,11 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_CENTER_DISTANCE
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('center_distance', 'SUN', 'obs')
+    VALUES                      = 2
     DESCRIPTION                 = "Center distance is the distance from the
       observer to the center of the Sun.
 
@@ -392,6 +451,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_CENTER_DISTANCE
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     UNIT                        = "km"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "Center distance is the distance from the
@@ -404,7 +464,10 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MINIMUM_RADIUS_IN_PIXELS
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('radius_in_pixels', 'SUN')
+    VALUES                      = 2
     DESCRIPTION                 = "The apparent radius of the Sun's disk,
       converted to pixels.
 
@@ -415,6 +478,7 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = MAXIMUM_RADIUS_IN_PIXELS
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
     NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The apparent radius of the Sun's disk,
       converted to pixels.
@@ -426,9 +490,13 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = CENTER_X_COORDINATE
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
+    LINK_FN                     = "null"
+    LINK_ID                     = "LINK-CENTER_COORDINATE"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
+    BACKPLANE_KEY               = ('center_coordinate', 'SUN', 'x')
     DESCRIPTION                 = "Center X coordinate is the predicted
       horizontal coordinate of the center of the Sun within this data product.
       A fractional value of 0.5 indicates the center of the pixel.
@@ -439,9 +507,13 @@ $END_NOTE
   OBJECT                        = COLUMN
     NAME                        = CENTER_Y_COORDINATE
     FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
+    LINK_FN                     = "null"
+    LINK_ID                     = "LINK-CENTER_COORDINATE"
     NULL_CONSTANT               = -99999.
     VALID_MINIMUM               = -10000.
     VALID_MAXIMUM               =  10000.
+    BACKPLANE_KEY               = ('center_coordinate', 'SUN', 'y')
     DESCRIPTION                 = "Center Y coordinate is the predicted
       vertical coordinate of the center of the Sun within this data product.
       A fractional value of 0.5 indicates the center of the pixel.

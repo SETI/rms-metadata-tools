@@ -2,6 +2,7 @@
 # label_support.py - Tools for generating metadata labels.
 ################################################################################
 """Tools for generating PDS3 metadata labels from templates."""
+import re
 from collections.abc import Callable
 from pathlib import Path
 
@@ -11,6 +12,35 @@ from pdstemplate.pds3table import pds3_table_preprocessor
 
 import metadata_tools.defs as defs
 import metadata_tools.util as util
+
+# The private per-COLUMN keywords carrying the geometry computation spec; see
+# metadata_tools.geometry_support.label_schema.PRIVATE_KEYWORDS, which this
+# alternation must match. They are not PDS3 Data Dictionary keywords, so they
+# must never reach a shipped label. The line-start anchor matches the schema
+# reader's, so the read and strip can never disagree about what is a keyword
+# line.
+_PRIVATE_KEYWORD_RE = re.compile(
+    r'^ *(BACKPLANE_KEY|MASK|VALUES|OVERFLOW_FORMAT|LINK_FN|LINK_ID) *=[^\n]*\n',
+    re.MULTILINE)
+
+
+#===============================================================================
+def _strip_private_keywords(template_path: object, content: str) -> str:
+    """Remove the private computation keywords from a template's content.
+
+    Runs as a PdsTemplate preprocessor after ``pds3_table_preprocessor`` (which
+    must stay first: PdsTemplate hands its kwargs to the first preprocessor
+    only, and the private lines are inert to it).
+
+    Parameters:
+        template_path: The template path, unused; part of the preprocessor
+            call signature.
+        content: The template content, with LF line terminators.
+
+    Returns:
+        The content with every private keyword line removed.
+    """
+    return _PRIVATE_KEYWORD_RE.sub('', content)
 
 
 #===============================================================================
@@ -65,8 +95,10 @@ def create(filepath: str | Path | FCPath,
         template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
         template_path = host_template_dir / (template_name + '.lbl')
 
-    # Default preprocessor
-    preprocess: Callable[..., object] | None = pds3_table_preprocessor
+    # Default preprocessors. The inventory template has no COLUMN objects, so
+    # it takes neither the table preprocessor nor the private-keyword strip.
+    preprocess: list[Callable[..., object]] | None = [pds3_table_preprocessor,
+                                                      _strip_private_keywords]
     if 'inventory' in body:
         preprocess = None
 

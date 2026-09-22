@@ -1,10 +1,40 @@
+$NOTE
+##############################################################################
+# Column definitions for the sky summary geometry table.
+#
+# Computation-spec keywords: each first COLUMN of a computation group carries
+# private keywords stating how the column is computed. They are read by
+# geometry_support/label_schema.py and stripped from generated labels by
+# label_support.py, so they never reach a shipped .lbl:
+#
+#   BACKPLANE_KEY = <Python tuple literal>  the Backplane.evaluate() key; the
+#                   token 'bodyx' (defs.BODYX) is substituted per body at run
+#                   time, and a string 'defs.<DICT>["bodyx"]' resolves to a
+#                   defs dictionary lookup after substitution
+#   MASK          = ('<maskers>', '<shadowers>', '<face>'), letters P/R/M and
+#                   face D/N; omitted when no mask applies
+#   VALUES        = <int>, how many consecutive COLUMN objects this
+#                   computation fills (a min/max pair is 2); default 1 -- the
+#                   following VALUES-1 COLUMNs carry no spec keywords
+#   OVERFLOW_FORMAT = the fallback format when a value overflows the field,
+#                   in PDS3 FORMAT notation, on every member of the group
+#   LINK_FN / LINK_ID = the function and group token linking columns that go
+#                   null together; the id's only meaning is equality
+#
+# The right-hand side of BACKPLANE_KEY, MASK, and VALUES is a Python literal
+# on a single line; nothing ever parses these lines as ODL.
+##############################################################################
+$END_NOTE
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_RIGHT_ASCENSION"
     FORMAT                      = "F10.6"
+    OVERFLOW_FORMAT             = "F10.5"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('right_ascension', ())
+    VALUES                      = 2
     DESCRIPTION                 = "The minimum value for J2000 right
       ascension within the field of view sampled by this observation.
 
@@ -17,6 +47,7 @@
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_RIGHT_ASCENSION"
     FORMAT                      = "F10.6"
+    OVERFLOW_FORMAT             = "F10.5"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
     VALID_MAXIMUM               = 360.
@@ -33,10 +64,13 @@
   OBJECT                        = COLUMN
     NAME                        = "MINIMUM_DECLINATION"
     FORMAT                      = "F10.6"
+    OVERFLOW_FORMAT             = "F10.5"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               =  90.
     NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('declination', ())
+    VALUES                      = 2
     DESCRIPTION                 = "The minimum value for J2000 declination
       within the field of view sampled by the observation."
   END_OBJECT                    = COLUMN
@@ -44,6 +78,7 @@
   OBJECT                        = COLUMN
     NAME                        = "MAXIMUM_DECLINATION"
     FORMAT                      = "F10.6"
+    OVERFLOW_FORMAT             = "F10.5"
     UNIT                        = "deg"
     VALID_MINIMUM               = -90.
     VALID_MAXIMUM               =  90.
