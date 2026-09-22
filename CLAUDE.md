@@ -75,7 +75,9 @@ Core engine modules:
   metadata and computation spec alike — from its label template.
 - `cumulative_support.py` — walks a volume tree and concatenates per-volume tables.
 - `label_support.py` — generates PDS3 `.lbl` labels from templates using `rms-pdstemplate`;
-  strips the private computation keywords so they never reach a shipped label.
+  lowers the column grammar and strips the spec keywords so they never reach a shipped label.
+- `column_grammar.py` — the definition/stub column grammar shared by the template read and
+  write paths, including the write-time lowering to plain COLUMN objects.
 - `config.py` — the host config registry (`set_host()` / `get_*_config()`).
 - `task_list_support.py` — task-file generation for cloud/Worker runs.
 - `common.py` — `Table` base class, the global `PdsLogger`, and the shared argument parser.
@@ -123,22 +125,22 @@ host_config`), not a bare `import host_config`.
 and `templates/`. See "Adding a new host" in the developer guide
 (`docs/dev_guide/dev_guide_extending.rst`).
 
-**Geometry columns are defined entirely by the label templates**: a host's
-`templates/<HOST>_<kind>_summary.lbl` (usually via a shared fragment) decides which columns
-exist, in what order, and each column's NAME, FORMAT (hence width and print format), UNIT
-(hence unit conversion), NULL_CONSTANT, and valid range — plus, in six *private keywords*
-inside each COLUMN object, how the column is computed: `BACKPLANE_KEY`, `MASK`, and
-`VALUES` (Python literals, parsed with `ast.literal_eval`; the `'bodyx'` token is
-substituted per body at run time), `OVERFLOW_FORMAT` (PDS3 FORMAT notation), and
-`LINK_FN`/`LINK_ID` (null-link groups). `geometry_support/label_schema.py` parses and
-validates all of it loudly at table construction; `label_support.py` strips the private
-keywords at write time, so shipped labels never carry them.
+**Geometry columns are defined entirely by the label templates**, in the definition/stub
+grammar of `column_grammar.py`: each computed column is one `COLUMN_DEFINITION` object —
+carrying the shared label metadata (FORMAT hence width/print format, UNIT hence unit
+conversion, NULL_CONSTANT, valid range, OVERFLOW_FORMAT) and the computation spec
+(`BACKPLANE_KEY` and `MASK` as Python literals parsed with `ast.literal_eval`, the
+`'bodyx'` token substituted per body at run time; `LINK_FN`/`LINK_ID` null-link groups) —
+followed by one `COLUMN_STUB` object per value, each carrying its NAME, DESCRIPTION, and
+any override. Group size is the stub count. `geometry_support/label_schema.py` parses and
+validates it all loudly at table construction; the write path lowers every group to plain
+COLUMN objects (`merge_column_definitions`), so shipped labels never carry the grammar.
 
-**Adding a geometry column:** (1) add the COLUMN object(s) to the host's summary label
-template with the private keywords on the group's first column, (2) add the backplane
-function if the quantity is new, (3) update tests. Removing a column for one host is a
-template-only edit — the computation travels with the COLUMN object. (See "Adding a
-geometry column" in `docs/dev_guide/dev_guide_extending.rst`.)
+**Adding a geometry column:** (1) add a COLUMN_DEFINITION plus its COLUMN_STUB object(s)
+to the host's summary label template, (2) add the backplane function if the quantity is
+new, (3) update tests. Removing a column for one host is a template-only edit — the
+computation travels with the definition. (See "Adding a geometry column" in
+`docs/dev_guide/dev_guide_extending.rst`.)
 
 ## Conventions (from `.cursor/rules/`)
 

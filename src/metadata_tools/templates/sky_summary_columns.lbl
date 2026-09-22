@@ -2,10 +2,15 @@ $NOTE
 ##############################################################################
 # Column definitions for the sky summary geometry table.
 #
-# Computation-spec keywords: each first COLUMN of a computation group carries
-# private keywords stating how the column is computed. They are read by
-# geometry_support/label_schema.py and stripped from generated labels by
-# label_support.py, so they never reach a shipped .lbl:
+# Column grammar: each computed column is one COLUMN_DEFINITION object --
+# holding the computation spec and the label metadata shared by the column's
+# values -- followed by one COLUMN_STUB object per value, each holding its
+# NAME, its DESCRIPTION, and any keyword it overrides. Group size is the stub
+# count. The label write path lowers every group to plain COLUMN objects, so
+# neither block kind nor any spec keyword ever reaches a shipped label.
+#
+# Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
+# stub may override like FORMAT):
 #
 #   BACKPLANE_KEY = <Python tuple literal>  the Backplane.evaluate() key; the
 #                   token 'bodyx' (defs.BODYX) is substituted per body at run
@@ -13,20 +18,17 @@ $NOTE
 #                   defs dictionary lookup after substitution
 #   MASK          = ('<maskers>', '<shadowers>', '<face>'), letters P/R/M and
 #                   face D/N; omitted when no mask applies
-#   VALUES        = <int>, how many consecutive COLUMN objects this
-#                   computation fills (a min/max pair is 2); default 1 -- the
-#                   following VALUES-1 COLUMNs carry no spec keywords
 #   OVERFLOW_FORMAT = the fallback format when a value overflows the field,
-#                   in PDS3 FORMAT notation, on every member of the group
+#                   in PDS3 FORMAT notation
 #   LINK_FN / LINK_ID = the function and group token linking columns that go
 #                   null together; the id's only meaning is equality
 #
-# The right-hand side of BACKPLANE_KEY, MASK, and VALUES is a Python literal
-# on a single line; nothing ever parses these lines as ODL.
+# The right-hand side of BACKPLANE_KEY and MASK is a Python literal on a
+# single line; nothing ever parses these lines as ODL.
 ##############################################################################
 $END_NOTE
-  OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_RIGHT_ASCENSION"
+  OBJECT                        = COLUMN_DEFINITION
+    NAME                        = "RIGHT_ASCENSION"
     FORMAT                      = "F10.6"
     OVERFLOW_FORMAT             = "F10.5"
     UNIT                        = "deg"
@@ -34,7 +36,10 @@ $END_NOTE
     VALID_MAXIMUM               = 360.
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('right_ascension', ())
-    VALUES                      = 2
+  END_OBJECT                    = COLUMN_DEFINITION
+
+  OBJECT                        = COLUMN_STUB
+    NAME                        = "MINIMUM_RIGHT_ASCENSION"
     DESCRIPTION                 = "The minimum value for J2000 right
       ascension within the field of view sampled by this observation.
 
@@ -42,16 +47,10 @@ $END_NOTE
       will be greater than the maximum, meaning that the range of right
       ascension is from the 'minimum' value to 360 and then from zero to the
       'maximum'."
-  END_OBJECT                    = COLUMN
+  END_OBJECT                    = COLUMN_STUB
 
-  OBJECT                        = COLUMN
+  OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RIGHT_ASCENSION"
-    FORMAT                      = "F10.6"
-    OVERFLOW_FORMAT             = "F10.5"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The maximum value for J2000 right
       ascension within the field of view sampled by this observation.
 
@@ -59,10 +58,10 @@ $END_NOTE
       will be greater than the maximum, meaning that the range of right
       ascension is from the 'minimum' value to 360 and then from zero to the
       'maximum'."
-  END_OBJECT                    = COLUMN
+  END_OBJECT                    = COLUMN_STUB
 
-  OBJECT                        = COLUMN
-    NAME                        = "MINIMUM_DECLINATION"
+  OBJECT                        = COLUMN_DEFINITION
+    NAME                        = "DECLINATION"
     FORMAT                      = "F10.6"
     OVERFLOW_FORMAT             = "F10.5"
     UNIT                        = "deg"
@@ -70,19 +69,16 @@ $END_NOTE
     VALID_MAXIMUM               =  90.
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('declination', ())
-    VALUES                      = 2
+  END_OBJECT                    = COLUMN_DEFINITION
+
+  OBJECT                        = COLUMN_STUB
+    NAME                        = "MINIMUM_DECLINATION"
     DESCRIPTION                 = "The minimum value for J2000 declination
       within the field of view sampled by the observation."
-  END_OBJECT                    = COLUMN
+  END_OBJECT                    = COLUMN_STUB
 
-  OBJECT                        = COLUMN
+  OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_DECLINATION"
-    FORMAT                      = "F10.6"
-    OVERFLOW_FORMAT             = "F10.5"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = -90.
-    VALID_MAXIMUM               =  90.
-    NULL_CONSTANT               = -999.
     DESCRIPTION                 = "The maximum value for J2000 declination
       within the field of view sampled by the observation."
-  END_OBJECT                    = COLUMN
+  END_OBJECT                    = COLUMN_STUB

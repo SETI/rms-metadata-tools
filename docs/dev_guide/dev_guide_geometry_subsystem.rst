@@ -71,50 +71,64 @@ template.
 Where a column's metadata comes from
 ====================================
 
-The **label template** is the single source of truth for a geometry column:
-which columns exist, in what order, each column's ``NAME``, ``FORMAT`` (from
-which the field width and print format are derived), ``UNIT`` (from which the
-unit conversion is derived), ``NULL_CONSTANT``, and ``VALID_MINIMUM`` /
-``VALID_MAXIMUM`` -- and, through six *private keywords*, how the column is
-computed:
+The **label template** is the single source of truth for a geometry column,
+declared in the definition/stub grammar of
+:mod:`metadata_tools.column_grammar`: each computed column is one
+``COLUMN_DEFINITION`` object -- carrying the computation spec and the label
+metadata shared by the column's values -- followed by one ``COLUMN_STUB``
+object per value, each carrying its ``NAME``, its ``DESCRIPTION``, and any
+keyword it overrides. Group size is the stub count; membership is declared by
+the stub's own object type, so no column can be assimilated into a group by
+accident.
 
 .. code-block:: text
 
-     OBJECT                        = COLUMN
-       NAME                        = "MINIMUM_RING_RADIUS"
+     OBJECT                        = COLUMN_DEFINITION
+       NAME                        = "RING_RADIUS"
        FORMAT                      = "F12.3"
        OVERFLOW_FORMAT             = "E12.5"
        UNIT                        = "km"
        NULL_CONSTANT               = -999.
        BACKPLANE_KEY               = ('ring_radius', 'bodyx:RING')
        MASK                        = ('PM', 'P', '')
-       VALUES                      = 2
+     END_OBJECT                    = COLUMN_DEFINITION
+
+     OBJECT                        = COLUMN_STUB
+       NAME                        = "MINIMUM_RING_RADIUS"
        DESCRIPTION                 = "..."
-     END_OBJECT                    = COLUMN
+     END_OBJECT                    = COLUMN_STUB
+
+     OBJECT                        = COLUMN_STUB
+       NAME                        = "MAXIMUM_RING_RADIUS"
+       DESCRIPTION                 = "..."
+     END_OBJECT                    = COLUMN_STUB
+
+The spec keywords, allowed on definitions only (except ``OVERFLOW_FORMAT``,
+which a stub may override like ``FORMAT``):
 
 * ``BACKPLANE_KEY`` -- the key handed to ``Backplane.evaluate()``, as a Python
   tuple literal. The token ``'bodyx'`` (:data:`~metadata_tools.defs.BODYX`) is
   substituted per body at row time, and a string of the form
   ``'defs.<DICT>["bodyx"]'`` resolves to a ``defs`` dictionary lookup after
-  substitution. A column carrying this keyword opens a *computation group*.
-* ``VALUES`` (default 1) -- how many consecutive ``COLUMN`` objects the
-  computation fills; a min/max pair is 2. The following ``VALUES - 1`` columns
-  carry no group keywords and are absorbed as the remaining slots.
+  substitution.
 * ``MASK`` (default ``('', '', '')``) -- the ``(masker, shadower, face)``
   codes. The masker/shadower strings concatenate ``"P"`` (planet), ``"R"``
   (rings), and ``"M"`` (blocker body); the face is ``"D"``, ``"N"``, or ``""``.
 * ``OVERFLOW_FORMAT`` -- the fallback format substituted when a value will not
-  fit its field, in the same PDS3 FORMAT notation as ``FORMAT`` itself, on
-  every member of a group. It must fill the field exactly.
+  fit its field, in the same PDS3 FORMAT notation as ``FORMAT`` itself. It
+  must fill the field exactly.
 * ``LINK_FN`` / ``LINK_ID`` -- the link function and group token tying columns
   that go null together. The id is an arbitrary string whose only meaning is
   equality: columns in one table sharing ``(LINK_FN, LINK_ID)`` form one group.
 
-The right-hand side of ``BACKPLANE_KEY``, ``MASK``, and ``VALUES`` is a Python
-literal on a single line, parsed with :func:`ast.literal_eval`; nothing ever
-parses these lines as ODL. The keywords are not PDS3 Data Dictionary keywords,
-so :func:`~metadata_tools.label_support.create` strips them at write time and
-they never appear in a shipped label.
+The right-hand side of ``BACKPLANE_KEY`` and ``MASK`` is a Python literal on a
+single line, parsed with :func:`ast.literal_eval`; nothing ever parses these
+lines as ODL. Neither block kind nor any spec keyword is PDS3:
+:func:`~metadata_tools.label_support.create` lowers every group to plain
+``COLUMN`` objects (via
+:func:`~metadata_tools.column_grammar.merge_column_definitions`, which copies
+the definition's shippable keywords into each stub) before a label is
+generated, so shipped labels are indistinguishable from hand-written ones.
 
 This is the same arrangement as the index pipeline, where
 :class:`~metadata_tools.index_support.table.IndexTable` derives its columns from
@@ -125,26 +139,27 @@ Label schema pull
 =================
 
 :func:`~metadata_tools.geometry_support.label_schema.resolve_schema` parses a
-host's summary template, skips the fixed prefix columns (``VOLUME_ID``,
+host's summary template: a leading run of plain ``COLUMN`` objects must match
+the table kind's fixed prefix columns (``VOLUME_ID``,
 ``FILE_SPECIFICATION_NAME``, and, per table kind, ``SYSTEM_NAME`` and
-``BODY_NAME``), and groups the remaining ``COLUMN`` objects into computations
-by their ``BACKPLANE_KEY`` and ``VALUES`` keywords. Template order is output
-order. The result is cached per (template directory, qualifier) and resolved
-once, when the table is constructed.
+``BODY_NAME``), and the rest of the table is definition/stub groups. Template
+order is output order. The result is cached per (template directory,
+qualifier) and resolved once, when the table is constructed.
 
 Removing a column removes its computation with it, so a host trims its column
-set by deleting ``COLUMN`` objects and nothing else. Malformed shapes are
-errors, all raised at construction rather than allowed to misalign a row per
-observation:
+set by deleting a definition and its stubs and nothing else. Malformed shapes
+are errors, all raised at construction rather than allowed to misalign a row
+per observation:
 
-* a data column with no ``BACKPLANE_KEY`` that no preceding group absorbs;
-* a group keyword on an absorbed column, or a ``VALUES`` count that runs past
-  the end of the table;
-* a private keyword on a prefix column, or a duplicated private keyword;
+* a stub with no preceding definition, or a definition with no stubs;
+* more than two stubs (no computation produces more than two values);
+* a plain ``COLUMN`` among the groups, or a spec keyword on a prefix column
+  or a stub;
+* a definition with no ``BACKPLANE_KEY``, a malformed spec literal, or a
+  duplicated keyword;
 * only one of ``LINK_FN`` and ``LINK_ID``, or an unknown link function;
 * an ``OVERFLOW_FORMAT`` that does not fill its field exactly;
-* prefix columns that differ from the expected run for that table kind;
-* a geometry column with no null keyword, or with no ``FORMAT``;
+* a column with no null keyword, or with no ``FORMAT``;
 * ``VALID_MINIMUM == VALID_MAXIMUM``, which would null every value.
 
 Because nothing exercises the generated tables by default -- the end-to-end

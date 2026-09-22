@@ -28,6 +28,13 @@ The top-level package and the shared support modules used by every table kind.
    :undoc-members:
    :show-inheritance:
 
+``metadata_tools.column_grammar``
+=================================
+
+.. automodule:: metadata_tools.column_grammar
+   :members:
+   :show-inheritance:
+
 ``metadata_tools.util``
 =======================
 

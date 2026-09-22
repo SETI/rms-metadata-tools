@@ -119,24 +119,24 @@ The label template defines a geometry column end to end -- its label metadata
 and its computation -- so a new column is a template edit plus, at most, a new
 backplane function.
 
-#. Add the ``COLUMN`` object(s) to the host's summary label template, e.g.
-   ``GO_0xxx_body_summary.lbl`` (or the shared fragment it includes). This
-   makes the column exist, fixes its position, and declares its ``NAME``,
-   ``FORMAT``, ``UNIT`` (which drives the unit conversion), ``NULL_CONSTANT``,
-   and valid range. A two-valued column needs both halves adjacent, first
-   (minimum) half first.
-#. On the first ``COLUMN`` of the group, state the computation in the private
-   keywords: ``BACKPLANE_KEY`` (a Python tuple literal, with ``'bodyx'`` where
-   the body name goes), ``MASK`` if any bodies mask it, and ``VALUES = 2`` for
-   a two-valued column. Add ``OVERFLOW_FORMAT`` (on every member, in PDS3
-   FORMAT notation) if a value can outgrow its field, and ``LINK_FN`` /
-   ``LINK_ID`` if the column must go null together with others. See
-   :doc:`dev_guide_geometry_subsystem` for the full keyword reference; the
-   keywords are stripped from generated labels, so they never reach the
-   archive.
+#. Add a ``COLUMN_DEFINITION`` object to the host's summary label template,
+   e.g. ``GO_0xxx_body_summary.lbl`` (or the shared fragment it includes),
+   naming the quantity and declaring what its values share: ``FORMAT``,
+   ``UNIT`` (which drives the unit conversion), ``NULL_CONSTANT``, the valid
+   range, and the computation -- ``BACKPLANE_KEY`` (a Python tuple literal,
+   with ``'bodyx'`` where the body name goes), ``MASK`` if any bodies mask
+   it, ``OVERFLOW_FORMAT`` (in PDS3 FORMAT notation) if a value can outgrow
+   its field, and ``LINK_FN`` / ``LINK_ID`` if the column must go null
+   together with others.
+#. Follow it with one ``COLUMN_STUB`` object per value -- one for a
+   single-valued column, minimum then maximum for a pair -- each declaring
+   its ``NAME`` and ``DESCRIPTION``, plus any keyword it overrides. See
+   :doc:`dev_guide_geometry_subsystem` for the full grammar; the write path
+   lowers every group to plain ``COLUMN`` objects, so none of this reaches
+   the archive.
 #. Add the corresponding backplane function in ``oops`` if the quantity is new.
 #. Run the host's geometry program and update the unit tests.
 
 Removing a column for one host is likewise a template-only edit: delete the
-``COLUMN`` object(s) and the computation goes with them. Nothing else needs to
-change, and no other host is affected.
+definition and its stubs, and the computation goes with them. Nothing else
+needs to change, and no other host is affected.

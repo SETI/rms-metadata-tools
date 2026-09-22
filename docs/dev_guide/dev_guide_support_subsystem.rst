@@ -48,12 +48,13 @@ consumed by ``rms-cloud-tasks`` workers. The four public functions are:
 
 :func:`~metadata_tools.label_support.create` generates a ``.lbl`` label for a
 table by rendering the host's template (or a shared template from the global
-``templates/`` directory) with ``rms-pdstemplate``. The inventory table uses no
-table preprocessor; the other kinds chain two: the PDS3 table preprocessor, so
-column definitions are validated against the data, and a strip step that
-removes the private computation keywords (``BACKPLANE_KEY``, ``MASK``,
-``VALUES``, ``OVERFLOW_FORMAT``, ``LINK_FN``, ``LINK_ID``) so they never reach
-a shipped label; see :doc:`dev_guide_geometry_subsystem`.
+``templates/`` directory) with ``rms-pdstemplate``. The inventory template has
+no COLUMN objects and uses no preprocessor; the other kinds chain three:
+:func:`~metadata_tools.column_grammar.merge_column_definitions` lowers the
+definition/stub column grammar to plain ``COLUMN`` objects, the PDS3 table
+preprocessor validates the lowered columns against the data, and a strip step
+sweeps any stray spec keyword so nothing non-PDS3 reaches a shipped label; see
+:doc:`dev_guide_geometry_subsystem`.
 
 ``bodies`` -- the oops body registry
 ====================================
