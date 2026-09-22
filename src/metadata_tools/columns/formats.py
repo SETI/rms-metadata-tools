@@ -37,23 +37,19 @@ FormatTuple = tuple[str, str | None, int, str]
 
 _FORMAT_DICT: dict[str, FormatTuple] = {
     "right_ascension"             : ('360', '%10.5f', 0, ''),
-    "center_right_ascension"      : ('360', '%10.5f', 0, ''),
     "declination"                 : ('DEG', '%10.5f', 0, ''),
-    "center_declination"          : ('DEG', '%10.5f', 0, ''),
     "distance"                    : ('', '%12.5e', 0, ''),
     "center_distance"             : ('', '%12.5e', 0, ''),
     "center_coordinate"           : ('', '%12.5e', 1, 'null'),
     "radius_in_pixels"            : ('', '%12.5e', 0, ''),
     "ring_radius"                 : ('', '%12.5e', 0, ''),
     "ansa_radius"                 : ('', '%12.5e', 0, ''),
-    "altitude"                    : ('', '%12.5e', 0, ''),
     "ansa_altitude"               : ('', '%12.5e', 0, ''),
     "resolution"                  : ('', '%10.4e', 0, ''),
     "finest_resolution"           : ('', '%10.4e', 0, ''),
     "coarsest_resolution"         : ('', '%10.4e', 0, ''),
     "ring_radial_resolution"      : ('', '%10.4e', 0, ''),
     "ansa_radial_resolution"      : ('', '%10.4e', 0, ''),
-    "ansa_vertical_resolution"    : ('', '%10.4e', 0, ''),
     "center_resolution"           : ('', '%10.4e', 0, ''),
     "body_diameter_in_pixels"     : ('', '%12.5e', 0, ''),
     "event_time"                  : ('ISO', '%25s', 0, ''),
@@ -77,11 +73,9 @@ _FORMAT_DICT: dict[str, FormatTuple] = {
     "center_phase_angle"          : ('DEG', None, 0, ''),
     "incidence_angle"             : ('DEG', None, 0, ''),
     "ring_incidence_angle"        : ('DEG', None, 0, ''),
-    "center_incidence_angle"      : ('DEG', None, 0, ''),
     "ring_center_incidence_angle" : ('DEG', None, 0, ''),
     "emission_angle"              : ('DEG', None, 0, ''),
     "ring_emission_angle"         : ('DEG', None, 0, ''),
-    "center_emission_angle"       : ('DEG', None, 0, ''),
     "ring_center_emission_angle"  : ('DEG', None, 0, ''),
     "ring_elevation"              : ('DEG', None, 0, '')}
 """Conversion/overflow/link metadata for each backplane quantity."""
@@ -89,8 +83,7 @@ _FORMAT_DICT: dict[str, FormatTuple] = {
 _ALT_FORMAT_DICT: dict[tuple[str, str], FormatTuple] = {
     ("ring_angular_resolution", "km")        : ('KM', '%10.4e', 0, ''),
     ("longitude", "-180")                    : ('-180', None, 0, ''),
-    ("ring_longitude", "-180")               : ('-180', None, 0, ''),
-    ("sub_longitude", "-180")                : ('-180', None, 0, '')}
+    ("ring_longitude", "-180")               : ('-180', None, 0, '')}
 """Alternate entries keyed by ``(backplane quantity, alt-format tag)``."""
 
 
