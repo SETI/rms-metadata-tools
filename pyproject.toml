@@ -188,6 +188,7 @@ module = [
     "textkernel.*",
     "json_stream.*",
     "cloud_tasks.*",
+    "spicedb.*",
 ]
 ignore_missing_imports = true
 
