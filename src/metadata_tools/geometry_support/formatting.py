@@ -15,7 +15,6 @@ import oops
 import polymath
 
 import metadata_tools.util as util
-from metadata_tools.columns.catalog import FormatTuple
 
 if TYPE_CHECKING:
     from metadata_tools.geometry_support.label_schema import ColumnStub
@@ -55,17 +54,20 @@ def circle_coverage(angles: Any, null_value: float | str, sampling: int,
                                   width=sampling+1, diffmin=1, alt_format=flag)
 
 #===============================================================================
-def formatted_column(values: Any, fmt: FormatTuple,
+def formatted_column(values: Any, overflow_format: str | None,
                      stubs: Sequence['ColumnStub'], sampling: int) -> str:
     """Return one formatted column (or a pair of columns) as a string.
 
     Parameters:
         values: A Scalar of values with its applied mask (or a string).
-        fmt: The column's conversion/overflow/link tuple from the catalog.
+        overflow_format: The print format substituted when a value will not fit
+            its field, or None when the column cannot overflow. PDS3 cannot
+            express a fallback format, so this is the one piece of formatting
+            the catalog still supplies.
         stubs: The label metadata for each value this column writes, in slot
-            order; its length is the number of values. Width, print format,
-            null value, and valid range all come from here, which is to say
-            from the host's label template.
+            order; its length is the number of values. The unit conversion,
+            width, print format, null value, and valid range all come from
+            here, which is to say from the host's label template.
         sampling: Pixel sampling density.
 
     Returns:
@@ -76,8 +78,9 @@ def formatted_column(values: Any, fmt: FormatTuple,
             be clipped to fit.
     """
 
-    # Interpret the format
-    (flag, overflow_format, _, _) = fmt
+    # Interpret the format. The conversion flag is derived from the label, so
+    # every slot of a column carries the same one; resolve_schema checks that.
+    flag = stubs[0].flag
     number_of_values = len(stubs)
     # A column's slots share one null value; per-slot nulls are applied below.
     # resolve_schema guarantees every data column declares a null.

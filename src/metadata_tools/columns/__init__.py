@@ -17,7 +17,6 @@ from metadata_tools.bodies import get_bodies_registry
 from metadata_tools.columns.body import BODY_CATALOG
 from metadata_tools.columns.catalog import (
     ColumnSpec,
-    FormatTuple,
     get_catalog,
     name_map,
 )
@@ -31,7 +30,6 @@ __all__ = [
     'SKY_CATALOG',
     'SUN_CATALOG',
     'ColumnSpec',
-    'FormatTuple',
     'get_bodies_registry',
     'get_catalog',
     'name_map',

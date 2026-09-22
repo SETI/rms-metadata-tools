@@ -24,7 +24,10 @@ import metadata_tools.util as util
 from metadata_tools.columns.catalog import get_catalog, name_map
 from metadata_tools.geometry_support import label_schema
 from metadata_tools.geometry_support.label_schema import (
+    _PENDING_DD_UNITS,
     PREFIX_NAMES,
+    canonical_unit,
+    derive_flag,
     resolve_schema,
     template_name_for,
 )
@@ -127,6 +130,104 @@ def test_sun_schema_resolves_though_unwired() -> None:
     """The sun table is not wired in, but its template and catalog stay in step."""
     schema = resolve_schema(TEMPLATE_DIR, 'sun')
     assert len(schema.columns) == len(get_catalog('sun'))
+
+
+#===============================================================================
+# Deriving the conversion from the label
+#===============================================================================
+@pytest.mark.parametrize(('unit', 'lo', 'hi', 'dtype', 'expected'), [
+    # Times are formatted from their data type, whatever the unit says.
+    (None,         None,   None, 'TIME', 'ISO'),
+    ('deg',           0.,   360., 'TIME', 'ISO'),
+    # Degrees convert; a full-circle range additionally reports coverage, in
+    # whichever convention the range states.
+    ('deg',           0.,   360., None,   '360'),
+    ('deg',        -180.,   180., None,   '-180'),
+    ('deg',         -90.,    90., None,   'DEG'),
+    ('deg',           0.,   180., None,   'DEG'),
+    ('deg',         None,   None, None,   'DEG'),
+    # A /pixel qualifier does not change the conversion.
+    ('deg/pixel',   None,   None, None,   'DEG'),
+    ('deg/pixel',     0.,   360., None,   '360'),
+    # oops works in radians and kilometres, so those need no conversion.
+    ('rad',           0.,   360., None,   ''),
+    ('km',          None,   None, None,   ''),
+    ('km/pixel',    None,   None, None,   ''),
+    ('pixel',    -10000., 10000., None,   ''),
+    (None,       -10000., 10000., None,   ''),
+    # The cyclic test is gated on an angular unit: a dimensionless column
+    # spanning a full circle's worth of numbers is not an angle.
+    (None,         -180.,   180., None,   ''),
+    ('km',         -180.,   180., None,   ''),
+])
+def test_derive_flag(unit: str | None, lo: float | None, hi: float | None,
+                     dtype: str | None, expected: str) -> None:
+    """The conversion follows from the unit, the valid range, and the data type."""
+    assert derive_flag(unit, lo, hi, dtype) == expected
+
+
+def test_canonical_unit_folds_the_usual_spellings() -> None:
+    """Units are canonicalized before the conversion is derived.
+
+    The holdings contain DEGREES and KM as well as deg and km, so matching the
+    raw string would miss real columns.
+    """
+    for spelling in ('deg', 'DEG', 'degree', 'DEGREES', 'degrees'):
+        assert canonical_unit(spelling, 'C', FCPath('t')) == 'deg'
+    for spelling in ('km', 'KM', 'kilometer', 'KILOMETERS'):
+        assert canonical_unit(spelling, 'C', FCPath('t')) == 'km'
+    assert canonical_unit(None, 'C', FCPath('t')) is None
+
+
+def test_canonical_unit_rejects_nonsense() -> None:
+    """An unrecognized unit raises rather than falling through to no conversion."""
+    with pytest.raises(RuntimeError, match='not a recognized PDS3 unit'):
+        canonical_unit('furlongs', 'SOME_COLUMN', FCPath('t'))
+
+
+def test_every_shipped_unit_canonicalizes() -> None:
+    """Every UNIT in the shipped templates is recognized."""
+    for qualifier in sorted(SHIPPED):
+        for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
+            for stub in column.stubs:
+                assert stub.unit is None or stub.unit == canonical_unit(
+                    stub.unit, stub.name, TEMPLATE_DIR)
+
+
+#===============================================================================
+# The temporary deg/pixel whitelist
+#===============================================================================
+def test_deg_per_pixel_whitelist_is_still_needed() -> None:
+    """Fails once the installed rms-pdstemplate recognizes deg/pixel.
+
+    _PENDING_DD_UNITS bridges the gap until SETI/rms-pdstemplate#21 ships. When
+    this test fails, the bridge is no longer needed: delete the offending
+    entries from _PENDING_DD_UNITS and raise the rms-pdstemplate floor in
+    pyproject.toml.
+    """
+    from pdstemplate.pds3table import Pds3Table
+
+    still_pending = {unit for unit in _PENDING_DD_UNITS
+                     if not Pds3Table._unit_is_valid(unit)}
+    assert still_pending == set(_PENDING_DD_UNITS), (
+        f'rms-pdstemplate now recognizes {sorted(set(_PENDING_DD_UNITS) - still_pending)}; '
+        f'remove them from _PENDING_DD_UNITS and raise the version floor')
+
+
+def test_whitelisted_units_are_accepted() -> None:
+    """A pending unit is accepted despite not being in the PDS3 vocabulary."""
+    for unit in _PENDING_DD_UNITS:
+        assert canonical_unit(unit, 'C', FCPath('t')) == unit
+
+
+def test_the_ring_resolutions_depend_on_the_whitelist() -> None:
+    """deg/pixel is not academic: two shipped columns use it."""
+    users = {stub.name
+             for column in resolve_schema(TEMPLATE_DIR, 'ring').columns
+             for stub in column.stubs
+             if stub.unit == 'deg/pixel'}
+    assert users == {'FINEST_LONGITUDINAL_RESOLUTION',
+                     'COARSEST_LONGITUDINAL_RESOLUTION'}
 
 
 #===============================================================================
@@ -250,10 +351,40 @@ def test_missing_format_is_an_error(tmp_path: Path) -> None:
 def test_empty_valid_range_is_an_error(tmp_path: Path) -> None:
     """VALID_MINIMUM == VALID_MAXIMUM would null every value, so it is rejected."""
     host = _host_dir(tmp_path)
+    # Both halves, or the halves derive different conversions and that check
+    # fires first.
     tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
                             '    VALID_MAXIMUM               = 360.',
-                            '    VALID_MAXIMUM               = 0.')
+                            '    VALID_MAXIMUM               = 0.', count=2)
     with pytest.raises(RuntimeError, match='empty valid range'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_halves_deriving_different_conversions_is_an_error(tmp_path: Path) -> None:
+    """A pair whose halves disagree on unit or range is rejected.
+
+    The conversion is derived per column object, so halves that disagree would
+    tabulate one slot in degrees and the other in radians.
+    """
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
+                            '    VALID_MAXIMUM               = 360.',
+                            '    VALID_MAXIMUM               = 180.', count=1)
+    with pytest.raises(RuntimeError, match='derive different conversions'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_unrecognized_unit_is_an_error(tmp_path: Path) -> None:
+    """An unrecognized UNIT is rejected rather than guessed at.
+
+    The unit decides the conversion, so a misspelling that fell through to "no
+    conversion" would silently tabulate radians in a column labelled degrees.
+    """
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
+                            '    UNIT                        = "deg"',
+                            '    UNIT                        = "dgrees"', count=1)
+    with pytest.raises(RuntimeError, match='not a recognized PDS3 unit'):
         resolve_schema(tdir, 'sky')
 
 

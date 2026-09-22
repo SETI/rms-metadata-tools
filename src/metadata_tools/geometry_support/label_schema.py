@@ -47,6 +47,25 @@ _NULL_KEYWORDS = ('NULL_CONSTANT', 'UNKNOWN_CONSTANT', 'INVALID_CONSTANT',
 # "F12.3" -> ("F", "12", "3");  "A23" -> ("A", "23", None)
 _FORMAT_RE = re.compile(r'^([FAEI])(\d+)(?:\.(\d+))?$')
 
+# Units that PDS3 ought to recognize but does not yet.
+#
+# _VALID_UNITS in rms-pdstemplate transcribes the UNIT_LIST of pdsdd.full, a
+# 2011 dump of a dictionary no longer curated. It carries arcsec/pixel,
+# km/pixel, m/pixel and b/pixel but not deg/pixel, so the ring longitudinal
+# resolutions -- which the RMS archive already ships with that unit -- would be
+# rejected. SETI/rms-pdstemplate#21 adds it upstream.
+#
+# TEMPORARY. tests/test_geometry_schema.py fails once the installed
+# rms-pdstemplate recognizes these, which is the signal to delete this set and
+# raise the floor in pyproject.toml.
+_PENDING_DD_UNITS = frozenset({'deg/pixel'})
+
+# The angular unit, once any "/pixel" qualifier is stripped. Backplane values
+# arrive from oops in radians, so a column tabulated in degrees needs
+# converting and one tabulated in radians does not.
+_DEGREES = 'deg'
+_PER_PIXEL = '/pixel'
+
 
 #===============================================================================
 @dataclass(frozen=True)
@@ -61,6 +80,9 @@ class ColumnStub:
         null_value: The value written when the column has nothing to report.
         valid_minimum: The lower bound, or None if the template declares none.
         valid_maximum: The upper bound, or None if the template declares none.
+        unit: The canonical PDS3 unit, or None if the column declares none.
+        flag: The conversion derived from the unit, range, and data type; see
+            :func:`derive_flag`.
     """
 
     name: str
@@ -69,6 +91,8 @@ class ColumnStub:
     null_value: float | str | None
     valid_minimum: float | None
     valid_maximum: float | None
+    unit: str | None = None
+    flag: str = ''
 
 
 #===============================================================================
@@ -99,6 +123,95 @@ class TableSchema:
 
     prefix_stubs: tuple[ColumnStub, ...]
     columns: tuple[ResolvedColumn, ...]
+
+
+#===============================================================================
+def canonical_unit(unit: Any, name: str, template: FCPath) -> str | None:
+    """Return a column's UNIT in its canonical PDS3 spelling.
+
+    Delegates to ``rms-pdstemplate``, whose vocabulary is transcribed from the
+    PDS3 Data Dictionary and which already folds case, repairs exponent style,
+    and resolves the usual long forms -- DEGREES to deg, KILOMETERS to km, PIX
+    to pixel. Canonicalizing here means the derivation below matches one
+    spelling rather than guessing at many.
+
+    Parameters:
+        unit: The template's UNIT value, or None if it declares none.
+        name: The column NAME, for the error message.
+        template: The template path, for the error message.
+
+    Returns:
+        The canonical unit, or None if the column declares none.
+
+    Raises:
+        RuntimeError: If the unit is not a recognized PDS3 unit.
+    """
+    if unit is None:
+        return None
+
+    text = str(unit).strip().strip('"')
+    if not text:
+        return None
+
+    # Private, but the alternative is transcribing the dictionary ourselves and
+    # letting the two copies drift. tests/test_geometry_schema.py exercises the
+    # spellings we rely on, so an upstream rename fails there rather than here.
+    canonical = Pds3Table._get_valid_unit(text)
+    if canonical:
+        return str(canonical)
+    if text in _PENDING_DD_UNITS:
+        return text
+
+    raise RuntimeError(
+        f'{template}: column {name!r} declares UNIT {unit!r}, which is not a recognized '
+        f'PDS3 unit. The unit decides how the column is converted, so an unrecognized '
+        f'one cannot be guessed at.')
+
+
+#===============================================================================
+def derive_flag(unit: str | None, valid_minimum: float | None,
+                valid_maximum: float | None, data_type: Any) -> str:
+    """Derive a column's conversion flag from what its label declares.
+
+    This rests on one invariant: **oops reports angles in radians and lengths in
+    kilometres**. The label states the unit the column is tabulated in, so the
+    conversion is exactly the difference between the two. A column in ``deg``
+    needs converting; one in ``rad`` or ``km`` does not.
+
+    A ``/pixel`` qualifier does not change that -- ``deg/pixel`` is converted
+    just as ``deg`` is -- so it is stripped before the comparison.
+
+    Cyclic coverage follows from the valid range. A quantity whose range spans
+    a full circle wraps, so its extremes must be reported as angular coverage
+    rather than a plain minimum and maximum; the stated range also says which
+    convention, ``(0,360)`` or ``(-180,180)``. A narrower range cannot wrap, so
+    it takes the ordinary minimum and maximum. The test is deliberately gated on
+    an angular unit, so a dimensionless column spanning -180 to 180 is not
+    mistaken for one.
+
+    Parameters:
+        unit: The canonical unit, or None.
+        valid_minimum: The declared lower bound, or None.
+        valid_maximum: The declared upper bound, or None.
+        data_type: The declared DATA_TYPE.
+
+    Returns:
+        One of '', 'DEG', '360', '-180', or 'ISO'.
+    """
+    if data_type == 'TIME':
+        return 'ISO'
+    if unit is None:
+        return ''
+
+    base = unit[:-len(_PER_PIXEL)] if unit.endswith(_PER_PIXEL) else unit
+    if base != _DEGREES:
+        return ''
+
+    if (valid_minimum is not None and valid_maximum is not None
+            and valid_maximum - valid_minimum >= 360.):
+        return '-180' if valid_minimum < 0. else '360'
+
+    return 'DEG'
 
 
 #===============================================================================
@@ -179,14 +292,22 @@ def _read_stubs(template_path: FCPath) -> list[ColumnStub]:
                 null = value
                 break
 
-        width, print_format = _parse_format(str(name), pds3.old_lookup('FORMAT', colnum),
+        column_name = str(name).strip().strip('"')
+        width, print_format = _parse_format(column_name, pds3.old_lookup('FORMAT', colnum),
                                             template_path)
-        stubs.append(ColumnStub(name=str(name).strip().strip('"'),
+        valid_minimum = pds3.old_lookup('VALID_MINIMUM', colnum)
+        valid_maximum = pds3.old_lookup('VALID_MAXIMUM', colnum)
+        data_type = pds3.old_lookup('DATA_TYPE', colnum)
+        unit = canonical_unit(pds3.old_lookup('UNIT', colnum), column_name, template_path)
+        stubs.append(ColumnStub(name=column_name,
                                 width=width,
                                 print_format=print_format,
                                 null_value=null,
-                                valid_minimum=pds3.old_lookup('VALID_MINIMUM', colnum),
-                                valid_maximum=pds3.old_lookup('VALID_MAXIMUM', colnum)))
+                                valid_minimum=valid_minimum,
+                                valid_maximum=valid_maximum,
+                                unit=unit,
+                                flag=derive_flag(unit, valid_minimum, valid_maximum,
+                                                 data_type)))
         colnum += 1
 
     return stubs
@@ -236,8 +357,9 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     Raises:
         RuntimeError: If the prefix columns do not match, a NAME is absent from
             the catalog, a multi-value column's NAMEs are not adjacent and in
-            slot order, a column declares no null value, or a column declares an
-            empty valid range.
+            slot order, its parts derive different conversions, a column
+            declares no null value or an unrecognized unit, or a column declares
+            an empty valid range.
     """
     template_dir = FCPath(template_dir)
     cache_key = (template_dir.as_posix(), qualifier)
@@ -290,6 +412,13 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
                 f'{template_path}: column {spec.names[0]!r} must be followed immediately '
                 f'by {spec.names[1:]}, but the template has {actual[1:]}. A multi-value '
                 f'column\'s parts must appear together, in order.')
+
+        flags = {member.flag for member in group}
+        if len(flags) > 1:
+            raise RuntimeError(
+                f'{template_path}: the parts of column {spec.names[0]!r} derive different '
+                f'conversions {sorted(flags)} from their labels. Both halves of a column '
+                f'must declare the same UNIT and valid range.')
 
         for member in group:
             if member.null_value is None:

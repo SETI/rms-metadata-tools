@@ -150,9 +150,9 @@ class Record:
         # column advances the position by one however many values it carries.
         groups: dict[tuple[str, int], tuple[list[int], Any]] = {}
         for position, column in enumerate(resolved):
-            (_, _, link_id, link) = column.spec.format
+            link_id = column.spec.link_id
             if link_id:
-                indices, _null = groups.setdefault((link, link_id),
+                indices, _null = groups.setdefault((column.spec.link, link_id),
                                                    ([], column.stubs[0].null_value))
                 indices.append(position)
 
