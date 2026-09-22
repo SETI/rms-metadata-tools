@@ -15,7 +15,7 @@ import oops
 import polymath
 
 import metadata_tools.util as util
-from metadata_tools.columns.formats import FormatTuple
+from metadata_tools.columns.catalog import FormatTuple
 
 if TYPE_CHECKING:
     from metadata_tools.geometry_support.label_schema import ColumnStub

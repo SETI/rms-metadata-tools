@@ -27,14 +27,6 @@ documented on its submodule's page.
    in each class's Attributes section, and autodoc would emit them a second
    time as undocumented members.
 
-``metadata_tools.columns.formats``
-==================================
-
-.. automodule:: metadata_tools.columns.formats
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 ``metadata_tools.columns.body``
 ===============================
 

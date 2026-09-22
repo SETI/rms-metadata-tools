@@ -9,7 +9,7 @@ set and order, widths, print formats, nulls, and valid ranges -- comes from the
 host's label templates via
 :mod:`metadata_tools.geometry_support.label_schema`, and the rest -- unit
 conversion, overflow formats, and null links -- lives beside the column
-catalogs in :mod:`metadata_tools.columns.formats`.
+catalogs in :mod:`metadata_tools.columns.catalog`.
 """
 from typing import Any
 

@@ -133,8 +133,8 @@ any mismatch.
 
 **Adding a geometry column:** (1) add the COLUMN object(s) to the host's summary label
 template, (2) add a `ColumnSpec` to the matching `columns/<kind>.py` catalog with names
-matching the template, (3) add the backplane function and a `columns/formats.py` entry if
-the quantity is new, (4) update tests. Removing a column for one host is a template-only
+matching the template, stating its conversion flag inline, (3) add the backplane function
+if the quantity is new, (4) update tests. Removing a column for one host is a template-only
 edit. (See "Adding a geometry column" in `docs/dev_guide/dev_guide_extending.rst`.)
 
 ## Conventions (from `.cursor/rules/`)
