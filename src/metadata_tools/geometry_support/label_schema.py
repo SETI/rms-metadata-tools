@@ -10,10 +10,10 @@ computed column is one ``COLUMN_DEFINITION`` block -- carrying the backplane
 key, mask, link fields, the label metadata shared by the column's values, and
 the shared lead-in DESCRIPTION -- followed by one ``COLUMN_STUB`` block per
 value, carrying its NAME, its own per-value DESCRIPTION, and any keyword it
-overrides. A definition followed by no stubs is itself a single-valued
-column, its NAME the column NAME. Group size is the stub count; there is no
-way to assimilate a column by miscounting, because membership is declared by
-the stub's own object type.
+overrides. A single-valued column is simply a plain ``COLUMN`` carrying its
+own spec keywords. Group size is the stub count; there is no way to
+assimilate a column by miscounting, because membership is declared by the
+stub's own object type.
 
 The spec keywords (``BACKPLANE_KEY``, ``MASK``, ``LINK_FN``, ``LINK_ID``, and
 ``OVERFLOW_FORMAT``) are not PDS3 keywords, and neither are the definition
@@ -464,11 +464,13 @@ def _make_stub(view: _BlockView, name: str, template: FCPath) -> ColumnStub:
 def _resolve_group(definition: 'column_grammar.Block',
                    stubs: 'list[column_grammar.Block]',
                    template: FCPath) -> ResolvedColumn:
-    """Resolve one definition and its stubs into a column.
+    """Resolve one computed column: a definition and its stubs, or a plain
+    self-contained COLUMN passed with no stubs.
 
     Parameters:
-        definition: The COLUMN_DEFINITION block.
-        stubs: Its COLUMN_STUB blocks, in order.
+        definition: The COLUMN_DEFINITION block, or the plain COLUMN itself
+            for a single-valued column.
+        stubs: Its COLUMN_STUB blocks, in order; empty for a plain COLUMN.
         template: The template path, for error messages.
 
     Returns:
@@ -477,24 +479,25 @@ def _resolve_group(definition: 'column_grammar.Block',
     Raises:
         RuntimeError: On any malformed group; see :func:`resolve_schema`.
     """
+    noun = 'definition' if definition.kind == 'COLUMN_DEFINITION' else 'column'
     def_name = _block_name(definition, template)
     def_view = _BlockView(definition.body, None, def_name, template)
 
     if len(stubs) > 2:
         raise RuntimeError(
-            f'{template}: definition {def_name!r} has {len(stubs)} stubs, but no '
+            f'{template}: {noun} {def_name!r} has {len(stubs)} stubs, but no '
             f'computation produces more than two values. (Relax this check when '
             f'one does.)')
 
     key_raw = def_view.raw('BACKPLANE_KEY')
     if key_raw is None:
         raise RuntimeError(
-            f'{template}: definition {def_name!r} declares no BACKPLANE_KEY, so '
+            f'{template}: {noun} {def_name!r} declares no BACKPLANE_KEY, so '
             f'nothing knows how to compute its columns')
     key = _literal(key_raw, 'BACKPLANE_KEY', def_name, template)
     if not isinstance(key, tuple):
         raise RuntimeError(
-            f'{template}: definition {def_name!r} BACKPLANE_KEY must be a tuple, '
+            f'{template}: {noun} {def_name!r} BACKPLANE_KEY must be a tuple, '
             f'not {key!r}')
 
     mask: tuple[str, str, str] = ('', '', '')
@@ -504,28 +507,27 @@ def _resolve_group(definition: 'column_grammar.Block',
         if (not isinstance(mask, tuple) or len(mask) != 3
                 or not all(isinstance(part, str) for part in mask)):
             raise RuntimeError(
-                f'{template}: definition {def_name!r} MASK must be a tuple of three '
+                f'{template}: {noun} {def_name!r} MASK must be a tuple of three '
                 f'strings (masker, shadower, face), not {mask!r}')
 
     link_fn = def_view.raw('LINK_FN')
     link_id = def_view.raw('LINK_ID')
     if (link_fn is None) != (link_id is None):
         raise RuntimeError(
-            f'{template}: definition {def_name!r} declares only one of LINK_FN and '
+            f'{template}: {noun} {def_name!r} declares only one of LINK_FN and '
             f'LINK_ID; they must be given together or not at all')
     if link_fn is not None:
         link_fn = link_fn.strip().strip('"')
         link_id = str(link_id).strip().strip('"')
         if link_fn not in _LINK_FUNCTIONS:
             raise RuntimeError(
-                f'{template}: definition {def_name!r} declares LINK_FN {link_fn!r}, '
+                f'{template}: {noun} {def_name!r} declares LINK_FN {link_fn!r}, '
                 f'which is not a known link function; known functions are '
                 f'{sorted(_LINK_FUNCTIONS)}')
 
     column_stubs: list[ColumnStub] = []
     if not stubs:
-        # A definition followed by no stubs is itself a single-valued column,
-        # and its NAME is the column NAME.
+        # A plain COLUMN resolved with no stubs is its own single value.
         column_stubs.append(_make_stub(def_view, def_name, template))
     for stub_block in stubs:
         stub_name = _block_name(stub_block, template)
@@ -540,7 +542,7 @@ def _resolve_group(definition: 'column_grammar.Block',
     flags = {stub.flag for stub in column_stubs}
     if len(flags) > 1:
         raise RuntimeError(
-            f'{template}: the stubs of definition {def_name!r} derive different '
+            f'{template}: the stubs of {noun} {def_name!r} derive different '
             f'conversions {sorted(flags)} from their labels. All values of a column '
             f'must share one UNIT and valid range.')
 
@@ -591,10 +593,10 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
 
     Parses the host's summary template: a leading run of plain ``COLUMN``
     objects must match the table kind's fixed prefix columns, and the rest of
-    the table is a sequence of computation groups, each one
-    ``COLUMN_DEFINITION`` followed by its ``COLUMN_STUB`` objects -- or by
-    none, in which case the definition is itself a single-valued column.
-    Template order is output order.
+    the table is a sequence of computed columns -- a plain ``COLUMN`` carrying
+    its own BACKPLANE_KEY for a single-valued column, or a
+    ``COLUMN_DEFINITION`` followed by its ``COLUMN_STUB`` objects for a
+    multi-valued one. Template order is output order.
 
     The result is cached per (template directory, qualifier).
 
@@ -607,13 +609,13 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
 
     Raises:
         RuntimeError: If the prefix columns do not match or carry a spec
-            keyword, a plain COLUMN appears among the groups, a stub has no
-            definition, a definition has more than two stubs, a
-            definition omits BACKPLANE_KEY or malforms a spec keyword, only
-            one of LINK_FN and LINK_ID is given, LINK_FN is unknown, a group's
-            stubs derive different conversions, a column omits its null value
-            or FORMAT, declares an unrecognized unit or an empty valid range,
-            or an overflow format does not fill its field.
+            keyword, a column among the groups carries no BACKPLANE_KEY, a
+            stub has no definition, a definition has no stubs or more than
+            two, a spec keyword is malformed, only one of LINK_FN and LINK_ID
+            is given, LINK_FN is unknown, a group's stubs derive different
+            conversions, a column omits its null value or FORMAT, declares an
+            unrecognized unit or an empty valid range, or an overflow format
+            does not fill its field.
     """
     template_dir = FCPath(template_dir)
     cache_key = (template_dir.as_posix(), qualifier)
@@ -630,11 +632,13 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     except ValueError as error:
         raise RuntimeError(f'{template_path}: {error}') from None
 
-    # Consume the fixed prefix run of plain COLUMN objects.
+    # Consume the fixed prefix run: plain COLUMN objects with no computation.
     expected = PREFIX_NAMES[qualifier]
     index = 0
     prefix_stubs: list[ColumnStub] = []
-    while index < len(blocks) and blocks[index].kind == 'COLUMN':
+    while (index < len(blocks) and blocks[index].kind == 'COLUMN'
+           and column_grammar.keyword_value(blocks[index].body,
+                                            'BACKPLANE_KEY') is None):
         block = blocks[index]
         name = _block_name(block, template_path)
         for keyword in PRIVATE_KEYWORDS:
@@ -652,25 +656,38 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
             f'{template_path}: the {qualifier} table must begin with the prefix '
             f'columns {expected}, but the template begins with {found}')
 
-    # The rest of the table is definition/stub groups.
+    # The rest of the table is computed columns: self-contained plain COLUMNs
+    # and definition/stub groups.
     columns: list[ResolvedColumn] = []
     while index < len(blocks):
         block = blocks[index]
-        if block.kind == 'COLUMN':
-            raise RuntimeError(
-                f'{template_path}: plain COLUMN {_block_name(block, template_path)!r} '
-                f'appears among the geometry columns; a computed column is a '
-                f'COLUMN_DEFINITION followed by its COLUMN_STUB objects')
         if block.kind == 'COLUMN_STUB':
             raise RuntimeError(
                 f'{template_path}: stub {_block_name(block, template_path)!r} has no '
                 f'preceding COLUMN_DEFINITION')
+        if block.kind == 'COLUMN':
+            # The prefix run stopped at the first keyed COLUMN, but a later
+            # key-less one still needs the loud error.
+            if column_grammar.keyword_value(block.body, 'BACKPLANE_KEY') is None:
+                raise RuntimeError(
+                    f'{template_path}: column '
+                    f'{_block_name(block, template_path)!r} carries no '
+                    f'BACKPLANE_KEY, so nothing knows how to compute it')
+            columns.append(_resolve_group(block, [], template_path))
+            index += 1
+            continue
 
         stubs: list[column_grammar.Block] = []
         index += 1
         while index < len(blocks) and blocks[index].kind == 'COLUMN_STUB':
             stubs.append(blocks[index])
             index += 1
+        if not stubs:
+            raise RuntimeError(
+                f'{template_path}: definition '
+                f'{_block_name(block, template_path)!r} is followed by no '
+                f'COLUMN_STUB objects; a single-valued column is a plain COLUMN '
+                f'carrying its own spec keywords')
         columns.append(_resolve_group(block, stubs, template_path))
 
     schema = TableSchema(prefix_stubs=tuple(prefix_stubs), columns=tuple(columns))

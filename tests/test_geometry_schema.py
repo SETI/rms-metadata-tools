@@ -439,22 +439,22 @@ def test_stub_without_a_definition_is_an_error(tmp_path: Path) -> None:
         resolve_schema(FCPath(host / 'templates'), 'sky')
 
 
-def test_a_stubless_definition_is_a_single_column(tmp_path: Path) -> None:
-    """A definition followed by no stubs is itself a single-valued column.
+def test_a_keyed_plain_column_is_a_single_column(tmp_path: Path) -> None:
+    """A plain COLUMN carrying its own spec keywords is a single-valued column.
 
-    This is the shipped form of the twelve single-valued columns: one
-    self-contained COLUMN_DEFINITION, its NAME the column NAME.
+    This is the form of the twelve single-valued columns: one self-contained
+    COLUMN, no definition and no stub.
     """
     host = _host_dir(tmp_path)
     source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
     extra = """
-  OBJECT                        = COLUMN_DEFINITION
+  OBJECT                        = COLUMN
     NAME                        = "STANDALONE"
     FORMAT                      = "F10.3"
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('standalone', ())
     DESCRIPTION                 = "A single-valued column."
-  END_OBJECT                    = COLUMN_DEFINITION
+  END_OBJECT                    = COLUMN
 """
     (host / 'templates' / 'sky_summary_columns.lbl').write_text(
         source.read_text(encoding='utf-8') + extra, encoding='utf-8')
@@ -463,6 +463,24 @@ def test_a_stubless_definition_is_a_single_column(tmp_path: Path) -> None:
     last = schema.columns[-1]
     assert last.key == ('standalone', ())
     assert [stub.name for stub in last.stubs] == ['STANDALONE']
+
+
+def test_a_stubless_definition_is_an_error(tmp_path: Path) -> None:
+    """A definition with no stubs shares nothing; write a plain COLUMN."""
+    host = _host_dir(tmp_path)
+    source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
+    extra = """
+  OBJECT                        = COLUMN_DEFINITION
+    NAME                        = "DANGLING"
+    FORMAT                      = "F10.3"
+    NULL_CONSTANT               = -999.
+    BACKPLANE_KEY               = ('dangling', ())
+  END_OBJECT                    = COLUMN_DEFINITION
+"""
+    (host / 'templates' / 'sky_summary_columns.lbl').write_text(
+        source.read_text(encoding='utf-8') + extra, encoding='utf-8')
+    with pytest.raises(RuntimeError, match='a single-valued column is a plain COLUMN'):
+        resolve_schema(FCPath(host / 'templates'), 'sky')
 
 
 def test_three_stubs_is_an_error(tmp_path: Path) -> None:
@@ -481,21 +499,21 @@ def test_three_stubs_is_an_error(tmp_path: Path) -> None:
         resolve_schema(FCPath(host / 'templates'), 'sky')
 
 
-def test_plain_column_in_the_data_region_is_an_error(tmp_path: Path) -> None:
-    """A plain COLUMN among the groups is neither prefix nor computed."""
+def test_a_keyless_column_in_the_data_region_is_an_error(tmp_path: Path) -> None:
+    """A COLUMN among the groups with no BACKPLANE_KEY cannot be computed."""
     host = _host_dir(tmp_path)
     column = """
   OBJECT                        = COLUMN
     NAME                        = "LOOSE_COLUMN"
     FORMAT                      = "F10.3"
     NULL_CONSTANT               = -999.
-    DESCRIPTION                 = "A plain column where a group belongs."
+    DESCRIPTION                 = "A column with no computation."
   END_OBJECT                    = COLUMN
 """
     source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
     (host / 'templates' / 'sky_summary_columns.lbl').write_text(
         source.read_text(encoding='utf-8') + column, encoding='utf-8')
-    with pytest.raises(RuntimeError, match='plain COLUMN'):
+    with pytest.raises(RuntimeError, match='carries no BACKPLANE_KEY'):
         resolve_schema(FCPath(host / 'templates'), 'sky')
 
 
@@ -574,14 +592,19 @@ def test_unknown_link_function_is_an_error(tmp_path: Path) -> None:
 
 
 def test_private_keyword_on_prefix_column_is_an_error(tmp_path: Path) -> None:
-    """Prefix columns are not computed, so a spec keyword there is an error."""
+    """Prefix columns are not computed, so a spec keyword there is an error.
+
+    A BACKPLANE_KEY on a leading column would instead end the prefix run and
+    fail the prefix-name check; any other spec keyword hits this pointed
+    error.
+    """
     host = _host_dir(tmp_path)
     path = host / 'templates' / 'GO_0xxx_sky_summary.lbl'
     text = path.read_text(encoding='utf-8')
     needle = '    NAME                        = "VOLUME_ID"\n'
     assert needle in text
     path.write_text(text.replace(
-        needle, needle + "    BACKPLANE_KEY               = ('nope',)\n", 1),
+        needle, needle + "    MASK                        = ('P', '', '')\n", 1),
         encoding='utf-8')
     with pytest.raises(RuntimeError, match='prefix columns are not computed'):
         resolve_schema(FCPath(host / 'templates'), 'sky')

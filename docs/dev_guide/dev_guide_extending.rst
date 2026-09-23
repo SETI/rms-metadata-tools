@@ -119,9 +119,10 @@ The label template defines a geometry column end to end -- its label metadata
 and its computation -- so a new column is a template edit plus, at most, a new
 backplane function.
 
-#. Add a ``COLUMN_DEFINITION`` object to the host's summary label template,
-   e.g. ``GO_0xxx_body_summary.lbl`` (or the shared fragment it includes),
-   naming the quantity and declaring what its values share: ``FORMAT``,
+#. For a two-valued column, add a ``COLUMN_DEFINITION`` object to the host's
+   summary label template, e.g. ``GO_0xxx_body_summary.lbl`` (or the shared
+   fragment it includes), naming the quantity and declaring what its values
+   share: ``FORMAT``,
    ``UNIT`` (which drives the unit conversion), ``NULL_CONSTANT``, the valid
    range, the shared lead-in ``DESCRIPTION`` (what the quantity *is*), and
    the computation -- ``BACKPLANE_KEY`` (a Python tuple literal, with
@@ -129,15 +130,15 @@ backplane function.
    ``OVERFLOW_FORMAT`` (in PDS3 FORMAT notation) if a value can outgrow its
    field, and ``LINK_FN`` / ``LINK_ID`` if the column must go null together
    with others.
-#. For a pair, follow it with one ``COLUMN_STUB`` object per value --
-   minimum then maximum -- each declaring
+#. Follow it with one ``COLUMN_STUB`` object per value -- minimum then
+   maximum -- each declaring
    its ``NAME``, its own ``DESCRIPTION`` (what *this value* tabulates, which
    the write path appends to the definition's lead-in), and any keyword it
-   overrides. A single-valued column needs no stub at all: the definition is
-   the column, its ``NAME`` the column ``NAME``, its ``DESCRIPTION`` complete.
-   See :doc:`dev_guide_geometry_subsystem` for the full grammar; the write
-   path lowers every group to plain ``COLUMN`` objects, so none of this
-   reaches the archive.
+   overrides. A single-valued column needs neither definition nor stub: write
+   it as a plain ``COLUMN`` carrying its own spec keywords alongside its
+   label keywords. See :doc:`dev_guide_geometry_subsystem` for the full
+   grammar; the write path lowers every group to plain ``COLUMN`` objects and
+   removes the spec keywords, so none of this reaches the archive.
 #. Add the corresponding backplane function in ``oops`` if the quantity is new.
 #. Run the host's geometry program and update the unit tests.
 
