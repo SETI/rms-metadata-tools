@@ -73,7 +73,10 @@ Apply these rules to ALL new and modified Python code. This project is a Python 
 ### Ruff / Linting
 
 - ALWAYS include `mypy` and `ruff` in the project's dev dependencies (e.g. in `pyproject.toml`).
-- ALWAYS run `ruff check` and `ruff format` on the full codebase after changes. Fix all errors.
+- ALWAYS run `ruff check` on the full codebase after changes. Fix all errors.
+- NEVER run `ruff format`: code is hand-formatted in the house style (single quotes, aligned
+  continuation lines, `#===` section separators), which `ruff format` would rewrite. Match the
+  formatting of the surrounding code.
 - Follow PEP 8 for all formatting and naming conventions.
 - Use the project's explicit Ruff rule set in `pyproject.toml` (see **Ruff rule categories** below). Do not disable categories that enforce project conventions (e.g. **A** for no builtin shadowing, **N** for naming).
 

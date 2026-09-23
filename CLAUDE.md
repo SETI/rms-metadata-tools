@@ -44,17 +44,18 @@ Individual tools (run from repo root, inside the venv):
 
 ```sh
 ruff check src tests
-ruff format --check src tests
 mypy src tests                            # mypy is strict (see pyproject [tool.mypy])
-pytest                                    # config in pyproject: pythonpath=src, -n auto, --cov
+pytest                                    # config in pyproject: pythonpath=src, -n auto
+pytest --cov=src                          # with coverage and its 90% gate (as the script/CI run it)
 pytest tests/test_index.py                # single file
-pytest tests/test_index.py::Test_Index_Common::test_supplemental_index_common   # single test
+pytest tests/test_index.py::test_supplemental_index_common   # single test
 scripts/read-docs.sh                      # build docs (warnings = errors) and open in browser
 ```
 
-**Tests require environment variables** `RMS_METADATA` and `RMS_VOLUMES` (paths to metadata
-and volume trees); the top-level `tests/` suite reads them at import time via
-`tests/archive_support.py` and will fail to collect without them. Host-specific tests
+**The default test run needs no environment variables.** Only the archive-backed tier
+(`-m requires_archive`) needs `RMS_METADATA` and `RMS_VOLUMES` (paths to the metadata and
+volume trees, read in `tests/archive_support.py`); without `RMS_METADATA` those tests skip
+with a message. Host-specific tests
 live under `tests/hosts/<HOST>/` (e.g. `tests/hosts/GO_0xxx/`); like the holdings-backed
 top-level tests they carry the `requires_archive` marker and are excluded from the default run.
 
@@ -163,7 +164,8 @@ Read the relevant rule before non-trivial work. Highlights:
   never the stdlib `logging` module or bare `print()` in library code. Use `with logger.open(header):`
   for sections and `%`-style deferred formatting (`logger.info('to %s', path)`), not f-strings, in
   log calls. See `logging.mdc`.
-- **Python style:** max line length 100, `ruff format` with **single quotes**, type-annotate
+- **Python style:** max line length 100, hand-formatted house style (**single quotes**, aligned
+  continuation lines, `#===` separators; never run `ruff format`), type-annotate
   everything (mypy strict), Google-style docstrings. See `python.mdc` / `python_testing.mdc`.
 - **Tests:** pytest only (new tests should not be `unittest.TestCase`), independent/parallel-safe,
   assert precise values (`pytest.approx` for floats), ≥90% coverage target.

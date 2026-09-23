@@ -20,7 +20,6 @@
 #                          init and the $RMS_METADATA tree). These are excluded
 #                          by default; this flag includes them in the pytest run.
 #   --ruff-check           Run ruff check only (may combine with other --* flags)
-#   --ruff-format          Run ruff format --check only
 #   --mypy                 Run mypy only
 #   --pytest               Run pytest only
 #   --pyroma               Run pyroma only
@@ -38,24 +37,23 @@
 #   pyproject.toml [tool.coverage.report] or .coveragerc [report]).
 #
 #   RUN_* (set by this script from CLI or full-run defaults): RUN_RUFF_CHECK,
-#   RUN_RUFF_FORMAT, RUN_MYPY, RUN_PYTEST, RUN_PYROMA, RUN_BANDIT, RUN_VULTURE,
+#   RUN_MYPY, RUN_PYTEST, RUN_PYROMA, RUN_BANDIT, RUN_VULTURE,
 #   RUN_SPHINX, RUN_PYMARKDOWN
 #
-#   Per-check toggles (true/false). Defaults favor a minimal CI set; export to
-#   enable more tools in a given repo. Each check runs only if both RUN_* and
-#   ENABLE_* are true (RUN_* from CLI or defaults below; ENABLE_* from env):
+#   Per-check toggles (true/false); export one as false to disable that tool.
+#   Each check runs only if both RUN_* and ENABLE_* are true (RUN_* from CLI or
+#   defaults below; ENABLE_* from env):
 #     ENABLE_RUFF_CHECK   (default: true)
-#     ENABLE_RUFF_FORMAT  (default: false)
-#     ENABLE_MYPY         (default: false)
+#     ENABLE_MYPY         (default: true)
 #     ENABLE_PYTEST       (default: true)
 #     ENABLE_PYROMA       (default: true)
-#     ENABLE_BANDIT       (default: false)
-#     ENABLE_VULTURE      (default: false)
+#     ENABLE_BANDIT       (default: true)
+#     ENABLE_VULTURE      (default: true)
 #     ENABLE_SPHINX       (default: true)
 #     ENABLE_PYMARKDOWN   PyMarkdown scan (default: true)
 #
 # Checks (each run separately; -d runs both Sphinx and Markdown):
-#   Code:     optional: ruff check, ruff format --check, mypy, pytest, pyroma,
+#   Code:     optional: ruff check, mypy, pytest, pyroma,
 #             bandit, vulture (see ENABLE_* above)
 #   Sphinx:   make -C docs html SPHINXOPTS="-W"
 #   Markdown: pymarkdown scan docs/ .cursor/ README.md CONTRIBUTING.md
@@ -84,7 +82,6 @@ RESET='\033[0m'
 PARALLEL=true
 PYTEST_WORKERS=auto
 RUN_RUFF_CHECK=false
-RUN_RUFF_FORMAT=false
 RUN_MYPY=false
 RUN_PYTEST=false
 RUN_PYROMA=false
@@ -99,7 +96,6 @@ RUN_INTEGRATION=false
 # Per-check defaults (override by exporting before invoking this script, or
 # permanently change here)
 : "${ENABLE_RUFF_CHECK:=true}"
-: "${ENABLE_RUFF_FORMAT:=false}"
 : "${ENABLE_MYPY:=true}"
 : "${ENABLE_PYTEST:=true}"
 : "${ENABLE_PYROMA:=true}"
@@ -217,7 +213,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         -c|--code)
             RUN_RUFF_CHECK=true
-            RUN_RUFF_FORMAT=true
             RUN_MYPY=true
             RUN_PYTEST=true
             RUN_PYROMA=true
@@ -245,11 +240,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ruff-check)
             RUN_RUFF_CHECK=true
-            SCOPE_SPECIFIED=true
-            shift
-            ;;
-        --ruff-format)
-            RUN_RUFF_FORMAT=true
             SCOPE_SPECIFIED=true
             shift
             ;;
@@ -303,7 +293,6 @@ done
 # Default: run all checks (each RUN_* true; ENABLE_* still filters per repo)
 if [ "$SCOPE_SPECIFIED" = false ]; then
     RUN_RUFF_CHECK=true
-    RUN_RUFF_FORMAT=true
     RUN_MYPY=true
     RUN_PYTEST=true
     RUN_PYROMA=true
@@ -329,7 +318,6 @@ fi
 # True if at least one code check is both selected (RUN_*) and enabled (ENABLE_*).
 _code_checks_any_scheduled() {
     [ "$RUN_RUFF_CHECK" = true ] && [ "$ENABLE_RUFF_CHECK" = true ] && return 0
-    [ "$RUN_RUFF_FORMAT" = true ] && [ "$ENABLE_RUFF_FORMAT" = true ] && return 0
     [ "$RUN_MYPY" = true ] && [ "$ENABLE_MYPY" = true ] && return 0
     [ "$RUN_PYTEST" = true ] && [ "$ENABLE_PYTEST" = true ] && return 0
     [ "$RUN_PYROMA" = true ] && [ "$ENABLE_PYROMA" = true ] && return 0
@@ -379,17 +367,6 @@ run_code_checks() {
         fi
     fi
 
-    if [ "$RUN_RUFF_FORMAT" = true ] && [ "$ENABLE_RUFF_FORMAT" = true ]; then
-        print_info "Running ruff format --check..."
-        if python -m ruff format --check src tests; then
-            print_success "Ruff format check passed"
-        else
-            print_error "Ruff format check failed"
-            failed=true
-            failed_checks="${failed_checks}Code - Ruff format"$'\n'
-        fi
-    fi
-
     if [ "$RUN_MYPY" = true ] && [ "$ENABLE_MYPY" = true ]; then
         print_info "Running mypy..."
         if MYPYPATH=src python -m mypy src tests; then
@@ -401,9 +378,9 @@ run_code_checks() {
         fi
     fi
 
-    # -n controls parallelism; --dist loadscope keeps each test module on one
-    # worker to avoid time-mocking and fixture-isolation interference.
-    # Coverage (--cov=src) and strict options come from pyproject.toml addopts.
+    # -n controls parallelism. Coverage is measured (and its fail_under gate
+    # applied) here and in CI, not in pyproject's addopts, so that ad hoc subset
+    # runs are not failed by the coverage gate. Strict options come from addopts.
     # By default pyproject's addopts deselect the "integration" and
     # "requires_archive" tests (SPICE/oops host init and the $RMS_METADATA
     # holdings tree). -i/--integration overrides that marker filter so every
@@ -416,7 +393,7 @@ run_code_checks() {
         else
             print_info "Running pytest (-n ${PYTEST_WORKERS}, hermetic tests only)..."
         fi
-        if python -m pytest -q -n "$PYTEST_WORKERS" --dist loadscope "${marker_args[@]}" tests; then
+        if python -m pytest -q -n "$PYTEST_WORKERS" --cov=src "${marker_args[@]}" tests; then
             print_success "Pytest passed"
         else
             print_error "Pytest failed"
@@ -449,7 +426,7 @@ run_code_checks() {
 
     if [ "$RUN_VULTURE" = true ] && [ "$ENABLE_VULTURE" = true ]; then
         print_info "Running vulture..."
-        if python -m vulture src tests; then
+        if python -m vulture src; then
             print_success "Vulture passed"
         else
             print_error "Vulture failed"
