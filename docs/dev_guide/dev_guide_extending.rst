@@ -132,8 +132,9 @@ table-level boilerplate.
    the computation -- ``BACKPLANE_KEY`` (a Python tuple literal, with
    ``'bodyx'`` where the body name goes), ``MASK`` if any bodies mask it,
    ``OVERFLOW_FORMAT`` (in PDS3 FORMAT notation) if a value can outgrow its
-   field, and ``LINK_FN`` / ``LINK_ID`` if the column must go null together
-   with others.
+   field, and ``LINK_FN`` / ``LINK_ID`` if a postprocessing rule ties the
+   column to others (``'null'``, the one link function defined so far, nulls
+   the whole group when any member is null).
 #. Follow it with one ``COLUMN_STUB`` object per value -- minimum then
    maximum -- each declaring
    its ``NAME``, its own ``DESCRIPTION`` (what *this value* tabulates, which

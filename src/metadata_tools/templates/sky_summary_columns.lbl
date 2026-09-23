@@ -23,8 +23,9 @@ $NOTE
 #                   face D/N; omitted when no mask applies
 #   OVERFLOW_FORMAT = the fallback format when a value overflows the field,
 #                   in PDS3 FORMAT notation
-#   LINK_FN / LINK_ID = the function and group token linking columns that go
-#                   null together; the id's only meaning is equality
+#   LINK_FN / LINK_ID = a postprocess function applied jointly to the
+#                   columns sharing the id ('null' nulls the group together);
+#                   the id's only meaning is equality
 #
 # The right-hand side of BACKPLANE_KEY and MASK is a Python literal on a
 # single line; nothing ever parses these lines as ODL.
