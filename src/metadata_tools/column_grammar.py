@@ -8,9 +8,11 @@ A geometry summary template declares each computed column as a *group*: one
 metadata shared by the group's values, and the shared lead-in DESCRIPTION,
 followed by one ``OBJECT = COLUMN_STUB`` block per value, carrying its NAME,
 any keyword it overrides, and its own DESCRIPTION, which the lowering appends
-to the definition's. Neither block type is PDS3: the write path lowers
-every group to plain ``COLUMN`` objects (see :func:`merge_column_definitions`)
-before a label is generated, and the schema reader
+to the definition's. A definition followed by no stubs is itself a
+single-valued column, its NAME the column NAME. Neither block type is PDS3:
+the write path lowers every group to plain ``COLUMN`` objects (see
+:func:`merge_column_definitions`) before a label is generated, and the schema
+reader
 (:mod:`metadata_tools.geometry_support.label_schema`) parses the grammar
 directly.
 
@@ -176,8 +178,10 @@ def merge_column_definitions(template_path: object, content: str) -> str:
     COLUMN_DEFINITION block is deleted, and each of its COLUMN_STUB blocks
     becomes an ordinary COLUMN carrying its own NAME, the definition's
     shippable keyword lines in the definition's order (a stub's own line wins
-    where it states one), and the rest of the stub body. Private keywords
-    never reach a merged column. Templates without definitions pass through
+    where it states one), and the rest of the stub body. A definition
+    followed by no stubs is itself a single-valued column, and is simply
+    retyped to COLUMN minus its private keywords. Private keywords never
+    reach a merged column. Templates without definitions pass through
     unchanged.
 
     Parameters:
@@ -189,8 +193,7 @@ def merge_column_definitions(template_path: object, content: str) -> str:
         The lowered content.
 
     Raises:
-        ValueError: If a stub appears with no preceding definition, or a
-            definition is followed by no stubs.
+        ValueError: If a stub appears with no preceding definition.
     """
     blocks = tokenize(content)
     if not any(block.kind != 'COLUMN' for block in blocks):
@@ -198,19 +201,26 @@ def merge_column_definitions(template_path: object, content: str) -> str:
 
     out: list[str] = []
     pos = 0
-    def_lines: list[tuple[str, str]] | None = None
+    pending: Block | None = None
+    def_lines: list[tuple[str, str]] = []
     def_rest = ''
     stubs_seen = 0
+
+    def flush_stubless() -> None:
+        """Emit a pending stub-less definition as its own single column."""
+        nonlocal pending
+        if pending is not None and stubs_seen == 0:
+            out.append(_single_column(pending, def_lines, def_rest))
+        pending = None
 
     for block in blocks:
         separator = content[pos:block.start]
         pos = block.end
 
         if block.kind == 'COLUMN_DEFINITION':
-            if def_lines is not None and stubs_seen == 0:
-                raise ValueError('a COLUMN_DEFINITION is followed by no '
-                                 'COLUMN_STUB objects')
+            flush_stubless()
             out.append(separator)
+            pending = block
             def_lines, def_rest = _keyword_region(block.body)
             stubs_seen = 0
             # The separator between the definition and its first stub is
@@ -218,11 +228,13 @@ def merge_column_definitions(template_path: object, content: str) -> str:
             continue
 
         if block.kind == 'COLUMN_STUB':
-            if def_lines is None:
+            if pending is None and stubs_seen == 0:
                 raise ValueError('a COLUMN_STUB appears with no preceding '
                                  'COLUMN_DEFINITION')
             if stubs_seen:
                 out.append(separator)
+            else:
+                pending = None
             stub_lines, stub_rest = _keyword_region(block.body)
             out.append(_merged_column(block, def_lines, def_rest,
                                       stub_lines, stub_rest))
@@ -230,18 +242,33 @@ def merge_column_definitions(template_path: object, content: str) -> str:
             continue
 
         # A plain COLUMN passes through and ends any open group.
-        if def_lines is not None and stubs_seen == 0:
-            raise ValueError('a COLUMN_DEFINITION is followed by no '
-                             'COLUMN_STUB objects')
-        def_lines = None
+        flush_stubless()
+        stubs_seen = 0
         out.append(separator)
         out.append(block.header + block.body + block.footer)
 
-    if def_lines is not None and stubs_seen == 0:
-        raise ValueError('a COLUMN_DEFINITION is followed by no COLUMN_STUB '
-                         'objects')
+    flush_stubless()
     out.append(content[pos:])
     return ''.join(out)
+
+
+def _single_column(definition: Block, def_lines: list[tuple[str, str]],
+                   def_rest: str) -> str:
+    """Retype a stub-less definition as the single COLUMN it defines.
+
+    Parameters:
+        definition: The definition block.
+        def_lines: Its keyword lines, in order.
+        def_rest: Its body after the keyword lines (its DESCRIPTION).
+
+    Returns:
+        The COLUMN object's full text.
+    """
+    header = definition.header.replace('COLUMN_DEFINITION', 'COLUMN')
+    footer = definition.footer.replace('COLUMN_DEFINITION', 'COLUMN')
+    body = ''.join(line for keyword, line in def_lines
+                   if keyword == 'NAME' or keyword not in _NOT_MERGED)
+    return header + body + def_rest + footer
 
 
 def _merged_column(stub: Block, def_lines: list[tuple[str, str]],

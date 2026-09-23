@@ -10,9 +10,10 @@ $NOTE
 # values, and the shared lead-in DESCRIPTION -- followed by one COLUMN_STUB
 # object per value, holding its NAME, any keyword it overrides, and its own
 # DESCRIPTION, which the write path APPENDS to the definition's (either may
-# also stand alone). Group size is the stub count. The write path lowers
-# every group to plain COLUMN objects, so neither block kind nor any spec
-# keyword ever reaches a shipped label.
+# also stand alone). A definition followed by no stubs is itself a
+# single-valued column, its NAME the column NAME. Group size is the stub
+# count. The write path lowers every group to plain COLUMN objects, so
+# neither block kind nor any spec keyword ever reaches a shipped label.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
@@ -1278,10 +1279,6 @@ $END_NOTE
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  OBJECT                        = COLUMN_STUB
-    NAME                        = "RING_DIAMETER_IN_PIXELS"
-  END_OBJECT                    = COLUMN_STUB
-
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_POLE_CLOCK_ANGLE"
     FORMAT                      = "F8.3"
@@ -1298,10 +1295,6 @@ $END_NOTE
       This column tabulates the mean value during the observation. It
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN_DEFINITION
-
-  OBJECT                        = COLUMN_STUB
-    NAME                        = "RING_POLE_CLOCK_ANGLE"
-  END_OBJECT                    = COLUMN_STUB
 
 
   OBJECT                        = COLUMN_DEFINITION
@@ -1321,10 +1314,6 @@ $END_NOTE
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  OBJECT                        = COLUMN_STUB
-    NAME                        = "RING_POLE_POSITION_ANGLE"
-  END_OBJECT                    = COLUMN_STUB
-
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_CENTER_X_COORDINATE"
@@ -1343,10 +1332,6 @@ $END_NOTE
       This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  OBJECT                        = COLUMN_STUB
-    NAME                        = "RING_CENTER_X_COORDINATE"
-  END_OBJECT                    = COLUMN_STUB
-
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_CENTER_Y_COORDINATE"
@@ -1364,7 +1349,3 @@ $END_NOTE
 
       This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN_DEFINITION
-
-  OBJECT                        = COLUMN_STUB
-    NAME                        = "RING_CENTER_Y_COORDINATE"
-  END_OBJECT                    = COLUMN_STUB

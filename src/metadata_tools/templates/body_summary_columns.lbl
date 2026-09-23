@@ -15,9 +15,10 @@ $NOTE
 # values, and the shared lead-in DESCRIPTION -- followed by one COLUMN_STUB
 # object per value, holding its NAME, any keyword it overrides, and its own
 # DESCRIPTION, which the write path APPENDS to the definition's (either may
-# also stand alone). Group size is the stub count. The write path lowers
-# every group to plain COLUMN objects, so neither block kind nor any spec
-# keyword ever reaches a shipped label.
+# also stand alone). A definition followed by no stubs is itself a
+# single-valued column, its NAME the column NAME. Group size is the stub
+# count. The write path lowers every group to plain COLUMN objects, so
+# neither block kind nor any spec keyword ever reaches a shipped label.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
@@ -787,7 +788,7 @@ $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
   OBJECT                        = COLUMN_DEFINITION
-    NAME                        = "DIAMETER_IN_PIXELS"
+    NAME                        = DIAMETER_IN_PIXELS
     FORMAT                      = "F12.3"
     OVERFLOW_FORMAT             = "E12.5"
     NULL_CONSTANT               = -999.
@@ -802,12 +803,8 @@ $ONCE(night_override = False)
       the line of sight."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  OBJECT                        = COLUMN_STUB
-    NAME                        = DIAMETER_IN_PIXELS
-  END_OBJECT                    = COLUMN_STUB
-
   OBJECT                        = COLUMN_DEFINITION
-    NAME                        = "NORTH_POLE_CLOCK_ANGLE"
+    NAME                        = NORTH_POLE_CLOCK_ANGLE
     FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
@@ -822,12 +819,8 @@ $ONCE(night_override = False)
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  OBJECT                        = COLUMN_STUB
-    NAME                        = NORTH_POLE_CLOCK_ANGLE
-  END_OBJECT                    = COLUMN_STUB
-
   OBJECT                        = COLUMN_DEFINITION
-    NAME                        = "NORTH_POLE_POSITION_ANGLE"
+    NAME                        = NORTH_POLE_POSITION_ANGLE
     FORMAT                      = "F8.3"
     UNIT                        = "deg"
     VALID_MINIMUM               = 0.
@@ -843,13 +836,9 @@ $ONCE(night_override = False)
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  OBJECT                        = COLUMN_STUB
-    NAME                        = NORTH_POLE_POSITION_ANGLE
-  END_OBJECT                    = COLUMN_STUB
-
 
   OBJECT                        = COLUMN_DEFINITION
-    NAME                        = "CENTER_X_COORDINATE"
+    NAME                        = CENTER_X_COORDINATE
     FORMAT                      = "F12.3"
     OVERFLOW_FORMAT             = "E12.5"
     LINK_FN                     = "null"
@@ -865,13 +854,9 @@ $ONCE(night_override = False)
       This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  OBJECT                        = COLUMN_STUB
-    NAME                        = CENTER_X_COORDINATE
-  END_OBJECT                    = COLUMN_STUB
-
 
   OBJECT                        = COLUMN_DEFINITION
-    NAME                        = "CENTER_Y_COORDINATE"
+    NAME                        = CENTER_Y_COORDINATE
     FORMAT                      = "F12.3"
     OVERFLOW_FORMAT             = "E12.5"
     LINK_FN                     = "null"
@@ -886,7 +871,3 @@ $ONCE(night_override = False)
 
       This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN_DEFINITION
-
-  OBJECT                        = COLUMN_STUB
-    NAME                        = CENTER_Y_COORDINATE
-  END_OBJECT                    = COLUMN_STUB

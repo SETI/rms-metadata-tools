@@ -78,9 +78,10 @@ declared in the definition/stub grammar of
 metadata shared by the column's values, and the shared lead-in
 ``DESCRIPTION`` -- followed by one ``COLUMN_STUB`` object per value, carrying
 its ``NAME``, any keyword it overrides, and its own ``DESCRIPTION``, which
-continues the definition's. Group size is the stub count; membership is
-declared by the stub's own object type, so no column can be assimilated into
-a group by accident.
+continues the definition's. A definition followed by no stubs is itself a
+single-valued column, its ``NAME`` the column ``NAME``. Group size is the
+stub count; membership is declared by the stub's own object type, so no
+column can be assimilated into a group by accident.
 
 .. code-block:: text
 

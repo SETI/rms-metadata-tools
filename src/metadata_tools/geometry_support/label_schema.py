@@ -10,9 +10,10 @@ computed column is one ``COLUMN_DEFINITION`` block -- carrying the backplane
 key, mask, link fields, the label metadata shared by the column's values, and
 the shared lead-in DESCRIPTION -- followed by one ``COLUMN_STUB`` block per
 value, carrying its NAME, its own per-value DESCRIPTION, and any keyword it
-overrides. Group size is the stub count;
-there is no way to assimilate a column by miscounting, because membership is
-declared by the stub's own object type.
+overrides. A definition followed by no stubs is itself a single-valued
+column, its NAME the column NAME. Group size is the stub count; there is no
+way to assimilate a column by miscounting, because membership is declared by
+the stub's own object type.
 
 The spec keywords (``BACKPLANE_KEY``, ``MASK``, ``LINK_FN``, ``LINK_ID``, and
 ``OVERFLOW_FORMAT``) are not PDS3 keywords, and neither are the definition
@@ -30,7 +31,7 @@ already derives its columns from its own template.
 
 Validation is deliberately loud and happens once, when the table is
 constructed, rather than silently producing a misaligned row per observation.
-A stub with no definition, a definition with no stubs, or a column that omits
+A stub with no definition, a malformed spec keyword, or a column that omits
 its null value fails the run immediately.
 """
 import ast
@@ -479,10 +480,6 @@ def _resolve_group(definition: 'column_grammar.Block',
     def_name = _block_name(definition, template)
     def_view = _BlockView(definition.body, None, def_name, template)
 
-    if not stubs:
-        raise RuntimeError(
-            f'{template}: definition {def_name!r} is followed by no COLUMN_STUB '
-            f'objects, so it defines nothing')
     if len(stubs) > 2:
         raise RuntimeError(
             f'{template}: definition {def_name!r} has {len(stubs)} stubs, but no '
@@ -526,6 +523,10 @@ def _resolve_group(definition: 'column_grammar.Block',
                 f'{sorted(_LINK_FUNCTIONS)}')
 
     column_stubs: list[ColumnStub] = []
+    if not stubs:
+        # A definition followed by no stubs is itself a single-valued column,
+        # and its NAME is the column NAME.
+        column_stubs.append(_make_stub(def_view, def_name, template))
     for stub_block in stubs:
         stub_name = _block_name(stub_block, template)
         for keyword in _DEFINITION_ONLY:
@@ -591,8 +592,9 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     Parses the host's summary template: a leading run of plain ``COLUMN``
     objects must match the table kind's fixed prefix columns, and the rest of
     the table is a sequence of computation groups, each one
-    ``COLUMN_DEFINITION`` followed by its ``COLUMN_STUB`` objects. Template
-    order is output order.
+    ``COLUMN_DEFINITION`` followed by its ``COLUMN_STUB`` objects -- or by
+    none, in which case the definition is itself a single-valued column.
+    Template order is output order.
 
     The result is cached per (template directory, qualifier).
 
@@ -606,7 +608,7 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     Raises:
         RuntimeError: If the prefix columns do not match or carry a spec
             keyword, a plain COLUMN appears among the groups, a stub has no
-            definition, a definition has no stubs or more than two, a
+            definition, a definition has more than two stubs, a
             definition omits BACKPLANE_KEY or malforms a spec keyword, only
             one of LINK_FN and LINK_ID is given, LINK_FN is unknown, a group's
             stubs derive different conversions, a column omits its null value
