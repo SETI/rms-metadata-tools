@@ -11,6 +11,30 @@ needed, since the single cumulative task is generated automatically.
 
   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ --use-spot
 
+Instance software -- scratch install vs. a stored image:
+
+  By default each instance boots a stock OS image and the startup script installs
+  everything from scratch: apt python/git, then a fresh venv with
+  ``pip install rms-metadata-tools[cloud]`` (or a git clone under --debug-branch).
+  No extra flags are needed.
+
+  To boot instances from a stored GCP image instead -- one baked with the OS
+  packages and venv preinstalled -- pass cloud_tasks' ``--image`` with an image
+  family name (the family's latest image is used, so a rebaked image is picked up
+  without touching any config) or a full image URI:
+
+    metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ \\
+        --use-spot --image metadata-tools-worker
+
+  The same choice can be stored per stage in the config YAML's provider section:
+
+    gcp:
+      image: metadata-tools-worker
+
+  The startup script still runs on a stored image; its install steps largely
+  reduce to no-ops against the preinstalled software. Pair with
+  --startup-template to skip installation altogether.
+
 To preview the startup script that would be sent to the GCP instance:
 
   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ \\
