@@ -89,7 +89,7 @@ def test_sclk_format_count_zero_pads() -> None:
 
 
 def test_sclk_format_count_returns_str_not_int() -> None:
-    """A delimited string is returned despite the util docstring's int claim."""
+    """The count is returned as a delimited string, not an int."""
     result = util.sclk_format_count([12345, 1, 2, 3], 'nnnnnnnn:nn:n.n')
     assert isinstance(result, str)
 
