@@ -41,7 +41,7 @@ To preview the startup script that would be sent to the GCP instance:
       --create-startup-file startup.sh
 
 Optional overrides (all consumed before dispatch; do not reach cloud_tasks or the worker):
-  --startup-template <file>   Use <file> instead of cloud/gcp_common_startup.sh.
+  --startup-template <file>   Use <file> instead of the packaged template.
   --oops-resources <name>     Persistent disk name for OOPS resources.
   --service-account <account> GCP service account (overrides $GCP_SERVICE_ACCOUNT).
   --debug-branch <branch>     Git branch to clone on GCP VMs (overrides
@@ -88,8 +88,9 @@ def main() -> None:
     ssh_paste = pop_argv_bool_flag('--ssh-paste')
 
     if '--config' not in sys.argv and create_startup_file is None:
-        sys.exit(f'metadata-cumulative-cloud requires --config (default {default_config} not '
-                 'found); use metadata-cumulative-worker for local runs')
+        sys.exit(f'metadata-cumulative-cloud requires --config (no default config at '
+                 f'{default_config}; defaults exist only in a source checkout); '
+                 'use metadata-cumulative-worker for local runs')
 
     set_host(host_id)
     hconf = get_host_config()

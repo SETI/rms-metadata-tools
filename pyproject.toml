@@ -71,17 +71,18 @@ filterwarnings = [
   "error",
 ]
 
-[tool.setuptools]
 [tool.setuptools.packages.find]
 # Only packages under src/ are discovered. The top-level cloud/ deployment tree
-# (GCP config YAMLs, startup scripts) is outside src/ and therefore never ships
-# in the wheel or sdist.
+# (the per-host GCP config YAMLs) is outside src/ and therefore never ships in
+# the wheel.
 where = ["src"]
 
 # PDS3 label templates are read at runtime (see defs.GLOBAL_TEMPLATE_PATH and the
-# per-host templates/ directories); they must ship in the wheel.
+# per-host templates/ directories), as is the GCP startup-script template (see
+# cli._host.DEFAULT_STARTUP_TEMPLATE); they must ship in the wheel.
 [tool.setuptools.package-data]
 "metadata_tools" = ["py.typed", "templates/*.lbl"]
+"metadata_tools.cli" = ["gcp_common_startup.sh"]
 "metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
 
 [tool.setuptools_scm]

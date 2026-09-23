@@ -70,8 +70,7 @@ class _GeometryTask:
         # global cache never evicts on single-instance GCP runs, exhausting the boot disk.
         with FileCache(cache_name=None, delete_on_exit=True) as fc:
             args = copy(worker_data.args)
-            if getattr(args, 'metadata_tree', None) is not None:
-                args.metadata_tree = fc.new_path(args.metadata_tree)
+            args.metadata_tree = fc.new_path(args.metadata_tree)
             process_tables(self._template_name,
                            glob=self._glob,
                            index_glob=self._index_glob,

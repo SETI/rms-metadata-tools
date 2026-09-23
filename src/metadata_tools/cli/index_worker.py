@@ -64,8 +64,7 @@ class _IndexTask:
         with FileCache(cache_name=None, delete_on_exit=True) as fc:
             args = copy(worker_data.args)
             args.volume_tree = fc.new_path(args.volume_tree)
-            if getattr(args, 'metadata_tree', None) is not None:
-                args.metadata_tree = fc.new_path(args.metadata_tree)
+            args.metadata_tree = fc.new_path(args.metadata_tree)
             process_index(self._template_name, glob=self._glob,
                           args=args, volumes=[task_data['volume_id']])
         return False, None
