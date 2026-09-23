@@ -439,22 +439,30 @@ def test_stub_without_a_definition_is_an_error(tmp_path: Path) -> None:
         resolve_schema(FCPath(host / 'templates'), 'sky')
 
 
-def test_definition_without_stubs_is_an_error(tmp_path: Path) -> None:
-    """A definition followed by no stubs defines nothing."""
+def test_a_stubless_definition_is_a_single_column(tmp_path: Path) -> None:
+    """A definition followed by no stubs is itself a single-valued column.
+
+    This is the shipped form of the twelve single-valued columns: one
+    self-contained COLUMN_DEFINITION, its NAME the column NAME.
+    """
     host = _host_dir(tmp_path)
     source = Path(metadata_tools.__file__).parent / 'templates' / 'sky_summary_columns.lbl'
     extra = """
   OBJECT                        = COLUMN_DEFINITION
-    NAME                        = "DANGLING"
+    NAME                        = "STANDALONE"
     FORMAT                      = "F10.3"
     NULL_CONSTANT               = -999.
-    BACKPLANE_KEY               = ('dangling', ())
+    BACKPLANE_KEY               = ('standalone', ())
+    DESCRIPTION                 = "A single-valued column."
   END_OBJECT                    = COLUMN_DEFINITION
 """
     (host / 'templates' / 'sky_summary_columns.lbl').write_text(
         source.read_text(encoding='utf-8') + extra, encoding='utf-8')
-    with pytest.raises(RuntimeError, match='followed by no COLUMN_STUB'):
-        resolve_schema(FCPath(host / 'templates'), 'sky')
+
+    schema = resolve_schema(FCPath(host / 'templates'), 'sky')
+    last = schema.columns[-1]
+    assert last.key == ('standalone', ())
+    assert [stub.name for stub in last.stubs] == ['STANDALONE']
 
 
 def test_three_stubs_is_an_error(tmp_path: Path) -> None:

@@ -137,11 +137,20 @@ def test_lowering_rejects_a_stranded_stub() -> None:
         merge_column_definitions(None, stub_only)
 
 
-def test_lowering_rejects_a_definition_without_stubs() -> None:
-    """A definition followed by no stubs defines nothing."""
+def test_lowering_converts_a_stubless_definition() -> None:
+    """A definition followed by no stubs lowers to a single COLUMN.
+
+    Its NAME is the column NAME; the private keywords are dropped and
+    everything else ships in place.
+    """
     definition_only = _GROUP.split('\n\n')[0] + '\n'
-    with pytest.raises(ValueError, match='followed by no COLUMN_STUB'):
-        merge_column_definitions(None, definition_only)
+    lowered = merge_column_definitions(None, definition_only)
+    assert 'COLUMN_DEFINITION' not in lowered
+    assert lowered.startswith('  OBJECT                        = COLUMN\n')
+    assert '"QUANTITY"' in lowered
+    assert 'FORMAT                      = "F10.3"' in lowered
+    assert 'BACKPLANE_KEY' not in lowered
+    assert 'MASK' not in lowered
 
 
 def test_tokenize_rejects_a_mismatched_block() -> None:
