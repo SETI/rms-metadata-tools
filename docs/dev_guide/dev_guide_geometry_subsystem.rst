@@ -78,10 +78,10 @@ declared in the definition/stub grammar of
 metadata shared by the column's values, and the shared lead-in
 ``DESCRIPTION`` -- followed by one ``COLUMN_STUB`` object per value, carrying
 its ``NAME``, any keyword it overrides, and its own ``DESCRIPTION``, which
-continues the definition's. A definition followed by no stubs is itself a
-single-valued column, its ``NAME`` the column ``NAME``. Group size is the
-stub count; membership is declared by the stub's own object type, so no
-column can be assimilated into a group by accident.
+continues the definition's. A single-valued column is simply a plain
+``COLUMN`` carrying its own spec keywords. Group size is the stub count;
+membership is declared by the stub's own object type, so no column can be
+assimilated into a group by accident.
 
 .. code-block:: text
 
@@ -146,11 +146,11 @@ Label schema pull
 =================
 
 :func:`~metadata_tools.geometry_support.label_schema.resolve_schema` parses a
-host's summary template: a leading run of plain ``COLUMN`` objects must match
-the table kind's fixed prefix columns (``VOLUME_ID``,
-``FILE_SPECIFICATION_NAME``, and, per table kind, ``SYSTEM_NAME`` and
-``BODY_NAME``), and the rest of the table is definition/stub groups. Template
-order is output order. The result is cached per (template directory,
+host's summary template: a leading run of plain ``COLUMN`` objects with no
+``BACKPLANE_KEY`` must match the table kind's fixed prefix columns
+(``VOLUME_ID``, ``FILE_SPECIFICATION_NAME``, and, per table kind,
+``SYSTEM_NAME`` and ``BODY_NAME``); the rest of the table is self-contained
+single columns and definition/stub groups. Template order is output order. The result is cached per (template directory,
 qualifier) and resolved once, when the table is constructed.
 
 Removing a column removes its computation with it, so a host trims its column

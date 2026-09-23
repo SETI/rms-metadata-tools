@@ -133,8 +133,8 @@ conversion, NULL_CONSTANT, valid range, OVERFLOW_FORMAT) and the computation spe
 `'bodyx'` token substituted per body at run time; `LINK_FN`/`LINK_ID` null-link groups) —
 and the shared lead-in DESCRIPTION — followed by one `COLUMN_STUB` object per value,
 carrying its NAME, its own per-value DESCRIPTION (appended to the definition's at write
-time), and any override; a stub-less definition is itself a single-valued column. Group
-size is the stub count. `geometry_support/label_schema.py` parses and
+time), and any override; a single-valued column is simply a plain COLUMN carrying its
+own spec keywords. Group size is the stub count. `geometry_support/label_schema.py` parses and
 validates it all loudly at table construction; the write path lowers every group to plain
 COLUMN objects (`merge_column_definitions`), so shipped labels never carry the grammar.
 

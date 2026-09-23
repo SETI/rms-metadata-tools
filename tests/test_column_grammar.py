@@ -137,20 +137,31 @@ def test_lowering_rejects_a_stranded_stub() -> None:
         merge_column_definitions(None, stub_only)
 
 
-def test_lowering_converts_a_stubless_definition() -> None:
-    """A definition followed by no stubs lowers to a single COLUMN.
-
-    Its NAME is the column NAME; the private keywords are dropped and
-    everything else ships in place.
-    """
+def test_lowering_rejects_a_stubless_definition() -> None:
+    """A definition with no stubs shares nothing; write a plain COLUMN."""
     definition_only = _GROUP.split('\n\n')[0] + '\n'
-    lowered = merge_column_definitions(None, definition_only)
-    assert 'COLUMN_DEFINITION' not in lowered
-    assert lowered.startswith('  OBJECT                        = COLUMN\n')
-    assert '"QUANTITY"' in lowered
-    assert 'FORMAT                      = "F10.3"' in lowered
-    assert 'BACKPLANE_KEY' not in lowered
-    assert 'MASK' not in lowered
+    with pytest.raises(ValueError, match='a single-valued column is a plain COLUMN'):
+        merge_column_definitions(None, definition_only)
+
+
+def test_lowering_strips_spec_keywords_from_plain_columns() -> None:
+    """A self-contained single COLUMN ships minus its spec keyword lines."""
+    column = ('  OBJECT                        = COLUMN\n'
+              '    NAME                        = "STANDALONE"\n'
+              '    FORMAT                      = "F10.3"\n'
+              '    OVERFLOW_FORMAT             = "E10.4"\n'
+              '    NULL_CONSTANT               = -999.\n'
+              "    BACKPLANE_KEY               = ('standalone', ())\n"
+              "    MASK                        = ('PM', 'P', '')\n"
+              '    DESCRIPTION                 = "A single-valued column."\n'
+              '  END_OBJECT                    = COLUMN\n')
+    lowered = merge_column_definitions(None, _GROUP + '\n' + column)
+    standalone = next(b for b in tokenize(lowered) if '"STANDALONE"' in b.body)
+    assert 'BACKPLANE_KEY' not in standalone.body
+    assert 'MASK' not in standalone.body
+    assert 'OVERFLOW_FORMAT' not in standalone.body
+    assert 'FORMAT                      = "F10.3"' in standalone.body
+    assert '"A single-valued column."' in standalone.body
 
 
 def test_tokenize_rejects_a_mismatched_block() -> None:
