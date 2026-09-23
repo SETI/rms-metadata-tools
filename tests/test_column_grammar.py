@@ -172,6 +172,20 @@ def test_tokenize_rejects_a_mismatched_block() -> None:
         tokenize(broken)
 
 
+def test_tokenize_rejects_a_body_that_swallowed_a_block() -> None:
+    """A mistyped footer must not let the body absorb a later block.
+
+    With a matching footer available further on, the lazy body would extend
+    to it and quietly swallow everything between -- a skipped column is
+    exactly the misalignment the tokenizer exists to prevent.
+    """
+    broken = (_GROUP + '\n' + _GROUP).replace(
+        '  END_OBJECT                    = COLUMN_DEFINITION\n',
+        '  END_OBJECT                    = COLUMN\n', 1)
+    with pytest.raises(ValueError, match='malformed'):
+        tokenize(broken)
+
+
 def test_keyword_value_rejects_a_duplicate() -> None:
     """A keyword declared twice in one block is ambiguous."""
     with pytest.raises(ValueError, match='declares UNIT 2 times'):

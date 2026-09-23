@@ -136,8 +136,7 @@ def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
             if np.isinf(number):
                 warnings.warn("infinity encountered", stacklevel=2)
                 number = stub.null_value
-            # A template that declares no range asks for no range check; the
-            # old sentinel for that was valid_minimum == valid_maximum.
+            # A template that declares no range asks for no range check.
             if stub.valid_minimum is not None and stub.valid_maximum is not None:
                 if (number < stub.valid_minimum) | (number > stub.valid_maximum):
                     number = stub.null_value

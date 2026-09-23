@@ -74,7 +74,9 @@ from the host's label template (or a shared template in the package's global
 
 The label templates also define the columns themselves, for geometry tables as
 well as index tables. A host's ``<HOST>_<kind>_summary.lbl`` decides which
-geometry columns it writes and in what order, and each column's null value,
-valid range, and field width come from that same ``COLUMN`` object. To add or
-drop a column for a host, edit its template; see
+geometry columns it writes and in what order: a single-valued column is one
+``COLUMN`` object, and a min/max pair is one ``COLUMN_DEFINITION`` object
+followed by a ``COLUMN_STUB`` per value, with each column's null value, valid
+range, and field width coming from its own object or from the definition it
+shares. To add or drop a column for a host, edit its template; see
 :doc:`/dev_guide/dev_guide_extending`.

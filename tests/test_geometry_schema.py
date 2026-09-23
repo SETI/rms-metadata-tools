@@ -566,6 +566,20 @@ def test_non_tuple_key_is_an_error(tmp_path: Path) -> None:
         resolve_schema(tdir, 'sky')
 
 
+def test_short_key_is_an_error(tmp_path: Path) -> None:
+    """A BACKPLANE_KEY without a target slot is rejected at parse time.
+
+    prep_row reads the key's second element as the mask target, so a
+    one-element key would raise IndexError per observation instead.
+    """
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
+                            "BACKPLANE_KEY               = ('right_ascension', ())",
+                            "BACKPLANE_KEY               = ('right_ascension',)")
+    with pytest.raises(RuntimeError, match='needs at least two elements'):
+        resolve_schema(tdir, 'sky')
+
+
 def test_half_specified_link_is_an_error(tmp_path: Path) -> None:
     """LINK_FN and LINK_ID must be given together or not at all."""
     host = _host_dir(tmp_path)

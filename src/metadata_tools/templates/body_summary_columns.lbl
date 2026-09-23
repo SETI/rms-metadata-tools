@@ -417,23 +417,31 @@ $ONCE(night_override = False)
     BACKPLANE_KEY               = ('limb_altitude', 'bodyx', -0.01, 3, True)
     DESCRIPTION                 = "Limb altitude is the perpendicular distance
       between a pixel's line of sight and the nearest point on the body's
-      limb. Negative values refer to lines of sight interior to the limb.
-
-      This column tabulates the minimum value among the pixels sampled by the
-      observation. Limb altitudes outside the range -0.1 to 3 times the body's
-      radius are not included in the tabulation.
-
-      $ONCE(night_override = True)
-      $INCLUDE('body_summary_details.lbl')
-      $ONCE(night_override = False)
+      limb. Negative values refer to lines of sight interior to the limb."
   END_OBJECT                    = COLUMN_DEFINITION
 
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_LIMB_ALTITUDE
+    DESCRIPTION                 = "This column tabulates the minimum value
+      among the pixels sampled by the observation. Limb altitudes outside the
+      range -0.1 to 3 times the body's radius are not included in the
+      tabulation.
+
+      $ONCE(night_override = True)
+      $INCLUDE('body_summary_details.lbl')
+      $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_LIMB_ALTITUDE
+    DESCRIPTION                 = "This column tabulates the maximum value
+      among the pixels sampled by the observation. Limb altitudes outside the
+      range -0.1 to 3 times the body's radius are not included in the
+      tabulation.
+
+      $ONCE(night_override = True)
+      $INCLUDE('body_summary_details.lbl')
+      $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
   OBJECT                        = COLUMN_DEFINITION
@@ -447,25 +455,35 @@ $ONCE(night_override = False)
     DESCRIPTION                 = "Limb clock angle is the companion
       coordinate to limb altitude. It measures the angle as projected on the
       sky from the body's north pole to the surface normal from the limb. The
-      angle is measured in a clockwise direction.
-
-      This column tabulates the minimum value sampled by the observation. Limb
-      points where the altitude is outside the range -0.1 to 3 times the
-      body's radius are not included in the tabulation. Note that for data
-      products that capture both sides of clock angle zero, this value will be
-      numerically greater than the 'maximum' clock angle.
-
-      $ONCE(night_override = True)
-      $INCLUDE('body_summary_details.lbl')
-      $ONCE(night_override = False)
+      angle is measured in a clockwise direction."
   END_OBJECT                    = COLUMN_DEFINITION
 
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_LIMB_CLOCK_ANGLE
+    DESCRIPTION                 = "This column tabulates the minimum value
+      sampled by the observation. Limb points where the altitude is outside
+      the range -0.1 to 3 times the body's radius are not included in the
+      tabulation. Note that for data products that capture both sides of clock
+      angle zero, this value will be numerically greater than the 'maximum'
+      clock angle.
+
+      $ONCE(night_override = True)
+      $INCLUDE('body_summary_details.lbl')
+      $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_LIMB_CLOCK_ANGLE
+    DESCRIPTION                 = "This column tabulates the maximum value
+      sampled by the observation. Limb points where the altitude is outside
+      the range -0.1 to 3 times the body's radius are not included in the
+      tabulation. Note that for data products that capture both sides of clock
+      angle zero, this value will be numerically less than the 'minimum'
+      clock angle.
+
+      $ONCE(night_override = True)
+      $INCLUDE('body_summary_details.lbl')
+      $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
   OBJECT                        = COLUMN_DEFINITION
