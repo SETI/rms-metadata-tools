@@ -13,7 +13,7 @@ import polymath
 
 
 #===============================================================================
-def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
+def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: str | None,
                             mask_desc: tuple[str, str, str], *,
                             blocker: str | None = None,
                             ignore_shadows: bool = False) -> polymath.Boolean:
@@ -23,7 +23,9 @@ def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
 
     Parameters:
         backplane: The backplane defining the target surface.
-        target: The name of the target surface.
+        target: The name of the target surface, or the empty tuple for
+            quantities with no target body (e.g. the sky table's right ascension
+            and declination, keyed ``('right_ascension', ())``).
         primary: Name of primary, e.g., "SATURN".
         mask_desc: A tuple (masker, shadower, face), where masker is a string
             identifying what surfaces can obscure the target, formed by
@@ -50,10 +52,12 @@ def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
     if target == blocker:
         blocker = None
 
-    # Generate the new mask, with True means included
-    primary_name = target.split(':')[0]
-    if not oops.Body.exists(primary_name):
-        return polymath.Boolean(True)
+    # Generate the new mask, with True means included. A body-less target (the
+    # empty tuple) has no body to look up.
+    if isinstance(target, str):
+        primary_name = target.split(':')[0]
+        if not oops.Body.exists(primary_name):
+            return polymath.Boolean(True)
 
     (masker, shadower, face) = mask_desc
 
