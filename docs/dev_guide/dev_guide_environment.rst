@@ -69,7 +69,7 @@ Running the tests
 =================
 
 The suite is pytest-based; configuration lives in ``pyproject.toml``
-(``pythonpath = src``, ``-n auto``, coverage on by default). Two markers gate
+(``pythonpath = src``, ``-n auto``). Two markers gate
 the slow tiers and are excluded by default:
 
 - ``integration`` — requires ``oops``/SPICE host initialization.
@@ -79,14 +79,17 @@ the slow tiers and are excluded by default:
 
    pytest                                   # default hermetic engine suite
    pytest tests/test_index.py               # one file
-   pytest tests/test_index.py::Test_Index_Common::test_supplemental_index_common
+   pytest tests/test_index.py::test_supplemental_index_common
    pytest -m requires_archive               # the archive-backed tier
    pytest -n 1                              # serial (easier to read failures)
+   pytest --cov=src                         # with coverage and its 90% gate
 
-The default run measures coverage of the host-agnostic engine (the ``hosts/``
-package, ``bodies.py``, and ``tests/`` are excluded from the denominator; see
-``[tool.coverage]`` in ``pyproject.toml``). The project targets at least 90%
-coverage. Host-specific tests live under ``tests/hosts/<HOST>/`` and carry the
+Coverage is measured only when requested with ``--cov=src``, as
+``scripts/run-all-checks.sh`` and CI do, so a run of one file or one test is
+never failed by the coverage gate. It covers the host-agnostic engine and the
+testable CLI plumbing (see the ``omit`` list in ``[tool.coverage.run]`` in
+``pyproject.toml`` for what is excluded and why). The project targets at least
+90% coverage. Host-specific tests live under ``tests/hosts/<HOST>/`` and carry the
 ``requires_archive`` marker.
 
 Linting, typing, and docs
@@ -108,15 +111,12 @@ The individual tools, run from the repository root inside the venv:
    ruff check src tests
    mypy src tests
    bandit -c pyproject.toml -r src -q
-   vulture src tests
+   vulture src
    python -m pyroma .
    pip-audit --skip-editable
    sphinx-build -W -b html docs docs/_build
    sphinx-build -n -b html docs docs/_build
-   pymarkdown scan docs/ README.md CONTRIBUTING.md
-
-``ruff format --check`` is also available to verify formatting but is not
-enabled by default (``ENABLE_RUFF_FORMAT=true`` to include it in the script).
+   pymarkdown scan docs/ .cursor/ README.md CONTRIBUTING.md
 
 The documentation MUST build clean under both ``-W`` (warnings as errors) and
 ``-n`` (nitpicky) before delivery. To build and open the docs locally:
