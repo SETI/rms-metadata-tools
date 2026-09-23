@@ -46,11 +46,10 @@ import time:
    * - ``RMS_VOLUMES``
      - Root of the data volume tree. Read in ``tests/archive_support.py``.
 
-The default test run is hermetic and does not need these, but the top-level
-``tests/`` package imports ``archive_support`` at collection time, so the
-variables must be *defined* (even if pointed at a placeholder) for collection to
-succeed. The archive-backed and host tests additionally require the real trees
-and SPICE kernels.
+The default hermetic run needs neither variable. Only the archive-backed tier
+(``-m requires_archive``) and the host tests need them, pointed at the real
+trees (plus SPICE kernels); an archive-backed test run without
+``RMS_METADATA`` is skipped with a message naming the variable.
 
 Running the entry points
 ========================

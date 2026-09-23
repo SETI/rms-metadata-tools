@@ -138,15 +138,16 @@ branch = true
 parallel = true
 source = ["metadata_tools"]
 # The default test run is hermetic (no SPICE kernels, no $RMS_METADATA holdings).
-# Coverage therefore measures the host-agnostic engine. The following are
-# excluded from the denominator because they cannot run without SPICE/GCP:
-#   - hosts/*       per-host plugin config, runnable entry scripts, cloud
-#                   workers, and host-local tests; these import host_config /
-#                   geometry_config as top-level modules (CWD-dependent) and
-#                   drive oops/SPICE or rms-cloud-tasks.
+# Coverage therefore measures the host-agnostic engine plus the testable CLI
+# plumbing (cli/_host.py and the cloud worker task callables). The following
+# are excluded from the denominator because they cannot run without SPICE/GCP:
+#   - hosts/*       per-host plugin config and label templates; the config
+#                   modules drive oops/SPICE.
 #   - bodies.py     builds the oops Body registry via oops.Body.lookup(), which
 #                   needs the kernels; the engine tests stub it (see
 #                   tests/conftest.py).
+#   - cli/ entry modules other than _host.py and *_worker.py: thin main()
+#                   wrappers that load a real host and run an engine or GCP.
 # Any other SPICE-only seam is excluded with a targeted, commented
 # `# pragma: no cover` at the call site, never a blanket file omit.
 omit = [
@@ -154,7 +155,12 @@ omit = [
   "*/_version.py",
   "*/metadata_tools/bodies.py",
   "*/metadata_tools/hosts/*",
-  "*/metadata_tools/cli/*",
+  "*/metadata_tools/cli/__init__.py",
+  "*/metadata_tools/cli/index.py",
+  "*/metadata_tools/cli/geometry.py",
+  "*/metadata_tools/cli/cumulative.py",
+  "*/metadata_tools/cli/task_list.py",
+  "*/metadata_tools/cli/*_cloud.py",
 ]
 
 [tool.coverage.report]
