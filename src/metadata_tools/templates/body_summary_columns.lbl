@@ -424,7 +424,7 @@ $ONCE(night_override = False)
     NAME                        = MINIMUM_LIMB_ALTITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
       among the pixels sampled by the observation. Limb altitudes outside the
-      range -0.1 to 3 times the body's radius are not included in the
+      range -0.01 to 3 times the body's radius are not included in the
       tabulation.
 
       $ONCE(night_override = True)
@@ -436,7 +436,7 @@ $ONCE(night_override = False)
     NAME                        = MAXIMUM_LIMB_ALTITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
       among the pixels sampled by the observation. Limb altitudes outside the
-      range -0.1 to 3 times the body's radius are not included in the
+      range -0.01 to 3 times the body's radius are not included in the
       tabulation.
 
       $ONCE(night_override = True)
@@ -462,7 +462,7 @@ $ONCE(night_override = False)
     NAME                        = MINIMUM_LIMB_CLOCK_ANGLE
     DESCRIPTION                 = "This column tabulates the minimum value
       sampled by the observation. Limb points where the altitude is outside
-      the range -0.1 to 3 times the body's radius are not included in the
+      the range -0.01 to 3 times the body's radius are not included in the
       tabulation. Note that for data products that capture both sides of clock
       angle zero, this value will be numerically greater than the 'maximum'
       clock angle.
@@ -476,7 +476,7 @@ $ONCE(night_override = False)
     NAME                        = MAXIMUM_LIMB_CLOCK_ANGLE
     DESCRIPTION                 = "This column tabulates the maximum value
       sampled by the observation. Limb points where the altitude is outside
-      the range -0.1 to 3 times the body's radius are not included in the
+      the range -0.01 to 3 times the body's radius are not included in the
       tabulation. Note that for data products that capture both sides of clock
       angle zero, this value will be numerically less than the 'minimum'
       clock angle.

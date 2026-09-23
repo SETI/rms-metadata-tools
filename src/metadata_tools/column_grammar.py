@@ -48,7 +48,7 @@ _BLOCK_RE = re.compile(
 
 # A stray opener that _BLOCK_RE did not consume (e.g. mismatched END_OBJECT).
 _STRAY_OBJECT_RE = re.compile(
-    r'(?m)^ *OBJECT *= *(COLUMN_DEFINITION|COLUMN_STUB|COLUMN) *$')
+    r'(?m)^ *OBJECT *= *(COLUMN_DEFINITION|COLUMN_STUB|COLUMN) *\r?$')
 
 # A spec keyword line (the retired VALUES included), for removal from plain
 # COLUMN objects at lowering time.
