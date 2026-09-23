@@ -138,10 +138,14 @@ own spec keywords. Group size is the stub count. `geometry_support/label_schema.
 validates it all loudly at table construction; the write path lowers every group to plain
 COLUMN objects (`merge_column_definitions`), so shipped labels never carry the grammar.
 
-**Adding a geometry column:** (1) add a COLUMN_DEFINITION plus its COLUMN_STUB object(s)
-to the host's summary label template, (2) add the backplane function if the quantity is
-new, (3) update tests. Removing a column for one host is a template-only edit — the
-computation travels with the definition. (See "Adding a geometry column" in
+**Adding a geometry column:** the column set is collection-independent and lives in the
+shared fragments in `src/metadata_tools/templates/`, which every host's summary template
+`$INCLUDE`s. (1) add a COLUMN_DEFINITION plus its COLUMN_STUB object(s) — or a plain
+COLUMN for a single value — to the shared fragment for its table kind, (2) add the
+backplane function if the quantity is new, (3) update tests (column counts are pinned).
+Removing a column is likewise a fragment-only edit — the computation travels with the
+definition. A host that must differ shadows a fragment with its own copy in its
+`templates/` directory. (See "Adding a geometry column" in
 `docs/dev_guide/dev_guide_extending.rst`.)
 
 ## Conventions (from `.cursor/rules/`)

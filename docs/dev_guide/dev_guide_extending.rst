@@ -115,14 +115,18 @@ label field) is described in :doc:`dev_guide_index_subsystem`.
 Adding a geometry column
 ========================
 
-The label template defines a geometry column end to end -- its label metadata
+The label templates define a geometry column end to end -- its label metadata
 and its computation -- so a new column is a template edit plus, at most, a new
-backplane function.
+backplane function. The geometry column set is the same for every collection:
+it lives in the shared fragments in ``src/metadata_tools/templates/``
+(``body_summary_columns.lbl``, ``ring_summary_columns.lbl``, and so on), which
+every host's summary template pulls in with ``$INCLUDE``. A host's own
+``<HOST>_<kind>_summary.lbl`` carries only the prefix columns and the
+table-level boilerplate.
 
-#. For a two-valued column, add a ``COLUMN_DEFINITION`` object to the host's
-   summary label template, e.g. ``GO_0xxx_body_summary.lbl`` (or the shared
-   fragment it includes), naming the quantity and declaring what its values
-   share: ``FORMAT``,
+#. For a two-valued column, add a ``COLUMN_DEFINITION`` object to the shared
+   fragment for its table kind, naming the quantity and declaring what its
+   values share: ``FORMAT``,
    ``UNIT`` (which drives the unit conversion), ``NULL_CONSTANT``, the valid
    range, the shared lead-in ``DESCRIPTION`` (what the quantity *is*), and
    the computation -- ``BACKPLANE_KEY`` (a Python tuple literal, with
@@ -140,8 +144,13 @@ backplane function.
    grammar; the write path lowers every group to plain ``COLUMN`` objects and
    removes the spec keywords, so none of this reaches the archive.
 #. Add the corresponding backplane function in ``oops`` if the quantity is new.
-#. Run the host's geometry program and update the unit tests.
+#. Regenerate a volume and update the unit tests -- the shipped templates'
+   column counts are pinned in ``tests/test_geometry_schema.py``.
 
-Removing a column for one host is likewise a template-only edit: delete the
-definition and its stubs, and the computation goes with them. Nothing else
-needs to change, and no other host is affected.
+Removing a column is likewise a template-only edit: delete the definition and
+its stubs (or the single ``COLUMN``), and the computation goes with them.
+
+In the rare case that one collection must genuinely differ, a host can place
+its own edited copy of a fragment in its ``templates/`` directory: the
+directory holding the summary template is searched first when ``$INCLUDE``
+resolves, so the host copy shadows the shared one for that host alone.
