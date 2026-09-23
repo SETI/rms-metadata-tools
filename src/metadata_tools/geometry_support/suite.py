@@ -4,7 +4,7 @@
 """Suite class orchestrating geometry table generation for one volume."""
 import fnmatch
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from filecache import FCPath
 
@@ -19,7 +19,21 @@ from metadata_tools.geometry_support.tables import BodyTable, InventoryTable, Ri
 # Suite class
 ################################################################################
 class Suite:
-    """Class describing the suite of geometry tables for a single volume.
+    """The suite of geometry tables for a single volume.
+
+    A Suite is the geometry stage's per-volume coordinator, not a table. Its
+    lifecycle is: construct it, then call :meth:`create`, which builds a
+    :class:`~metadata_tools.geometry_support.record.Record` for each observation
+    with :meth:`make_record`, hands it to every table with :meth:`add`, and
+    finally writes the tables and labels with :meth:`write`.
+
+    Construction reads the volume's observations through the host's
+    ``from_index`` hook. It returns early, leaving the Suite without
+    ``observations``, ``tables``, or ``meshgrids``, when no index file in
+    ``metadata_dir`` matches ``index_glob`` (``volume_id`` is then also unset) or
+    when ``from_index`` raises FileNotFoundError (logged). :meth:`create` on such a
+    Suite does nothing. Otherwise all of those attributes are set, ``tables``
+    holding one inventory table plus a sky, ring, and body summary table.
     """
 
     #===========================================================================
@@ -43,6 +57,7 @@ class Suite:
             sampling: Pixel sampling density.
 
         Raises:
+            ValueError: If index_glob is None.
             RuntimeError: If more than one index file is found in the metadata
                 directory.
         """
@@ -58,11 +73,13 @@ class Suite:
         self.sampling = sampling
 
         # Check for supplemental index
-        index_filenames = list(self.metadata_dir.glob(cast(str, self.index_glob)))
+        if self.index_glob is None:
+            raise ValueError('Suite requires an index_glob pattern')
+        index_filenames = list(self.metadata_dir.glob(self.index_glob))
         if len(index_filenames) == 0:
             return
         if len(index_filenames) > 1:
-            raise RuntimeError('Multiple index files found in %s.' % self.input_dir)
+            raise RuntimeError('Multiple index files found in %s.' % self.metadata_dir)
 
         index_filename = index_filenames[0]
         ext = index_filename.suffix
@@ -184,9 +201,9 @@ class Suite:
                     continue
                 file = match[0]
 
-                # Abort if count exceeds a specified limit
+                # Stop once the requested number of files has been processed
                 if self.first and count >= self.first:
-                    continue
+                    break
 
                 # Print a log of progress
                 logger.info("%s  %s %4d/%4d", self.volume_id, file, i+1, nobs)

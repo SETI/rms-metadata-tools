@@ -3,12 +3,14 @@
 # heavy monkeypatching instead of running real kernels.
 ################################################################################
 """Tests for SPICE-bound constructors, using monkeypatching instead of real kernels."""
+import re
 import types
 from pathlib import Path
 from typing import Any, cast
 
 import oops
 import pytest
+from filecache import FCPath
 
 import metadata_tools
 import metadata_tools.bodies as bodies_mod
@@ -35,9 +37,25 @@ def test_inventory_success(monkeypatch: pytest.MonkeyPatch) -> None:
         record, ['IO', 'EUROPA']) == ['IO', 'EUROPA']  # type: ignore[arg-type]
 
 
+def _recording_logger(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
+    """Replace the global logger with one recording (level, message) pairs.
+
+    Returns:
+        The list the recorded warnings and exceptions are appended to.
+    """
+    logged: list[tuple[str, str]] = []
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            warning=lambda msg, *a: logged.append(('warning', msg % a)),
+                            exception=lambda msg, *a: logged.append(('exception',
+                                                                     msg % a))))
+    return logged
+
+
 def test_inventory_missing_ckernel_clears_pointing(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A SPICE CKINSUFFDATA error yields an empty list and clears pointing."""
+    """A SPICE CKINSUFFDATA error is logged, yields an empty list, and clears pointing."""
     monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
+    logged = _recording_logger(monkeypatch)
 
     def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
         raise RuntimeError('SPICE(CKINSUFFDATA): no pointing')
@@ -46,6 +64,23 @@ def test_inventory_missing_ckernel_clears_pointing(monkeypatch: pytest.MonkeyPat
     record = types.SimpleNamespace(observation=obs, pointing_available=True)
     assert bodies_select.inventory(record, ['IO']) == []  # type: ignore[arg-type]
     assert record.pointing_available is False
+    assert logged == [('warning', 'SPICE(CKINSUFFDATA): no pointing')]
+
+
+def test_inventory_unexpected_runtime_error_is_logged(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A non-pointing RuntimeError is logged as unexpected and leaves pointing set."""
+    monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
+    logged = _recording_logger(monkeypatch)
+
+    def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
+        raise RuntimeError('SPICE(SOMETHINGELSE)')
+
+    obs = types.SimpleNamespace(inventory=_raise)
+    record = types.SimpleNamespace(observation=obs, pointing_available=True)
+    assert bodies_select.inventory(record, ['IO']) == []  # type: ignore[arg-type]
+    assert record.pointing_available is True
+    assert logged == [('exception', 'Unexpected error during inventory')]
 
 
 def test_inventory_other_error_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -162,6 +197,41 @@ def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) ->
     assert record.primary == 'JUPITER'
 
 
+def test_record_init_sets_blocker_when_target_in_view(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A target among the selected bodies becomes the blocker if it is in the FOV."""
+    _patch_record_spice(monkeypatch, primary='JUPITER')
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry',
+                        lambda: {'JUPITER': types.SimpleNamespace(ring_frame=None)})
+    monkeypatch.setattr(bodies_select, 'select_bodies', lambda record, bodies: ['IO'])
+    inventoried: list[Any] = []
+
+    def _inventory(record: Any, bodies: Any) -> list[str]:
+        inventoried.append(bodies)
+        return list(bodies)
+
+    monkeypatch.setattr(bodies_select, 'inventory', _inventory)
+    record = Record(_observation(target='IO'), 'GO_0001', {}, 8)
+    assert record.blocker == 'IO'
+    # The second inventory call asks only whether the target itself is in view.
+    assert inventoried[-1] == ['IO']
+
+
+def test_record_init_no_blocker_when_target_not_selected(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A target that is not among the selected bodies leaves blocker None."""
+    _patch_record_spice(monkeypatch, primary='')
+    record = Record(_observation(target='IO'), 'GO_0001', {}, 8)
+    assert record.blocker is None
+
+
+def test_record_init_without_primary_has_no_rings(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no primary, rings_present is still defined, and False."""
+    _patch_record_spice(monkeypatch, primary='')
+    record = Record(_observation(), 'GO_0001', {}, 8)
+    assert record.rings_present is False
+
+
 #===============================================================================
 # Suite.__init__ early-return paths
 #===============================================================================
@@ -172,15 +242,46 @@ def test_suite_init_returns_without_index(tmp_path: Path) -> None:
     assert not hasattr(suite, 'observations')
 
 
+def test_suite_init_requires_index_glob(tmp_path: Path) -> None:
+    """A Suite without an index_glob is rejected up front."""
+    with pytest.raises(ValueError, match='Suite requires an index_glob pattern'):
+        Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path)
+
+
 def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
     """More than one matching index file raises RuntimeError."""
     meta = tmp_path / 'meta'
     meta.mkdir()
     (meta / 'GO_0001_index.tab').write_text('a', encoding='utf-8')
     (meta / 'GO_0002_index.tab').write_text('b', encoding='utf-8')
-    with pytest.raises(RuntimeError, match='index files'):
+    with pytest.raises(RuntimeError,
+                       match=re.escape(f'Multiple index files found in {FCPath(meta)}.')):
         Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
               index_glob='*_index.tab')
+
+
+def test_suite_init_missing_index_file_logs_and_returns(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """from_index raising FileNotFoundError is logged; the Suite has no observations."""
+    meta = tmp_path / 'meta'
+    meta.mkdir()
+    (meta / 'GO_0001_index.tab').write_text('a', encoding='utf-8')
+    monkeypatch.setattr(config, 'get_volume_id', lambda d: 'GO_0001', raising=False)
+
+    def _missing(idx: Any, supp: Any) -> Any:
+        raise FileNotFoundError(supp)
+
+    monkeypatch.setattr(config, 'from_index', _missing, raising=False)
+    monkeypatch.setattr(com, 'init_logger', lambda d, t: None)
+    logged: list[str] = []
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            info=lambda *a, **k: None,
+                            exception=lambda msg, *a: logged.append(msg % a)))
+    suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
+                  index_glob='*_index.tab')
+    assert not hasattr(suite, 'observations')
+    assert logged == ['Index file not found for GO_0001']
 
 
 def test_suite_init_builds_tables_and_meshgrids(

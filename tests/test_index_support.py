@@ -40,37 +40,33 @@ class FakePds3Table:
 #===============================================================================
 # _format_value
 #===============================================================================
-def test_format_value_character_is_quoted_and_padded() -> None:
-    """Character values are quoted and right-padded to the format width."""
-    assert IndexTable._format_value('IO', 'A10') == '"IO        "'
-
-
-def test_format_value_real() -> None:
-    """Real values honor the F format's width and precision."""
-    assert IndexTable._format_value(3.14159, 'F8.3') == '   3.142'
-
-
-def test_format_value_integer() -> None:
-    """Integer values are right-justified to the I format width."""
-    assert IndexTable._format_value(42, 'I5') == '   42'
+@pytest.mark.parametrize(('value', 'fmt', 'expected'), [
+    # Character values are quoted and right-padded to the format width.
+    ('IO', 'A10', '"IO        "'),
+    # Real values honor the F format's width and precision.
+    (3.14159, 'F8.3', '   3.142'),
+    # Integer values are right-justified to the I format width.
+    (42, 'I5', '   42'),
+])
+def test_format_value(value: Any, fmt: str, expected: str) -> None:
+    """Each PDS3 format type renders its value to the declared width."""
+    assert IndexTable._format_value(value, fmt) == expected
 
 
 #===============================================================================
 # _format_parms
 #===============================================================================
-def test_format_parms_character_width_includes_quotes() -> None:
-    """Character widths include the two surrounding quotes."""
-    assert IndexTable._format_parms('A10') == (12, 'CHARACTER')
-
-
-def test_format_parms_real() -> None:
-    """F formats yield the plain width and ASCII_REAL."""
-    assert IndexTable._format_parms('F8.3') == (8, 'ASCII_REAL')
-
-
-def test_format_parms_integer() -> None:
-    """I formats hit the TypeError fallback that re-formats with 0."""
-    assert IndexTable._format_parms('I5') == (5, 'ASCII_INTEGER')
+@pytest.mark.parametrize(('fmt', 'expected'), [
+    # Character widths include the two surrounding quotes.
+    ('A10', (12, 'CHARACTER')),
+    # F formats yield the plain width and ASCII_REAL.
+    ('F8.3', (8, 'ASCII_REAL')),
+    # I formats hit the TypeError fallback that re-formats with 0.
+    ('I5', (5, 'ASCII_INTEGER')),
+])
+def test_format_parms(fmt: str, expected: tuple[int, str]) -> None:
+    """Each PDS3 format type maps to its field width and PDS3 data type."""
+    assert IndexTable._format_parms(fmt) == expected
 
 
 #===============================================================================
@@ -302,6 +298,36 @@ def test_create_index_processes_each_volume(
     assert warnings == [{'COLA'}]
 
 
+def test_create_index_logs_and_skips_volume_without_primary(
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_volume_tree: Callable[..., FCPath]) -> None:
+    """A volume whose IndexTable raises FileNotFoundError is skipped with a warning."""
+    tree = tmp_volume_tree(files={'_index.tab': ['x']})
+    processed: list[str] = []
+
+    class FakeIndexTable:
+        def __init__(self, *a: Any, **kwargs: Any) -> None:
+            vol: str = kwargs['volume_id']
+            if vol == 'GO_0001':
+                raise FileNotFoundError(f'No primary index for {vol}')
+            processed.append(vol)
+            self.unused: set[str] = set()
+
+        def create(self, labels_only: bool = False, pattern: Any = None) -> None:
+            pass
+
+    warnings: list[str] = []
+    monkeypatch.setattr(idx.process, 'IndexTable', FakeIndexTable)
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            info=lambda *a, **k: None,
+                            warning=lambda msg, *a: warnings.append(msg % a),
+                            close=lambda **k: None))
+    idx.process._create_index(tree, tree, FCPath('/tmpl.lbl'))
+    assert processed == ['GO_0002']
+    assert warnings == ['Skipping GO_0001: No primary index for GO_0001']
+
+
 
 
 #===============================================================================
@@ -368,6 +394,13 @@ def test_indextable_init_supplemental_missing_primary_raises(
                    FCPath(meta), qualifier='supplemental', volume_id='GO_0001')
 
 
+def test_indextable_init_requires_template_path(tmp_path: Path) -> None:
+    """A real (input_dir) IndexTable without a template is rejected up front."""
+    with pytest.raises(ValueError, match='requires a template_path'):
+        IndexTable(FCPath(tmp_path), FCPath(tmp_path), None, FCPath(tmp_path),
+                   volume_id='GO_0001')
+
+
 #===============================================================================
 # IndexTable.create
 #===============================================================================
@@ -394,6 +427,16 @@ def test_create_iterates_matching_files(monkeypatch: pytest.MonkeyPatch) -> None
     assert added == ['C0123.LBL']
     # COLA never had a non-null value -> flagged unused.
     assert 'COLA' in table.unused
+
+
+def test_create_requires_glob(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Building index rows without a glob pattern is rejected before any file is read."""
+    table = IndexTable.__new__(IndexTable)
+    table.glob = None
+    table.files = [FCPath('/x/GO_0001/data/C0123.LBL')]
+    monkeypatch.setattr(com, 'get_logger', lambda: types.SimpleNamespace())
+    with pytest.raises(ValueError, match=r'IndexTable\.create requires a glob pattern'):
+        table.create()
 
 
 def test_create_returns_without_files() -> None:

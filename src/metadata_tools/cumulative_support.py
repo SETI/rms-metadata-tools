@@ -25,7 +25,8 @@ def _cat_rows(volume_tree: FCPath,
               table: com.Table,
               *,
               exclude: list[str] | None = None,
-              volumes: list[str] | None = None) -> None:
+              volumes: list[str] | None = None,
+              labels_only: bool = False) -> None:
     """Concatenate one table type across volumes into a cumulative table and label.
 
     Parameters:
@@ -36,6 +37,9 @@ def _cat_rows(volume_tree: FCPath,
         table: Table object.
         exclude: List of volumes to exclude.
         volumes: If given, only these volumes are processed.
+        labels_only: If True, no volumes are read and the cumulative table is not
+            rewritten; only the label for the existing cumulative table is
+            regenerated. A missing cumulative table is logged and skipped.
     """
     logger = com.get_logger()
     hconf = get_host_config()
@@ -44,6 +48,18 @@ def _cat_rows(volume_tree: FCPath,
     if table.level:
         table_type += '_' + table.level
     ext = '.csv' if table_type == 'inventory' else '.tab'
+
+    if labels_only:
+        cumulative_file = cumulative_dir / ('%s_%s' % (cumulative_dir.name, table_type) + ext)
+        if not cumulative_file.is_file():
+            logger.warning('No cumulative %s table at %s; label skipped.',
+                           table_type, cumulative_file)
+            return
+        logger.info('Writing cumulative label for %s.', cumulative_file)
+        lab.create(cumulative_file, template_path,
+                   table_type=table_type.upper(),
+                   use_global_template=table.use_global_template)
+        return
 
     # Walk the input tree, adding lines for each found volume
     logger.info('Building Cumulative %s table', table_type)
@@ -119,9 +135,12 @@ def get_args(host: str | None = None,
     """
 
     # Get common args
+    # --pattern selects data files; this stage concatenates whole per-volume
+    # tables, so the option has nothing to act on and is not offered.
     parser = com.get_common_args(host=host, volume_arg=None,
                                             metadata_arg=None,
-                                            output_arg='output_dir')
+                                            output_arg='output_dir',
+                                            pattern_arg=False)
 
     # Add cumulative args
     gr = parser.add_argument_group('Cumulative Arguments')
@@ -185,6 +204,7 @@ def create_cumulative_indexes(template_name: str,
     ]
     for table in tables:
         _cat_rows(volume_tree, cumulative_dir, template_path, volume_glob,
-                  table, exclude=exclude, volumes=volumes)
+                  table, exclude=exclude, volumes=volumes,
+                  labels_only=args.labels)
 
 ################################################################################
