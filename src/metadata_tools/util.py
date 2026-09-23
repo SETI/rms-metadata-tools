@@ -298,8 +298,12 @@ def read_txt_file(filespec: str | Path | FCPath, as_string: bool = False,
         as_string: If True, the file content is returned as a single string with
             its original terminators preserved (no terminator translation is
             performed).
-        terminator: Newline value passed when reading the file; it disables
-            line-ending translation during the read.
+        terminator: The ``newline`` argument of the read. Any non-empty value
+            disables line-ending translation, so the text keeps its original
+            terminators. It does not choose where lines split: when as_string is
+            False the text is always split on ``'\\n'`` and each line's trailing
+            ``'\\r'`` is removed, which handles both ``'\\r\\n'`` and ``'\\n'`` files
+            (but not ``'\\r'``-only ones).
 
     Returns:
         If as_string is False, the lines of the file with no terminators; if True,

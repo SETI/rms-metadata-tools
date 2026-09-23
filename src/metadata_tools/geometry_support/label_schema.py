@@ -222,7 +222,7 @@ def derive_flag(unit: str | None, valid_minimum: float | None,
     """Derive a column's conversion flag from what its label declares.
 
     This rests on one invariant: **oops reports angles in radians and lengths in
-    kilometres**. The label states the unit the column is tabulated in, so the
+    kilometers**. The label states the unit the column is tabulated in, so the
     conversion is exactly the difference between the two. A column in ``deg``
     needs converting; one in ``rad`` or ``km`` does not.
 

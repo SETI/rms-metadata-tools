@@ -101,8 +101,9 @@ e.g. ``--config my_gcp_config.yml --task-file ./retry_tasks.json``.
 
 The ``gcp_*_config.yml`` machine/queue configuration files live in
 ``cloud/<HOST>/`` at the repository root (not inside the installed package).
-The instance startup script is generated at dispatch time and delivered to
-``cloud_tasks`` via the config YAML; it is not stored on disk.
+The instance startup script is generated at dispatch time into a temporary
+file, which is referenced from a temporary copy of the config YAML handed to
+``cloud_tasks`` and deleted afterward; it is never committed to the repository.
 
 Each host carries two config tiers. The default (unsuffixed)
 ``gcp_<type>_config.yml`` files describe a small single-instance setup for
@@ -245,7 +246,7 @@ A typical ``.env`` file:
 .. code-block:: bash
 
    # GCP service account to pass to cloud_tasks run (--service-account).
-   GCP_SERVICE_ACCOUNT=rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
+   GCP_SERVICE_ACCOUNT=<SERVICE-ACCOUNT>@<PROJECT>.iam.gserviceaccount.com
 
    # Name of the persistent disk to attach on each GCP VM for OOPS resources.
    OOPS_RESOURCES_DISK=standard-oops-resources-central1-a-1
@@ -303,15 +304,16 @@ passes back to the engine:
 
    [
      {
-       "task_id": "geometry-task-GO_0017",
+       "task_id": "task-GO_0017",
        "data": { "volume_id": "GO_0017" }
      },
      {
-       "task_id": "geometry-task-GO_0018",
+       "task_id": "task-GO_0018",
        "data": { "volume_id": "GO_0018" }
      }
    ]
 
-The ``task_id`` prefix identifies the stage that produced the file. The worker
+``task_id`` values must be unique within the file; ``metadata-task-list`` uses
+``task-<volume_id>``, and the same task file works for any stage. The worker
 reads each entry, invokes the engine for ``data.volume_id``, and reports success
 or failure back to ``rms-cloud-tasks``.
