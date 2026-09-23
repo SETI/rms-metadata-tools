@@ -3,6 +3,7 @@
 ################################################################################
 """Tests for cumulative_support: _cat_rows and create_cumulative_indexes."""
 import argparse
+import types
 from pathlib import Path
 from typing import Any
 
@@ -102,6 +103,54 @@ def test_cat_rows_skips_missing_table(
     assert wrote == []
 
 
+def test_cat_rows_labels_only_relabels_existing_table(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
+    """labels_only regenerates the cumulative label without rewriting the table."""
+    root = tmp_path / 'GO_0xxx'
+    vdir = root / 'GO_0001'
+    vdir.mkdir(parents=True)
+    (vdir / 'GO_0001_sky_summary.tab').write_text('new\r\n', encoding='utf-8')
+    cumulative_dir = root / 'GO_0999'
+    cumulative_dir.mkdir()
+    cumulative_file = cumulative_dir / 'GO_0999_sky_summary.tab'
+    cumulative_file.write_text('old\r\n', encoding='utf-8')
+    monkeypatch.setattr(hconf, 'get_volume_id', lambda p: FCPath(p).name)
+    wrote: list[Any] = []
+    monkeypatch.setattr(util, 'write_txt_file', lambda *a: wrote.append(a))
+    labeled: list[Any] = []
+    monkeypatch.setattr(lab, 'create',
+                        lambda path, *a, **k: labeled.append((path, k['table_type'])))
+    cum._cat_rows(FCPath(root), FCPath(cumulative_dir), FCPath('/tmpl.lbl'),
+                  'GO_0[0-9][0-9][0-9]', geom.SkyTable(level='summary'),
+                  labels_only=True)
+    assert wrote == []
+    assert labeled == [(FCPath(cumulative_file), 'SKY_SUMMARY')]
+    assert cumulative_file.read_bytes() == b'old\r\n'
+
+
+def test_cat_rows_labels_only_warns_on_missing_table(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """labels_only with no existing cumulative table logs a warning and writes nothing."""
+    import metadata_tools.common as com
+
+    root = tmp_path / 'GO_0xxx'
+    cumulative_dir = root / 'GO_0999'
+    cumulative_dir.mkdir(parents=True)
+    warnings: list[Any] = []
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            info=lambda *a, **k: None,
+                            warning=lambda msg, *a: warnings.append(msg % a)))
+    labeled: list[Any] = []
+    monkeypatch.setattr(lab, 'create', lambda *a, **k: labeled.append(a))
+    cum._cat_rows(FCPath(root), FCPath(cumulative_dir), FCPath('/tmpl.lbl'),
+                  'GO_0[0-9][0-9][0-9]', geom.InventoryTable(),
+                  labels_only=True)
+    assert labeled == []
+    assert warnings == ['No cumulative inventory table at %s; label skipped.'
+                        % FCPath(cumulative_dir / 'GO_0999_inventory.csv')]
+
+
 #===============================================================================
 # get_args / create_cumulative_indexes
 #===============================================================================
@@ -112,6 +161,33 @@ def test_get_args_parses_exclude() -> None:
     assert args.exclude == ['GO_0999']
 
 
+def test_get_args_parses_labels() -> None:
+    """--labels sets args.labels."""
+    parser = cum.get_args(host='GO')
+    args = parser.parse_args(['/out', '--labels'])
+    assert args.labels is True
+
+
+def test_get_args_rejects_pattern() -> None:
+    """--pattern is not offered by the cumulative stage."""
+    parser = cum.get_args(host='GO')
+    with pytest.raises(SystemExit) as excinfo:
+        parser.parse_args(['/out', '--pattern', '*.LBL'])
+    assert excinfo.value.code == 2
+
+
+def test_create_cumulative_indexes_passes_labels_only(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
+    """args.labels reaches every _cat_rows pass as labels_only."""
+    seen: list[Any] = []
+    monkeypatch.setattr(cum, '_cat_rows',
+                        lambda *a, **k: seen.append(k.get('labels_only')))
+    args = argparse.Namespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
+                              volumes=None, exclude=None, labels=True)
+    cum.create_cumulative_indexes('GO_0xxx_supplemental_index', args=args)
+    assert seen == [True] * 5
+
+
 def test_create_cumulative_indexes_fires_five_cat_rows(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
     """All five cumulative tables get a _cat_rows pass; the sun table is not wired in."""
@@ -119,12 +195,12 @@ def test_create_cumulative_indexes_fires_five_cat_rows(
     monkeypatch.setattr(cum, '_cat_rows',
                         lambda *a, **k: calls.append((type(a[4]).__name__, a[4].level)))
     args = argparse.Namespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
-                              volumes=None, exclude=None)
+                              volumes=None, exclude=None, labels=False)
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index', args=args)
     # No sun table: it is not wired in (see geometry_support.tables.SunTable).
-    assert len(calls) == 5
-    assert ('SkyTable', 'summary') in calls
-    assert ('IndexTable', 'index') in calls
+    assert calls == [('SkyTable', 'summary'), ('BodyTable', 'summary'),
+                     ('RingTable', 'summary'), ('InventoryTable', None),
+                     ('IndexTable', 'index')]
 
 
 def test_create_cumulative_indexes_uses_args_exclude_over_parameter(
@@ -134,7 +210,7 @@ def test_create_cumulative_indexes_uses_args_exclude_over_parameter(
     monkeypatch.setattr(cum, '_cat_rows',
                         lambda *a, **k: excludes_seen.append(k.get('exclude')))
     args = argparse.Namespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
-                              volumes=None, exclude=['GO_0016'])
+                              volumes=None, exclude=['GO_0016'], labels=False)
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index',
                                   args=args,
                                   exclude=['GO_0999'])
@@ -148,7 +224,7 @@ def test_create_cumulative_indexes_falls_back_to_parameter_when_args_exclude_uns
     monkeypatch.setattr(cum, '_cat_rows',
                         lambda *a, **k: excludes_seen.append(k.get('exclude')))
     args = argparse.Namespace(output_dir=str(tmp_path / 'GO_0xxx' / 'GO_0999'),
-                              volumes=None, exclude=None)
+                              volumes=None, exclude=None, labels=False)
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index',
                                   args=args,
                                   exclude=['GO_0999'])

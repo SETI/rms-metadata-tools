@@ -66,7 +66,7 @@ Volume selection
    * - ``--exclude VOL [VOL ...]``, ``-e``
      - Volume IDs to skip. Repeatable list. Default: the host's configured
        exclusions (e.g. the cumulative directory ``GO_0999``).
-   * - ``--new_only [VOL ...]``, ``-n``
+   * - ``--new_only``, ``-n``
      - Process only volumes that contain no geometry output yet (no
        ``*_inventory.csv``). Useful for resuming an interrupted run.
    * - ``--pattern PATTERN``, ``-p``

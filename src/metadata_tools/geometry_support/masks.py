@@ -51,10 +51,9 @@ def construct_excluded_mask(backplane: Any, target: str, primary: str | None,
         blocker = None
 
     # Generate the new mask, with True means included
-    if isinstance(target, str):
-        primary_name = target.split(':')[0]
-        if not oops.Body.exists(primary_name):
-            return polymath.Boolean(True)
+    primary_name = target.split(':')[0]
+    if not oops.Body.exists(primary_name):
+        return polymath.Boolean(True)
 
     (masker, shadower, face) = mask_desc
 

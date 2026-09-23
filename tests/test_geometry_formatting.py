@@ -5,6 +5,7 @@
 # number formatting is exercised honestly rather than mock-shaped.
 ################################################################################
 """Tests for formatted_column and circle_coverage using real oops Scalars."""
+import types
 from collections.abc import Callable
 from typing import Any
 
@@ -12,6 +13,7 @@ import numpy as np
 import oops
 import pytest
 
+import metadata_tools.common as com
 from metadata_tools.geometry_support import formatting
 
 
@@ -56,6 +58,15 @@ def test_flag_360_routes_through_circle_coverage(make_column: Callable[..., Any]
     assert result == '   0.000, 360.000'
 
 
+def test_flag_minus_180_routes_through_circle_coverage(
+        make_column: Callable[..., Any]) -> None:
+    """The '-180' flag converts to degrees and reports coverage in (-180, 180)."""
+    col = make_column(flag='-180', valid_minimum=-180., valid_maximum=180.)
+    result = formatting.formatted_column(
+        oops.Scalar(np.array([0.1, 0.2, 0.3]), False), col.stubs, 8)
+    assert result == '-180.000, 180.000'
+
+
 def test_iso_route(make_column: Callable[..., Any]) -> None:
     """The 'ISO' flag formats times as quoted ISO date strings."""
     col = make_column(flag='ISO', overflow='%25s', width=25, print_format='%25s',
@@ -79,22 +90,40 @@ def test_string_null_fills_every_slot(make_column: Callable[..., Any]) -> None:
     assert unquoted.split(',') == ['"NA' + ' ' * 21 + '"'] * 2
 
 
-def test_nan_emits_warning_and_substitutes_null(make_column: Callable[..., Any]) -> None:
-    """NaN values warn and are replaced by the null value."""
-    col = make_column(flag='', overflow='%12.5e', width=12, print_format='%12.3f')
-    with pytest.warns(UserWarning, match='NaN encountered'):
-        result = formatting.formatted_column(
-            oops.Scalar(np.array([np.nan, np.nan]), False), col.stubs, 8)
-    assert result == '    -999.000,    -999.000'
+@pytest.fixture
+def logged_warnings(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Capture the global logger's warnings as formatted strings.
+
+    Returns:
+        The list into which each warning message is appended.
+    """
+    warnings: list[str] = []
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            warning=lambda msg, *a: warnings.append(msg % a)))
+    return warnings
 
 
-def test_infinity_emits_warning_and_substitutes_null(make_column: Callable[..., Any]) -> None:
-    """Infinite values warn and are replaced by the null value."""
+def test_nan_logs_warning_and_substitutes_null(
+        make_column: Callable[..., Any], logged_warnings: list[str]) -> None:
+    """NaN values are logged per column and replaced by the null value."""
     col = make_column(flag='', overflow='%12.5e', width=12, print_format='%12.3f')
-    with pytest.warns(UserWarning, match='infinity encountered'):
-        result = formatting.formatted_column(
-            oops.Scalar(np.array([np.inf, np.inf]), False), col.stubs, 8)
+    result = formatting.formatted_column(
+        oops.Scalar(np.array([np.nan, np.nan]), False), col.stubs, 8)
     assert result == '    -999.000,    -999.000'
+    assert logged_warnings == ['NaN encountered in MINIMUM_PHASE_ANGLE',
+                               'NaN encountered in MAXIMUM_PHASE_ANGLE']
+
+
+def test_infinity_logs_warning_and_substitutes_null(
+        make_column: Callable[..., Any], logged_warnings: list[str]) -> None:
+    """Infinite values are logged per column and replaced by the null value."""
+    col = make_column(flag='', overflow='%12.5e', width=12, print_format='%12.3f')
+    result = formatting.formatted_column(
+        oops.Scalar(np.array([np.inf, np.inf]), False), col.stubs, 8)
+    assert result == '    -999.000,    -999.000'
+    assert logged_warnings == ['Infinity encountered in MINIMUM_PHASE_ANGLE',
+                               'Infinity encountered in MAXIMUM_PHASE_ANGLE']
 
 
 def test_out_of_valid_range_becomes_null(make_column: Callable[..., Any]) -> None:
@@ -151,10 +180,23 @@ def test_circle_coverage_partially_masked_scalar() -> None:
     assert formatting.circle_coverage(scalar, -999., 8) == [0., 360.]
 
 
-def test_overflow_clips_and_warns(make_column: Callable[..., Any]) -> None:
-    """Values too wide for the field warn and are clipped to the overflow format."""
-    col = make_column(flag='', overflow='%10.4e', width=10, print_format='%10.5f')
-    with pytest.warns(UserWarning, match='clipped to'):
-        result = formatting.formatted_column(
+def test_overflow_that_cannot_fit_even_clipped_raises(
+        make_column: Callable[..., Any], logged_warnings: list[str]) -> None:
+    """A field too narrow for even the clipped overflow value is an error."""
+    col = make_column(flag='', overflow='%10.4e', width=5, print_format='%5.1f')
+    with pytest.raises(RuntimeError, match=r'column overflow: 1\.0000e\+120'):
+        formatting.formatted_column(
             oops.Scalar(np.array([1e120, 1e120]), False), col.stubs, 8)
+    assert logged_warnings == []
+
+
+def test_overflow_clips_and_warns(
+        make_column: Callable[..., Any], logged_warnings: list[str]) -> None:
+    """Values too wide for the field are logged and clipped to the overflow format."""
+    col = make_column(flag='', overflow='%10.4e', width=10, print_format='%10.5f')
+    result = formatting.formatted_column(
+        oops.Scalar(np.array([1e120, 1e120]), False), col.stubs, 8)
     assert result == '9.9900e+99,9.9900e+99'
+    assert logged_warnings == [
+        'Column overflow in MINIMUM_PHASE_ANGLE: 1.0000e+120 clipped to 9.9900e+99',
+        'Column overflow in MAXIMUM_PHASE_ANGLE: 1.0000e+120 clipped to 9.9900e+99']
