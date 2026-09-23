@@ -3,10 +3,8 @@
 ################################################################################
 """The active host's mission table, with spacecraft-clock strings resolved.
 
-Column format metadata used to live here. All of it -- the column set and
-order, widths, print formats, overflow formats, nulls, valid ranges, unit
-conversions, backplane keys, masks, and null links -- now comes from the host's
-label templates, read back by
+Everything else about a geometry column -- its existence, formats, nulls,
+ranges, and computation -- comes from the host's label templates, read back by
 :mod:`metadata_tools.geometry_support.label_schema`.
 """
 from typing import Any

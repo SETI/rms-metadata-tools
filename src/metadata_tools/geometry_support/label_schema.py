@@ -499,6 +499,11 @@ def _resolve_group(definition: 'column_grammar.Block',
         raise RuntimeError(
             f'{template}: {noun} {def_name!r} BACKPLANE_KEY must be a tuple, '
             f'not {key!r}')
+    if len(key) < 2:
+        raise RuntimeError(
+            f'{template}: {noun} {def_name!r} BACKPLANE_KEY {key!r} needs at least '
+            f'two elements: the backplane quantity and its target (an empty tuple '
+            f'when there is none, as the sky columns do)')
 
     mask: tuple[str, str, str] = ('', '', '')
     mask_raw = def_view.raw('MASK')

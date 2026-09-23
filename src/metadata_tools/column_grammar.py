@@ -101,6 +101,9 @@ def tokenize(content: str) -> list[Block]:
     pos = 0
     for match in _BLOCK_RE.finditer(content):
         _check_no_stray_object(content[pos:match.start()])
+        # A mistyped END_OBJECT lets the lazy body run on to a later block's
+        # matching footer; an opener inside the body exposes that.
+        _check_no_stray_object(match.group(3))
         blocks.append(Block(kind=match.group(2), header=match.group(1),
                             body=match.group(3), footer=match.group(4),
                             start=match.start(), end=match.end()))
