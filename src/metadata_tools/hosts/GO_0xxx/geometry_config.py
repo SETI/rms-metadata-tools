@@ -16,7 +16,6 @@ import metadata_tools.hosts.GO_0xxx.host_init  # noqa: F401  (side-effect import
 ##########################################################################################
 SC: int = -77
 index_glob: str = 'GO_????_index.lbl'
-selection: str = "S"
 exclude: list[str] = host_config.exclude
 glob: str = 'C0*.LBL'
 

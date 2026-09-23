@@ -1,7 +1,7 @@
 ################################################################################
 # test_util_replace.py: Tests for the placeholder-substitution helpers in util.
 ################################################################################
-"""Unit tests for ``util.replace``, ``replacement_dict``, and ``replacement_fn``.
+"""Unit tests for ``util.replace`` and ``util._resolve_dict_ref``.
 
 These helpers drive the geometry-column assembly: they substitute the ``BODYX``
 placeholder for a real body name throughout a nested tuple tree and evaluate
@@ -58,12 +58,13 @@ def test_replace_passes_through_non_string_leaves() -> None:
 def test_replace_resolves_embedded_dict_reference() -> None:
     """A nested dict-reference string is resolved after placeholder substitution.
 
-    This is the mechanism behind ``body_diameter_in_pixels``: a column tuple
-    carries the string ``defs.RING_SYSTEM_RADII["bodyx"]`` which, once the
-    placeholder is replaced, is looked up in ``defs.RING_SYSTEM_RADII``.
+    This is the mechanism behind ``body_diameter_in_pixels``: a column's
+    BACKPLANE_KEY carries the string ``defs.RING_SYSTEM_RADII["bodyx"]`` which,
+    once the placeholder is replaced, is looked up in
+    ``defs.RING_SYSTEM_RADII``.
     """
-    ref = util.replacement_fn('defs.RING_SYSTEM_RADII', defs.BODYX)
-    tree = [('body_diameter_in_pixels', 'JUPITER:RING', ref)]
+    tree = [('body_diameter_in_pixels', 'JUPITER:RING',
+             'defs.RING_SYSTEM_RADII["bodyx"]')]
     result = util.replace(tree, defs.BODYX, 'JUPITER')
     assert result == [
         ('body_diameter_in_pixels', 'JUPITER:RING', defs.RING_SYSTEM_RADII['JUPITER'])
@@ -80,15 +81,3 @@ def test_resolve_dict_ref_rejects_unrecognized_pattern() -> None:
     """``_resolve_dict_ref`` raises ValueError for strings not matching the pattern."""
     with pytest.raises(ValueError, match='Unrecognized column reference'):
         util._resolve_dict_ref('defs.RING_SYSTEM_RADII[SATURN]')
-
-
-def test_replacement_dict_keys_each_tree_by_name() -> None:
-    """``replacement_dict`` returns one substituted tree per name."""
-    result = util.replacement_dict([('latitude', 'bodyx')], 'bodyx', ['JUPITER', 'SATURN'])
-    assert result == {'JUPITER': [('latitude', 'JUPITER')], 'SATURN': [('latitude', 'SATURN')]}
-
-
-def test_replacement_fn_builds_dict_reference_string() -> None:
-    """``replacement_fn`` formats a ``dict["key"]`` reference string."""
-    result = util.replacement_fn('defs.RING_SYSTEM_RADII', 'bodyx')
-    assert result == 'defs.RING_SYSTEM_RADII["bodyx"]'

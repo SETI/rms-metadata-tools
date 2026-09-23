@@ -112,9 +112,9 @@ def test_get_args_parses_exclude() -> None:
     assert args.exclude == ['GO_0999']
 
 
-def test_create_cumulative_indexes_fires_eight_cat_rows(
+def test_create_cumulative_indexes_fires_five_cat_rows(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
-    """All eight cumulative tables get a _cat_rows pass; the sun table is not wired in."""
+    """All five cumulative tables get a _cat_rows pass; the sun table is not wired in."""
     calls: list[Any] = []
     monkeypatch.setattr(cum, '_cat_rows',
                         lambda *a, **k: calls.append((type(a[4]).__name__, a[4].level)))
@@ -122,7 +122,7 @@ def test_create_cumulative_indexes_fires_eight_cat_rows(
                               volumes=None, exclude=None)
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index', args=args)
     # No sun table: it is not wired in (see geometry_support.tables.SunTable).
-    assert len(calls) == 8
+    assert len(calls) == 5
     assert ('SkyTable', 'summary') in calls
     assert ('IndexTable', 'index') in calls
 
@@ -138,7 +138,7 @@ def test_create_cumulative_indexes_uses_args_exclude_over_parameter(
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index',
                                   args=args,
                                   exclude=['GO_0999'])
-    assert excludes_seen == [['GO_0016']] * 8
+    assert excludes_seen == [['GO_0016']] * 5
 
 
 def test_create_cumulative_indexes_falls_back_to_parameter_when_args_exclude_unset(
@@ -152,4 +152,4 @@ def test_create_cumulative_indexes_falls_back_to_parameter_when_args_exclude_uns
     cum.create_cumulative_indexes('GO_0xxx_supplemental_index',
                                   args=args,
                                   exclude=['GO_0999'])
-    assert excludes_seen == [['GO_0999']] * 8
+    assert excludes_seen == [['GO_0999']] * 5

@@ -10,7 +10,8 @@ from typing import Any, cast
 import oops
 import pytest
 
-import metadata_tools.columns as col
+import metadata_tools
+import metadata_tools.bodies as bodies_mod
 import metadata_tools.common as com
 from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select
@@ -76,7 +77,7 @@ def test_select_bodies_primary_children_and_target(monkeypatch: pytest.MonkeyPat
         'IO': types.SimpleNamespace(children=[]),
         'EUROPA': types.SimpleNamespace(children=[]),
     }
-    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry', lambda: fake_bodies)
     monkeypatch.setattr(bodies_select, 'get_system', lambda body: 'JUPITER')
     # inventory keeps every body it is handed.
     monkeypatch.setattr(bodies_select, 'inventory',
@@ -91,7 +92,7 @@ def test_select_bodies_no_primary_uses_selections(monkeypatch: pytest.MonkeyPatc
     """Without a primary, the selections and secondaries drive body selection."""
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     fake_bodies = {'IO': object(), 'EUROPA': object()}
-    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry', lambda: fake_bodies)
     monkeypatch.setattr(bodies_select, 'get_system', lambda body: None)
     monkeypatch.setattr(bodies_select, 'inventory',
                         lambda record, bodies: list(bodies))
@@ -125,14 +126,9 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
                         lambda meshgrids, obs: object(), raising=False)
     monkeypatch.setattr(oops.backplane, 'Backplane',
                         lambda obs, meshgrid: 'BACKPLANE')
-    # Body registry and dicts are lazy (built from SPICE on first call); stub
-    # them out so Record.__init__ can run without a SPICE-initialized host. Use
-    # distinct singleton dicts so identity assertions in callers remain meaningful.
-    _fake_summary: dict[str, Any] = {}
-    _fake_detailed: dict[str, Any] = {}
-    monkeypatch.setattr(col, 'get_bodies_registry', lambda: {})
-    monkeypatch.setattr(col, 'get_body_summary_dict', lambda: _fake_summary)
-    monkeypatch.setattr(col, 'get_body_detailed_dict', lambda: _fake_detailed)
+    # The body registry is lazy (built from SPICE on first call); stub it out so
+    # Record.__init__ can run without a SPICE-initialized host.
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry', lambda: {})
 
 
 def _observation(target: str = 'SKY') -> Any:
@@ -146,7 +142,7 @@ def _observation(target: str = 'SKY') -> Any:
 def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
     """Without a primary, Record still builds backplane, prefixes, and dicts."""
     _patch_record_spice(monkeypatch, primary='')
-    record = Record(_observation(), 'GO_0001', {}, 8, 'summary')
+    record = Record(_observation(), 'GO_0001', {}, 8)
     assert record.primary == ''
     # The patched Backplane constructor returns a string sentinel; compare as Any
     # since the attribute is typed as a real oops Backplane.
@@ -154,23 +150,14 @@ def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
     assert record.prefixes[0] == '"GO_0001"'
     # The .IMG suffix is rewritten to .LBL in the file-spec prefix.
     assert '.LBL' in record.prefixes[1]
-    assert record.dicts['ring'] is col.RING_SUMMARY_DICT
-
-
-def test_record_init_detailed_selects_detailed_dicts(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The 'detailed' level selects the detailed ring and body dicts."""
-    _patch_record_spice(monkeypatch, primary='')
-    record = Record(_observation(), 'GO_0001', {}, 8, 'detailed')
-    assert record.dicts['ring'] is col.RING_DETAILED_DICT
-    assert record.dicts['body'] is col.get_body_detailed_dict()
 
 
 def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) -> None:
     """A primary with a ring frame sets rings_present."""
     _patch_record_spice(monkeypatch, primary='JUPITER')
     fake_bodies = {'JUPITER': types.SimpleNamespace(ring_frame=object())}
-    monkeypatch.setattr(col, 'get_bodies_registry', lambda: fake_bodies)
-    record = Record(_observation(), 'GO_0001', {}, 8, 'summary')
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry', lambda: fake_bodies)
+    record = Record(_observation(), 'GO_0001', {}, 8)
     assert record.rings_present is True
     assert record.primary == 'JUPITER'
 
@@ -181,9 +168,8 @@ def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) ->
 def test_suite_init_returns_without_index(tmp_path: Path) -> None:
     """With no index file, __init__ returns early and never builds observations."""
     suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path,
-                  selection='S', index_glob='*_index.tab')
+                  index_glob='*_index.tab')
     assert not hasattr(suite, 'observations')
-    assert suite.levels == ['summary']
 
 
 def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
@@ -194,7 +180,7 @@ def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
     (meta / 'GO_0002_index.tab').write_text('b', encoding='utf-8')
     with pytest.raises(RuntimeError, match='index files'):
         Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
-              selection='SD', index_glob='*_index.tab')
+              index_glob='*_index.tab')
 
 
 def test_suite_init_builds_tables_and_meshgrids(
@@ -208,8 +194,17 @@ def test_suite_init_builds_tables_and_meshgrids(
                         lambda idx, supp: ['obs'], raising=False)
     monkeypatch.setattr(config, 'meshgrids', lambda sampling: {'m': 1}, raising=False)
     monkeypatch.setattr(com, 'init_logger', lambda d, t: None)
-    suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
-                  selection='S', index_glob='*_index.tab')
+    # The real host template, so the tables resolve their schemas from it just
+    # as they do in a run; a tmp_path stand-in has no COLUMN objects to read.
+    template = (Path(metadata_tools.__file__).parent / 'hosts' / 'GO_0xxx' /
+                'templates' / 'GO_0xxx_supplemental_index.lbl')
+    suite = Suite(tmp_path, tmp_path, template, metadata_dir=meta,
+                  index_glob='*_index.tab')
     assert suite.observations == ['obs']
     assert suite.meshgrids == {'m': 1}
     assert [t.qualifier for t in suite.tables] == ['inventory', 'sky', 'ring', 'body']
+    # Each geometry table resolved its column set from that template directory.
+    by_qualifier: dict[Any, Any] = {t.qualifier: t for t in suite.tables}
+    assert len(by_qualifier['sky'].schema.columns) == 2
+    assert len(by_qualifier['ring'].schema.columns) == 43
+    assert len(by_qualifier['body'].schema.columns) == 28

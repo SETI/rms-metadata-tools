@@ -77,7 +77,7 @@ observation and feeds it to each table.
            +bodies
            +backplane
            +add(qualifier)
-           +postprocess(columns, qualifier)
+           +postprocess(columns, resolved)
        }
 
        Table <|-- IndexTable
@@ -95,7 +95,7 @@ The base class
 
 :class:`~metadata_tools.common.Table` holds the state common to every table: the
 label ``template_path``, the ``volume_id``, the processing ``level``
-(``"summary"``, ``"detailed"``, or ``"index"``), the ``qualifier`` (``"sky"``,
+(``"summary"`` or ``"index"``), the ``qualifier`` (``"sky"``,
 ``"sun"``, ``"ring"``, ``"body"``, ``"inventory"``, or ``"supplemental"``), the
 accumulated ``rows``, and the output ``filename``. Its
 :meth:`~metadata_tools.common.Table.write` method writes the table file (unless
@@ -145,13 +145,13 @@ The volume coordinator
 
 :class:`~metadata_tools.geometry_support.suite.Suite` is the geometry stage's
 per-volume coordinator. It is *not* a table; it owns a list of table objects
-(one inventory table plus a sky, ring, and body table per requested level),
+(one inventory table plus a sky, ring, and body table),
 reads the volume's observations through the host's ``from_index`` hook, builds
 the meshgrids, and in
 :meth:`~metadata_tools.geometry_support.suite.Suite.create` loops over
-observations, building records with
-:meth:`~metadata_tools.geometry_support.suite.Suite.make_records` and dispatching
-them to every table with
+observations, building a record with
+:meth:`~metadata_tools.geometry_support.suite.Suite.make_record` and dispatching
+it to every table with
 :meth:`~metadata_tools.geometry_support.suite.Suite.add`.
 
 The row builder
@@ -166,7 +166,7 @@ bodies in the field of view, and builds the ``oops`` backplane. Its
 :func:`~metadata_tools.geometry_support.prep.prep_row` to evaluate and format
 the columns for a qualifier, then
 :meth:`~metadata_tools.geometry_support.record.Record.postprocess` applies the
-inter-column null-linking rules.
+inter-column link functions.
 
 Data flow
 =========

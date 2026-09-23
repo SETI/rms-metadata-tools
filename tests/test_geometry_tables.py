@@ -11,6 +11,7 @@ import oops
 import pytest
 
 import metadata_tools.common as com
+import metadata_tools.defs as defs
 from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import suite as suite_mod
 from metadata_tools.geometry_support import tables
@@ -25,13 +26,13 @@ class RecordingRecord:
 
     def __init__(self, **attrs: Any) -> None:
         """Store attributes and start an empty call log."""
-        self.calls: list[tuple[str, dict[str, Any]]] = []
+        self.calls: list[tuple[Any, dict[str, Any]]] = []
         self.__dict__.update(attrs)
 
-    def add(self, qualifier: str, **kwargs: Any) -> list[str]:
+    def add(self, columns: Any, **kwargs: Any) -> list[str]:
         """Record the dispatch arguments and return a synthetic row."""
-        self.calls.append((qualifier, kwargs))
-        return [f'row:{qualifier}:{kwargs}']
+        self.calls.append((columns, kwargs))
+        return [f'row:{kwargs}']
 
 
 #===============================================================================
@@ -46,54 +47,60 @@ def test_inventory_table_add_formats_prefixes_and_list() -> None:
     assert table.rows == ['"vol","file","IO,EUROPA"']
 
 
+def _with_schema(table: Any, columns: Any = ('COLS',)) -> Any:
+    """Attach a stub schema to a bare table, standing in for a resolved template."""
+    table.schema = types.SimpleNamespace(columns=columns)
+    return table
+
+
 def test_sky_table_add_uses_no_body() -> None:
-    """SkyTable.add dispatches with no_body=True."""
-    table = tables.SkyTable(level='summary')
+    """SkyTable.add hands its resolved columns over with no_body=True."""
+    table = _with_schema(tables.SkyTable(level='summary'))
     record = RecordingRecord()
-    table.add(record)  # type: ignore[arg-type]
-    assert record.calls == [('sky', {'no_body': True})]
+    table.add(record)
+    assert record.calls == [(('COLS',), {'no_body': True})]
 
 
 def test_sun_table_add_targets_sun() -> None:
     """SunTable.add dispatches with the fixed target SUN (body-style prefix)."""
-    table = tables.SunTable(level='summary')
+    table = _with_schema(tables.SunTable(level='summary'))
     record = RecordingRecord()
-    table.add(record)  # type: ignore[arg-type]
-    assert record.calls == [('sun', {'target': 'SUN'})]
+    table.add(record)
+    assert record.calls == [(('COLS',), {'target': 'SUN'})]
 
 
 def test_ring_table_add_only_when_rings_present() -> None:
     """RingTable.add dispatches with the primary's name when rings are present."""
-    table = tables.RingTable(level='summary')
+    table = _with_schema(tables.RingTable(level='summary'))
     record = RecordingRecord(primary='JUPITER', rings_present=True)
-    table.add(record)  # type: ignore[arg-type]
-    assert record.calls == [('ring', {'name': 'JUPITER'})]
+    table.add(record)
+    assert record.calls == [(('COLS',), {'name': 'JUPITER'})]
 
 
 def test_ring_table_add_skips_without_rings() -> None:
     """RingTable.add skips records without rings."""
-    table = tables.RingTable(level='summary')
+    table = _with_schema(tables.RingTable(level='summary'))
     record = RecordingRecord(primary='JUPITER', rings_present=False)
-    table.add(record)  # type: ignore[arg-type]
+    table.add(record)
     assert record.calls == []
 
 
 def test_ring_table_add_skips_without_primary() -> None:
     """RingTable.add skips records without a primary."""
-    table = tables.RingTable(level='summary')
+    table = _with_schema(tables.RingTable(level='summary'))
     record = RecordingRecord(primary='', rings_present=True)
-    table.add(record)  # type: ignore[arg-type]
+    table.add(record)
     assert record.calls == []
 
 
 def test_body_table_add_iterates_bodies() -> None:
     """BodyTable.add dispatches once per body with matching name and target."""
-    table = tables.BodyTable(level='summary')
+    table = _with_schema(tables.BodyTable(level='summary'))
     record = RecordingRecord(bodies=['IO', 'EUROPA'])
-    table.add(record)  # type: ignore[arg-type]
+    table.add(record)
     assert record.calls == [
-        ('body', {'name': 'IO', 'target': 'IO'}),
-        ('body', {'name': 'EUROPA', 'target': 'EUROPA'})]
+        (('COLS',), {'name': 'IO', 'target': 'IO'}),
+        (('COLS',), {'name': 'EUROPA', 'target': 'EUROPA'})]
 
 
 #===============================================================================
@@ -123,131 +130,107 @@ class _Backplane:
 
 
 def test_record_add_builds_summary_line(
-        record_stub: Callable[..., Record],
+        record_stub: Callable[..., Record], make_column: Callable[..., Any],
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """add('sky') formats prefixes plus the evaluated backplane column."""
+    """add() formats prefixes plus the evaluated backplane column."""
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     record = record_stub(
-        pointing_available=True, sampling=8, backplane_keys={}, blocker=None,
-        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane(),
-        dicts={'sky': [(('phase_angle', 'IO'), ('', '', ''))]})
-    lines = record.add('sky', no_body=True)
+        pointing_available=True, sampling=8, blocker=None,
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane())
+    columns = [make_column(key=('phase_angle', 'IO'), flag='DEG',
+                           valid_minimum=0., valid_maximum=180.)]
+    lines = record.add(columns, no_body=True)
     assert lines == ['"vol","file",  28.648,  57.296']
 
 
-def test_record_add_named_column_dict(
-        record_stub: Callable[..., Record],
+def test_record_add_binds_the_body_name(
+        record_stub: Callable[..., Record], make_column: Callable[..., Any],
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """A named column dict selects the list under the given name."""
+    """A name binds the BODYX placeholder before the backplane is evaluated."""
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
+    seen: list[Any] = []
+
+    class _Recording(_Backplane):
+        """A backplane that records the keys it is asked to evaluate."""
+
+        def evaluate(self, key: Any) -> Any:
+            """Record the key, then defer to the fixed stub value."""
+            seen.append(key)
+            return super().evaluate(key)
+
     record = record_stub(
-        pointing_available=True, sampling=8, backplane_keys={}, blocker=None,
-        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane(),
-        dicts={'ring': {'JUPITER': [(('phase_angle', 'IO'), ('', '', ''))]}})
-    lines = record.add('ring', name='JUPITER', no_body=True)
+        pointing_available=True, sampling=8, blocker=None,
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Recording())
+    columns = [make_column(key=('phase_angle', defs.BODYX), flag='DEG',
+                           valid_minimum=0., valid_maximum=180.)]
+    lines = record.add(columns, name='JUPITER', no_body=True)
+    assert seen == [('phase_angle', 'JUPITER')]
     assert lines[0].endswith('  28.648,  57.296')
 
 
 #===============================================================================
 # Suite static / light helpers
 #===============================================================================
-def _override_record(record_stub: Callable[..., Record]) -> Record:
-    """Return a Record stub with sky/ring/body column dicts for override tests."""
-    return record_stub(primary='JUPITER', dicts={
-        'sky': [(('right_ascension', 'SKY'), ('', '', ''))],
-        'ring': {'JUPITER': [(('ring_radius', 'JUPITER'), ('', '', ''))]},
-        'body': {'JUPITER': [(('phase_angle', 'JUPITER'), ('', '', ''))]}})
-
-
-def test_suite_get_override_builds_one_dict_per_column(
-        record_stub: Callable[..., Record]) -> None:
-    """get_override builds one NULL/VALID dict per data column."""
-    record = _override_record(record_stub)
-    overrides = Suite.get_override(record, 'sky')
-    assert overrides == [{'NULL_VALUE': -999., 'VALID_MINIMUM': 0,
-                          'VALID_MAXIMUM': 360}]
-
-
-def test_suite_get_override_named(record_stub: Callable[..., Record]) -> None:
-    """get_override resolves a named dict entry before building overrides."""
-    record = _override_record(record_stub)
-    overrides = Suite.get_override(record, 'ring', name='JUPITER')
-    assert len(overrides) == 1
-    assert overrides[0]['NULL_VALUE'] == -999.
-
-
-def test_suite_get_overrides_covers_sky_ring_body(
-        record_stub: Callable[..., Record]) -> None:
-    """get_overrides covers the sky, ring, and body qualifiers (no sun)."""
-    record = _override_record(record_stub)
-    overrides = Suite.get_overrides(record)
-    # No 'sun': the sun table is not wired in (see tables.SunTable).
-    assert set(overrides) == {'sky', 'ring', 'body'}
-
-
-def test_suite_add_tables_creates_four_tables(
-        record_stub: Callable[..., Record]) -> None:
+def test_suite_add_tables_creates_four_tables() -> None:
     """add_tables registers the inventory, sky, ring, and body tables."""
     suite = Suite.__new__(Suite)
     suite.template_path = None  # type: ignore[assignment]
     suite.volume_id = 'GO_0001'
     suite.tables = []
-    suite.add_tables(None, 'summary')  # type: ignore[arg-type]
+    suite.add_tables(None)  # type: ignore[arg-type]
     qualifiers = [t.qualifier for t in suite.tables]
     # No 'sun': the sun table is not wired in (see tables.SunTable).
     assert qualifiers == ['inventory', 'sky', 'ring', 'body']
 
 
-def test_suite_add_tables_accumulates_levels(
-        record_stub: Callable[..., Record]) -> None:
-    """A second add_tables call appends its level's tables and reuses the inventory."""
+def test_suite_add_tables_names_summary_files(tmp_path: Any) -> None:
+    """The suite's geometry tables carry level='summary', so they name real files.
+
+    The level feeds both the output file name and the label template name, so a
+    missing level yields <volume>_<kind>_None.tab and a template that does not
+    exist -- invisible until a write is attempted.
+    """
     suite = Suite.__new__(Suite)
     suite.template_path = None  # type: ignore[assignment]
     suite.volume_id = 'GO_0001'
     suite.tables = []
-    suite.add_tables(None, 'summary')  # type: ignore[arg-type]
-    suite.add_tables(None, 'detailed')  # type: ignore[arg-type]
-    qualifiers = [(t.qualifier, t.level) for t in suite.tables]
-    assert qualifiers == [('inventory', None),
-                          ('sky', 'summary'), ('ring', 'summary'), ('body', 'summary'),
-                          ('sky', 'detailed'), ('ring', 'detailed'), ('body', 'detailed')]
+    suite.add_tables(tmp_path)
+
+    by_qualifier = {t.qualifier: t for t in suite.tables}
+    for qualifier in ('sky', 'ring', 'body'):
+        assert by_qualifier[qualifier].level == 'summary'
+        assert by_qualifier[qualifier].filename.name == f'GO_0001_{qualifier}_summary.tab'
+    # The inventory table is level-free and names a .csv.
+    assert by_qualifier['inventory'].level is None
+    assert by_qualifier['inventory'].filename.name == 'GO_0001_inventory.csv'
 
 
-def test_suite_make_records_one_per_level(
-        monkeypatch: pytest.MonkeyPatch) -> None:
-    """make_records builds one Record per configured level."""
+def test_suite_make_record_builds_one_record(monkeypatch: pytest.MonkeyPatch) -> None:
+    """make_record builds a single Record from the indexed observation."""
     suite = Suite.__new__(Suite)
     suite.observations = ['obs0']
     suite.volume_id = 'GO_0001'
     suite.meshgrids = {}
     suite.sampling = 8
-    suite.levels = ['summary', 'detailed']
     created: list[Any] = []
     monkeypatch.setattr(
         suite_mod, 'Record',
-        lambda *args: created.append(args[-1]) or args[-1])  # type: ignore[func-returns-value]
-    records = suite.make_records(0)
-    assert records == ['summary', 'detailed']  # type: ignore[comparison-overlap]
+        lambda *args: created.append(args) or 'RECORD')  # type: ignore[func-returns-value]
+    record = suite.make_record(0)
+    assert record == 'RECORD'  # type: ignore[comparison-overlap]
+    assert created == [('obs0', 'GO_0001', {}, 8)]
 
 
-def test_suite_add_dispatches_by_level() -> None:
-    """add() routes records to level-matched tables; level-None tables get one record."""
+def test_suite_add_dispatches_to_every_table() -> None:
+    """add() hands the record to every table in the suite."""
     suite = Suite.__new__(Suite)
-    sky: Any = types.SimpleNamespace(level='summary', added=[],
-                                     add=lambda r: sky.added.append(r))
-    det: Any = types.SimpleNamespace(level='detailed', added=[],
-                                     add=lambda r: det.added.append(r))
-    inv: Any = types.SimpleNamespace(level=None, added=[],
-                                     add=lambda r: inv.added.append(r))
-    suite.tables = [sky, det, inv]
-    rec_sum = types.SimpleNamespace(level='summary')
-    rec_det = types.SimpleNamespace(level='detailed')
-    suite.add([rec_sum, rec_det])  # type: ignore[list-item]
-    assert sky.added == [rec_sum]
-    assert det.added == [rec_det]
-    # The level-independent inventory table receives only the first record, so
-    # its rows are not duplicated when both processing levels are active.
-    assert inv.added == [rec_sum]
+    sky: Any = types.SimpleNamespace(added=[], add=lambda r: sky.added.append(r))
+    inv: Any = types.SimpleNamespace(added=[], add=lambda r: inv.added.append(r))
+    suite.tables = [sky, inv]
+    rec = types.SimpleNamespace()
+    suite.add(rec)  # type: ignore[arg-type]
+    assert sky.added == [rec]
+    assert inv.added == [rec]
 
 
 def test_suite_write_calls_each_table(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -278,8 +261,8 @@ def test_suite_create_processes_observations(
     suite.volume_id = 'GO_0001'
     added: list[Any] = []
     written: list[Any] = []
-    monkeypatch.setattr(Suite, 'make_records', lambda self, i: ['rec'])
-    monkeypatch.setattr(Suite, 'add', lambda self, records: added.append(records))
+    monkeypatch.setattr(Suite, 'make_record', lambda self, i: 'rec')
+    monkeypatch.setattr(Suite, 'add', lambda self, record: added.append(record))
     monkeypatch.setattr(Suite, 'write',
                         lambda self, labels_only=False: written.append(labels_only))
     monkeypatch.setattr(config, 'cleanup', lambda: None, raising=False)
@@ -288,7 +271,7 @@ def test_suite_create_processes_observations(
                             info=lambda *a, **k: None, warning=lambda *a, **k: None,
                             close=lambda: None))
     suite.create()
-    assert added == [['rec']]
+    assert added == ['rec']
     assert written == [False]
 
 
@@ -302,8 +285,8 @@ def test_suite_create_skips_glob_mismatch(
     suite.first = None
     suite.volume_id = 'GO_0001'
     added: list[Any] = []
-    monkeypatch.setattr(Suite, 'make_records', lambda self, i: ['rec'])
-    monkeypatch.setattr(Suite, 'add', lambda self, records: added.append(records))
+    monkeypatch.setattr(Suite, 'make_record', lambda self, i: 'rec')
+    monkeypatch.setattr(Suite, 'add', lambda self, record: added.append(record))
     monkeypatch.setattr(Suite, 'write', lambda self, labels_only=False: None)
     monkeypatch.setattr(config, 'cleanup', lambda: None, raising=False)
     monkeypatch.setattr(com, 'get_logger',

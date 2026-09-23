@@ -45,7 +45,6 @@ know what they control.
     - ``SC`` — the NAIF spacecraft ID.
     - ``glob`` / ``index_glob`` — patterns selecting data labels and the
       supplemental index file.
-    - ``selection`` — default table levels (``"S"`` summary, ``"D"`` detailed).
     - ``exclude`` — re-exported from ``host_config.exclude`` (see above).
     - ``MISSION_TABLE`` and ``EXCEPTIONS`` — the mapping from spacecraft-clock
       ranges to the primary body, secondaries, and other selected bodies, with
@@ -67,11 +66,18 @@ configure them directly:
 - Index: ``<volume>_supplemental_index.tab`` / ``.lbl``.
 - Geometry summary: ``<volume>_<kind>_summary.tab`` for ``sky``, ``body``, and
   ``ring``; the inventory is ``<volume>_inventory.csv``.
-- Geometry detailed: ``<volume>_<kind>_detailed.tab``.
 - Cumulative: the same names with the cumulative directory's volume ID.
 
 Each ``.tab``/``.csv`` file is accompanied by a ``.lbl`` PDS3 label generated
 from the host's label template (or a shared template in the package's global
-``templates/`` directory). The set of columns in an index table is itself
-defined by the supplemental label template; see
+``templates/`` directory).
+
+The label templates also define the columns themselves, for geometry tables as
+well as index tables. The geometry column set is the same for every collection
+and lives in shared template fragments that each host's
+``<HOST>_<kind>_summary.lbl`` pulls in: a single-valued column is one
+``COLUMN`` object, and a min/max pair is one ``COLUMN_DEFINITION`` object
+followed by a ``COLUMN_STUB`` per value, with each column's null value, valid
+range, and field width coming from its own object or from the definition it
+shares. To add or drop a column, edit the shared fragment; see
 :doc:`/dev_guide/dev_guide_extending`.

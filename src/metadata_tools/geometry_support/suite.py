@@ -11,7 +11,6 @@ from filecache import FCPath
 import metadata_tools.common as com
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
-from metadata_tools.geometry_support import formats
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.tables import BodyTable, InventoryTable, RingTable, SkyTable
 
@@ -27,7 +26,7 @@ class Suite:
     def __init__(self, input_dir: str | Path | FCPath, output_dir: str | Path | FCPath,
                        template_path: str | Path | FCPath,
                        metadata_dir: str | Path | FCPath | None = None,
-                       selection: str = '', glob: str | None = None,
+                       glob: str | None = None,
                        index_glob: str | None = None, first: int | None = None,
                        sampling: int = 8) -> None:
         """Construct a geometry Suite object.
@@ -37,8 +36,6 @@ class Suite:
             output_dir: Directory in which to write the geometry files.
             template_path: Path to the host template.
             metadata_dir: Directory containing the metadata files.
-            selection: A string containing "S" to generate summary files and "D"
-                to generate detailed files.
             glob: Glob pattern for data files.
             index_glob: Glob pattern for index files.
             first: If given, at most this many files are processed in each
@@ -59,14 +56,6 @@ class Suite:
         self.index_glob = index_glob
         self.first = first
         self.sampling = sampling
-
-        # Determine processing levels
-        self.levels: list[str] = []
-        for sel in selection:
-            if sel == 'S':
-                self.levels += ['summary']
-            if sel == 'D':
-                self.levels += ['detailed']
 
         # Check for supplemental index
         index_filenames = list(self.metadata_dir.glob(cast(str, self.index_glob)))
@@ -99,135 +88,57 @@ class Suite:
 
         # Initialize data tables
         self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = []
-        for level in self.levels:
-            self.add_tables(output_dir, level)
+        self.add_tables(output_dir)
 
         # Initialize meshgrids
         self.meshgrids = config.meshgrids(sampling)
 
     #===========================================================================
-    @staticmethod
-    def get_override(record: Record, qualifier: str,
-                     name: str | None = None) -> list[dict[str, Any]]:
-        """Build a list of column override dicts.
-
-        Parameters:
-            record: Any Record.
-            qualifier: 'sky', 'sun', 'ring', or 'body'.
-            name: Name identifying a specific column description.
-
-        Returns:
-            A list of dicts containing override names and values, one for each column.
-        """
-
-        column_descs = record.dicts[qualifier]
-        if name:
-            column_descs = column_descs[name]
-
-        overrides: list[dict[str, Any]] = []
-        for column_desc in column_descs:
-            # Get format for this column
-            event_key = column_desc[0]
-            if len(column_desc) > 2:
-                fmt = formats.ALT_FORMAT_DICT[(event_key[0], column_desc[2])]
-            else:
-                fmt = formats.FORMAT_DICT[event_key[0]]
-
-            # Save label overrides for this column
-            (_,_,_,_,_, null_value, valid_minimum, valid_maximum, _, _) = fmt
-            override = {'NULL_VALUE':    null_value,
-                        'VALID_MINIMUM': valid_minimum,
-                        'VALID_MAXIMUM': valid_maximum,
-                       }
-            overrides.append(override)
-
-        return overrides
-
-    #===========================================================================
-    @staticmethod
-    def get_overrides(record: Record) -> dict[str, list[dict[str, Any]]]:
-        """Build a dictionary of column overrides keyed by qualifier.
-
-        Parameters:
-            record: Any Record.
-
-        Returns:
-            Dicts containing override names and values for each column, keyed by
-            qualifier.
-        """
-        overrides: dict[str, list[dict[str, Any]]] = {}
-
-        overrides['sky'] = Suite.get_override(record, 'sky')
-        # No 'sun' entry: the sun table is not wired in (see tables.SunTable).
-        overrides['ring'] = Suite.get_override(record, 'ring', name=record.primary)
-        overrides['body'] = Suite.get_override(record, 'body', name=record.primary)
-
-        return overrides
-
-    #===========================================================================
-    def add_tables(self, output_dir: str | Path | FCPath, level: str) -> None:
-        """Create the tables for one processing level and append them to ``self.tables``.
-
-        The level-independent InventoryTable is created once, on the first call;
-        each call appends the Sky, Ring, and Body tables for *level*, so a Suite
-        with both processing levels accumulates one table set per level.
+    def add_tables(self, output_dir: str | Path | FCPath) -> None:
+        """Create the volume's tables and append them to ``self.tables``.
 
         Parameters:
             output_dir: Directory in which to write the geometry files.
-            level: 'summary' or 'detailed'.
         """
-        # A SunTable would be inserted here (summary level only); it is not
-        # wired in. See tables.SunTable for the blocker and enablement recipe.
-        if not any(isinstance(table, InventoryTable) for table in self.tables):
-            self.tables.append(
-                InventoryTable(output_dir, self.template_path, volume_id=self.volume_id))
+        # A SunTable would be inserted here; it is not wired in. See
+        # tables.SunTable for the blocker and enablement recipe.
+        # level='summary' names the output file and its template
+        # (<volume>_<qualifier>_summary.tab). The inventory table sets its own
+        # level and suffix.
         self.tables += [
-            SkyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
-            RingTable(output_dir, self.template_path, volume_id=self.volume_id, level=level),
-            BodyTable(output_dir, self.template_path, volume_id=self.volume_id, level=level)
+            InventoryTable(output_dir, self.template_path, volume_id=self.volume_id),
+            SkyTable(output_dir, self.template_path, volume_id=self.volume_id,
+                     level='summary'),
+            RingTable(output_dir, self.template_path, volume_id=self.volume_id,
+                      level='summary'),
+            BodyTable(output_dir, self.template_path, volume_id=self.volume_id,
+                      level='summary')
             ]
 
     #===========================================================================
-    def make_records(self, index: int) -> list[Record]:
-        """Create a record for each processing level.
+    def make_record(self, index: int) -> Record:
+        """Create the record for one observation.
 
         Parameters:
             index: Row index.
 
         Returns:
-            One record for each processing level.
+            The record describing that observation.
         """
-        records: list[Record] = []
-        for level in self.levels:
-            records.append(
-                Record(self.observations[index],
-                       self.volume_id,
-                       self.meshgrids,
-                       self.sampling,
-                       level))
-        return records
+        return Record(self.observations[index],
+                      self.volume_id,
+                      self.meshgrids,
+                      self.sampling)
 
     #===========================================================================
-    def add(self, records: list[Record]) -> None:
+    def add(self, record: Record) -> None:
         """Add a row to all tables.
 
-        Each level-specific table receives the record whose level matches; a
-        level-independent table (the InventoryTable) receives only the first
-        record, so its rows are not duplicated when both processing levels are
-        active.
-
         Parameters:
-            records: Records describing the rows to add, one for each processing
-                level.
+            record: Record describing the row to add.
         """
         for table in self.tables:
-            if table.level is None:
-                if records:
-                    table.add(records[0])
-                continue
-            for record in records:
-                if record.level == table.level:
-                    table.add(record)
+            table.add(record)
 
     #===========================================================================
     def write(self, labels_only: bool = False) -> None:
@@ -281,9 +192,9 @@ class Suite:
                 logger.info("%s  %s %4d/%4d", self.volume_id, file, i+1, nobs)
 
                 # Construct the record for this observation
-                records = self.make_records(i)
+                record = self.make_record(i)
                 # Update the tables
-                self.add(records)
+                self.add(record)
                 count += 1
 
         # Write tables and make labels
