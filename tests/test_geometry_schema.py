@@ -567,10 +567,11 @@ def test_non_tuple_key_is_an_error(tmp_path: Path) -> None:
 
 
 def test_short_key_is_an_error(tmp_path: Path) -> None:
-    """A BACKPLANE_KEY without a target slot is rejected at parse time.
+    """A BACKPLANE_KEY without a target slot is rejected at construction.
 
-    prep_row reads the key's second element as the mask target, so a
-    one-element key would raise IndexError per observation instead.
+    Every key names the backplane quantity and its target (an explicitly
+    empty one for the sky columns); a key too short to carry a target would
+    otherwise fail only while processing an observation.
     """
     host = _host_dir(tmp_path)
     tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
