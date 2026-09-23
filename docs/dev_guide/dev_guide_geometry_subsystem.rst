@@ -153,10 +153,12 @@ host's summary template: a leading run of plain ``COLUMN`` objects with no
 single columns and definition/stub groups. Template order is output order. The result is cached per (template directory,
 qualifier) and resolved once, when the table is constructed.
 
-Removing a column removes its computation with it, so a host trims its column
-set by deleting a definition and its stubs and nothing else. Malformed shapes
-are errors, all raised at construction rather than allowed to misalign a row
-per observation:
+Removing a column removes its computation with it: delete a definition and
+its stubs from the shared fragment and nothing else. (A host that must
+diverge from the collection-independent column set shadows a fragment with
+its own copy in its ``templates/`` directory, which ``$INCLUDE`` resolution
+finds first.) Malformed shapes are errors, all raised at construction rather
+than allowed to misalign a row per observation:
 
 * a stub with no preceding definition, or a definition with no stubs;
 * more than two stubs (no computation produces more than two values);
