@@ -133,7 +133,8 @@ class SunTable(com.Table):
       3. The label templates already exist and are validated:
          ``hosts/GO_0xxx/templates/GO_0xxx_sun_summary.lbl`` and the shared
          ``templates/sun_summary_columns.lbl`` (guarded by
-         ``tests/test_geometry_sun_label.py``).
+         ``tests/test_geometry_schema.py``, e.g.
+         ``test_sun_schema_resolves_though_unwired``).
     """
 
     #===========================================================================

@@ -66,8 +66,6 @@ stubs, which supply the field width, print format, overflow format, derived
 unit-conversion flag, null value, and valid range -- all read from the label
 template.
 
-.. _format-dict-contract:
-
 Where a column's metadata comes from
 ====================================
 
@@ -202,8 +200,11 @@ to the selections when the row lists any); with no primary, the selections that
 intersect the field of view are used instead; additions are included whenever
 they intersect the field of view; and the target and, for a satellite, its
 parent are always included. It also produces the field-of-view inventory and,
-when SPICE pointing is unavailable, sets the record's ``pointing_available``
-flag so the row is written with null geometry.
+when SPICE pointing is unavailable, clears the record's ``pointing_available``
+flag. :func:`~metadata_tools.geometry_support.prep.prep_row` then nulls every
+column, and because the row is all-null it is dropped (``allow_zero_rows``
+defaults to True and no caller overrides it): such an observation gets an
+inventory row with an empty body list but no summary-table rows.
 
 Important invariants
 ====================

@@ -126,5 +126,6 @@ directory:
 - a matching ``.lbl`` label for each table; and
 - a processing log named ``<volume>_geometry-log.txt``.
 
-Observations with no usable pointing (no C-kernel data) are logged and written
-with null geometry values.
+Observations with no usable SPICE pointing (no C-kernel data) are logged; each
+gets an inventory row with an empty body list, but no row in the sky, body, or
+ring summary tables.
