@@ -166,7 +166,7 @@ bodies in the field of view, and builds the ``oops`` backplane. Its
 :func:`~metadata_tools.geometry_support.prep.prep_row` to evaluate and format
 the columns for a qualifier, then
 :meth:`~metadata_tools.geometry_support.record.Record.postprocess` applies the
-inter-column null-linking rules.
+inter-column link functions.
 
 Data flow
 =========

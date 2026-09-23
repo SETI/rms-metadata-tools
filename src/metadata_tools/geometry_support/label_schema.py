@@ -141,7 +141,8 @@ class ResolvedColumn:
         mask: ``(masker, shadower, face)``. The masker and shadower strings
             concatenate ``"P"`` (planet), ``"R"`` (rings), and ``"M"`` (blocker
             body); the face is ``"D"``, ``"N"``, or ``""``.
-        link_fn: The link function grouping columns that go null together, or
+        link_fn: The postprocess function applied jointly to the columns
+            sharing ``link_id`` (``'null'`` nulls the group together), or
             ``''`` when the column is unlinked.
         link_id: The token naming the column's link group, or ``''`` when
             unlinked. Its only meaning is equality: columns in one table

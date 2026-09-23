@@ -130,7 +130,7 @@ grammar of `column_grammar.py`: each computed column is one `COLUMN_DEFINITION` 
 carrying the shared label metadata (FORMAT hence width/print format, UNIT hence unit
 conversion, NULL_CONSTANT, valid range, OVERFLOW_FORMAT) and the computation spec
 (`BACKPLANE_KEY` and `MASK` as Python literals parsed with `ast.literal_eval`, the
-`'bodyx'` token substituted per body at run time; `LINK_FN`/`LINK_ID` null-link groups) —
+`'bodyx'` token substituted per body at run time; `LINK_FN`/`LINK_ID` naming a postprocess function and its column group) —
 and the shared lead-in DESCRIPTION — followed by one `COLUMN_STUB` object per value,
 carrying its NAME, its own per-value DESCRIPTION (appended to the definition's at write
 time), and any override; a single-valued column is simply a plain COLUMN carrying its

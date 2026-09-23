@@ -45,7 +45,7 @@ to :meth:`~metadata_tools.geometry_support.record.Record.add`, which binds the
 :func:`~metadata_tools.geometry_support.prep.prep_row`, which evaluates each
 column's backplane key, applies the excluded-pixel mask, and formats the result;
 :meth:`~metadata_tools.geometry_support.record.Record.postprocess` then applies
-the null-linking rules so that linked columns go null together.
+each link function to its group of linked columns.
 
 Masks
 =====
@@ -120,9 +120,15 @@ which a stub may override like ``FORMAT``):
 * ``OVERFLOW_FORMAT`` -- the fallback format substituted when a value will not
   fit its field, in the same PDS3 FORMAT notation as ``FORMAT`` itself. It
   must fill the field exactly.
-* ``LINK_FN`` / ``LINK_ID`` -- the link function and group token tying columns
-  that go null together. The id is an arbitrary string whose only meaning is
-  equality: columns in one table sharing ``(LINK_FN, LINK_ID)`` form one group.
+* ``LINK_FN`` / ``LINK_ID`` -- a postprocessing function applied jointly to a
+  group of columns, and the token naming the group. The id is an arbitrary
+  string whose only meaning is equality: columns in one table sharing
+  ``(LINK_FN, LINK_ID)`` form one group. ``'null'`` -- which nulls the whole
+  group when any member is null -- is the one link function defined so far; a
+  new one is added to the dispatch table in
+  :meth:`~metadata_tools.geometry_support.record.Record.postprocess` and to
+  the known-function set in
+  :mod:`~metadata_tools.geometry_support.label_schema`.
 
 The right-hand side of ``BACKPLANE_KEY`` and ``MASK`` is a Python literal on a
 single line, parsed with :func:`ast.literal_eval`; nothing ever parses these
