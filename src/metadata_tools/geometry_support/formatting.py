@@ -5,7 +5,6 @@
 # number-formatting logic can be unit-tested without the host plugin.
 ################################################################################
 """Column value formatting utilities for geometry tables."""
-import warnings
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, cast
 
@@ -14,6 +13,7 @@ import numpy as np
 import oops
 import polymath
 
+import metadata_tools.common as com
 import metadata_tools.util as util
 
 if TYPE_CHECKING:
@@ -131,14 +131,14 @@ def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
         # numeric values: flag common exceptions and use standard format
         if not isinstance(number, str):
             if np.isnan(number):
-                warnings.warn("NaN encountered", stacklevel=2)
+                com.get_logger().warning('NaN encountered in %s', stub.name)
                 number = stub.null_value
             if np.isinf(number):
-                warnings.warn("infinity encountered", stacklevel=2)
+                com.get_logger().warning('Infinity encountered in %s', stub.name)
                 number = stub.null_value
             # A template that declares no range asks for no range check.
             if stub.valid_minimum is not None and stub.valid_maximum is not None:
-                if (number < stub.valid_minimum) | (number > stub.valid_maximum):
+                if number < stub.valid_minimum or number > stub.valid_maximum:
                     number = stub.null_value
             string = stub.print_format % number
         # string values: left justify and enclose in double quotes
@@ -158,8 +158,8 @@ def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
                 if len(string99) > column_width:
                     error_message = "column overflow: " + string
                 else:
-                    warnings.warn("column overflow: " + string +
-                                  " clipped to " + string99)
+                    com.get_logger().warning('Column overflow in %s: %s clipped to %s',
+                                             stub.name, string, string99)
                     string = string99
 
                 string = string[:column_width]

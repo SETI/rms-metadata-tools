@@ -49,6 +49,7 @@ tests, docs, and tooling.
            cumulative_cloud.py # metadata-cumulative-cloud (GCP dispatch)
            task_list.py        # metadata-task-list
            _host.py            # shared host-directory injection helpers
+           gcp_common_startup.sh # GCP VM startup-script template (package data)
          bodies.py             # builds the oops Body registry
          util.py               # path, text, time, and math utilities
          defs.py               # constants (body names, ring radii, paths)
@@ -97,20 +98,23 @@ console-script entry points (see :doc:`dev_guide_environment`):
      host_init.py              # initializes the oops host module (side effects)
      templates/                # host PDS3 label templates
 
-GCP deployment files live outside the package and are not installed with the wheel:
+The per-host GCP configs are deployment files; they live outside the package and
+are not installed with the wheel, so the ``*-cloud`` commands' ``--config``
+defaults apply only in a source checkout:
 
 .. code-block:: text
 
    cloud/
-     gcp_common_startup.sh     # shared VM bootstrap template
      GO_0xxx/
        gcp_index_config.yml        # GCP machine/queue config for the index stage
        gcp_geometry_config.yml     # GCP machine/queue config for the geometry stage
        gcp_cumulative_config.yml   # GCP machine/queue config for the cumulative stage
-       tasks.json                 # example/output task file
+       gcp_<type>_prod_config.yml  # production fleet configs, one per stage
 
 GCP instance startup scripts are generated at runtime by
 ``metadata_tools.cli._host.build_startup_script`` (invoked by the ``*-cloud``
-entry points, or previewed directly with ``--create-startup-file``); they are never
-stored in the repository. The ``cli`` package is console-script entry-point code,
+entry points, or previewed directly with ``--create-startup-file``) from the
+template ``cli/gcp_common_startup.sh``, which ships with the package so that
+dispatch also works from a pip install; the generated scripts are never stored
+in the repository. The ``cli`` package is console-script entry-point code,
 not a stable import surface, so it is not part of the :doc:`/dev_guide/api/api`.

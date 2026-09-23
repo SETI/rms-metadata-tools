@@ -20,7 +20,7 @@ def test_supplemental_index_gossi() -> None:
     """Each supplemental index column parses with the expected dtype in every label."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*_supplemental_index.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*_supplemental_index.lbl')
     files = support.exclude(files, 'templates/', 'old/')
 
     # Test labels

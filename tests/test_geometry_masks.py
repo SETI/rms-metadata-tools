@@ -25,6 +25,23 @@ def _one_pixel(shape: tuple[int, int] = (4, 4)) -> npt.NDArray[np.bool_]:
 
 
 #===============================================================================
+def test_bodyless_target_skips_body_lookup(monkeypatch: pytest.MonkeyPatch,
+                                           fake_backplane: Any) -> None:
+    """The sky table's empty-tuple target is not looked up as a body.
+
+    Regression: the sky columns are keyed ('right_ascension', ()), so the target
+    is (), which has no .split and names no body.
+    """
+    def _no_lookup(name: str) -> bool:
+        raise AssertionError(f'unexpected body lookup: {name!r}')
+
+    monkeypatch.setattr(oops.Body, 'exists', staticmethod(_no_lookup))
+    result = masks.construct_excluded_mask(fake_backplane, (), None, ('', '', ''))
+    assert isinstance(result, polymath.Boolean)
+    assert not np.any(result.vals)
+
+
+#===============================================================================
 # `fake_backplane` is the conftest-private FakeBackplane stub; typed as Any.
 def test_planet_masker_ors_in_back(exists_true: None, fake_backplane: Any) -> None:
     """The 'P' masker ORs in the target-behind-primary pixels."""

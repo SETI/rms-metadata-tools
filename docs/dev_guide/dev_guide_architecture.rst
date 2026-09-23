@@ -67,16 +67,17 @@ observation and feeds it to each table.
        }
        class Suite {
            +tables
+           +add_tables(output_dir)
            +create(labels_only, pattern)
-           +make_records(index)
-           +add(records)
+           +make_record(index)
+           +add(record)
            +write(labels_only)
        }
        class Record {
            +primary
            +bodies
            +backplane
-           +add(qualifier)
+           +add(columns, ...)
            +postprocess(columns, resolved)
        }
 

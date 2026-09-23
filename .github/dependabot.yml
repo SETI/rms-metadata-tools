@@ -13,7 +13,7 @@ updates:
     ignore:
       - dependency-name: "numpy"
       - dependency-name: "fortranformat"
-      - dependency-name: "json-stream"
+      - dependency-name: "PyYAML"
       - dependency-name: "rms-*"
 
   - package-ecosystem: github-actions

@@ -23,6 +23,14 @@ def test_create_returns_for_missing_file(monkeypatch: pytest.MonkeyPatch,
     assert made == []
 
 
+def test_create_rejects_filename_without_volume_id(tmp_path: Path) -> None:
+    """A table filename with no underscore cannot yield a volume ID."""
+    table = tmp_path / 'noprefix.tab'
+    table.write_text('x', encoding='utf-8')
+    with pytest.raises(ValueError, match=r"'noprefix\.tab' does not start with a volume id"):
+        lab.create(FCPath(table), FCPath(tmp_path / 'tmpl.lbl'))
+
+
 def _capture_template(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     """Install a PdsTemplate stub that records constructor and write arguments.
 

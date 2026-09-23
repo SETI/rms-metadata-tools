@@ -167,6 +167,15 @@ def test_schema_is_cached() -> None:
     assert resolve_schema(TEMPLATE_DIR, 'sky') is first
 
 
+def test_schema_cache_is_keyed_by_qualifier() -> None:
+    """Tables resolved from the same template directory do not share a cache entry."""
+    sky = resolve_schema(TEMPLATE_DIR, 'sky')
+    ring = resolve_schema(TEMPLATE_DIR, 'ring')
+    assert ring is not sky
+    assert len(sky.columns) == SHIPPED['sky'][1]
+    assert len(ring.columns) == SHIPPED['ring'][1]
+
+
 def test_sun_schema_resolves_though_unwired() -> None:
     """The sun table is not wired in, but its template must keep resolving."""
     schema = resolve_schema(TEMPLATE_DIR, 'sun')
@@ -190,7 +199,7 @@ def test_sun_schema_resolves_though_unwired() -> None:
     # A /pixel qualifier does not change the conversion.
     ('deg/pixel',   None,   None, None,   'DEG'),
     ('deg/pixel',     0.,   360., None,   '360'),
-    # oops works in radians and kilometres, so those need no conversion.
+    # oops works in radians and kilometers, so those need no conversion.
     ('rad',           0.,   360., None,   ''),
     ('km',          None,   None, None,   ''),
     ('km/pixel',    None,   None, None,   ''),
@@ -304,7 +313,7 @@ def test_template_name_matches_the_write_path() -> None:
 
     The write path reaches it from the other direction, substituting the
     collection name into a table's file name. If the two ever disagree, a table
-    would be validated against one template and labelled with another.
+    would be validated against one template and labeled with another.
     """
     for qualifier in sorted(SHIPPED):
         read_name = template_name_for(TEMPLATE_DIR, qualifier)
@@ -695,7 +704,7 @@ def test_unrecognized_unit_is_an_error(tmp_path: Path) -> None:
     """An unrecognized UNIT is rejected rather than guessed at.
 
     The unit decides the conversion, so a misspelling that fell through to "no
-    conversion" would silently tabulate radians in a column labelled degrees.
+    conversion" would silently tabulate radians in a column labeled degrees.
     """
     host = _host_dir(tmp_path)
     tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',

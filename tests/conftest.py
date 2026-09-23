@@ -1,8 +1,8 @@
 ################################################################################
 # tests/conftest.py: Hermetic import shim + shared fixtures.
 #
-# See plans/plan2_test_suite.md. One thing blocks importing the support modules
-# without SPICE; it is solved here, before collection:
+# One thing blocks importing the support modules without SPICE; it is solved
+# here, before collection:
 #
 #   * index_support / cumulative_support / geometry_support call
 #     metadata_tools.config.get_host_config() / get_index_config() /
@@ -12,7 +12,19 @@
 #     SCLK conversion; the fake geometry_config's MISSION_TABLE = [] makes that
 #     conversion a no-op.)
 ################################################################################
-"""Hermetic import shim and shared fixtures for the metadata_tools test suite."""
+"""Hermetic import shim and shared fixtures for the metadata_tools test suite.
+
+Two conventions hold across the suite:
+
+- The fake config modules installed below are process-global state shared by
+  every test in a worker. Change their attributes only through ``monkeypatch``
+  (e.g. ``monkeypatch.setattr(get_host_config(), ...)``) so the change is undone
+  after the test; a direct ``setattr`` would leak into later tests.
+- Tests that import private names (``_cat_rows``, ``_schema_cache``,
+  ``_resolve_dict_ref``, ...) do so deliberately, as drift guards on internals
+  that the public API does not expose. When a refactor breaks one, update it to
+  the new internals rather than deleting it.
+"""
 import types
 from collections.abc import Callable, Sequence
 from pathlib import Path

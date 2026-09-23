@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools_scm[toml]"]
+requires = ["setuptools>=77", "setuptools_scm[toml]"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -22,7 +22,7 @@ dependencies = [
   "rms-textkernel>=1.1.1",
   "fortranformat>=2.0.3",
 ]
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 authors = [
   {name = "Joe Spitale", email = "jspitale@seti.org"}
 ]
@@ -40,7 +40,6 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Astronomy",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Utilities",
-  "License :: OSI Approved :: Apache Software License",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -61,8 +60,7 @@ pythonpath = [
   "src"
 ]
 testpaths = ["tests"]
-# TODO Update desired parallelism
-addopts = ["-n", "auto", "--cov=src", "--strict-markers", "--strict-config", "-m", "not integration and not requires_archive"]
+addopts = ["-n", "auto", "--strict-markers", "--strict-config", "-m", "not integration and not requires_archive"]
 markers = [
   "integration: requires oops/SPICE host initialization (excluded by default)",
   "requires_archive: requires the $RMS_METADATA holdings tree (excluded by default)",
@@ -71,17 +69,18 @@ filterwarnings = [
   "error",
 ]
 
-[tool.setuptools]
 [tool.setuptools.packages.find]
 # Only packages under src/ are discovered. The top-level cloud/ deployment tree
-# (GCP config YAMLs, startup scripts) is outside src/ and therefore never ships
-# in the wheel or sdist.
+# (the per-host GCP config YAMLs) is outside src/ and therefore never ships in
+# the wheel.
 where = ["src"]
 
 # PDS3 label templates are read at runtime (see defs.GLOBAL_TEMPLATE_PATH and the
-# per-host templates/ directories); they must ship in the wheel.
+# per-host templates/ directories), as is the GCP startup-script template (see
+# cli._host.DEFAULT_STARTUP_TEMPLATE); they must ship in the wheel.
 [tool.setuptools.package-data]
 "metadata_tools" = ["py.typed", "templates/*.lbl"]
+"metadata_tools.cli" = ["gcp_common_startup.sh"]
 "metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
 
 [tool.setuptools_scm]
@@ -115,7 +114,7 @@ docs = [
 # rms-cloud-tasks (the hosts/<HOST>/*_cloud.py workers).
 cloud = [
   "rms-cloud-tasks>=0.2.0",
-  "json-stream>=2.3.3",
+  "PyYAML>=6.0",
 ]
 
 [project.scripts]
@@ -137,15 +136,16 @@ branch = true
 parallel = true
 source = ["metadata_tools"]
 # The default test run is hermetic (no SPICE kernels, no $RMS_METADATA holdings).
-# Coverage therefore measures the host-agnostic engine. The following are
-# excluded from the denominator because they cannot run without SPICE/GCP:
-#   - hosts/*       per-host plugin config, runnable entry scripts, cloud
-#                   workers, and host-local tests; these import host_config /
-#                   geometry_config as top-level modules (CWD-dependent) and
-#                   drive oops/SPICE or rms-cloud-tasks.
+# Coverage therefore measures the host-agnostic engine plus the testable CLI
+# plumbing (cli/_host.py and the cloud worker task callables). The following
+# are excluded from the denominator because they cannot run without SPICE/GCP:
+#   - hosts/*       per-host plugin config and label templates; the config
+#                   modules drive oops/SPICE.
 #   - bodies.py     builds the oops Body registry via oops.Body.lookup(), which
 #                   needs the kernels; the engine tests stub it (see
 #                   tests/conftest.py).
+#   - cli/ entry modules other than _host.py and *_worker.py: thin main()
+#                   wrappers that load a real host and run an engine or GCP.
 # Any other SPICE-only seam is excluded with a targeted, commented
 # `# pragma: no cover` at the call site, never a blanket file omit.
 omit = [
@@ -153,7 +153,12 @@ omit = [
   "*/_version.py",
   "*/metadata_tools/bodies.py",
   "*/metadata_tools/hosts/*",
-  "*/metadata_tools/cli/*",
+  "*/metadata_tools/cli/__init__.py",
+  "*/metadata_tools/cli/index.py",
+  "*/metadata_tools/cli/geometry.py",
+  "*/metadata_tools/cli/cumulative.py",
+  "*/metadata_tools/cli/task_list.py",
+  "*/metadata_tools/cli/*_cloud.py",
 ]
 
 [tool.coverage.report]
@@ -186,27 +191,15 @@ module = [
     "pdstemplate.*",
     "vicar.*",
     "textkernel.*",
-    "json_stream.*",
     "cloud_tasks.*",
     "spicedb.*",
 ]
 ignore_missing_imports = true
 
-[[tool.mypy.overrides]]
-# Host config/init modules are imported as top-level names (the plugin pattern,
-# resolvable only when CWD is the host dir), so mypy cannot follow them.
-module = ["host_config", "host_init", "index_config", "geometry_config"]
-ignore_missing_imports = true
 
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-exclude = [
-#  "TODO"
-]
-
-[tool.ruff.format]
-quote-style = "single"
 
 [tool.ruff.lint]
 # Explicit rule set (recommended for library projects). Categories:
@@ -224,9 +217,6 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "A", "N", "PT", "RUF"]
 # UP031 - Use format specifiers instead of percent format.
 extend-ignore = ["PT011", "SIM105", "SIM108", "RUF005", "B028", "SIM102", "N999", "UP031"]
 
-[tool.ruff.lint.per-file-ignores]
-#"TODO" = ["TODO"]
-
 [tool.pymarkdown.plugins.md013]
 # Line length (disable so README/CONTRIBUTING can use longer lines).
 enabled = false
@@ -240,6 +230,8 @@ exclude_dirs = ["tests", "venv", ".venv"]
 targets = ["src"]
 
 [tool.vulture]
+# Library code only: pytest fixture parameters used for their side effects
+# would otherwise read as unused variables.
 paths = ["src"]
 exclude = ["tests/"]
 min_confidence = 70

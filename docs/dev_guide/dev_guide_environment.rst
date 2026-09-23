@@ -27,9 +27,11 @@ are expanded for ``$NAME`` references at runtime (see
 :doc:`/user_guide/user_guide_installation`). The **cloud dispatch layer**
 (``cli/``) does read environment variables as fallbacks for its flags —
 ``GCP_SERVICE_ACCOUNT``, ``OOPS_RESOURCES_DISK``, ``GCP_STARTUP_TEMPLATE``, and
-``GCP_DEBUG_BRANCH`` — and importing ``metadata_tools`` loads a git-ignored
-``.env`` file at the repository root as defaults for unset variables (see the
-environment-variable table in :doc:`/user_guide/user_guide_cloud`). For
+``GCP_DEBUG_BRANCH`` — and importing ``metadata_tools`` loads a ``.env`` file
+as defaults for unset variables: ``$RMS_METADATA_ENV`` if set, else the nearest
+``.env`` at or above the current directory, else (in a source checkout) the
+git-ignored ``.env`` at the repository root (see the environment-variable
+section in :doc:`/user_guide/user_guide_cloud`). For
 development the other relevant variables are those the **test suite** reads at
 import time:
 
@@ -44,11 +46,10 @@ import time:
    * - ``RMS_VOLUMES``
      - Root of the data volume tree. Read in ``tests/archive_support.py``.
 
-The default test run is hermetic and does not need these, but the top-level
-``tests/`` package imports ``archive_support`` at collection time, so the
-variables must be *defined* (even if pointed at a placeholder) for collection to
-succeed. The archive-backed and host tests additionally require the real trees
-and SPICE kernels.
+The default hermetic run needs neither variable. Only the archive-backed tier
+(``-m requires_archive``) and the host tests need them, pointed at the real
+trees (plus SPICE kernels); an archive-backed test run without
+``RMS_METADATA`` is skipped with a message naming the variable.
 
 Running the entry points
 ========================
@@ -68,7 +69,7 @@ Running the tests
 =================
 
 The suite is pytest-based; configuration lives in ``pyproject.toml``
-(``pythonpath = src``, ``-n auto``, coverage on by default). Two markers gate
+(``pythonpath = src``, ``-n auto``). Two markers gate
 the slow tiers and are excluded by default:
 
 - ``integration`` — requires ``oops``/SPICE host initialization.
@@ -78,14 +79,17 @@ the slow tiers and are excluded by default:
 
    pytest                                   # default hermetic engine suite
    pytest tests/test_index.py               # one file
-   pytest tests/test_index.py::Test_Index_Common::test_supplemental_index_common
+   pytest tests/test_index.py::test_supplemental_index_common
    pytest -m requires_archive               # the archive-backed tier
    pytest -n 1                              # serial (easier to read failures)
+   pytest --cov=src                         # with coverage and its 90% gate
 
-The default run measures coverage of the host-agnostic engine (the ``hosts/``
-package, ``bodies.py``, and ``tests/`` are excluded from the denominator; see
-``[tool.coverage]`` in ``pyproject.toml``). The project targets at least 90%
-coverage. Host-specific tests live under ``tests/hosts/<HOST>/`` and carry the
+Coverage is measured only when requested with ``--cov=src``, as
+``scripts/run-all-checks.sh`` and CI do, so a run of one file or one test is
+never failed by the coverage gate. It covers the host-agnostic engine and the
+testable CLI plumbing (see the ``omit`` list in ``[tool.coverage.run]`` in
+``pyproject.toml`` for what is excluded and why). The project targets at least
+90% coverage. Host-specific tests live under ``tests/hosts/<HOST>/`` and carry the
 ``requires_archive`` marker.
 
 Linting, typing, and docs
@@ -107,15 +111,12 @@ The individual tools, run from the repository root inside the venv:
    ruff check src tests
    mypy src tests
    bandit -c pyproject.toml -r src -q
-   vulture src tests
+   vulture src
    python -m pyroma .
    pip-audit --skip-editable
    sphinx-build -W -b html docs docs/_build
    sphinx-build -n -b html docs docs/_build
-   pymarkdown scan docs/ README.md CONTRIBUTING.md
-
-``ruff format --check`` is also available to verify formatting but is not
-enabled by default (``ENABLE_RUFF_FORMAT=true`` to include it in the script).
+   pymarkdown scan docs/ .cursor/ README.md CONTRIBUTING.md
 
 The documentation MUST build clean under both ``-W`` (warnings as errors) and
 ``-n`` (nitpicky) before delivery. To build and open the docs locally:

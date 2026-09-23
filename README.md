@@ -23,7 +23,6 @@
 ![GitHub License](https://img.shields.io/github/license/SETI/rms-metadata-tools)
 [![Number of GitHub stars](https://img.shields.io/github/stars/SETI/rms-metadata-tools)](https://github.com/SETI/rms-metadata-tools/stargazers)
 ![GitHub forks](https://img.shields.io/github/forks/SETI/rms-metadata-tools)
-[![DOI](https://zenodo.org/badge/rms-metadata-tools.svg)](https://zenodo.org/badge/latestdoi/rms-metadata-tools)
 <!-- start-after-point -->
 
 ## Introduction
@@ -107,7 +106,8 @@ metadata-cumulative GO_0xxx "$RMS_METADATA_TEST/GO_0xxx/GO_0999/"
 ```
 
 Path arguments are expanded for environment variables. Restrict a run to one or
-more volumes with `--volumes GO_0017`, or to a few images with `--first 5`. See
+more volumes with `--volumes GO_0017`, or, for the geometry stage, to a few images
+with `--first 5`. See
 the
 [user guide](https://rms-metadata-tools.readthedocs.io/en/latest/user_guide/user_guide.html)
 for the full list of programs and options.

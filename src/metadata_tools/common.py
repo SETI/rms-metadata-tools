@@ -7,6 +7,7 @@ Provides the global ``PdsLogger``, the shared argument parser, and the ``Table``
 base class used by the index and geometry table generators.
 """
 import argparse
+import logging
 import re
 from pathlib import Path
 from typing import Any
@@ -26,9 +27,17 @@ _LOGGER = pdslogger.PdsLogger.get_logger('metadata', digits=0, lognames=False,
                                pid=False, indent=True, blanklines=False, level='info')
 SYSTEM_NULL = "NONE"
 
+# The current volume's file handler; replaced on each init_logger call so one
+# volume's messages never reach another volume's log.
+_volume_handler: logging.Handler | None = None
+
 #=========================================================================================
 def init_logger(log_dir: FCPath, log_type: str) -> None:
     """Initialize the global logger with file and stdout handlers.
+
+    The file handler added by the previous call, if any, is removed and closed first, so
+    each volume's log receives only the messages logged after its own
+    initialization.
 
     Parameters:
         log_dir: Directory in which the log file is written; its name is also used
@@ -36,11 +45,18 @@ def init_logger(log_dir: FCPath, log_type: str) -> None:
             name is deleted first.
         log_type: Type of log to create, used in the log filename.
     """
+    global _volume_handler
+
     name = '%s_%s-log.txt' % (log_dir.name, log_type)
     path = log_dir / name
     path.unlink(missing_ok=True)
 
-    _LOGGER.add_handler(pdslogger.file_handler(path, level='normal'))
+    # remove_handler detaches but does not close the file; close it here.
+    if _volume_handler is not None:
+        _LOGGER.remove_handler(_volume_handler)
+        _volume_handler.close()
+    _volume_handler = pdslogger.file_handler(path, level='normal')
+    _LOGGER.add_handler(_volume_handler)
     _LOGGER.add_handler(pdslogger.STDOUT_HANDLER)
     _LOGGER.log('header', 'Initialized %s log for %s', log_type, log_dir.name)
 
@@ -87,7 +103,8 @@ class PathAction(argparse.Action):
 def get_common_args(host: str | None = None,
                     volume_arg: str | None = 'volume_tree',
                     metadata_arg: str | None = 'metadata_tree',
-                    output_arg: str | None = 'output_tree') -> argparse.ArgumentParser:
+                    output_arg: str | None = 'output_tree',
+                    pattern_arg: bool = True) -> argparse.ArgumentParser:
     """Common argument parser for metadata tools.
 
     Parameters:
@@ -95,6 +112,7 @@ def get_common_args(host: str | None = None,
         volume_arg: Name of volume_tree arg or None to skip this argument.
         metadata_arg: Name of metadata_tree arg or None to skip this argument.
         output_arg: Name of output_tree arg or None to skip this argument.
+        pattern_arg: If False, the --pattern option is omitted.
 
     Returns:
         Parser containing the common argument specifications.
@@ -125,8 +143,9 @@ def get_common_args(host: str | None = None,
                             also used as the task source for Worker/GCP runs.''')
     gr.add_argument('--labels', '-l', action='store_true',
                     help='''If given, labels are generated for existing files.''')
-    gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
-                    help='''Glob pattern to select files.''')
+    if pattern_arg:
+        gr.add_argument('--pattern', '-p', type=str, metavar='pattern',
+                        help='''Glob pattern to select files.''')
 
     # Return parser
     return parser
@@ -146,7 +165,8 @@ class Table:
         """Constructor for a table object.
 
         Parameters:
-            output_dir: Directory in which to write the index files.
+            output_dir: Directory in which to write the table file; if omitted, the
+                table has no filename and cannot be written.
             template_path: Path to the host template.
             volume_id: Volume ID.
             level: Processing level: "summary" or "index".
@@ -155,6 +175,9 @@ class Table:
             suffix: File name suffix.
             use_global_template: If True, the label template is to be found in the
                 global template directory.
+
+        Raises:
+            ValueError: If output_dir is given without a volume_id.
         """
         self.template_path: FCPath | None = None
         if template_path:
@@ -168,6 +191,8 @@ class Table:
 
         if not output_dir:
             return
+        if volume_id is None:
+            raise ValueError('Table requires a volume_id when output_dir is given')
 
         if not suffix:
             suffix = "_%s_%s.tab" % (self.qualifier, self.level)
@@ -196,7 +221,7 @@ class Table:
         # Write label
         table_type = self.qualifier
         if self.level:
-            assert table_type is not None  # nosec B101 - type-narrowing invariant, not validation
+            assert table_type is not None  # nosec B101  # type-narrowing invariant, not validation
             table_type += '_' + self.level
         lab.create(self.filename, self.template_path,
                    table_type=table_type, use_global_template=self.use_global_template)
