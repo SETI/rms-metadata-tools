@@ -413,15 +413,21 @@ def test_build_startup_template_from_env(
 def test_build_startup_empty_startup_template_env_uses_default(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Regression: GCP_STARTUP_TEMPLATE='' must not be passed to Path()."""
-    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
-    cloud_dir.mkdir(parents=True)
-    (tmp_path / 'cloud' / 'gcp_common_startup.sh').write_text('echo default\n')
-    monkeypatch.setattr(_host_mod, 'cloud_dir_for', lambda _hid: cloud_dir)
+    default = tmp_path / 'gcp_common_startup.sh'
+    default.write_text('echo default\n')
+    monkeypatch.setattr(_host_mod, 'DEFAULT_STARTUP_TEMPLATE', default)
     monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
     monkeypatch.setenv('GCP_STARTUP_TEMPLATE', '')
     monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
     script = build_startup_script('GO_0xxx', _simple_parser(), oops_resources='my-disk')
     assert 'echo default' in script
+
+
+def test_default_startup_template_ships_with_package() -> None:
+    """The default template is the packaged file beside cli/_host.py, not a checkout path."""
+    expected = Path(_host_mod.__file__).parent / 'gcp_common_startup.sh'
+    assert expected == _host_mod.DEFAULT_STARTUP_TEMPLATE
+    assert expected.is_file()
 
 
 def test_build_startup_template_arg_overrides_env(

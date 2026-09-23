@@ -94,10 +94,10 @@ dispatch to the appropriate engine:
 Each entry point calls `load_host(host_id)` (strips `HOST_ID` from `sys.argv`, validates the
 host directory) and `set_host(host_id)` (registers that host's config modules) before invoking
 the engine. Cloud variants accept `cloud_tasks` options; `--config` defaults to
-`cloud/<HOST>/gcp_<type>_config.yml` and `--task-file` to `./tasks.json` when those files
-exist. GCP instance startup scripts are generated at dispatch time from
-`cloud/gcp_common_startup.sh`; only the `gcp_*_config.yml` machine/queue configs live in
-`cloud/<HOST>/`.
+`cloud/<HOST>/gcp_<type>_config.yml` (source checkout only) and `--task-file` to
+`./tasks.json` when those files exist. GCP instance startup scripts are generated at
+dispatch time from the packaged template `src/metadata_tools/cli/gcp_common_startup.sh`;
+only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
 
 **Per-host directory** (`src/metadata_tools/hosts/<HOST>/`) contains config modules and templates:
 

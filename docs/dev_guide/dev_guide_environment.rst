@@ -27,9 +27,11 @@ are expanded for ``$NAME`` references at runtime (see
 :doc:`/user_guide/user_guide_installation`). The **cloud dispatch layer**
 (``cli/``) does read environment variables as fallbacks for its flags —
 ``GCP_SERVICE_ACCOUNT``, ``OOPS_RESOURCES_DISK``, ``GCP_STARTUP_TEMPLATE``, and
-``GCP_DEBUG_BRANCH`` — and importing ``metadata_tools`` loads a git-ignored
-``.env`` file at the repository root as defaults for unset variables (see the
-environment-variable table in :doc:`/user_guide/user_guide_cloud`). For
+``GCP_DEBUG_BRANCH`` — and importing ``metadata_tools`` loads a ``.env`` file
+as defaults for unset variables: ``$RMS_METADATA_ENV`` if set, else the nearest
+``.env`` at or above the current directory, else (in a source checkout) the
+git-ignored ``.env`` at the repository root (see the environment-variable
+section in :doc:`/user_guide/user_guide_cloud`). For
 development the other relevant variables are those the **test suite** reads at
 import time:
 
