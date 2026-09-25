@@ -12,6 +12,12 @@ $NOTE
 # every group to plain COLUMN objects and removes the spec keywords, so
 # neither block kind nor any spec keyword ever reaches a shipped label.
 #
+# Format keywords: any column block may state COLUMN_FORMAT = "<entry>" in
+# place of its FORMAT, OVERFLOW_FORMAT, UNIT, null, and valid-range keywords,
+# naming an entry in the format dictionary, column_formats.lbl (included
+# below); a keyword the block states itself wins over the entry's. A column
+# with a one-off format states its keywords and names no entry.
+#
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
 #
@@ -31,6 +37,7 @@ $NOTE
 # single line; nothing ever parses these lines as ODL.
 ##############################################################################
 $END_NOTE
+$INCLUDE('column_formats.lbl')
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RIGHT_ASCENSION"
     FORMAT                      = "F10.6"

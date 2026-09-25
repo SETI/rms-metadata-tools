@@ -20,6 +20,12 @@ $NOTE
 # every group to plain COLUMN objects and removes the spec keywords, so
 # neither block kind nor any spec keyword ever reaches a shipped label.
 #
+# Format keywords: any column block may state COLUMN_FORMAT = "<entry>" in
+# place of its FORMAT, OVERFLOW_FORMAT, UNIT, null, and valid-range keywords,
+# naming an entry in the format dictionary, column_formats.lbl (included
+# below); a keyword the block states itself wins over the entry's. A column
+# with a one-off format states its keywords and names no entry.
+#
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
 #
@@ -39,14 +45,11 @@ $NOTE
 # single line; nothing ever parses these lines as ODL.
 ##############################################################################
 $END_NOTE
+$INCLUDE('column_formats.lbl')
 $ONCE(night_override = False)
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_LATITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = -90.
-    VALID_MAXIMUM               = 90.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "LATITUDE"
     BACKPLANE_KEY               = ('latitude', 'bodyx', 'centric')
     MASK                        = ('RM', 'R', 'D')
     DESCRIPTION                 = "Planetocentric latitude is the angle
@@ -73,11 +76,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_LATITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = -90.
-    VALID_MAXIMUM               = 90.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "LATITUDE"
     BACKPLANE_KEY               = ('latitude', 'bodyx', 'graphic')
     MASK                        = ('RM', 'R', 'D')
     DESCRIPTION                 = "Planetographic latitude is the angle
@@ -104,11 +103,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "IAU_LONGITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "CYCLIC_ANGLE"
     BACKPLANE_KEY               = ('longitude', 'bodyx', 'iau', 'west')
     MASK                        = ('RM', 'R', 'D')
     DESCRIPTION                 = "IAU longitude is the angle, projected
@@ -142,11 +137,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LOCAL_HOUR_ANGLE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "CYCLIC_ANGLE"
     BACKPLANE_KEY               = ('longitude', 'bodyx', 'sha', 'east')
     MASK                        = ('RM', 'R', '')
     DESCRIPTION                 = "Local hour angle is a measure of the local
@@ -184,11 +175,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LONGITUDE_WRT_OBSERVER"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = -180.
-    VALID_MAXIMUM               = 180.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "SIGNED_CYCLIC_ANGLE"
     BACKPLANE_KEY               = ('longitude', 'bodyx', 'obs', 'west')
     MASK                        = ('RM', 'R', 'D')
     DESCRIPTION                 = "Longitude with respect to the observer is
@@ -215,10 +202,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "FINEST_SURFACE_RESOLUTION"
-    FORMAT                      = "F10.5"
-    OVERFLOW_FORMAT             = "E10.4"
-    UNIT                        = "km/pixel"
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "RESOLUTION"
     BACKPLANE_KEY               = ('finest_resolution', 'bodyx')
     MASK                        = ('RM', 'R', 'D')
     DESCRIPTION                 = "Finest surface resolution is the shorter
@@ -249,10 +233,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "COARSEST_SURFACE_RESOLUTION"
-    FORMAT                      = "F10.5"
-    OVERFLOW_FORMAT             = "E10.4"
-    UNIT                        = "km/pixel"
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "RESOLUTION"
     BACKPLANE_KEY               = ('coarsest_resolution', 'bodyx')
     MASK                        = ('RM', 'R', 'D')
     DESCRIPTION                 = "Coarsest surface resolution is the longer
@@ -287,10 +268,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_DISTANCE"
-    FORMAT                      = "F12.3"
-    OVERFLOW_FORMAT             = "E12.5"
-    UNIT                        = "km"
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "DISTANCE"
     BACKPLANE_KEY               = ('distance', 'bodyx')
     MASK                        = ('RM', '', '')
     DESCRIPTION                 = "Surface distance is the distance
@@ -315,11 +293,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PHASE_ANGLE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 180.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
     BACKPLANE_KEY               = ('phase_angle', 'bodyx')
     MASK                        = ('RM', '', '')
     DESCRIPTION                 = "Phase angle is the angle, measured at a
@@ -346,11 +320,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "INCIDENCE_ANGLE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 180.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
     BACKPLANE_KEY               = ('incidence_angle', 'bodyx')
     MASK                        = ('RM', '', '')
     DESCRIPTION                 = "Incidence angle is the angle, measured at
@@ -381,11 +351,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EMISSION_ANGLE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 90.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE_90"
     BACKPLANE_KEY               = ('emission_angle', 'bodyx')
     MASK                        = ('RM', '', '')
     DESCRIPTION                 = "Emission angle is the angle, measured at
@@ -447,11 +413,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LIMB_CLOCK_ANGLE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "CYCLIC_ANGLE"
     BACKPLANE_KEY               = ('limb_clock_angle', ('limb_altitude', 'bodyx', -0.01, 3, True))
     DESCRIPTION                 = "Limb clock angle is the companion
       coordinate to limb altitude. It measures the angle as projected on the
@@ -489,10 +451,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_INTERCEPT_TIME"
-    DATA_TYPE                   = TIME
-    FORMAT                      = "A23"
-    OVERFLOW_FORMAT             = "A23"
-    NULL_CONSTANT               = "NA"
+    COLUMN_FORMAT               = "EVENT_TIME"
     BACKPLANE_KEY               = ('event_time', 'bodyx')
     MASK                        = ('RM', '', '')
     DESCRIPTION                 = "Surface intercept time is the International
@@ -518,11 +477,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_SUB_SOLAR_LATITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = -90.
-    VALID_MAXIMUM               = 90.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "LATITUDE"
     BACKPLANE_KEY               = ('sub_solar_latitude', 'bodyx', 'centric')
     DESCRIPTION                 = "The planetocentric sub-solar point is the
       point where a photon from the Sun toward the body's center intercepts
@@ -552,11 +507,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_SUB_SOLAR_LATITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = -90.
-    VALID_MAXIMUM               = 90.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "LATITUDE"
     BACKPLANE_KEY               = ('sub_solar_latitude', 'bodyx', 'graphic')
     DESCRIPTION                 = "The planetographic sub-solar point is the
       point on a body's surface where a photon from the Sun intercepts the
@@ -586,11 +537,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_SUB_OBSERVER_LATITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = -90.
-    VALID_MAXIMUM               = 90.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "LATITUDE"
     BACKPLANE_KEY               = ('sub_observer_latitude', 'bodyx', 'centric')
     DESCRIPTION                 = "The planetocentric sub-observer point is
       the point where a photon path from the center of a body toward the
@@ -620,11 +567,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = -90.
-    VALID_MAXIMUM               = 90.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "LATITUDE"
     BACKPLANE_KEY               = ('sub_observer_latitude', 'bodyx', 'graphic')
     DESCRIPTION                 = "The planetographic sub-observer point is
       the point on a body's surface where a photon toward the observer departs
@@ -654,11 +597,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_SOLAR_IAU_LONGITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "CYCLIC_ANGLE"
     BACKPLANE_KEY               = ('sub_solar_longitude', 'bodyx', 'iau', 'west')
     DESCRIPTION                 = "The sub-solar point is the point where a
       photon path from the Sun toward a body's center intercepts the surface.
@@ -693,11 +632,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_OBSERVER_IAU_LONGITUDE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "CYCLIC_ANGLE"
     BACKPLANE_KEY               = ('sub_observer_longitude', 'bodyx', 'iau', 'west')
     DESCRIPTION                 = "The sub-observer point is the point where a
       photon path from the center of a body toward the observer intercepts the
@@ -732,10 +667,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_RESOLUTION"
-    FORMAT                      = "F10.5"
-    OVERFLOW_FORMAT             = "E10.4"
-    UNIT                        = "km/pixel"
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "RESOLUTION"
     BACKPLANE_KEY               = ('center_resolution', 'bodyx', 'u')
     DESCRIPTION                 = "Center resolution is the linear size of a
       pixel as projected at the distance of the center of the body."
@@ -757,10 +689,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_DISTANCE"
-    FORMAT                      = "F12.3"
-    OVERFLOW_FORMAT             = "E12.5"
-    UNIT                        = "km"
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "DISTANCE"
     BACKPLANE_KEY               = ('center_distance', 'bodyx', 'obs')
     DESCRIPTION                 = "Center distance is the distance from the
       observer to the center of the body."
@@ -781,11 +710,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_PHASE_ANGLE"
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 180.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
     BACKPLANE_KEY               = ('center_phase_angle', 'bodyx')
     DESCRIPTION                 = "Center phase angle is the angle, measured
       at the center of the body, between the direction of an incoming photon
@@ -808,9 +733,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = DIAMETER_IN_PIXELS
-    FORMAT                      = "F12.3"
-    OVERFLOW_FORMAT             = "E12.5"
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "SIZE_IN_PIXELS"
     BACKPLANE_KEY               = ('body_diameter_in_pixels', 'bodyx')
     DESCRIPTION                 = "The physical diameter of the body,
       converted to pixels.
@@ -824,11 +747,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = NORTH_POLE_CLOCK_ANGLE
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "CYCLIC_ANGLE"
     BACKPLANE_KEY               = ('pole_clock_angle', 'bodyx')
     DESCRIPTION                 = "The north pole clock angle is the projected
       direction of the body's pole vector on the sky, measured as an angle
@@ -840,11 +759,7 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = NORTH_POLE_POSITION_ANGLE
-    FORMAT                      = "F8.3"
-    UNIT                        = "deg"
-    VALID_MINIMUM               = 0.
-    VALID_MAXIMUM               = 360.
-    NULL_CONSTANT               = -999.
+    COLUMN_FORMAT               = "CYCLIC_ANGLE"
     BACKPLANE_KEY               = ('pole_position_angle', 'bodyx')
     DESCRIPTION                 = "The north pole position angle is the
       projected direction of the body's pole vector on the sky, measured as an
@@ -858,13 +773,9 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = CENTER_X_COORDINATE
-    FORMAT                      = "F12.3"
-    OVERFLOW_FORMAT             = "E12.5"
+    COLUMN_FORMAT               = "PIXEL_COORDINATE"
     LINK_FN                     = "null"
     LINK_ID                     = "LINK-CENTER_COORDINATE"
-    NULL_CONSTANT               = -99999.
-    VALID_MINIMUM               = -10000.
-    VALID_MAXIMUM               =  10000.
     BACKPLANE_KEY               = ('center_coordinate', 'bodyx', 'u')
     DESCRIPTION                 = "Center X coordinate is the predicted
       horizontal coordinate of the center of the body within this data
@@ -876,13 +787,9 @@ $ONCE(night_override = False)
 
   OBJECT                        = COLUMN
     NAME                        = CENTER_Y_COORDINATE
-    FORMAT                      = "F12.3"
-    OVERFLOW_FORMAT             = "E12.5"
+    COLUMN_FORMAT               = "PIXEL_COORDINATE"
     LINK_FN                     = "null"
     LINK_ID                     = "LINK-CENTER_COORDINATE"
-    NULL_CONSTANT               = -99999.
-    VALID_MINIMUM               = -10000.
-    VALID_MAXIMUM               =  10000.
     BACKPLANE_KEY               = ('center_coordinate', 'bodyx', 'v')
     DESCRIPTION                 = "Center Y coordinate is the predicted
       vertical coordinate of the center of the body within this data
