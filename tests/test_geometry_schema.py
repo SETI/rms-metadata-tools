@@ -335,20 +335,29 @@ def test_template_name_matches_the_write_path() -> None:
 def test_write_path_lowers_and_strips_the_grammar() -> None:
     """The lowered fragment carries no trace of the authoring grammar.
 
-    This is the forgotten-merge tripwire: neither block kind nor any spec
-    keyword is PDS3, so none of it may reach a shipped label.
+    This is the forgotten-merge tripwire: neither block kind, nor a format
+    dictionary entry or reference, nor any spec keyword is PDS3, so none of it
+    may reach a shipped label.
     """
-    from metadata_tools.column_grammar import merge_column_definitions
+    from pdstemplate import PdsTemplate
+
+    from metadata_tools.column_grammar import (
+        expand_format_references,
+        merge_column_definitions,
+    )
     from metadata_tools.label_support import _strip_private_keywords
 
-    fragment = (Path(metadata_tools.__file__).parent / 'templates' /
-                'ring_summary_columns.lbl').read_text()
-    # The header $NOTE documents the grammar in prose; the shipped-label check
+    # PdsTemplate expands the fragment's $INCLUDE of the format dictionary.
+    fragment = PdsTemplate(FCPath(defs.GLOBAL_TEMPLATE_PATH) / 'ring_summary_columns.lbl',
+                           crlf=True, includes=[defs.GLOBAL_TEMPLATE_PATH]).content
+    # The header $NOTEs document the grammar in prose; the shipped-label check
     # concerns keyword lines and OBJECT kinds, which prose never forms.
-    lowered = _strip_private_keywords(None, merge_column_definitions(None, fragment))
+    lowered = _strip_private_keywords(
+        None, merge_column_definitions(None, expand_format_references(None, fragment)))
     for keyword in label_schema.PRIVATE_KEYWORDS:
         assert not re.search(r'(?m)^ *' + keyword + r' *=', lowered), keyword
-    assert not re.search(r'(?m)^ *(END_)?OBJECT *= *COLUMN_(DEFINITION|STUB)', lowered)
+    assert not re.search(r'(?m)^ *(END_)?OBJECT *= *COLUMN_(DEFINITION|STUB|FORMAT)',
+                         lowered)
 
     # Every shipped column emerges complete: one FORMAT and one null each.
     def lines(text: str, keyword: str) -> int:
@@ -357,6 +366,24 @@ def test_write_path_lowers_and_strips_the_grammar() -> None:
     assert lines(lowered, 'FORMAT') == 81
     assert lines(lowered, 'NULL_CONSTANT') == 81
     assert len(re.findall(r'(?m)^ *OBJECT *= *COLUMN *$', lowered)) == 81
+
+
+def test_every_format_entry_is_used() -> None:
+    """The shipped dictionary holds no dead entries.
+
+    One dictionary serves all four fragments, so an entry is dead only if no
+    fragment refers to it.
+    """
+    template_dir = Path(metadata_tools.__file__).parent / 'templates'
+    dictionary = (template_dir / 'column_formats.lbl').read_text(encoding='utf-8')
+    entries = set(re.findall(
+        r'OBJECT *= *COLUMN_FORMAT\n *NAME *= *"(\w+)"', dictionary))
+    references: set[str] = set()
+    for fragment in template_dir.glob('*_summary_columns.lbl'):
+        references |= set(re.findall(r'(?m)^ *COLUMN_FORMAT *= *"(\w+)"',
+                                     fragment.read_text(encoding='utf-8')))
+    assert len(entries) == 10
+    assert references == entries
 
 
 def test_strip_alternation_matches_the_reader() -> None:
