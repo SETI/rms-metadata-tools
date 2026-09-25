@@ -10,7 +10,6 @@ import pytest
 from filecache import FCPath
 
 import metadata_tools.label_support as lab
-from metadata_tools.column_grammar import strip_comments
 
 
 def test_create_returns_for_missing_file(monkeypatch: pytest.MonkeyPatch,
@@ -84,9 +83,9 @@ def test_create_host_template_path(monkeypatch: pytest.MonkeyPatch,
     assert captured['template_path'].name == 'GO_0xxx_supplemental_index.lbl'
 
 
-def test_create_inventory_strips_only_comments(monkeypatch: pytest.MonkeyPatch,
+def test_create_inventory_disables_preprocessor(monkeypatch: pytest.MonkeyPatch,
                                                 tmp_path: Path) -> None:
-    """An 'inventory' table stem takes only the comment strip."""
+    """An 'inventory' table stem disables the label preprocessor."""
     captured = _capture_template(monkeypatch)
     host_dir = tmp_path / 'GO_0xxx' / 'templates'
     host_dir.mkdir(parents=True)
@@ -95,5 +94,5 @@ def test_create_inventory_strips_only_comments(monkeypatch: pytest.MonkeyPatch,
     table.write_text('row', encoding='utf-8')
     lab.create(FCPath(table), FCPath(host_template),
                use_global_template=True, table_type='inventory')
-    # 'inventory' in the stem -> no column preprocessors, only the strip.
-    assert captured['kwargs']['preprocess'] == [strip_comments]
+    # 'inventory' in the stem -> preprocessor disabled.
+    assert captured['kwargs']['preprocess'] is None
