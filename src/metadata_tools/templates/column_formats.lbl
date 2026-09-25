@@ -1,0 +1,112 @@
+$NOTE
+##############################################################################
+# The column format dictionary.
+#
+# Each COLUMN_FORMAT object below is a named bundle of label format keywords
+# shared by many geometry columns. A column block (COLUMN_DEFINITION,
+# COLUMN_STUB, or plain COLUMN) that states
+#
+#     COLUMN_FORMAT               = "<entry NAME>"
+#
+# among its keywords receives the entry's keyword lines in place of that
+# reference. (The reference keyword and the entry object share the name
+# COLUMN_FORMAT: an entry is an OBJECT, a reference a keyword line.) A
+# keyword the column states itself wins over the entry's, so a column may
+# take an entry and override, say, its FORMAT. A column whose format is its
+# own simply states its keywords and refers to no entry.
+#
+# An entry holds label format metadata only: DATA_TYPE, FORMAT,
+# OVERFLOW_FORMAT, UNIT, the null keywords (NULL_CONSTANT, ...),
+# VALID_MINIMUM and VALID_MAXIMUM. The write path expands every reference and
+# removes these objects before a label is generated, so neither an entry nor
+# a reference ever reaches a shipped label.
+#
+# Each shared *_summary_columns.lbl fragment includes this file. A host that
+# needs a different dictionary shadows it with its own column_formats.lbl in
+# its templates/ directory.
+##############################################################################
+$END_NOTE
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "CYCLIC_ANGLE"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "SIGNED_CYCLIC_ANGLE"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -180.
+    VALID_MAXIMUM               = 180.
+    NULL_CONSTANT               = -999.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "LATITUDE"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = -90.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "PHOTOMETRIC_ANGLE"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 180.
+    NULL_CONSTANT               = -999.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "PHOTOMETRIC_ANGLE_90"
+    FORMAT                      = "F8.3"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 90.
+    NULL_CONSTANT               = -999.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "DISTANCE"
+    FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
+    UNIT                        = "km"
+    NULL_CONSTANT               = -999.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "RESOLUTION"
+    FORMAT                      = "F10.5"
+    OVERFLOW_FORMAT             = "E10.4"
+    UNIT                        = "km/pixel"
+    NULL_CONSTANT               = -999.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "PIXEL_COORDINATE"
+    FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
+    NULL_CONSTANT               = -99999.
+    VALID_MINIMUM               = -10000.
+    VALID_MAXIMUM               = 10000.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "SIZE_IN_PIXELS"
+    FORMAT                      = "F12.3"
+    OVERFLOW_FORMAT             = "E12.5"
+    NULL_CONSTANT               = -999.
+  END_OBJECT                    = COLUMN_FORMAT
+
+  OBJECT                        = COLUMN_FORMAT
+    NAME                        = "EVENT_TIME"
+    DATA_TYPE                   = TIME
+    FORMAT                      = "A23"
+    OVERFLOW_FORMAT             = "A23"
+    NULL_CONSTANT               = "NA"
+  END_OBJECT                    = COLUMN_FORMAT
