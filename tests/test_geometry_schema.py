@@ -244,6 +244,16 @@ def test_every_shipped_unit_canonicalizes() -> None:
                     stub.unit, stub.name, TEMPLATE_DIR)
 
 
+@pytest.mark.parametrize('qualifier', sorted(SHIPPED))
+def test_every_resolution_is_per_pixel(qualifier: str) -> None:
+    """A resolution is a size per pixel, so its unit says so."""
+    for column in resolve_schema(TEMPLATE_DIR, qualifier).columns:
+        for stub in column.stubs:
+            if 'RESOLUTION' in stub.name:
+                assert stub.unit is not None, stub.name
+                assert stub.unit.endswith('/pixel'), stub.name
+
+
 #===============================================================================
 # Overflow formats
 #===============================================================================

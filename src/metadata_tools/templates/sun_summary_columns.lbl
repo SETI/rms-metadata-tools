@@ -154,7 +154,7 @@ $END_NOTE
     NAME                        = "FINEST_SURFACE_RESOLUTION"
     FORMAT                      = "F10.5"
     OVERFLOW_FORMAT             = "E10.4"
-    UNIT                        = "km"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('finest_resolution', 'SUN')
     DESCRIPTION                 = "Finest surface resolution is the shorter
@@ -179,7 +179,7 @@ $END_NOTE
     NAME                        = "COARSEST_SURFACE_RESOLUTION"
     FORMAT                      = "F10.5"
     OVERFLOW_FORMAT             = "E10.4"
-    UNIT                        = "km"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('coarsest_resolution', 'SUN')
     DESCRIPTION                 = "Coarsest surface resolution is the longer
@@ -340,7 +340,7 @@ $END_NOTE
     NAME                        = "CENTER_RESOLUTION"
     FORMAT                      = "F10.5"
     OVERFLOW_FORMAT             = "E10.4"
-    UNIT                        = "km"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('center_resolution', 'SUN', 'u')
     DESCRIPTION                 = "Center resolution is the linear size of a
