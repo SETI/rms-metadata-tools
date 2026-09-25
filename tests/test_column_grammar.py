@@ -396,8 +396,8 @@ def test_unexpanded_entries_are_rejected_downstream() -> None:
 #===============================================================================
 def test_strip_dividers_removes_only_divider_lines() -> None:
     """Divider lines go, at any indent; other comment-like text stays."""
-    divider = '  #' + '-' * 75 + '\n'
-    content = (divider + _GROUP + '\n    ' + divider.lstrip() + _GROUP + '#-----\n'
+    divider = '  #' + '=' * 75 + '\n'
+    content = (divider + _GROUP + '\n    ' + divider.lstrip() + _GROUP + '#=====\n'
                + '    DESCRIPTION = "# not a divider"\n' + '# Note.\n')
     assert strip_dividers(None, content) == (
         _GROUP + '\n' + _GROUP + '    DESCRIPTION = "# not a divider"\n' + '# Note.\n')
@@ -405,7 +405,7 @@ def test_strip_dividers_removes_only_divider_lines() -> None:
 
 def test_dividers_do_not_disturb_the_grammar() -> None:
     """Dividers sit between blocks, so tokenizing and lowering ignore them."""
-    divider = '  #' + '-' * 75 + '\n'
+    divider = '  #' + '=' * 75 + '\n'
     divided = divider + _GROUP + '\n' + divider + _GROUP
     undivided = _GROUP + '\n' + _GROUP
     assert [b.body for b in tokenize(divided)] == [b.body for b in tokenize(undivided)]

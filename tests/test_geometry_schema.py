@@ -355,7 +355,7 @@ def test_write_path_lowers_and_strips_the_grammar() -> None:
     # concerns keyword lines and OBJECT kinds, which prose never forms.
     lowered = _strip_private_keywords(None, merge_column_definitions(
         None, expand_format_references(None, strip_dividers(None, fragment))))
-    assert not re.search(r'(?m)^ *#-', lowered)
+    assert not re.search(r'(?m)^ *#=', lowered)
     for keyword in label_schema.PRIVATE_KEYWORDS:
         assert not re.search(r'(?m)^ *' + keyword + r' *=', lowered), keyword
     assert not re.search(r'(?m)^ *(END_)?OBJECT *= *COLUMN_(DEFINITION|STUB|FORMAT)',

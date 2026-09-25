@@ -82,9 +82,9 @@ _PRIVATE_LINE_RE = re.compile(
 # would assert the start of the whole string, not of the line at pos).
 _KEYWORD_LINE_RE = re.compile(r' *([A-Z][A-Z0-9_]*) *=[^\r\n]*\r?\n')
 
-# A divider line: optional indent, "#", and dashes only. Templates put one
+# A divider line: optional indent, "#", and equals signs only. Templates put one
 # before each COLUMN and COLUMN_DEFINITION object for readability.
-_DIVIDER_RE = re.compile(r'(?m)^ *#-+ *\r?\n')
+_DIVIDER_RE = re.compile(r'(?m)^ *#=+ *\r?\n')
 
 
 #===============================================================================
@@ -238,7 +238,7 @@ def _keyword_region(body: str) -> tuple[list[tuple[str, str]], str]:
 
 #===============================================================================
 def strip_dividers(template_path: object, content: str) -> str:
-    """Remove the ``#-----`` divider lines that separate template objects.
+    """Remove the ``#=====`` divider lines that separate template objects.
 
     Runs as the first PdsTemplate preprocessor on the write path. A divider is
     a template-authoring aid, not ODL, so it must never reach a shipped label;

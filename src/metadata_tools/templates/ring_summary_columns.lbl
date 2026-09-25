@@ -21,7 +21,7 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
-# The "#-----" divider lines before each COLUMN and COLUMN_DEFINITION are
+# The "#=====" divider lines before each COLUMN and COLUMN_DEFINITION are
 # for readability only; the write path removes them.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
@@ -44,7 +44,7 @@ $NOTE
 ##############################################################################
 $END_NOTE
 $INCLUDE('column_formats.lbl')
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_RADIUS"
     COLUMN_FORMAT               = "DISTANCE"
@@ -71,7 +71,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_INTERCEPT_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -102,7 +102,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RADIAL_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -133,7 +133,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LONGITUDINAL_RESOLUTION"
     FORMAT                      = "F10.5"
@@ -167,7 +167,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LONGITUDINAL_RESOLUTION_KM"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -198,7 +198,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -225,7 +225,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -262,7 +262,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_LONGITUDE_WRT_NODE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -298,7 +298,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SOLAR_HOUR_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -334,7 +334,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_LONGITUDE_WRT_OBSERVER"
     COLUMN_FORMAT               = "SIGNED_CYCLIC_ANGLE"
@@ -371,7 +371,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_AZIMUTH"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -412,7 +412,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_PHASE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -439,7 +439,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_INCIDENCE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE_90"
@@ -467,7 +467,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "NORTH_BASED_INCIDENCE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -498,7 +498,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_EMISSION_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -527,7 +527,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "NORTH_BASED_EMISSION_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -559,7 +559,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SOLAR_RING_ELEVATION"
     COLUMN_FORMAT               = "LATITUDE"
@@ -590,7 +590,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "OBSERVER_RING_ELEVATION"
     COLUMN_FORMAT               = "LATITUDE"
@@ -621,7 +621,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_INTERCEPT_TIME"
     COLUMN_FORMAT               = "EVENT_TIME"
@@ -648,7 +648,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EDGE_ON_RING_RADIUS"
     COLUMN_FORMAT               = "DISTANCE"
@@ -675,7 +675,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EDGE_ON_RING_ALTITUDE"
     FORMAT                      = "F12.3"
@@ -705,7 +705,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EDGE_ON_RADIAL_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -737,7 +737,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EDGE_ON_INTERCEPT_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -764,7 +764,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EDGE_ON_RING_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -801,7 +801,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EDGE_ON_RING_LONGITUDE_WRT_NODE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -837,7 +837,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EDGE_ON_SOLAR_HOUR_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -874,7 +874,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_CENTER_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -897,7 +897,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_SOLAR_RING_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -924,7 +924,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_SOLAR_RING_LONGITUDE_WRT_NODE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -949,7 +949,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_OBSERVER_RING_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -976,7 +976,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_OBSERVER_RING_LONGITUDE_WRT_NODE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -1002,7 +1002,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_CENTER_PHASE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -1026,7 +1026,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_CENTER_INCIDENCE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE_90"
@@ -1051,7 +1051,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "NORTH_BASED_CENTER_INCIDENCE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -1077,7 +1077,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RING_CENTER_EMISSION_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -1102,7 +1102,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "NORTH_BASED_CENTER_EMISSION_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -1128,7 +1128,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SOLAR_RING_CENTER_OPENING_ANGLE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -1153,7 +1153,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "OBSERVER_RING_CENTER_OPENING_ANGLE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -1178,7 +1178,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "RING_DIAMETER_IN_PIXELS"
     COLUMN_FORMAT               = "SIZE_IN_PIXELS"
@@ -1192,7 +1192,7 @@ $INCLUDE('column_formats.lbl')
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "RING_POLE_CLOCK_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -1207,7 +1207,7 @@ $INCLUDE('column_formats.lbl')
   END_OBJECT                    = COLUMN
 
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "RING_POLE_POSITION_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -1222,7 +1222,7 @@ $INCLUDE('column_formats.lbl')
   END_OBJECT                    = COLUMN
 
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "RING_CENTER_X_COORDINATE"
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
@@ -1237,7 +1237,7 @@ $INCLUDE('column_formats.lbl')
   END_OBJECT                    = COLUMN
 
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "RING_CENTER_Y_COORDINATE"
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
