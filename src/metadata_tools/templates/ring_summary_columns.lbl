@@ -67,7 +67,7 @@ $END_NOTE
     NAME                        = "RING_INTERCEPT_RESOLUTION"
     FORMAT                      = "F10.5"
     OVERFLOW_FORMAT             = "E10.4"
-    UNIT                        = "km"
+    UNIT                        = "km/pixel"
     NULL_CONSTANT               = -999.
     BACKPLANE_KEY               = ('resolution', 'bodyx:RING', 'v')
     MASK                        = ('PM', 'P', '')
@@ -89,7 +89,6 @@ $END_NOTE
 
   OBJECT                        = COLUMN_STUB
     NAME                        = "COARSEST_RING_INTERCEPT_RESOLUTION"
-    UNIT                        = "km/pixel"
     DESCRIPTION                 = "This column tabulates the maximum value
       among the pixels whose lines of sight intercept the ring, indicating the
       coarsest spatial resolution found in the data product.
