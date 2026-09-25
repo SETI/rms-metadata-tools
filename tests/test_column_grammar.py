@@ -13,6 +13,7 @@ from metadata_tools.column_grammar import (
     expand_format_references,
     keyword_value,
     merge_column_definitions,
+    strip_dividers,
     tokenize,
 )
 
@@ -388,3 +389,26 @@ def test_unexpanded_entries_are_rejected_downstream() -> None:
         merge_column_definitions(None, _ENTRY)
     with pytest.raises(ValueError, match='COLUMN_FORMAT reference was never expanded'):
         merge_column_definitions(None, _REFERRING_GROUP)
+
+
+#===============================================================================
+# Divider lines
+#===============================================================================
+def test_strip_dividers_removes_only_divider_lines() -> None:
+    """Divider lines go, at any indent; other comment-like text stays."""
+    divider = '  #' + '-' * 75 + '\n'
+    content = (divider + _GROUP.replace('  OBJECT                        = COLUMN_STUB\n',
+                                        divider + '  OBJECT                        = COLUMN_STUB\n')
+               + '#-----\n' + '    DESCRIPTION = "# not a divider"\n' + '# Note.\n')
+    assert strip_dividers(None, content) == (
+        _GROUP + '    DESCRIPTION = "# not a divider"\n' + '# Note.\n')
+
+
+def test_dividers_do_not_disturb_the_grammar() -> None:
+    """Dividers sit between blocks, so tokenizing and lowering ignore them."""
+    divider = '  #' + '-' * 75 + '\n'
+    divided = _GROUP.replace('  OBJECT                        = COLUMN_STUB\n',
+                             divider + '  OBJECT                        = COLUMN_STUB\n')
+    assert [b.body for b in tokenize(divided)] == [b.body for b in tokenize(_GROUP)]
+    assert strip_dividers(None, merge_column_definitions(None, divided)) == (
+        merge_column_definitions(None, _GROUP))

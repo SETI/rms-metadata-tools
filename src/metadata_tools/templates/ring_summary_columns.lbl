@@ -21,6 +21,9 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
+# The "#-----" divider lines before each COLUMN and COLUMN_STUB are for
+# readability only; the write path removes them.
+#
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
 #
@@ -51,6 +54,7 @@ $INCLUDE('column_formats.lbl')
       plane."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_RADIUS"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -59,6 +63,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_RADIUS"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -79,6 +84,7 @@ $INCLUDE('column_formats.lbl')
       into the ring plane."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "FINEST_RING_INTERCEPT_RESOLUTION"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -88,6 +94,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "COARSEST_RING_INTERCEPT_RESOLUTION"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -109,6 +116,7 @@ $INCLUDE('column_formats.lbl')
       ring feature that can be resolved."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "FINEST_RADIAL_RESOLUTION"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -118,6 +126,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "COARSEST_RADIAL_RESOLUTION"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -142,6 +151,7 @@ $INCLUDE('column_formats.lbl')
       narrowest ring clump that can be resolved."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "FINEST_LONGITUDINAL_RESOLUTION"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -151,6 +161,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "COARSEST_LONGITUDINAL_RESOLUTION"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -172,6 +183,7 @@ $INCLUDE('column_formats.lbl')
       approximate size in km of the narrowest ring clump that can be resolved."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "FINEST_LONGITUDINAL_RESOLUTION_KM"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -181,6 +193,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "COARSEST_LONGITUDINAL_RESOLUTION_KM"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -200,6 +213,7 @@ $INCLUDE('column_formats.lbl')
       plane."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_DISTANCE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -208,6 +222,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_DISTANCE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -229,6 +244,7 @@ $INCLUDE('column_formats.lbl')
       the direction of prograde motion."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_LONGITUDE"
     DESCRIPTION                 = "This column tabulates the lower limit of
@@ -241,6 +257,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_LONGITUDE"
     DESCRIPTION                 = "This column tabulates the upper limit of
@@ -264,6 +281,7 @@ $INCLUDE('column_formats.lbl')
       intercepts the ring."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_LONGITUDE_WRT_NODE"
     DESCRIPTION                 = "This column tabulates the lower limit of
@@ -276,6 +294,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_LONGITUDE_WRT_NODE"
     DESCRIPTION                 = "This column tabulates the upper limit of
@@ -299,6 +318,7 @@ $INCLUDE('column_formats.lbl')
       moving away."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_SOLAR_HOUR_ANGLE"
     DESCRIPTION                 = "This column tabulates the lower limit of
@@ -311,6 +331,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_SOLAR_HOUR_ANGLE"
     DESCRIPTION                 = "This column tabulates the upper limit of
@@ -336,6 +357,7 @@ $INCLUDE('column_formats.lbl')
       from -180 to 180 degrees instead of 0 to 360 degrees."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_LONGITUDE_WRT_OBSERVER"
     DESCRIPTION                 = "This column tabulates the lower limit of
@@ -347,6 +369,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_LONGITUDE_WRT_OBSERVER"
     DESCRIPTION                 = "This column tabulates the upper limit of
@@ -375,6 +398,7 @@ $INCLUDE('column_formats.lbl')
       the planet."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_AZIMUTH"
     DESCRIPTION                 = "This column tabulates the lower limit of
@@ -387,6 +411,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_AZIMUTH"
     DESCRIPTION                 = "This column tabulates the upper limit of
@@ -408,6 +433,7 @@ $INCLUDE('column_formats.lbl')
       direction to the observer."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_PHASE_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -416,6 +442,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_PHASE_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -435,6 +462,7 @@ $INCLUDE('column_formats.lbl')
       that it never exceeds 90 degrees."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_INCIDENCE_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -443,6 +471,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_INCIDENCE_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -465,6 +494,7 @@ $INCLUDE('column_formats.lbl')
       Jupiter, Saturn, and Neptune, but IAU-defined south for Uranus."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_NORTH_BASED_INCIDENCE_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -473,6 +503,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_NORTH_BASED_INCIDENCE_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -493,6 +524,7 @@ $INCLUDE('column_formats.lbl')
       90 degrees on the unlit face."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_EMISSION_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -501,6 +533,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_EMISSION_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -524,6 +557,7 @@ $INCLUDE('column_formats.lbl')
       south for Uranus."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_NORTH_BASED_EMISSION_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -532,6 +566,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_NORTH_BASED_EMISSION_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -554,6 +589,7 @@ $INCLUDE('column_formats.lbl')
       south for Uranus."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_SOLAR_RING_ELEVATION"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -562,6 +598,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_SOLAR_RING_ELEVATION"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -584,6 +621,7 @@ $INCLUDE('column_formats.lbl')
       IAU-defined south for Uranus."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_OBSERVER_RING_ELEVATION"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -592,6 +630,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_OBSERVER_RING_ELEVATION"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -610,6 +649,7 @@ $INCLUDE('column_formats.lbl')
       It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_INTERCEPT_TIME"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -618,6 +658,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_INTERCEPT_TIME"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -636,6 +677,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('edge_on_definition.lbl')
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_EDGE_ON_RING_RADIUS"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -644,6 +686,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_EDGE_ON_RING_RADIUS"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -665,6 +708,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('edge_on_definition.lbl')
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_EDGE_ON_RING_ALTITUDE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -673,6 +717,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_EDGE_ON_RING_ALTITUDE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -694,6 +739,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('edge_on_definition.lbl')
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "FINEST_EDGE_ON_RADIAL_RESOLUTION"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -703,6 +749,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "COARSEST_EDGE_ON_RADIAL_RESOLUTION"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -722,6 +769,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('edge_on_definition.lbl')
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_EDGE_ON_INTERCEPT_DISTANCE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -730,6 +778,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_EDGE_ON_INTERCEPT_DISTANCE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -752,6 +801,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('edge_on_definition.lbl')
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_EDGE_ON_RING_LONGITUDE"
     DESCRIPTION                 = "This column tabulates the lower limit of
@@ -763,6 +813,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_EDGE_ON_RING_LONGITUDE"
     DESCRIPTION                 = "This column tabulates the upper limit of
@@ -787,6 +838,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('edge_on_definition.lbl')
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_EDGE_ON_RING_LONGITUDE_WRT_NODE"
     DESCRIPTION                 = "This column tabulates the lower limit of
@@ -798,6 +850,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_EDGE_ON_RING_LONGITUDE_WRT_NODE"
     DESCRIPTION                 = "This column tabulates the upper limit of
@@ -822,6 +875,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('edge_on_definition.lbl')
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_EDGE_ON_SOLAR_HOUR_ANGLE"
     DESCRIPTION                 = "This column tabulates the lower limit of
@@ -834,6 +888,7 @@ $INCLUDE('column_formats.lbl')
       $INCLUDE('ring_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_EDGE_ON_SOLAR_HOUR_ANGLE"
     DESCRIPTION                 = "This column tabulates the upper limit of
@@ -853,6 +908,7 @@ $INCLUDE('column_formats.lbl')
       the observer to the center of the ring system."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_CENTER_DISTANCE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -860,6 +916,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_CENTER_DISTANCE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -879,6 +936,7 @@ $INCLUDE('column_formats.lbl')
       the prograde direction."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_SUB_SOLAR_RING_LONGITUDE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -886,6 +944,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_SUB_SOLAR_RING_LONGITUDE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -903,6 +962,7 @@ $INCLUDE('column_formats.lbl')
       prograde direction along the ring plane to the sub-solar direction."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_SUB_SOLAR_RING_LONGITUDE_WRT_NODE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -910,6 +970,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_SUB_SOLAR_RING_LONGITUDE_WRT_NODE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -929,6 +990,7 @@ $INCLUDE('column_formats.lbl')
       Longitudes increase in the prograde direction."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_SUB_OBSERVER_RING_LONGITUDE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -936,6 +998,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_SUB_OBSERVER_RING_LONGITUDE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -954,6 +1017,7 @@ $INCLUDE('column_formats.lbl')
       motion."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                      = "MINIMUM_SUB_OBSERVER_RING_LONGITUDE_WRT_NODE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -961,6 +1025,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                      = "MAXIMUM_SUB_OBSERVER_RING_LONGITUDE_WRT_NODE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -977,6 +1042,7 @@ $INCLUDE('column_formats.lbl')
       measured at the center of the ring system."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_CENTER_PHASE_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -984,6 +1050,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_CENTER_PHASE_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -1001,6 +1068,7 @@ $INCLUDE('column_formats.lbl')
       the Sun. Note that it never exceeds 90 degrees."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_CENTER_INCIDENCE_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -1008,6 +1076,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_CENTER_INCIDENCE_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -1026,6 +1095,7 @@ $INCLUDE('column_formats.lbl')
       rings."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_NORTH_BASED_CENTER_INCIDENCE_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -1033,6 +1103,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_NORTH_BASED_CENTER_INCIDENCE_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -1050,6 +1121,7 @@ $INCLUDE('column_formats.lbl')
       the unlit face of the rings."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RING_CENTER_EMISSION_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -1057,6 +1129,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RING_CENTER_EMISSION_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -1075,6 +1148,7 @@ $INCLUDE('column_formats.lbl')
       rings."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_NORTH_BASED_CENTER_EMISSION_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -1082,6 +1156,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_NORTH_BASED_CENTER_EMISSION_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -1099,6 +1174,7 @@ $INCLUDE('column_formats.lbl')
       angular momentum) side of the ring plane and negative on the south side."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_SOLAR_RING_CENTER_OPENING_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -1106,6 +1182,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_SOLAR_RING_CENTER_OPENING_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -1123,6 +1200,7 @@ $INCLUDE('column_formats.lbl')
       angular momentum) side of the ring plane and negative on the south side."
   END_OBJECT                    = COLUMN_DEFINITION
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_OBSERVER_RING_CENTER_OPENING_ANGLE"
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -1130,6 +1208,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_OBSERVER_RING_CENTER_OPENING_ANGLE"
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -1137,6 +1216,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN
     NAME                        = "RING_DIAMETER_IN_PIXELS"
     COLUMN_FORMAT               = "SIZE_IN_PIXELS"
@@ -1150,6 +1230,7 @@ $INCLUDE('column_formats.lbl')
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN
     NAME                        = "RING_POLE_CLOCK_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -1164,6 +1245,7 @@ $INCLUDE('column_formats.lbl')
   END_OBJECT                    = COLUMN
 
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN
     NAME                        = "RING_POLE_POSITION_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -1178,6 +1260,7 @@ $INCLUDE('column_formats.lbl')
   END_OBJECT                    = COLUMN
 
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN
     NAME                        = "RING_CENTER_X_COORDINATE"
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
@@ -1192,6 +1275,7 @@ $INCLUDE('column_formats.lbl')
   END_OBJECT                    = COLUMN
 
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN
     NAME                        = "RING_CENTER_Y_COORDINATE"
     COLUMN_FORMAT               = "PIXEL_COORDINATE"

@@ -49,7 +49,9 @@ consumed by ``rms-cloud-tasks`` workers. The four public functions are:
 :func:`~metadata_tools.label_support.create` generates a ``.lbl`` label for a
 table by rendering the host's template (or a shared template from the global
 ``templates/`` directory) with ``rms-pdstemplate``. The inventory template has
-no COLUMN objects and uses no preprocessor; the other kinds chain four:
+no COLUMN objects and uses no preprocessor; the other kinds chain five:
+:func:`~metadata_tools.column_grammar.strip_dividers` removes the ``#-----``
+divider lines that separate the template's column objects,
 :func:`~metadata_tools.column_grammar.expand_format_references` expands the
 format-dictionary references,
 :func:`~metadata_tools.column_grammar.merge_column_definitions` lowers the
