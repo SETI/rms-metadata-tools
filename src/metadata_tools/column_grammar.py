@@ -83,7 +83,7 @@ _PRIVATE_LINE_RE = re.compile(
 _KEYWORD_LINE_RE = re.compile(r' *([A-Z][A-Z0-9_]*) *=[^\r\n]*\r?\n')
 
 # A divider line: optional indent, "#", and dashes only. Templates put one
-# before each COLUMN and COLUMN_STUB object for readability.
+# before each COLUMN and COLUMN_DEFINITION object for readability.
 _DIVIDER_RE = re.compile(r'(?m)^ *#-+ *\r?\n')
 
 

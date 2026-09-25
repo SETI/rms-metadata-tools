@@ -18,8 +18,8 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
-# The "#-----" divider lines before each COLUMN and COLUMN_STUB are for
-# readability only; the write path removes them.
+# The "#-----" divider lines before each COLUMN and COLUMN_DEFINITION are
+# for readability only; the write path removes them.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
@@ -41,6 +41,7 @@ $NOTE
 ##############################################################################
 $END_NOTE
 $INCLUDE('column_formats.lbl')
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RIGHT_ASCENSION"
     FORMAT                      = "F10.6"
@@ -59,16 +60,15 @@ $INCLUDE('column_formats.lbl')
       'maximum'."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_RIGHT_ASCENSION"
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_RIGHT_ASCENSION"
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "DECLINATION"
     FORMAT                      = "F10.6"
@@ -82,12 +82,10 @@ $INCLUDE('column_formats.lbl')
       declination within the field of view sampled by the observation."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MINIMUM_DECLINATION"
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = "MAXIMUM_DECLINATION"
   END_OBJECT                    = COLUMN_STUB
