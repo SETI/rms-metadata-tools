@@ -13,7 +13,9 @@ value, carrying its NAME, its own per-value DESCRIPTION, and any keyword it
 overrides. A single-valued column is simply a plain ``COLUMN`` carrying its
 own spec keywords. Group size is the stub count; there is no way to
 assimilate a column by miscounting, because membership is declared by the
-stub's own object type.
+stub's own object type. Any block may take its label format keywords from a
+format-dictionary entry (``COLUMN_FORMAT``), expanded before the schema is read;
+see :func:`metadata_tools.column_grammar.expand_format_references`.
 
 The spec keywords (``BACKPLANE_KEY``, ``MASK``, ``LINK_FN``, ``LINK_ID``, and
 ``OVERFLOW_FORMAT``) are not PDS3 keywords, and neither are the definition
@@ -634,7 +636,8 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     template = PdsTemplate(template_path, crlf=True,
                            includes=[defs.GLOBAL_TEMPLATE_PATH, template_dir])
     try:
-        blocks = column_grammar.tokenize(template.content)
+        blocks = column_grammar.tokenize(
+            column_grammar.expand_format_references(template_path, template.content))
     except ValueError as error:
         raise RuntimeError(f'{template_path}: {error}') from None
 
