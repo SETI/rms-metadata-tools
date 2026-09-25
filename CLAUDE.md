@@ -76,7 +76,7 @@ Core engine modules:
   metadata and computation spec alike — from its label template.
 - `cumulative_support.py` — walks a volume tree and concatenates per-volume tables.
 - `label_support.py` — generates PDS3 `.lbl` labels from templates using `rms-pdstemplate`;
-  expands format references, lowers the column grammar, and strips the spec keywords so they
+  strips `#` comment lines, expands format references, lowers the column grammar, and strips the spec keywords so they
   never reach a shipped label.
 - `column_grammar.py` — the definition/stub column grammar shared by the template read and
   write paths, including format-dictionary expansion and the write-time lowering to plain

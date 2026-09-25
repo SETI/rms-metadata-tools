@@ -179,17 +179,6 @@ own copy, as it would any fragment. An unknown or repeated reference, a
 reference after the ``DESCRIPTION``, a duplicate entry, or an entry carrying
 anything but format keywords fails the read immediately.
 
-Comments
---------
-
-Templates use ordinary PDS3 ``/* ... */`` comments, one per line, and they
-ship in the generated labels. A ``/*====*/`` divider precedes each
-``COLUMN`` and ``COLUMN_DEFINITION``, so in a shipped label one divider heads
-each column group. A comment may also sit among a column's keywords: the
-lowering keeps it in place, copying a definition's comment into each of its
-columns and a stub's into its own. A comment in a format entry documents the
-entry and is not copied into the columns that use it.
-
 This is the same arrangement as the index pipeline, where
 :class:`~metadata_tools.index_support.table.IndexTable` derives its columns from
 its own template -- here the template also carries the computation, so a host

@@ -13,6 +13,7 @@ from metadata_tools.column_grammar import (
     expand_format_references,
     keyword_value,
     merge_column_definitions,
+    strip_comments,
     tokenize,
 )
 
@@ -391,54 +392,39 @@ def test_unexpanded_entries_are_rejected_downstream() -> None:
 
 
 #===============================================================================
-# PDS3 comments
+# Comment lines
 #===============================================================================
-_DIVIDER = '  /*' + '=' * 72 + '*/\n'
+def test_strip_comments_removes_every_comment_line() -> None:
+    """A line whose first non-blank character is '#' goes, at any indent."""
+    divider = '  #' + '=' * 75 + '\n'
+    content = (divider + _GROUP + '\n    # A note.\n\t#tabbed\n#\n' + _GROUP
+               + '# Last line, unterminated.')
+    assert strip_comments(None, content) == _GROUP + '\n' + _GROUP
 
 
-def test_a_divider_before_a_definition_ships_before_its_first_column() -> None:
-    """A comment between objects passes through the lowering untouched."""
-    lowered = merge_column_definitions(None, _DIVIDER + _GROUP + '\n' + _DIVIDER + _GROUP)
-    assert lowered == (_DIVIDER + merge_column_definitions(None, _GROUP) + '\n'
-                       + _DIVIDER + merge_column_definitions(None, _GROUP))
-    assert lowered.count('/*') == 2
+def test_strip_comments_keeps_a_later_hash() -> None:
+    """A '#' after other text on its line is ordinary text."""
+    content = '    NAME = "COLUMN_#1"\n    FORMAT = "A8"  # trailing\n'
+    assert strip_comments(None, content) == content
 
 
-def test_a_definition_comment_is_copied_into_each_column() -> None:
-    """A comment among a definition's keywords keeps its place in every value."""
-    commented = _GROUP.replace(
-        '    UNIT                        = "km"\n',
-        '    /* Kilometers throughout. */\n    UNIT                        = "km"\n', 1)
-    minimum, maximum = tokenize(merge_column_definitions(None, commented))
-    for column in (minimum, maximum):
-        assert '    /* Kilometers throughout. */\n    UNIT' in column.body
-    # The comment did not end the keyword region: the stub override still wins.
-    assert keyword_value(maximum.body, 'UNIT') == '"km/pixel"'
+def test_strip_comments_applies_inside_a_description() -> None:
+    """The rule is by line, so it applies inside quoted prose too."""
+    content = '    DESCRIPTION = "First line\n      # of pixels\n      last."\n'
+    assert strip_comments(None, content) == (
+        '    DESCRIPTION = "First line\n      last."\n')
 
 
-def test_a_stub_comment_stays_with_its_column() -> None:
-    """A stub's comment ships in that stub's column only."""
-    commented = _GROUP.replace(
-        '    NAME                        = "MAXIMUM_QUANTITY"\n',
-        '    NAME                        = "MAXIMUM_QUANTITY"\n    /* The largest. */\n')
-    minimum, maximum = tokenize(merge_column_definitions(None, commented))
-    assert '/*' not in minimum.body
-    assert '    /* The largest. */\n' in maximum.body
+def test_strip_comments_handles_crlf() -> None:
+    """A CRLF comment line goes with its terminator."""
+    assert strip_comments(None, '  #=====\r\nKEEP = 1\r\n') == 'KEEP = 1\r\n'
 
 
-def test_a_comment_does_not_hide_a_format_reference() -> None:
-    """A comment above a reference leaves the reference in the keyword region."""
+def test_comments_inside_a_block_are_harmless_once_stripped() -> None:
+    """A comment among a column's keywords would end the keyword region,
+    which is why every read path strips comments first."""
     commented = _REFERRING_GROUP.replace(
-        '    COLUMN_FORMAT               = "DISTANCE_KM"\n',
-        '    /* Shared format. */\n    COLUMN_FORMAT               = "DISTANCE_KM"\n')
-    body = tokenize(_expand(commented))[0].body
-    assert keyword_value(body, 'FORMAT') == '"F12.3"'
-    assert '    /* Shared format. */\n    FORMAT' in body
-
-
-def test_a_comment_in_an_entry_is_not_copied() -> None:
-    """An entry's comment documents the entry, not the columns using it."""
-    entry = _ENTRY.replace('    UNIT', '    /* Lengths. */\n    UNIT')
-    body = tokenize(expand_format_references(None, entry + _REFERRING_GROUP))[0].body
-    assert '/*' not in body
-    assert keyword_value(body, 'UNIT') == '"km"'
+        '    NAME                        = "QUANTITY"\n',
+        '    NAME                        = "QUANTITY"\n    # Shared format.\n')
+    assert (expand_format_references(None, _ENTRY + strip_comments(None, commented))
+            == expand_format_references(None, _ENTRY + _REFERRING_GROUP))
