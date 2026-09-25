@@ -26,8 +26,8 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
-# The "#-----" divider lines before each COLUMN and COLUMN_STUB are for
-# readability only; the write path removes them.
+# The "#-----" divider lines before each COLUMN and COLUMN_DEFINITION are
+# for readability only; the write path removes them.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
@@ -50,6 +50,7 @@ $NOTE
 $END_NOTE
 $INCLUDE('column_formats.lbl')
 $ONCE(night_override = False)
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -61,7 +62,6 @@ $ONCE(night_override = False)
       and negative in the southern hemisphere."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOCENTRIC_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -70,7 +70,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOCENTRIC_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -79,6 +78,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -90,7 +90,6 @@ $ONCE(night_override = False)
       negative in the southern hemisphere."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOGRAPHIC_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -99,7 +98,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOGRAPHIC_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -108,6 +106,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -120,7 +119,6 @@ $ONCE(night_override = False)
       International Astronomical Union."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the easternmost
@@ -132,7 +130,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the westernmost
@@ -144,6 +141,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LOCAL_HOUR_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -158,7 +156,6 @@ $ONCE(night_override = False)
       rotators."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_LOCAL_HOUR_ANGLE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -171,7 +168,6 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_LOCAL_HOUR_ANGLE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -184,6 +180,7 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LONGITUDE_WRT_OBSERVER"
     COLUMN_FORMAT               = "SIGNED_CYCLIC_ANGLE"
@@ -195,7 +192,6 @@ $ONCE(night_override = False)
       the range -180 to 180. They increase toward the west."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_LONGITUDE_WRT_OBSERVER
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -204,7 +200,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_LONGITUDE_WRT_OBSERVER
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -213,6 +208,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "FINEST_SURFACE_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -224,7 +220,6 @@ $ONCE(night_override = False)
       feature that can be resolved at that surface location."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_FINEST_SURFACE_RESOLUTION
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -235,7 +230,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_FINEST_SURFACE_RESOLUTION
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -246,6 +240,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "COARSEST_SURFACE_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -259,7 +254,6 @@ $ONCE(night_override = False)
       that location regardless of how it is oriented on the surface."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_COARSEST_SURFACE_RESOLUTION
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -271,7 +265,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_COARSEST_SURFACE_RESOLUTION
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -283,6 +276,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -292,7 +286,6 @@ $ONCE(night_override = False)
       between the observer and the intercept point on the body's surface."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_SURFACE_DISTANCE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -301,7 +294,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_SURFACE_DISTANCE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -310,6 +302,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PHASE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -321,7 +314,6 @@ $ONCE(night_override = False)
       the observer. It is zero for a fully-lit disk."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PHASE_ANGLE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -330,7 +322,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PHASE_ANGLE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -339,6 +330,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "INCIDENCE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -350,7 +342,6 @@ $ONCE(night_override = False)
       greater than 90 degrees for points on the night side of the body."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_INCIDENCE_ANGLE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -361,7 +352,6 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_INCIDENCE_ANGLE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -372,6 +362,7 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EMISSION_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE_90"
@@ -382,7 +373,6 @@ $ONCE(night_override = False)
       and the direction of an outgoing photon to the observer."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_EMISSION_ANGLE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -391,7 +381,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_EMISSION_ANGLE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -400,6 +389,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LIMB_ALTITUDE"
     FORMAT                      = "F12.3"
@@ -412,7 +402,6 @@ $ONCE(night_override = False)
       limb. Negative values refer to lines of sight interior to the limb."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_LIMB_ALTITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -425,7 +414,6 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_LIMB_ALTITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -438,6 +426,7 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LIMB_CLOCK_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -448,7 +437,6 @@ $ONCE(night_override = False)
       angle is measured in a clockwise direction."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_LIMB_CLOCK_ANGLE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -463,7 +451,6 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_LIMB_CLOCK_ANGLE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -478,6 +465,7 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_INTERCEPT_TIME"
     COLUMN_FORMAT               = "EVENT_TIME"
@@ -488,7 +476,6 @@ $ONCE(night_override = False)
       surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
     DESCRIPTION                 = "This column tabulates the earliest time
@@ -497,7 +484,6 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
     DESCRIPTION                 = "This column tabulates the latest time among
@@ -506,6 +492,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_SUB_SOLAR_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -518,7 +505,6 @@ $ONCE(night_override = False)
       the southern hemisphere."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOCENTRIC_SUB_SOLAR_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -528,7 +514,6 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOCENTRIC_SUB_SOLAR_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -538,6 +523,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_SUB_SOLAR_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -550,7 +536,6 @@ $ONCE(night_override = False)
       and negative in the southern hemisphere."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOGRAPHIC_SUB_SOLAR_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -560,7 +545,6 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOGRAPHIC_SUB_SOLAR_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -570,6 +554,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_SUB_OBSERVER_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -582,7 +567,6 @@ $ONCE(night_override = False)
       negative in the southern hemisphere."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOCENTRIC_SUB_OBSERVER_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -592,7 +576,6 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOCENTRIC_SUB_OBSERVER_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -602,6 +585,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -614,7 +598,6 @@ $ONCE(night_override = False)
       negative in the southern hemisphere."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -624,7 +607,6 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -634,6 +616,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_SOLAR_IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -647,7 +630,6 @@ $ONCE(night_override = False)
       Astronomical Union."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_SUB_SOLAR_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the easternmost value
@@ -659,7 +641,6 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_SUB_SOLAR_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the westernmost value
@@ -671,6 +652,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_OBSERVER_IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -684,7 +666,6 @@ $ONCE(night_override = False)
       Astronomical Union."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_SUB_OBSERVER_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the easternmost value
@@ -696,7 +677,6 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_SUB_OBSERVER_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the westernmost value
@@ -708,6 +688,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -716,7 +697,6 @@ $ONCE(night_override = False)
       pixel as projected at the distance of the center of the body."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_CENTER_RESOLUTION
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -724,7 +704,6 @@ $ONCE(night_override = False)
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_CENTER_RESOLUTION
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -732,6 +711,7 @@ $ONCE(night_override = False)
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -740,7 +720,6 @@ $ONCE(night_override = False)
       observer to the center of the body."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_CENTER_DISTANCE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -748,13 +727,13 @@ $ONCE(night_override = False)
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_CENTER_DISTANCE
     DESCRIPTION                 = "This column tabulates the maximum value
       during the observation. It is independent of the field of view."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_PHASE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -765,7 +744,6 @@ $ONCE(night_override = False)
       observer. It is zero for a fully-lit disk."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_CENTER_PHASE_ANGLE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -773,7 +751,6 @@ $ONCE(night_override = False)
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_CENTER_PHASE_ANGLE
     DESCRIPTION                 = "This column tabulates the maximum value

@@ -26,8 +26,8 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
-# The "#-----" divider lines before each COLUMN and COLUMN_STUB are for
-# readability only; the write path removes them.
+# The "#-----" divider lines before each COLUMN and COLUMN_DEFINITION are
+# for readability only; the write path removes them.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
@@ -49,6 +49,7 @@ $NOTE
 ##############################################################################
 $END_NOTE
 $INCLUDE('column_formats.lbl')
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -59,20 +60,19 @@ $INCLUDE('column_formats.lbl')
       negative in the southern hemisphere."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOCENTRIC_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOCENTRIC_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -83,20 +83,19 @@ $INCLUDE('column_formats.lbl')
       negative in the southern hemisphere."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOGRAPHIC_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOGRAPHIC_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -108,7 +107,6 @@ $INCLUDE('column_formats.lbl')
       International Astronomical Union."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the easternmost
@@ -118,7 +116,6 @@ $INCLUDE('column_formats.lbl')
       westernmost longitude."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the westernmost
@@ -128,6 +125,7 @@ $INCLUDE('column_formats.lbl')
       longitude."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LONGITUDE_WRT_OBSERVER"
     COLUMN_FORMAT               = "SIGNED_CYCLIC_ANGLE"
@@ -138,20 +136,19 @@ $INCLUDE('column_formats.lbl')
       -180 to 180. They increase toward the west."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_LONGITUDE_WRT_OBSERVER
     DESCRIPTION                 = "This column tabulates the minimum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_LONGITUDE_WRT_OBSERVER
     DESCRIPTION                 = "This column tabulates the maximum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "FINEST_SURFACE_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -162,20 +159,19 @@ $INCLUDE('column_formats.lbl')
       that can be resolved at that surface location."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_FINEST_SURFACE_RESOLUTION
     DESCRIPTION                 = "This column tabulates the minimum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_FINEST_SURFACE_RESOLUTION
     DESCRIPTION                 = "This column tabulates the maximum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "COARSEST_SURFACE_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -186,20 +182,19 @@ $INCLUDE('column_formats.lbl')
       foreshortening by a factor of 1/cos(emission angle)."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_COARSEST_SURFACE_RESOLUTION
     DESCRIPTION                 = "This column tabulates the minimum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_COARSEST_SURFACE_RESOLUTION
     DESCRIPTION                 = "This column tabulates the maximum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -208,20 +203,19 @@ $INCLUDE('column_formats.lbl')
       observer and the intercept point on the Sun's surface."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_SURFACE_DISTANCE
     DESCRIPTION                 = "This column tabulates the minimum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_SURFACE_DISTANCE
     DESCRIPTION                 = "This column tabulates the maximum value
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_INTERCEPT_TIME"
     COLUMN_FORMAT               = "EVENT_TIME"
@@ -231,20 +225,19 @@ $INCLUDE('column_formats.lbl')
       surface. It is given in ISO format: YYYY-MM-DDTHH:mm:ss.sss."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_SURFACE_INTERCEPT_TIME
     DESCRIPTION                 = "This column tabulates the earliest time
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_SURFACE_INTERCEPT_TIME
     DESCRIPTION                 = "This column tabulates the latest time among
       the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_SUB_OBSERVER_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -255,7 +248,6 @@ $INCLUDE('column_formats.lbl')
       the equator plane and a vector from the Sun's center to this point."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOCENTRIC_SUB_OBSERVER_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -263,7 +255,6 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOCENTRIC_SUB_OBSERVER_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -271,6 +262,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -281,7 +273,6 @@ $INCLUDE('column_formats.lbl')
       latitude is the angle between this vector and the Sun's equatorial plane."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -289,7 +280,6 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -297,6 +287,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_OBSERVER_IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -308,7 +299,6 @@ $INCLUDE('column_formats.lbl')
       center to this surface point. Longitudes increase toward the west."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_SUB_OBSERVER_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the easternmost value
@@ -318,7 +308,6 @@ $INCLUDE('column_formats.lbl')
       greater than the 'maximum'."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_SUB_OBSERVER_IAU_LONGITUDE
     DESCRIPTION                 = "This column tabulates the westernmost value
@@ -328,6 +317,7 @@ $INCLUDE('column_formats.lbl')
       than the 'minimum'."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -336,7 +326,6 @@ $INCLUDE('column_formats.lbl')
       pixel as projected at the distance of the center of the Sun."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_CENTER_RESOLUTION
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -344,7 +333,6 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_CENTER_RESOLUTION
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -352,6 +340,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -360,7 +349,6 @@ $INCLUDE('column_formats.lbl')
       observer to the center of the Sun."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_CENTER_DISTANCE
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -368,7 +356,6 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_CENTER_DISTANCE
     DESCRIPTION                 = "This column tabulates the maximum value
@@ -376,6 +363,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
+  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RADIUS_IN_PIXELS"
     COLUMN_FORMAT               = "SIZE_IN_PIXELS"
@@ -384,7 +372,6 @@ $INCLUDE('column_formats.lbl')
       converted to pixels."
   END_OBJECT                    = COLUMN_DEFINITION
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MINIMUM_RADIUS_IN_PIXELS
     DESCRIPTION                 = "This column tabulates the minimum value
@@ -392,7 +379,6 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
   OBJECT                        = COLUMN_STUB
     NAME                        = MAXIMUM_RADIUS_IN_PIXELS
     DESCRIPTION                 = "This column tabulates the maximum value
