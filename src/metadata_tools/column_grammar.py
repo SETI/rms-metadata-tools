@@ -82,14 +82,12 @@ _PRIVATE_LINE_RE = re.compile(
 # would assert the start of the whole string, not of the line at pos).
 _KEYWORD_LINE_RE = re.compile(r' *([A-Z][A-Z0-9_]*) *=[^\r\n]*\r?\n')
 
-# One whole-line PDS3 comment, "/* ... */", including its terminator. Matched
-# like _KEYWORD_LINE_RE. Templates may carry comments anywhere -- the "/*===*/"
-# dividers before each COLUMN and COLUMN_DEFINITION, or a note among a
-# column's keywords -- and they ship in the label like any other text.
-_COMMENT_LINE_RE = re.compile(r' */\*[^\r\n]*\*/ *\r?\n')
-
-# The pseudo-keyword a comment line carries among a block's keyword lines.
-COMMENT = '/*'
+# A comment line: one whose first non-blank character is "#", wherever it
+# falls -- even inside a quoted DESCRIPTION, so prose must never begin a line
+# with "#". Templates use comments for the "#=====" dividers before each
+# COLUMN and COLUMN_DEFINITION object, among other things. A "#" later in a
+# line is ordinary text.
+_COMMENT_RE = re.compile(r'(?m)^[ \t]*#[^\r\n]*(?:\r?\n|\Z)')
 
 
 #===============================================================================
@@ -221,9 +219,7 @@ def _keyword_region(body: str) -> tuple[list[tuple[str, str]], str]:
 
     The keyword region ends at the first DESCRIPTION line (whose quoted prose
     may span many lines and must never be scanned for keywords) or at the
-    first line that is neither a ``keyword = value`` line nor a whole-line
-    PDS3 comment. A comment line is kept in place, as the pseudo-keyword
-    :data:`COMMENT`.
+    first line that is not a ``keyword = value`` line.
 
     Parameters:
         body: The block body.
@@ -235,17 +231,35 @@ def _keyword_region(body: str) -> tuple[list[tuple[str, str]], str]:
     lines: list[tuple[str, str]] = []
     pos = 0
     while pos < len(body):
-        comment = _COMMENT_LINE_RE.match(body, pos)
-        if comment is not None:
-            lines.append((COMMENT, comment.group(0)))
-            pos = comment.end()
-            continue
         match = _KEYWORD_LINE_RE.match(body, pos)
         if match is None or match.group(1) == 'DESCRIPTION':
             break
         lines.append((match.group(1), match.group(0)))
         pos = match.end()
     return lines, body[pos:]
+
+
+#===============================================================================
+def strip_comments(template_path: object, content: str) -> str:
+    """Remove every template comment line.
+
+    A comment line is one whose first non-blank character is ``#``, wherever
+    it falls -- between objects, among a column's keywords, or even inside a
+    quoted DESCRIPTION -- so a line of label prose must never begin with
+    ``#``. A ``#`` later in a line is ordinary text. Comments are authoring
+    aids, not ODL: this runs first on every path that reads a template -- the
+    label write, the geometry schema read, and the index template read -- so
+    no comment reaches a shipped label or confuses a parser.
+
+    Parameters:
+        template_path: The template path, unused; part of the preprocessor
+            call signature.
+        content: The template content.
+
+    Returns:
+        The content with every comment line removed.
+    """
+    return _COMMENT_RE.sub('', content)
 
 
 #===============================================================================
@@ -331,8 +345,7 @@ def _format_entry(block: Block) -> tuple[str, list[tuple[str, str]]]:
     keyword_lines: list[tuple[str, str]] = []
     seen: set[str] = set()
     for keyword, line in lines:
-        # A comment documents the entry; it is not copied into columns.
-        if keyword in ('NAME', COMMENT):
+        if keyword == 'NAME':
             continue
         if keyword not in FORMAT_ENTRY_KEYWORDS:
             raise ValueError(
@@ -511,10 +524,7 @@ def _merged_column(stub: Block, def_lines: list[tuple[str, str]],
     Returns:
         The COLUMN object's full text.
     """
-    # Comments are not keywords: they never override or are overridden. The
-    # definition's are copied into every merged column, the stub's into its
-    # own, each in place.
-    overrides = {keyword: line for keyword, line in stub_lines if keyword != COMMENT}
+    overrides = dict(stub_lines)
     consumed = set()
 
     lines: list[str] = []
@@ -526,9 +536,7 @@ def _merged_column(stub: Block, def_lines: list[tuple[str, str]],
     for keyword, line in def_lines:
         if keyword in _NOT_MERGED:
             continue
-        if keyword == COMMENT:
-            lines.append(line)
-        elif keyword in overrides:
+        if keyword in overrides:
             lines.append(overrides[keyword])
             consumed.add(keyword)
         else:

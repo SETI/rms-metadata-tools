@@ -48,8 +48,16 @@ consumed by ``rms-cloud-tasks`` workers. The four public functions are:
 
 :func:`~metadata_tools.label_support.create` generates a ``.lbl`` label for a
 table by rendering the host's template (or a shared template from the global
-``templates/`` directory) with ``rms-pdstemplate``. The inventory template has
-no COLUMN objects and uses no preprocessor; the other kinds chain four:
+``templates/`` directory) with ``rms-pdstemplate``. Every template first
+passes through :func:`~metadata_tools.column_grammar.strip_comments`, which
+removes each **comment line** -- one whose first non-blank character is ``#``,
+such as the ``#=====`` dividers between column objects. The strip applies even
+inside a quoted ``DESCRIPTION``, so a line of label prose must never begin with
+``#``; a ``#`` later in a line is ordinary text. The geometry schema read and
+the index template read strip comments the same way.
+
+The inventory template has no COLUMN objects and needs nothing more; the other
+kinds continue through four more preprocessors:
 :func:`~metadata_tools.column_grammar.expand_format_references` expands the
 format-dictionary references,
 :func:`~metadata_tools.column_grammar.merge_column_definitions` lowers the

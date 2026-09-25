@@ -14,6 +14,7 @@ from pdstemplate.pds3table import Pds3Table
 
 import metadata_tools.common as com
 import metadata_tools.util as util
+from metadata_tools.column_grammar import strip_comments
 from metadata_tools.config import get_host_config, get_index_config
 
 from . import key_fns as _key_fns
@@ -119,9 +120,10 @@ class IndexTable(com.Table):
         label_name = util.get_index_name(self.volume_id, qualifier)
         label_path = self.output_dir / FCPath(label_name + '.lbl')
 
-        # as_string is True, so the result is a single string.
-        template = cast(str, util.read_txt_file(template_path,
-                                                as_string=True))
+        # as_string is True, so the result is a single string. Comment lines
+        # are authoring aids, removed as the label write path removes them.
+        template = strip_comments(template_path, cast(
+            str, util.read_txt_file(template_path, as_string=True)))
         pds3_table = Pds3Table(label_path, template, validate=False,
                                numbers=True, formats=True)
         self.column_stubs = IndexTable._get_column_values(pds3_table)
