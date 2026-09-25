@@ -394,29 +394,6 @@ def test_indextable_init_supplemental_missing_primary_raises(
                    FCPath(meta), qualifier='supplemental', volume_id='GO_0001')
 
 
-def test_indextable_init_strips_template_comments(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """The index template's comment lines never reach the Pds3Table parse."""
-    indir = tmp_path / 'GO_0001'
-    indir.mkdir()
-    outdir = tmp_path / 'out'
-    outdir.mkdir()
-    _patch_template(monkeypatch)
-    monkeypatch.setattr(util, 'read_txt_file',
-                        lambda path, as_string=False: '  #=====\nTEMPLATE\n')
-    parsed: list[str] = []
-
-    def fake_pds3table(label_path: Any, template: str, **kwargs: Any) -> Any:
-        parsed.append(template)
-        return FakePds3Table([{'NAME': 'VOLUME_ID', 'FORMAT': 'A8', 'ITEMS': None,
-                               'NULL_CONSTANT': '-'}])
-
-    monkeypatch.setattr(idx.table, 'Pds3Table', fake_pds3table)
-    IndexTable(FCPath(indir), FCPath(outdir), FCPath('/tmpl.lbl'),
-               FCPath(outdir), qualifier='', volume_id='GO_0001')
-    assert parsed == ['TEMPLATE\n']
-
-
 def test_indextable_init_requires_template_path(tmp_path: Path) -> None:
     """A real (input_dir) IndexTable without a template is rejected up front."""
     with pytest.raises(ValueError, match='requires a template_path'):

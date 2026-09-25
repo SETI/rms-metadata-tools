@@ -636,8 +636,8 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     template = PdsTemplate(template_path, crlf=True,
                            includes=[defs.GLOBAL_TEMPLATE_PATH, template_dir])
     try:
-        blocks = column_grammar.tokenize(column_grammar.expand_format_references(
-            template_path, column_grammar.strip_comments(template_path, template.content)))
+        blocks = column_grammar.tokenize(
+            column_grammar.expand_format_references(template_path, template.content))
     except ValueError as error:
         raise RuntimeError(f'{template_path}: {error}') from None
 
