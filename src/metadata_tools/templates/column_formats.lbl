@@ -10,9 +10,10 @@ $NOTE
 #
 # among its keywords receives the entry's keyword lines in place of that
 # reference. (The reference keyword and the entry object share the name
-# COLUMN_FORMAT: an entry is an OBJECT, a reference a keyword line.) A keyword the column states itself wins over the entry's, so a
-# column may take an entry and override, say, its FORMAT. A column whose
-# format is its own simply states its keywords and refers to no entry.
+# COLUMN_FORMAT: an entry is an OBJECT, a reference a keyword line.) A
+# keyword the column states itself wins over the entry's, so a column may
+# take an entry and override, say, its FORMAT. A column whose format is its
+# own simply states its keywords and refers to no entry.
 #
 # An entry holds label format metadata only: DATA_TYPE, FORMAT,
 # OVERFLOW_FORMAT, UNIT, the null keywords (NULL_CONSTANT, ...),
