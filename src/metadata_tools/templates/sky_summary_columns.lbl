@@ -18,7 +18,7 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
-# The "#-----" divider lines before each COLUMN and COLUMN_DEFINITION are
+# The "#=====" divider lines before each COLUMN and COLUMN_DEFINITION are
 # for readability only; the write path removes them.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
@@ -41,7 +41,7 @@ $NOTE
 ##############################################################################
 $END_NOTE
 $INCLUDE('column_formats.lbl')
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RIGHT_ASCENSION"
     FORMAT                      = "F10.6"
@@ -68,7 +68,7 @@ $INCLUDE('column_formats.lbl')
     NAME                        = "MAXIMUM_RIGHT_ASCENSION"
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "DECLINATION"
     FORMAT                      = "F10.6"

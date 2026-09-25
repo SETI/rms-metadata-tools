@@ -26,7 +26,7 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
-# The "#-----" divider lines before each COLUMN and COLUMN_DEFINITION are
+# The "#=====" divider lines before each COLUMN and COLUMN_DEFINITION are
 # for readability only; the write path removes them.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
@@ -50,7 +50,7 @@ $NOTE
 $END_NOTE
 $INCLUDE('column_formats.lbl')
 $ONCE(night_override = False)
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -78,7 +78,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -106,7 +106,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -141,7 +141,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LOCAL_HOUR_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -180,7 +180,7 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LONGITUDE_WRT_OBSERVER"
     COLUMN_FORMAT               = "SIGNED_CYCLIC_ANGLE"
@@ -208,7 +208,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "FINEST_SURFACE_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -240,7 +240,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "COARSEST_SURFACE_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -276,7 +276,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -302,7 +302,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PHASE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -330,7 +330,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "INCIDENCE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -362,7 +362,7 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "EMISSION_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE_90"
@@ -389,7 +389,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LIMB_ALTITUDE"
     FORMAT                      = "F12.3"
@@ -426,7 +426,7 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LIMB_CLOCK_ANGLE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -465,7 +465,7 @@ $ONCE(night_override = False)
       $ONCE(night_override = False)
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_INTERCEPT_TIME"
     COLUMN_FORMAT               = "EVENT_TIME"
@@ -492,7 +492,7 @@ $ONCE(night_override = False)
       $INCLUDE('body_summary_details.lbl')
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_SUB_SOLAR_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -523,7 +523,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_SUB_SOLAR_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -554,7 +554,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_SUB_OBSERVER_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -585,7 +585,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -616,7 +616,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_SOLAR_IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -652,7 +652,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_OBSERVER_IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -688,7 +688,7 @@ $ONCE(night_override = False)
       The body's shape has been modeled as an ellipsoid."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -711,7 +711,7 @@ $ONCE(night_override = False)
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -733,7 +733,7 @@ $ONCE(night_override = False)
       during the observation. It is independent of the field of view."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_PHASE_ANGLE"
     COLUMN_FORMAT               = "PHOTOMETRIC_ANGLE"
@@ -757,7 +757,7 @@ $ONCE(night_override = False)
       during the observation. It is independent of the field of view."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = DIAMETER_IN_PIXELS
     COLUMN_FORMAT               = "SIZE_IN_PIXELS"
@@ -772,7 +772,7 @@ $ONCE(night_override = False)
       the line of sight."
   END_OBJECT                    = COLUMN
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = NORTH_POLE_CLOCK_ANGLE
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -785,7 +785,7 @@ $ONCE(night_override = False)
       depends on the observation's timing but is independent of the pointing."
   END_OBJECT                    = COLUMN
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = NORTH_POLE_POSITION_ANGLE
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -800,7 +800,7 @@ $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = CENTER_X_COORDINATE
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
@@ -815,7 +815,7 @@ $ONCE(night_override = False)
   END_OBJECT                    = COLUMN
 
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = CENTER_Y_COORDINATE
     COLUMN_FORMAT               = "PIXEL_COORDINATE"

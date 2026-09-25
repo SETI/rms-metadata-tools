@@ -50,7 +50,7 @@ consumed by ``rms-cloud-tasks`` workers. The four public functions are:
 table by rendering the host's template (or a shared template from the global
 ``templates/`` directory) with ``rms-pdstemplate``. The inventory template has
 no COLUMN objects and uses no preprocessor; the other kinds chain five:
-:func:`~metadata_tools.column_grammar.strip_dividers` removes the ``#-----``
+:func:`~metadata_tools.column_grammar.strip_dividers` removes the ``#=====``
 divider lines that separate the template's column objects,
 :func:`~metadata_tools.column_grammar.expand_format_references` expands the
 format-dictionary references,

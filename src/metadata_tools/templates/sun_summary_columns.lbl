@@ -26,7 +26,7 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
-# The "#-----" divider lines before each COLUMN and COLUMN_DEFINITION are
+# The "#=====" divider lines before each COLUMN and COLUMN_DEFINITION are
 # for readability only; the write path removes them.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
@@ -49,7 +49,7 @@ $NOTE
 ##############################################################################
 $END_NOTE
 $INCLUDE('column_formats.lbl')
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -72,7 +72,7 @@ $INCLUDE('column_formats.lbl')
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -95,7 +95,7 @@ $INCLUDE('column_formats.lbl')
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -125,7 +125,7 @@ $INCLUDE('column_formats.lbl')
       longitude."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "LONGITUDE_WRT_OBSERVER"
     COLUMN_FORMAT               = "SIGNED_CYCLIC_ANGLE"
@@ -148,7 +148,7 @@ $INCLUDE('column_formats.lbl')
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "FINEST_SURFACE_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -171,7 +171,7 @@ $INCLUDE('column_formats.lbl')
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "COARSEST_SURFACE_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -194,7 +194,7 @@ $INCLUDE('column_formats.lbl')
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -215,7 +215,7 @@ $INCLUDE('column_formats.lbl')
       among the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SURFACE_INTERCEPT_TIME"
     COLUMN_FORMAT               = "EVENT_TIME"
@@ -237,7 +237,7 @@ $INCLUDE('column_formats.lbl')
       the pixels whose lines of sight intercept the Sun's surface."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOCENTRIC_SUB_OBSERVER_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -262,7 +262,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "PLANETOGRAPHIC_SUB_OBSERVER_LATITUDE"
     COLUMN_FORMAT               = "LATITUDE"
@@ -287,7 +287,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "SUB_OBSERVER_IAU_LONGITUDE"
     COLUMN_FORMAT               = "CYCLIC_ANGLE"
@@ -317,7 +317,7 @@ $INCLUDE('column_formats.lbl')
       than the 'minimum'."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_RESOLUTION"
     COLUMN_FORMAT               = "RESOLUTION"
@@ -340,7 +340,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "CENTER_DISTANCE"
     COLUMN_FORMAT               = "DISTANCE"
@@ -363,7 +363,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN_DEFINITION
     NAME                        = "RADIUS_IN_PIXELS"
     COLUMN_FORMAT               = "SIZE_IN_PIXELS"
@@ -386,7 +386,7 @@ $INCLUDE('column_formats.lbl')
       independent of the pointing."
   END_OBJECT                    = COLUMN_STUB
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "CENTER_X_COORDINATE"
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
@@ -400,7 +400,7 @@ $INCLUDE('column_formats.lbl')
       This column tabulates the mean value during the observation."
   END_OBJECT                    = COLUMN
 
-  #---------------------------------------------------------------------------
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "CENTER_Y_COORDINATE"
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
