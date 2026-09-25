@@ -85,10 +85,7 @@ assimilated into a group by accident.
 
      OBJECT                        = COLUMN_DEFINITION
        NAME                        = "RING_RADIUS"
-       FORMAT                      = "F12.3"
-       OVERFLOW_FORMAT             = "E12.5"
-       UNIT                        = "km"
-       NULL_CONSTANT               = -999.
+       COLUMN_FORMAT               = "DISTANCE"
        BACKPLANE_KEY               = ('ring_radius', 'bodyx:RING')
        MASK                        = ('PM', 'P', '')
        DESCRIPTION                 = "Ring radius is the distance from ..."
@@ -140,6 +137,47 @@ definition's shared lead-in followed by the stub's per-value prose, so the
 lead-in is written once per quantity while each extreme keeps its own
 paragraph. Either side may also stand alone -- a stub with no description
 ships the definition's, and vice versa.
+
+The format dictionary
+---------------------
+
+Most columns share one of a few label formats -- every longitude is an
+``F8.3`` angle in degrees from 0 to 360 with a null of ``-999.``, for example.
+Rather than spelling those keywords out, a column block (definition, stub, or
+plain ``COLUMN``) may state ``COLUMN_FORMAT = "<entry>"``, as ``RING_RADIUS``
+does above, naming an entry in the **format dictionary**,
+``src/metadata_tools/templates/column_formats.lbl``. Each entry is an
+``OBJECT = COLUMN_FORMAT`` block -- the reference keyword and the entry object
+share the name -- holding a ``NAME`` and any of ``DATA_TYPE``,
+``FORMAT``, ``OVERFLOW_FORMAT``, ``UNIT``, the null keywords, and the valid
+range -- label format metadata only:
+
+.. code-block:: text
+
+     OBJECT                        = COLUMN_FORMAT
+       NAME                        = "DISTANCE"
+       FORMAT                      = "F12.3"
+       OVERFLOW_FORMAT             = "E12.5"
+       UNIT                        = "km"
+       NULL_CONSTANT               = -999.
+     END_OBJECT                    = COLUMN_FORMAT
+
+:func:`~metadata_tools.column_grammar.expand_format_references` replaces each
+reference with the entry's keyword lines, in the entry's order, and removes the
+entries. It runs first on both the write path and the schema read, so
+everything downstream -- the lowering, the schema, the PDS3 table
+preprocessor -- sees explicit keywords only, and the dictionary never reaches a
+shipped label. A keyword the column states itself wins over the entry's, so a
+column can take an entry and override, say, its ``FORMAT``. On a stub, the
+expanded lines are the stub's own, so they override the definition's exactly
+as hand-written ones would. A column with a one-off format simply states its
+keywords and names no entry.
+
+Each shared ``*_summary_columns.lbl`` fragment ``$INCLUDE``\ s the dictionary,
+so a host that needs different entries shadows ``column_formats.lbl`` with its
+own copy, as it would any fragment. An unknown or repeated reference, a
+reference after the ``DESCRIPTION``, a duplicate entry, or an entry carrying
+anything but format keywords fails the read immediately.
 
 This is the same arrangement as the index pipeline, where
 :class:`~metadata_tools.index_support.table.IndexTable` derives its columns from
