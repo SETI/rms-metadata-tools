@@ -82,9 +82,12 @@ _PRIVATE_LINE_RE = re.compile(
 # would assert the start of the whole string, not of the line at pos).
 _KEYWORD_LINE_RE = re.compile(r' *([A-Z][A-Z0-9_]*) *=[^\r\n]*\r?\n')
 
-# A divider line: optional indent, "#", and equals signs only. Templates put one
-# before each COLUMN and COLUMN_DEFINITION object for readability.
-_DIVIDER_RE = re.compile(r'(?m)^ *#=+ *\r?\n')
+# A comment line: one whose first non-blank character is "#", wherever it
+# falls -- even inside a quoted DESCRIPTION, so prose must never begin a line
+# with "#". Templates use comments for the "#=====" dividers before each
+# COLUMN and COLUMN_DEFINITION object, among other things. A "#" later in a
+# line is ordinary text.
+_COMMENT_RE = re.compile(r'(?m)^[ \t]*#[^\r\n]*(?:\r?\n|\Z)')
 
 
 #===============================================================================
@@ -237,13 +240,16 @@ def _keyword_region(body: str) -> tuple[list[tuple[str, str]], str]:
 
 
 #===============================================================================
-def strip_dividers(template_path: object, content: str) -> str:
-    """Remove the ``#=====`` divider lines that separate template objects.
+def strip_comments(template_path: object, content: str) -> str:
+    """Remove every template comment line.
 
-    Runs as the first PdsTemplate preprocessor on the write path. A divider is
-    a template-authoring aid, not ODL, so it must never reach a shipped label;
-    the schema read needs no such step, because dividers sit between blocks,
-    where the tokenizer never looks.
+    A comment line is one whose first non-blank character is ``#``, wherever
+    it falls -- between objects, among a column's keywords, or even inside a
+    quoted DESCRIPTION -- so a line of label prose must never begin with
+    ``#``. A ``#`` later in a line is ordinary text. Comments are authoring
+    aids, not ODL: this runs first on every path that reads a template -- the
+    label write, the geometry schema read, and the index template read -- so
+    no comment reaches a shipped label or confuses a parser.
 
     Parameters:
         template_path: The template path, unused; part of the preprocessor
@@ -251,9 +257,9 @@ def strip_dividers(template_path: object, content: str) -> str:
         content: The template content.
 
     Returns:
-        The content with every divider line removed.
+        The content with every comment line removed.
     """
-    return _DIVIDER_RE.sub('', content)
+    return _COMMENT_RE.sub('', content)
 
 
 #===============================================================================

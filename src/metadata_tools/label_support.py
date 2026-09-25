@@ -16,7 +16,7 @@ from metadata_tools.column_grammar import (
     PRIVATE_KEYWORDS,
     expand_format_references,
     merge_column_definitions,
-    strip_dividers,
+    strip_comments,
 )
 
 # The spec keywords carrying the geometry computation, from the grammar both
@@ -53,7 +53,7 @@ def _pds3_table_preprocessor(template_path: object, content: str) -> str:
     """Run rms-pdstemplate's PDS3 table preprocessor with our fixed options.
 
     A named wrapper because PdsTemplate hands its ``kwargs`` to the first
-    preprocessor only, and ``strip_dividers``, ``expand_format_references``,
+    preprocessor only, and ``strip_comments``, ``expand_format_references``,
     and ``merge_column_definitions`` must run first: the table preprocessor has
     to see the expanded, lowered, plain-COLUMN form.
 
@@ -120,18 +120,18 @@ def create(filepath: str | Path | FCPath,
         template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
         template_path = host_template_dir / (template_name + '.lbl')
 
-    # Default preprocessors: remove the divider lines, expand the
+    # Default preprocessors: remove the comment lines, expand the
     # format-dictionary references, lower the definition/stub grammar to plain
     # COLUMNs, run the PDS3 table preprocessor on the lowered form, then sweep
     # any stray spec keyword. The inventory template has no COLUMN objects, so
-    # it takes none of them.
-    preprocess: list[Callable[..., object]] | None = [strip_dividers,
+    # it takes only the comment strip.
+    preprocess: list[Callable[..., object]] = [strip_comments,
                                                       expand_format_references,
                                                       merge_column_definitions,
                                                       _pds3_table_preprocessor,
                                                       _strip_private_keywords]
     if 'inventory' in body:
-        preprocess = None
+        preprocess = [strip_comments]
 
     # Default template dictionary
     fields: dict[str, str] = {'VOLUME_ID'   : volume_id,

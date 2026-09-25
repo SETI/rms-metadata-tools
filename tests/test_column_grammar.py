@@ -13,7 +13,7 @@ from metadata_tools.column_grammar import (
     expand_format_references,
     keyword_value,
     merge_column_definitions,
-    strip_dividers,
+    strip_comments,
     tokenize,
 )
 
@@ -392,22 +392,39 @@ def test_unexpanded_entries_are_rejected_downstream() -> None:
 
 
 #===============================================================================
-# Divider lines
+# Comment lines
 #===============================================================================
-def test_strip_dividers_removes_only_divider_lines() -> None:
-    """Divider lines go, at any indent; other comment-like text stays."""
+def test_strip_comments_removes_every_comment_line() -> None:
+    """A line whose first non-blank character is '#' goes, at any indent."""
     divider = '  #' + '=' * 75 + '\n'
-    content = (divider + _GROUP + '\n    ' + divider.lstrip() + _GROUP + '#=====\n'
-               + '    DESCRIPTION = "# not a divider"\n' + '# Note.\n')
-    assert strip_dividers(None, content) == (
-        _GROUP + '\n' + _GROUP + '    DESCRIPTION = "# not a divider"\n' + '# Note.\n')
+    content = (divider + _GROUP + '\n    # A note.\n\t#tabbed\n#\n' + _GROUP
+               + '# Last line, unterminated.')
+    assert strip_comments(None, content) == _GROUP + '\n' + _GROUP
 
 
-def test_dividers_do_not_disturb_the_grammar() -> None:
-    """Dividers sit between blocks, so tokenizing and lowering ignore them."""
-    divider = '  #' + '=' * 75 + '\n'
-    divided = divider + _GROUP + '\n' + divider + _GROUP
-    undivided = _GROUP + '\n' + _GROUP
-    assert [b.body for b in tokenize(divided)] == [b.body for b in tokenize(undivided)]
-    assert strip_dividers(None, merge_column_definitions(None, divided)) == (
-        merge_column_definitions(None, undivided))
+def test_strip_comments_keeps_a_later_hash() -> None:
+    """A '#' after other text on its line is ordinary text."""
+    content = '    NAME = "COLUMN_#1"\n    FORMAT = "A8"  # trailing\n'
+    assert strip_comments(None, content) == content
+
+
+def test_strip_comments_applies_inside_a_description() -> None:
+    """The rule is by line, so it applies inside quoted prose too."""
+    content = '    DESCRIPTION = "First line\n      # of pixels\n      last."\n'
+    assert strip_comments(None, content) == (
+        '    DESCRIPTION = "First line\n      last."\n')
+
+
+def test_strip_comments_handles_crlf() -> None:
+    """A CRLF comment line goes with its terminator."""
+    assert strip_comments(None, '  #=====\r\nKEEP = 1\r\n') == 'KEEP = 1\r\n'
+
+
+def test_comments_inside_a_block_are_harmless_once_stripped() -> None:
+    """A comment among a column's keywords would end the keyword region,
+    which is why every read path strips comments first."""
+    commented = _REFERRING_GROUP.replace(
+        '    NAME                        = "QUANTITY"\n',
+        '    NAME                        = "QUANTITY"\n    # Shared format.\n')
+    assert (expand_format_references(None, _ENTRY + strip_comments(None, commented))
+            == expand_format_references(None, _ENTRY + _REFERRING_GROUP))
