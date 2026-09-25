@@ -417,6 +417,57 @@ def test_the_shadowed_fragment_really_overrides(tmp_path: Path) -> None:
     assert 'MINIMUM_RENAMED' in names
 
 
+_RA_FORMAT = """\
+    FORMAT                      = "F10.6"
+    OVERFLOW_FORMAT             = "F10.5"
+    UNIT                        = "deg"
+    VALID_MINIMUM               = 0.
+    VALID_MAXIMUM               = 360.
+    NULL_CONSTANT               = -999.
+"""
+
+
+def _sky_with_ra_entry(tmp_path: Path, entry_name: str, reference: str) -> FCPath:
+    """Shadow the sky fragment with RIGHT_ASCENSION's format moved to an entry.
+
+    Parameters:
+        tmp_path: The test's tmp directory.
+        entry_name: The NAME the entry is defined under.
+        reference: The NAME the column refers to.
+
+    Returns:
+        The host templates directory, ready for resolve_schema.
+    """
+    host = _host_dir(tmp_path)
+    entry = ('  OBJECT                        = COLUMN_FORMAT\n'
+             f'    NAME                        = "{entry_name}"\n'
+             + _RA_FORMAT +
+             '  END_OBJECT                    = COLUMN_FORMAT\n\n')
+    tdir = _shadow_fragment(
+        host, 'sky_summary_columns.lbl', _RA_FORMAT,
+        f'    COLUMN_FORMAT               = "{reference}"\n')
+    path = Path(tdir.as_posix()) / 'sky_summary_columns.lbl'
+    text = path.read_text(encoding='utf-8')
+    path.write_text(text.replace('  OBJECT', entry + '  OBJECT', 1), encoding='utf-8')
+    return tdir
+
+
+def test_a_format_entry_resolves_like_inline_keywords(tmp_path: Path) -> None:
+    """Moving a column's format keywords into an entry changes nothing."""
+    shipped = resolve_schema(TEMPLATE_DIR, 'sky')
+    tdir = _sky_with_ra_entry(tmp_path, 'RA_FORMAT', 'RA_FORMAT')
+    assert resolve_schema(tdir, 'sky') == shipped
+
+
+def test_an_unknown_format_entry_is_an_error(tmp_path: Path) -> None:
+    """A reference naming no entry fails the read, naming the template."""
+    tdir = _sky_with_ra_entry(tmp_path, 'RA_FORMAT', 'NO_SUCH_FORMAT')
+    with pytest.raises(RuntimeError,
+                       match=r"sky_summary\.lbl: column 'RIGHT_ASCENSION' refers to "
+                             r"format entry 'NO_SUCH_FORMAT'"):
+        resolve_schema(tdir, 'sky')
+
+
 def test_missing_backplane_key_is_an_error(tmp_path: Path) -> None:
     """A definition without a BACKPLANE_KEY defines nothing computable."""
     host = _host_dir(tmp_path)
