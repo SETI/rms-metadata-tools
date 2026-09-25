@@ -344,7 +344,7 @@ def test_write_path_lowers_and_strips_the_grammar() -> None:
     from metadata_tools.column_grammar import (
         expand_format_references,
         merge_column_definitions,
-        strip_dividers,
+        strip_comments,
     )
     from metadata_tools.label_support import _strip_private_keywords
 
@@ -354,7 +354,7 @@ def test_write_path_lowers_and_strips_the_grammar() -> None:
     # The header $NOTEs document the grammar in prose; the shipped-label check
     # concerns keyword lines and OBJECT kinds, which prose never forms.
     lowered = _strip_private_keywords(None, merge_column_definitions(
-        None, expand_format_references(None, strip_dividers(None, fragment))))
+        None, expand_format_references(None, strip_comments(None, fragment))))
     assert not re.search(r'(?m)^ *#=', lowered)
     for keyword in label_schema.PRIVATE_KEYWORDS:
         assert not re.search(r'(?m)^ *' + keyword + r' *=', lowered), keyword
@@ -485,6 +485,17 @@ def test_a_format_entry_resolves_like_inline_keywords(tmp_path: Path) -> None:
     """Moving a column's format keywords into an entry changes nothing."""
     shipped = resolve_schema(TEMPLATE_DIR, 'sky')
     tdir = _sky_with_ra_entry(tmp_path, 'RA_FORMAT', 'RA_FORMAT')
+    assert resolve_schema(tdir, 'sky') == shipped
+
+
+def test_comments_inside_a_column_are_ignored(tmp_path: Path) -> None:
+    """A comment among a column's keywords changes nothing in the schema."""
+    shipped = resolve_schema(TEMPLATE_DIR, 'sky')
+    host = _host_dir(tmp_path)
+    tdir = _shadow_fragment(host, 'sky_summary_columns.lbl',
+                            '    NAME                        = "RIGHT_ASCENSION"\n',
+                            '    NAME                        = "RIGHT_ASCENSION"\n'
+                            '    # Right ascension spans a full circle.\n')
     assert resolve_schema(tdir, 'sky') == shipped
 
 

@@ -18,8 +18,10 @@ $NOTE
 # below); a keyword the block states itself wins over the entry's. A column
 # with a one-off format states its keywords and names no entry.
 #
-# The "#=====" divider lines before each COLUMN and COLUMN_DEFINITION are
-# for readability only; the write path removes them.
+# Comments: a line whose first non-blank character is "#" is a comment,
+# removed before the template is read or a label written -- even inside a
+# quoted DESCRIPTION, so prose must never begin a line with "#". The "#====="
+# lines dividing the COLUMN and COLUMN_DEFINITION objects are comments.
 #
 # Spec keywords, allowed on definitions only (except OVERFLOW_FORMAT, which a
 # stub may override like FORMAT):
