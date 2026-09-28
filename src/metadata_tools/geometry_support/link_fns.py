@@ -7,11 +7,11 @@ A geometry column joins a link group by declaring ``LINK_ID`` in its label
 template. Every column in a table sharing one ``LINK_ID`` forms one group, and
 the id names the group's link function: ``LINK_ID = "CENTER_COORDINATE"``
 calls ``link__center_coordinate`` (``link__`` plus the id lowercased, as a
-``key__<NAME>`` function is named in the index pipeline). The
-function is looked up here first and then in the active host's
-``geometry_config``, the same order the index pipeline uses for its key
-functions, and it is resolved when the template is read, so a
-missing one fails the run before any row is written.
+``key__<NAME>`` function is named in the index pipeline). The function is
+looked up here first and then in the active host's ``geometry_config``, the
+same order the index pipeline uses for its key functions, and it is resolved
+when the template is read, so a missing one fails the run before any row is
+written.
 
 A link function receives the group as a mapping from each value's column NAME
 to its :class:`LinkedField` -- a minimum/maximum column contributes both of its
