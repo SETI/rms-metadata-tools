@@ -42,8 +42,13 @@ from dataclasses import dataclass
 # appear on a stub as an override), and COLUMN_FORMAT, the format-dictionary
 # reference, which expansion always consumes. label_support strips exactly
 # this set from generated labels; tests pin the two against each other.
-PRIVATE_KEYWORDS = ('BACKPLANE_KEY', 'MASK', 'OVERFLOW_FORMAT', 'LINK_FN',
-                    'LINK_ID', 'COLUMN_FORMAT')
+PRIVATE_KEYWORDS = ('BACKPLANE_KEY', 'MASK', 'OVERFLOW_FORMAT', 'LINK_ID',
+                    'COLUMN_FORMAT')
+
+# Retired grammar, still swept from generated labels: VALUES (group size is
+# now the stub count) and LINK_FN (LINK_ID now names the link function). The
+# schema read rejects LINK_FN loudly.
+RETIRED_KEYWORDS = ('VALUES', 'LINK_FN')
 
 # The keywords a COLUMN_FORMAT entry may carry besides its NAME: label format
 # metadata only. Nothing else -- not a DESCRIPTION, a computation spec
@@ -55,9 +60,8 @@ FORMAT_ENTRY_KEYWORDS = frozenset({
     'VALID_MINIMUM', 'VALID_MAXIMUM'})
 
 # Keywords that never reach a merged COLUMN: the private set, the retired
-# VALUES keyword (group size is now the stub count), and NAME, which every
-# stub states for itself.
-_NOT_MERGED = frozenset(PRIVATE_KEYWORDS) | {'VALUES', 'NAME'}
+# keywords, and NAME, which every stub states for itself.
+_NOT_MERGED = frozenset(PRIVATE_KEYWORDS + RETIRED_KEYWORDS) | {'NAME'}
 
 # One OBJECT block of any of the four column-grammar kinds. The alternation
 # tries the longer names first, and the END_OBJECT backreference guarantees
@@ -72,10 +76,10 @@ _BLOCK_RE = re.compile(
 _STRAY_OBJECT_RE = re.compile(
     r'(?m)^ *OBJECT *= *(COLUMN_DEFINITION|COLUMN_FORMAT|COLUMN_STUB|COLUMN) *\r?$')
 
-# A spec keyword line (the retired VALUES included), for removal from plain
+# A spec keyword line (the retired keywords included), for removal from plain
 # COLUMN objects at lowering time.
 _PRIVATE_LINE_RE = re.compile(
-    r'(?m)^ *(' + '|'.join(PRIVATE_KEYWORDS + ('VALUES',)) + r') *=[^\r\n]*\r?\n')
+    r'(?m)^ *(' + '|'.join(PRIVATE_KEYWORDS + RETIRED_KEYWORDS) + r') *=[^\r\n]*\r?\n')
 
 # One "keyword = value" line, including its terminator. Matched with
 # .match(body, pos) where pos is always a line start, so no ^ anchor (which

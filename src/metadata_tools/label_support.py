@@ -14,6 +14,7 @@ import metadata_tools.defs as defs
 import metadata_tools.util as util
 from metadata_tools.column_grammar import (
     PRIVATE_KEYWORDS,
+    RETIRED_KEYWORDS,
     expand_format_references,
     merge_column_definitions,
     strip_comments,
@@ -23,11 +24,11 @@ from metadata_tools.column_grammar import (
 # paths share. They are not PDS3 Data Dictionary keywords, so they must never
 # reach a shipped label. merge_column_definitions already keeps them out of
 # merged columns; this line-level strip is the belt-and-braces for one written
-# directly on a plain COLUMN. VALUES is retired grammar, swept up for free.
+# directly on a plain COLUMN. Retired grammar is swept up for free.
 # The line-start anchor matches the schema reader's, so the read and strip can
 # never disagree about what is a keyword line.
 _PRIVATE_KEYWORD_RE = re.compile(
-    r'^ *(' + '|'.join(PRIVATE_KEYWORDS + ('VALUES',)) + r') *=[^\n]*\n',
+    r'^ *(' + '|'.join(PRIVATE_KEYWORDS + RETIRED_KEYWORDS) + r') *=[^\n]*\n',
     re.MULTILINE)
 
 
