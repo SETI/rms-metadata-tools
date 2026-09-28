@@ -134,7 +134,7 @@ carrying the shared label metadata (FORMAT hence width/print format, UNIT hence 
 conversion, NULL_CONSTANT, valid range, OVERFLOW_FORMAT) and the computation spec
 (`BACKPLANE_KEY` and `MASK` as Python literals parsed with `ast.literal_eval`, the
 `'bodyx'` token substituted per body at run time; `LINK_ID` naming the column's link group
-and, as `link_<id>_fn()` in `geometry_support/link_fns.py` or the host's `geometry_config`,
+and, as `link__<id>()` in `geometry_support/link_fns.py` or the host's `geometry_config`,
 the group's postprocess function) —
 and the shared lead-in DESCRIPTION — followed by one `COLUMN_STUB` object per value,
 carrying its NAME, its own per-value DESCRIPTION (appended to the definition's at write

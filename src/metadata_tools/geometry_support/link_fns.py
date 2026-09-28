@@ -5,11 +5,12 @@
 
 A geometry column joins a link group by declaring ``LINK_ID`` in its label
 template. Every column in a table sharing one ``LINK_ID`` forms one group, and
-the id names the group's link function: ``LINK_ID = "LINK_CENTER_COORDINATE"``
-calls ``link_center_coordinate_fn`` (the id lowercased, plus ``_fn``). The
+the id names the group's link function: ``LINK_ID = "CENTER_COORDINATE"``
+calls ``link__center_coordinate`` (``link__`` plus the id lowercased, as a
+``key__<NAME>`` function is named in the index pipeline). The
 function is looked up here first and then in the active host's
-``geometry_config``, the same order the index pipeline uses for its
-``key__<NAME>`` functions, and it is resolved when the template is read, so a
+``geometry_config``, the same order the index pipeline uses for its key
+functions, and it is resolved when the template is read, so a
 missing one fails the run before any row is written.
 
 A link function receives the group as a mapping from each value's column NAME
@@ -85,8 +86,8 @@ def null_together(group: LinkGroup) -> None:
 #===============================================================================
 # Link functions, one per LINK_ID
 #===============================================================================
-def link_center_coordinate_fn(group: LinkGroup) -> None:
-    """LINK_CENTER_COORDINATE: a centre is reported whole or not at all.
+def link__center_coordinate(group: LinkGroup) -> None:
+    """CENTER_COORDINATE: a centre is reported whole or not at all.
 
     Parameters:
         group: The centre X and Y coordinates.
@@ -101,12 +102,12 @@ def function_name(link_id: str) -> str:
     """Return the name of the link function a LINK_ID calls.
 
     Parameters:
-        link_id: The LINK_ID, e.g. ``'LINK_CENTER_COORDINATE'``.
+        link_id: The LINK_ID, e.g. ``'CENTER_COORDINATE'``.
 
     Returns:
-        The function name, e.g. ``'link_center_coordinate_fn'``.
+        The function name, e.g. ``'link__center_coordinate'``.
     """
-    return link_id.lower() + '_fn'
+    return 'link__' + link_id.lower()
 
 
 def find_link_function(link_id: str) -> LinkFunction | None:

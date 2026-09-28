@@ -36,8 +36,8 @@ $NOTE
 #                   in PDS3 FORMAT notation
 #   LINK_ID       = an identifier naming the column's link group; the
 #                   columns in a table sharing it are postprocessed together
-#                   by the link function it names: LINK_ID "LINK_X" calls
-#                   link_x_fn(), from geometry_support/link_fns.py or the
+#                   by the link function it names: LINK_ID "X" calls
+#                   link__x(), from geometry_support/link_fns.py or the
 #                   host's geometry_config
 #
 # The right-hand side of BACKPLANE_KEY and MASK is a Python literal on a
