@@ -2,7 +2,7 @@
 # geometry_support/record.py - The Record class (one geometry table row).
 ################################################################################
 """Geometry record class for accumulating per-row column values."""
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from dataclasses import replace as dataclass_replace
 from typing import TYPE_CHECKING, Any
 
@@ -13,6 +13,7 @@ import metadata_tools.defs as defs
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support import bodies_select, formats, prep
+from metadata_tools.geometry_support.link_fns import LinkedField, LinkFunction
 
 if TYPE_CHECKING:
     from metadata_tools.geometry_support.label_schema import ResolvedColumn
@@ -124,6 +125,9 @@ class Record:
                     resolved: Sequence['ResolvedColumn']) -> list[str]:
         """Process the completed record.
 
+        Calls each link group's link function (see
+        :mod:`metadata_tools.geometry_support.link_fns`) on the group's values.
+
         Parameters:
             columns: One str for each column, prefix columns included.
             resolved: The table's resolved columns, describing the data columns
@@ -131,54 +135,42 @@ class Record:
 
         Returns:
             The processed columns.
+
+        Raises:
+            RuntimeError: If a linked column's field count disagrees with its
+                number of values.
         """
-
-        def link_null(indices: list[int], null_value: Any,
-                      data_columns: list[str]) -> list[str]:
-            """Null every column in a link group if any one of them is null.
-
-            Parameters:
-                indices: Positions of the linked columns within data_columns.
-                null_value: The null value shared by the group.
-                data_columns: Column values.
-
-            Returns:
-                The updated data columns.
-            """
-            for i in indices:
-                val = data_columns[i]
-                if float(val) == null_value:
-                    for j in indices:
-                        data_columns[j] = val
-                    break
-
-            return data_columns
-
-        _link_dispatch: dict[str, Callable[[list[int], Any, list[str]], list[str]]] = {
-            'null': link_null,
-        }
-
-        # Group the data-column positions by link function and link id.
-        #
-        # These are positions in the *row*, which holds one entry per column,
-        # not per value: prep_row appends a single string per column, and a
-        # min/max column's two values are already comma-joined inside it. So a
-        # column advances the position by one however many values it carries.
-        groups: dict[tuple[str, str], tuple[list[int], Any]] = {}
-        for position, column in enumerate(resolved):
-            if column.link_id:
-                indices, _null = groups.setdefault((column.link_fn, column.link_id),
-                                                   ([], column.stubs[0].null_value))
-                indices.append(position)
-
         ndata = len(resolved)
         if not ndata:
             return columns
         data_columns = columns[-ndata:]
 
-        # Call link functions
-        for (link_fn, _link_id), (indices, null_value) in groups.items():
-            data_columns = _link_dispatch[link_fn](indices, null_value, data_columns)
+        # Gather each link group's fields, keyed by the group's LINK_ID.
+        #
+        # data_columns holds one entry per column, not per value: prep_row
+        # appends a single string per column, and a min/max column's two values
+        # are already comma-joined inside it. Each is split into one field per
+        # value, so a link function sees every value under its own NAME.
+        groups: dict[str, tuple[LinkFunction, list[tuple[int, list[LinkedField]]]]] = {}
+        for position, column in enumerate(resolved):
+            if column.link_fn is None:
+                continue
+            texts = data_columns[position].split(',')
+            if len(texts) != len(column.stubs):
+                raise RuntimeError(
+                    f'linked column {column.stubs[0].name!r} holds {len(texts)} '
+                    f'comma-separated fields for {len(column.stubs)} values')
+            fields = [LinkedField(stub, text)
+                      for stub, text in zip(column.stubs, texts, strict=True)]
+            groups.setdefault(column.link_id, (column.link_fn, []))[1].append(
+                (position, fields))
+
+        # Call each group's link function, then write its fields back.
+        for link_fn, members in groups.values():
+            link_fn({field.stub.name: field
+                     for _position, fields in members for field in fields})
+            for position, fields in members:
+                data_columns[position] = ','.join(field.text for field in fields)
 
         # Substitute new data columns
         columns[-ndata:] = data_columns

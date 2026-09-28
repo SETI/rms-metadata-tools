@@ -114,12 +114,15 @@ def test_only_the_centre_coordinates_are_linked() -> None:
 
 
 def test_linked_columns_share_a_group_within_a_qualifier() -> None:
-    """Columns that go null together carry the same link function and id."""
+    """Columns that go null together share one LINK_ID and its function."""
+    from metadata_tools.geometry_support import link_fns
+
     for qualifier in sorted(SHIPPED):
-        groups = {(column.link_fn, column.link_id)
+        groups = {(column.link_id, column.link_fn)
                   for column in resolve_schema(TEMPLATE_DIR, qualifier).columns
                   if column.link_id}
-        assert len(groups) <= 1, f'{qualifier} has several link groups: {groups}'
+        assert groups <= {('LINK_CENTER_COORDINATE',
+                           link_fns.link_center_coordinate_fn)}, qualifier
 
 
 def test_sunward_and_prograde_incidence_differ() -> None:
@@ -691,29 +694,49 @@ def test_short_key_is_an_error(tmp_path: Path) -> None:
         resolve_schema(tdir, 'sky')
 
 
-def test_half_specified_link_is_an_error(tmp_path: Path) -> None:
-    """LINK_FN and LINK_ID must be given together or not at all."""
+def _sky_with_link(tmp_path: Path, lines: str) -> FCPath:
+    """Shadow the sky fragment with RIGHT_ASCENSION carrying extra spec lines."""
     host = _host_dir(tmp_path)
-    tdir = _shadow_fragment(
+    return _shadow_fragment(
         host, 'sky_summary_columns.lbl',
         "    BACKPLANE_KEY               = ('right_ascension', ())\n",
-        "    BACKPLANE_KEY               = ('right_ascension', ())\n"
-        '    LINK_ID                     = "LINK-X"\n')
-    with pytest.raises(RuntimeError, match='must be given together'):
+        "    BACKPLANE_KEY               = ('right_ascension', ())\n" + lines)
+
+
+def test_the_retired_link_fn_is_an_error(tmp_path: Path) -> None:
+    """LINK_FN is retired: LINK_ID alone names the link function."""
+    tdir = _sky_with_link(tmp_path, '    LINK_FN                     = "null"\n'
+                                    '    LINK_ID                     = "LINK_CENTER_COORDINATE"\n')
+    with pytest.raises(RuntimeError, match='declares LINK_FN, which is retired'):
         resolve_schema(tdir, 'sky')
 
 
-def test_unknown_link_function_is_an_error(tmp_path: Path) -> None:
-    """A LINK_FN postprocess cannot dispatch fails at parse time, not add time."""
-    host = _host_dir(tmp_path)
-    tdir = _shadow_fragment(
-        host, 'sky_summary_columns.lbl',
-        "    BACKPLANE_KEY               = ('right_ascension', ())\n",
-        "    BACKPLANE_KEY               = ('right_ascension', ())\n"
-        '    LINK_FN                     = "bogus"\n'
-        '    LINK_ID                     = "LINK-X"\n')
-    with pytest.raises(RuntimeError, match='not a known link function'):
+def test_a_link_id_must_be_an_identifier(tmp_path: Path) -> None:
+    """A LINK_ID names a function, so the old hyphenated form is rejected."""
+    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "LINK-X"\n')
+    with pytest.raises(RuntimeError, match="LINK_ID 'LINK-X', which is not an identifier"):
         resolve_schema(tdir, 'sky')
+
+
+def test_a_link_id_without_a_function_is_an_error(tmp_path: Path) -> None:
+    """A group whose function exists nowhere fails at parse time, not add time."""
+    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "LINK_NOWHERE"\n')
+    with pytest.raises(RuntimeError, match=r'no link function link_nowhere_fn\(\)'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_a_host_may_define_a_link_function(tmp_path: Path,
+                                           monkeypatch: pytest.MonkeyPatch) -> None:
+    """A LINK_ID whose function only the host defines resolves to the host's."""
+    from metadata_tools.config import get_geometry_config
+
+    def link_ra_fn(group: Any) -> None:
+        """A host-defined link function."""
+
+    monkeypatch.setattr(get_geometry_config(), 'link_ra_fn', link_ra_fn, raising=False)
+    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "LINK_RA"\n')
+    ra = resolve_schema(tdir, 'sky').columns[0]
+    assert (ra.link_id, ra.link_fn) == ('LINK_RA', link_ra_fn)
 
 
 def test_private_keyword_on_prefix_column_is_an_error(tmp_path: Path) -> None:

@@ -42,9 +42,11 @@ $NOTE
 #                   face D/N; omitted when no mask applies
 #   OVERFLOW_FORMAT = the fallback format when a value overflows the field,
 #                   in PDS3 FORMAT notation
-#   LINK_FN / LINK_ID = a postprocess function applied jointly to the
-#                   columns sharing the id ('null' nulls the group together);
-#                   the id's only meaning is equality
+#   LINK_ID       = an identifier naming the column's link group; the
+#                   columns in a table sharing it are postprocessed together
+#                   by the link function it names: LINK_ID "LINK_X" calls
+#                   link_x_fn(), from geometry_support/link_fns.py or the
+#                   host's geometry_config
 #
 # The right-hand side of BACKPLANE_KEY and MASK is a Python literal on a
 # single line; nothing ever parses these lines as ODL.
@@ -806,8 +808,7 @@ $ONCE(night_override = False)
   OBJECT                        = COLUMN
     NAME                        = CENTER_X_COORDINATE
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
-    LINK_FN                     = "null"
-    LINK_ID                     = "LINK-CENTER_COORDINATE"
+    LINK_ID                     = "LINK_CENTER_COORDINATE"
     BACKPLANE_KEY               = ('center_coordinate', 'bodyx', 'u')
     DESCRIPTION                 = "Center X coordinate is the predicted
       horizontal coordinate of the center of the body within this data
@@ -821,8 +822,7 @@ $ONCE(night_override = False)
   OBJECT                        = COLUMN
     NAME                        = CENTER_Y_COORDINATE
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
-    LINK_FN                     = "null"
-    LINK_ID                     = "LINK-CENTER_COORDINATE"
+    LINK_ID                     = "LINK_CENTER_COORDINATE"
     BACKPLANE_KEY               = ('center_coordinate', 'bodyx', 'v')
     DESCRIPTION                 = "Center Y coordinate is the predicted
       vertical coordinate of the center of the body within this data
