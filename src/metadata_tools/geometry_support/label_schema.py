@@ -17,7 +17,7 @@ stub's own object type. Any block may take its label format keywords from a
 format-dictionary entry (``COLUMN_FORMAT``), expanded before the schema is read;
 see :func:`metadata_tools.column_grammar.expand_format_references`.
 
-The spec keywords (``BACKPLANE_KEY``, ``MASK``, ``LINK_FN``, ``LINK_ID``, and
+The spec keywords (``BACKPLANE_KEY``, ``MASK``, ``LINK_ID``, and
 ``OVERFLOW_FORMAT``) are not PDS3 keywords, and neither are the definition
 and stub blocks themselves: the label write path lowers every group to plain
 ``COLUMN`` objects and drops the spec keywords (see
@@ -26,7 +26,9 @@ and stub blocks themselves: the label write path lowers every group to plain
 label. The right-hand side of ``BACKPLANE_KEY`` and ``MASK`` is a Python
 literal -- these lines are never parsed as ODL by anything -- while
 ``OVERFLOW_FORMAT`` uses the same PDS3 FORMAT notation as the FORMAT keyword
-and ``LINK_FN``/``LINK_ID`` hold quoted strings.
+and ``LINK_ID`` holds a quoted identifier naming the column's link group and,
+through it, the group's link function (see
+:mod:`metadata_tools.geometry_support.link_fns`).
 
 This mirrors :class:`metadata_tools.index_support.table.IndexTable`, which
 already derives its columns from its own template.
@@ -47,9 +49,9 @@ from pdstemplate.pds3table import Pds3Table
 
 import metadata_tools.defs as defs
 from metadata_tools import column_grammar
-
-# Re-exported: tests and callers reach the keyword set through this module.
-from metadata_tools.column_grammar import PRIVATE_KEYWORDS as PRIVATE_KEYWORDS
+from metadata_tools.column_grammar import PRIVATE_KEYWORDS as PRIVATE_KEYWORDS  # re-export
+from metadata_tools.geometry_support import link_fns
+from metadata_tools.geometry_support.link_fns import LinkFunction
 
 # The prefix columns each table kind writes ahead of its geometry columns, in
 # order. These come from Record.prefixes and prep.append_body_prefix, not from
@@ -68,10 +70,10 @@ _NULL_KEYWORDS = ('NULL_CONSTANT', 'UNKNOWN_CONSTANT', 'INVALID_CONSTANT',
 
 # The keywords only a COLUMN_DEFINITION may carry. OVERFLOW_FORMAT is not
 # among them: it is format metadata, so a stub may override it like FORMAT.
-_DEFINITION_ONLY = ('BACKPLANE_KEY', 'MASK', 'LINK_FN', 'LINK_ID')
+_DEFINITION_ONLY = ('BACKPLANE_KEY', 'MASK', 'LINK_ID')
 
-# The link functions Record.postprocess can dispatch to.
-_LINK_FUNCTIONS = frozenset({'null'})
+# A LINK_ID: an identifier, because it names the group's link function.
+_LINK_ID_RE = re.compile(r'^[A-Z][A-Z0-9_]*$')
 
 # "F12.3" -> ("F", "12", "3");  "A23" -> ("A", "23", None)
 _FORMAT_RE = re.compile(r'^([FAEI])(\d+)(?:\.(\d+))?$')
@@ -143,21 +145,28 @@ class ResolvedColumn:
         mask: ``(masker, shadower, face)``. The masker and shadower strings
             concatenate ``"P"`` (planet), ``"R"`` (rings), and ``"M"`` (blocker
             body); the face is ``"D"``, ``"N"``, or ``""``.
-        link_fn: The postprocess function applied jointly to the columns
-            sharing ``link_id`` (``'null'`` nulls the group together), or
-            ``''`` when the column is unlinked.
-        link_id: The token naming the column's link group, or ``''`` when
-            unlinked. Its only meaning is equality: columns in one table
-            sharing ``(link_fn, link_id)`` form one group.
+        link_id: The LINK_ID naming the column's link group, or ``''`` when
+            the column is unlinked. Columns in one table sharing it form one
+            group.
+        link_fn: The group's link function, which the LINK_ID names, or None
+            when the column is unlinked.
         stubs: The label metadata for each value this column produces, in slot
             order.
+
+    Raises:
+        ValueError: If exactly one of ``link_id`` and ``link_fn`` is given.
     """
 
     key: tuple[Any, ...]
     mask: tuple[str, str, str]
-    link_fn: str = ''
     link_id: str = ''
+    link_fn: LinkFunction | None = None
     stubs: tuple[ColumnStub, ...] = ()
+
+    def __post_init__(self) -> None:
+        """Check that a column is linked by both an id and a function, or neither."""
+        if bool(self.link_id) != (self.link_fn is not None):
+            raise ValueError('a linked column needs both a link_id and a link_fn')
 
 
 #===============================================================================
@@ -518,20 +527,26 @@ def _resolve_group(definition: 'column_grammar.Block',
                 f'{template}: {noun} {def_name!r} MASK must be a tuple of three '
                 f'strings (masker, shadower, face), not {mask!r}')
 
-    link_fn = def_view.raw('LINK_FN')
-    link_id = def_view.raw('LINK_ID')
-    if (link_fn is None) != (link_id is None):
+    if def_view.raw('LINK_FN') is not None:
         raise RuntimeError(
-            f'{template}: {noun} {def_name!r} declares only one of LINK_FN and '
-            f'LINK_ID; they must be given together or not at all')
-    if link_fn is not None:
-        link_fn = link_fn.strip().strip('"')
-        link_id = str(link_id).strip().strip('"')
-        if link_fn not in _LINK_FUNCTIONS:
+            f'{template}: {noun} {def_name!r} declares LINK_FN, which is retired: '
+            f'the link function is now named by LINK_ID alone')
+    link_id = ''
+    link_fn: LinkFunction | None = None
+    link_id_raw = def_view.raw('LINK_ID')
+    if link_id_raw is not None:
+        link_id = link_id_raw.strip().strip('"')
+        if not _LINK_ID_RE.match(link_id):
             raise RuntimeError(
-                f'{template}: {noun} {def_name!r} declares LINK_FN {link_fn!r}, '
-                f'which is not a known link function; known functions are '
-                f'{sorted(_LINK_FUNCTIONS)}')
+                f'{template}: {noun} {def_name!r} declares LINK_ID {link_id!r}, '
+                f'which is not an identifier (capitals, digits, and underscores); '
+                f'it names the link function, so it must be one')
+        link_fn = link_fns.find_link_function(link_id)
+        if link_fn is None:
+            raise RuntimeError(
+                f'{template}: {noun} {def_name!r} declares LINK_ID {link_id!r}, '
+                f'but no link function {link_fns.function_name(link_id)}() is '
+                f'defined in {link_fns.__name__} or the host geometry_config')
 
     column_stubs: list[ColumnStub] = []
     if not stubs:
@@ -567,8 +582,7 @@ def _resolve_group(definition: 'column_grammar.Block',
                 f'(VALID_MINIMUM == VALID_MAXIMUM == {stub.valid_minimum}), which '
                 f'would null every value. Omit both to skip the range check.')
 
-    return ResolvedColumn(key=key, mask=mask,
-                          link_fn=link_fn or '', link_id=link_id or '',
+    return ResolvedColumn(key=key, mask=mask, link_id=link_id, link_fn=link_fn,
                           stubs=tuple(column_stubs))
 
 
@@ -619,8 +633,9 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
         RuntimeError: If the prefix columns do not match or carry a spec
             keyword, a column among the groups carries no BACKPLANE_KEY, a
             stub has no definition, a definition has no stubs or more than
-            two, a spec keyword is malformed, only one of LINK_FN and LINK_ID
-            is given, LINK_FN is unknown, a group's stubs derive different
+            two, a spec keyword is malformed, the retired LINK_FN appears, a
+            LINK_ID is not an identifier or names no link function, a group's
+            stubs derive different
             conversions, a column omits its null value or FORMAT, declares an
             unrecognized unit or an empty valid range, or an overflow format
             does not fill its field.

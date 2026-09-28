@@ -115,15 +115,9 @@ which a stub may override like ``FORMAT``):
 * ``OVERFLOW_FORMAT`` -- the fallback format substituted when a value will not
   fit its field, in the same PDS3 FORMAT notation as ``FORMAT`` itself. It
   must fill the field exactly.
-* ``LINK_FN`` / ``LINK_ID`` -- a postprocessing function applied jointly to a
-  group of columns, and the token naming the group. The id is an arbitrary
-  string whose only meaning is equality: columns in one table sharing
-  ``(LINK_FN, LINK_ID)`` form one group. ``'null'`` -- which nulls the whole
-  group when any member is null -- is the one link function defined so far; a
-  new one is added to the dispatch table in
-  :meth:`~metadata_tools.geometry_support.record.Record.postprocess` and to
-  the known-function set in
-  :mod:`~metadata_tools.geometry_support.label_schema`.
+* ``LINK_ID`` -- an identifier naming the column's link group: the columns in
+  one table sharing it are postprocessed together by the group's link
+  function, which the id names (see `Link functions`_ below).
 
 The right-hand side of ``BACKPLANE_KEY`` and ``MASK`` is a Python literal on a
 single line, parsed with :func:`ast.literal_eval`; nothing ever parses these
@@ -184,6 +178,35 @@ This is the same arrangement as the index pipeline, where
 its own template -- here the template also carries the computation, so a host
 can define a column end to end with no engine edit.
 
+Link functions
+--------------
+
+Some columns must be postprocessed together: the centre X and Y coordinates,
+for instance, are reported whole or not at all. Each such column declares
+``LINK_ID``, and the columns in one table sharing a ``LINK_ID`` form a link
+group. The id names the group's **link function** -- ``link__`` plus the id
+lowercased, as a ``key__<NAME>`` function is named in the index pipeline -- so
+``LINK_ID = "CENTER_COORDINATE"`` calls
+:func:`~metadata_tools.geometry_support.link_fns.link__center_coordinate`.
+The function is looked up in :mod:`~metadata_tools.geometry_support.link_fns`
+first and then in the host's ``geometry_config``, the same order the index
+pipeline uses for ``key__<NAME>`` functions, and it is resolved when the
+template is read, so a missing one fails the run before any row is written.
+
+:meth:`~metadata_tools.geometry_support.record.Record.postprocess` hands each
+function its group as a mapping from each value's column ``NAME`` to a
+:class:`~metadata_tools.geometry_support.link_fns.LinkedField` -- a
+minimum/maximum column contributes both values -- and the function edits the
+fields in place. Every field carries its own label metadata, so the group's
+columns need not agree on a null value or a width:
+:meth:`~metadata_tools.geometry_support.link_fns.LinkedField.set_null` writes
+each column's own null, formatted as the column formats any value. Behaviour
+shared by several groups lives in a generic helper such as
+:func:`~metadata_tools.geometry_support.link_fns.null_together`, which a
+group's function calls; the per-group function is where anything specific to
+that group goes. Adding a link group therefore means choosing a ``LINK_ID``
+and defining its function.
+
 Label schema pull
 =================
 
@@ -208,7 +231,8 @@ than allowed to misalign a row per observation:
   or a stub;
 * a definition with no ``BACKPLANE_KEY``, a malformed spec literal, or a
   duplicated keyword;
-* only one of ``LINK_FN`` and ``LINK_ID``, or an unknown link function;
+* the retired ``LINK_FN``, a ``LINK_ID`` that is not an identifier, or one
+  whose link function is defined nowhere;
 * an ``OVERFLOW_FORMAT`` that does not fill its field exactly;
 * a column with no null keyword, or with no ``FORMAT``;
 * ``VALID_MINIMUM == VALID_MAXIMUM``, which would null every value.

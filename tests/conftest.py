@@ -204,13 +204,14 @@ def make_column(make_stub: Callable[..., Any]) -> Callable[..., Any]:
     def _make(key: tuple[Any, ...] = ('phase_angle', 'IO'),
               mask: tuple[str, str, str] = ('', '', ''),
               names: Sequence[str] = ('MINIMUM_PHASE_ANGLE', 'MAXIMUM_PHASE_ANGLE'),
-              overflow: str | None = None, link_fn: str = '', link_id: str = '',
+              overflow: str | None = None, link_id: str = '',
+              link_fn: Callable[..., None] | None = None,
               **stub_kwargs: Any) -> ResolvedColumn:
         # flag and unit belong to the stub: they are derived from the label.
         stub_kwargs.setdefault('flag', 'DEG')
         stubs = tuple(make_stub(name=name, overflow_format=overflow, **stub_kwargs)
                       for name in names)
-        return ResolvedColumn(key=key, mask=mask, link_fn=link_fn, link_id=link_id,
+        return ResolvedColumn(key=key, mask=mask, link_id=link_id, link_fn=link_fn,
                               stubs=stubs)
 
     return _make
