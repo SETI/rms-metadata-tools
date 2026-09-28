@@ -136,9 +136,9 @@ table-level boilerplate.
    name goes), ``MASK`` if any bodies mask it, ``OVERFLOW_FORMAT`` (in PDS3
    FORMAT notation) if a value can outgrow its field, and ``LINK_ID`` if a
    postprocessing rule ties the column to others. A ``LINK_ID`` names its link
-   function: ``LINK_X`` calls ``link_x_fn()``, which must exist in
+   function: ``X`` calls ``link__x()``, which must exist in
    ``geometry_support/link_fns.py`` or the host's ``geometry_config``
-   (``LINK_CENTER_COORDINATE``, the one group so far, nulls the whole group
+   (``CENTER_COORDINATE``, the one group so far, nulls the whole group
    when any member is null).
 #. Follow it with one ``COLUMN_STUB`` object per value -- minimum then
    maximum -- each declaring

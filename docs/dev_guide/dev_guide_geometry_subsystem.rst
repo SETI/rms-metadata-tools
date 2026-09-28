@@ -184,9 +184,10 @@ Link functions
 Some columns must be postprocessed together: the centre X and Y coordinates,
 for instance, are reported whole or not at all. Each such column declares
 ``LINK_ID``, and the columns in one table sharing a ``LINK_ID`` form a link
-group. The id names the group's **link function** -- lowercased, plus ``_fn``,
-so ``LINK_ID = "LINK_CENTER_COORDINATE"`` calls
-:func:`~metadata_tools.geometry_support.link_fns.link_center_coordinate_fn`.
+group. The id names the group's **link function** -- ``link__`` plus the id
+lowercased, as a ``key__<NAME>`` function is named in the index pipeline -- so
+``LINK_ID = "CENTER_COORDINATE"`` calls
+:func:`~metadata_tools.geometry_support.link_fns.link__center_coordinate`.
 The function is looked up in :mod:`~metadata_tools.geometry_support.link_fns`
 first and then in the host's ``geometry_config``, the same order the index
 pipeline uses for ``key__<NAME>`` functions, and it is resolved when the

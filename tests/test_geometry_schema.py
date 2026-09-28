@@ -121,8 +121,8 @@ def test_linked_columns_share_a_group_within_a_qualifier() -> None:
         groups = {(column.link_id, column.link_fn)
                   for column in resolve_schema(TEMPLATE_DIR, qualifier).columns
                   if column.link_id}
-        assert groups <= {('LINK_CENTER_COORDINATE',
-                           link_fns.link_center_coordinate_fn)}, qualifier
+        assert groups <= {('CENTER_COORDINATE',
+                           link_fns.link__center_coordinate)}, qualifier
 
 
 def test_sunward_and_prograde_incidence_differ() -> None:
@@ -706,22 +706,23 @@ def _sky_with_link(tmp_path: Path, lines: str) -> FCPath:
 def test_the_retired_link_fn_is_an_error(tmp_path: Path) -> None:
     """LINK_FN is retired: LINK_ID alone names the link function."""
     tdir = _sky_with_link(tmp_path, '    LINK_FN                     = "null"\n'
-                                    '    LINK_ID                     = "LINK_CENTER_COORDINATE"\n')
+                                    '    LINK_ID                     = "CENTER_COORDINATE"\n')
     with pytest.raises(RuntimeError, match='declares LINK_FN, which is retired'):
         resolve_schema(tdir, 'sky')
 
 
 def test_a_link_id_must_be_an_identifier(tmp_path: Path) -> None:
-    """A LINK_ID names a function, so the old hyphenated form is rejected."""
-    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "LINK-X"\n')
-    with pytest.raises(RuntimeError, match="LINK_ID 'LINK-X', which is not an identifier"):
+    """A LINK_ID names a function, so it must be an identifier."""
+    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "CENTER-COORDINATE"\n')
+    with pytest.raises(RuntimeError,
+                       match="LINK_ID 'CENTER-COORDINATE', which is not an identifier"):
         resolve_schema(tdir, 'sky')
 
 
 def test_a_link_id_without_a_function_is_an_error(tmp_path: Path) -> None:
     """A group whose function exists nowhere fails at parse time, not add time."""
-    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "LINK_NOWHERE"\n')
-    with pytest.raises(RuntimeError, match=r'no link function link_nowhere_fn\(\)'):
+    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "NOWHERE"\n')
+    with pytest.raises(RuntimeError, match=r'no link function link__nowhere\(\)'):
         resolve_schema(tdir, 'sky')
 
 
@@ -730,13 +731,13 @@ def test_a_host_may_define_a_link_function(tmp_path: Path,
     """A LINK_ID whose function only the host defines resolves to the host's."""
     from metadata_tools.config import get_geometry_config
 
-    def link_ra_fn(group: Any) -> None:
+    def link__ra(group: Any) -> None:
         """A host-defined link function."""
 
-    monkeypatch.setattr(get_geometry_config(), 'link_ra_fn', link_ra_fn, raising=False)
-    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "LINK_RA"\n')
+    monkeypatch.setattr(get_geometry_config(), 'link__ra', link__ra, raising=False)
+    tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "RA"\n')
     ra = resolve_schema(tdir, 'sky').columns[0]
-    assert (ra.link_id, ra.link_fn) == ('LINK_RA', link_ra_fn)
+    assert (ra.link_id, ra.link_fn) == ('RA', link__ra)
 
 
 def test_private_keyword_on_prefix_column_is_an_error(tmp_path: Path) -> None:

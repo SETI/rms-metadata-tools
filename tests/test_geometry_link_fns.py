@@ -69,55 +69,55 @@ def test_null_together_leaves_a_complete_group(make_stub: Callable[..., Any]) ->
 
 
 def test_the_centre_coordinates_null_together(make_stub: Callable[..., Any]) -> None:
-    """LINK_CENTER_COORDINATE reports a centre whole or not at all."""
+    """CENTER_COORDINATE reports a centre whole or not at all."""
     group = _group(make_stub, '-999.000', '   2.000')
-    link_fns.link_center_coordinate_fn(group)
+    link_fns.link__center_coordinate(group)
     assert [field.text for field in group.values()] == ['-999.000', '-999.000']
 
 
 #===============================================================================
 # Lookup
 #===============================================================================
-def test_function_name_lowercases_and_appends_fn() -> None:
-    """LINK_ID "LINK_CENTER_COORDINATE" calls link_center_coordinate_fn."""
-    assert link_fns.function_name('LINK_CENTER_COORDINATE') == 'link_center_coordinate_fn'
+def test_function_name_prefixes_link_to_the_lowercased_id() -> None:
+    """LINK_ID "CENTER_COORDINATE" calls link__center_coordinate."""
+    assert link_fns.function_name('CENTER_COORDINATE') == 'link__center_coordinate'
 
 
 def test_a_built_in_function_wins_over_the_host(monkeypatch: pytest.MonkeyPatch) -> None:
     """As with index key functions, the built-in takes priority."""
-    monkeypatch.setattr(get_geometry_config(), 'link_center_coordinate_fn',
+    monkeypatch.setattr(get_geometry_config(), 'link__center_coordinate',
                         lambda group: None, raising=False)
-    assert (link_fns.find_link_function('LINK_CENTER_COORDINATE')
-            is link_fns.link_center_coordinate_fn)
+    assert (link_fns.find_link_function('CENTER_COORDINATE')
+            is link_fns.link__center_coordinate)
 
 
 def test_the_host_supplies_a_function_the_built_ins_lack(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """A LINK_ID with no built-in function falls back to the host's."""
-    def link_host_fn(group: link_fns.LinkGroup) -> None:
+    def link__host(group: link_fns.LinkGroup) -> None:
         """A host-defined link function."""
 
-    monkeypatch.setattr(get_geometry_config(), 'link_host_fn', link_host_fn,
+    monkeypatch.setattr(get_geometry_config(), 'link__host', link__host,
                         raising=False)
-    assert link_fns.find_link_function('LINK_HOST') is link_host_fn
+    assert link_fns.find_link_function('HOST') is link__host
 
 
 def test_an_undefined_function_is_not_found() -> None:
     """Neither place defining it yields None."""
-    assert link_fns.find_link_function('LINK_NOWHERE') is None
+    assert link_fns.find_link_function('NOWHERE') is None
 
 
 def test_a_non_callable_host_attribute_is_not_a_function(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """Only a callable counts as a link function."""
-    monkeypatch.setattr(get_geometry_config(), 'link_data_fn', 42, raising=False)
-    assert link_fns.find_link_function('LINK_DATA') is None
+    monkeypatch.setattr(get_geometry_config(), 'link__data', 42, raising=False)
+    assert link_fns.find_link_function('DATA') is None
 
 
 #===============================================================================
 # ResolvedColumn's link invariant
 #===============================================================================
-@pytest.mark.parametrize(('link_id', 'link_fn'), [('LINK_X', None),
+@pytest.mark.parametrize(('link_id', 'link_fn'), [('X', None),
                                                   ('', link_fns.null_together)])
 def test_a_column_is_linked_by_id_and_function_together(
         link_id: str, link_fn: link_fns.LinkFunction | None) -> None:

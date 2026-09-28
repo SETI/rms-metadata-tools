@@ -55,13 +55,13 @@ def _linked_columns(make_column: Callable[..., Any]) -> list[Any]:
     """Return the two single-valued, null-linked center-coordinate columns."""
     return [make_column(key=('center_coordinate', 'IO', 'u'),
                         names=['CENTER_X_COORDINATE'], flag='', overflow='%12.5e',
-                        link_id='LINK_CENTER_COORDINATE',
-                        link_fn=link_fns.link_center_coordinate_fn,
+                        link_id='CENTER_COORDINATE',
+                        link_fn=link_fns.link__center_coordinate,
                         width=12, print_format='%12.3f', null_value=-99999.),
             make_column(key=('center_coordinate', 'IO', 'v'),
                         names=['CENTER_Y_COORDINATE'], flag='', overflow='%12.5e',
-                        link_id='LINK_CENTER_COORDINATE',
-                        link_fn=link_fns.link_center_coordinate_fn,
+                        link_id='CENTER_COORDINATE',
+                        link_fn=link_fns.link__center_coordinate,
                         width=12, print_format='%12.3f', null_value=-99999.)]
 
 
@@ -119,11 +119,11 @@ def test_postprocess_nulls_each_column_with_its_own_null(
         record_stub: Callable[..., Any], make_column: Callable[..., Any]) -> None:
     """Linked columns need not agree on their null value or width."""
     record = record_stub()
-    resolved = [make_column(names=['A'], link_id='LINK_CENTER_COORDINATE',
-                            link_fn=link_fns.link_center_coordinate_fn,
+    resolved = [make_column(names=['A'], link_id='CENTER_COORDINATE',
+                            link_fn=link_fns.link__center_coordinate,
                             width=12, print_format='%12.3f', null_value=-99999.),
-                make_column(names=['B'], link_id='LINK_CENTER_COORDINATE',
-                            link_fn=link_fns.link_center_coordinate_fn,
+                make_column(names=['B'], link_id='CENTER_COORDINATE',
+                            link_fn=link_fns.link__center_coordinate,
                             width=8, print_format='%8.3f', null_value=-999.)]
     # B is null by its own constant, which is not A's.
     columns = ['"vol"', '"file"', '      3.000', '-999.000']
@@ -140,9 +140,9 @@ def test_postprocess_splits_a_two_valued_linked_column(
         seen.append(sorted(group))
         link_fns.null_together(group)
 
-    resolved = [make_column(names=['MINIMUM_Q', 'MAXIMUM_Q'], link_id='LINK_Q',
+    resolved = [make_column(names=['MINIMUM_Q', 'MAXIMUM_Q'], link_id='Q',
                             link_fn=record_names),
-                make_column(names=['C'], link_id='LINK_Q', link_fn=record_names)]
+                make_column(names=['C'], link_id='Q', link_fn=record_names)]
     columns = ['"vol"', '"file"', '   1.000,   2.000', '-999.000']
     result = record.postprocess(columns, resolved)
     assert seen == [['C', 'MAXIMUM_Q', 'MINIMUM_Q']]
@@ -161,10 +161,10 @@ def test_postprocess_keeps_separate_link_groups_apart(
     def fn_b(group: link_fns.LinkGroup) -> None:
         null(group)
 
-    resolved = [make_column(names=['A1'], link_id='LINK_A', link_fn=fn_a),
-                make_column(names=['A2'], link_id='LINK_A', link_fn=fn_a),
-                make_column(names=['B1'], link_id='LINK_B', link_fn=fn_b),
-                make_column(names=['B2'], link_id='LINK_B', link_fn=fn_b)]
+    resolved = [make_column(names=['A1'], link_id='A', link_fn=fn_a),
+                make_column(names=['A2'], link_id='A', link_fn=fn_a),
+                make_column(names=['B1'], link_id='B', link_fn=fn_b),
+                make_column(names=['B2'], link_id='B', link_fn=fn_b)]
     columns = ['"vol"', '"file"', '-999.000', '   1.000', '   2.000', '   3.000']
     assert record.postprocess(columns, resolved)[-4:] == [
         '-999.000', '-999.000', '   2.000', '   3.000']
@@ -174,7 +174,7 @@ def test_postprocess_rejects_a_misjoined_linked_column(
         record_stub: Callable[..., Any], make_column: Callable[..., Any]) -> None:
     """A linked column whose field count disagrees with its values fails loudly."""
     record = record_stub()
-    resolved = [make_column(names=['MINIMUM_Q', 'MAXIMUM_Q'], link_id='LINK_Q',
+    resolved = [make_column(names=['MINIMUM_Q', 'MAXIMUM_Q'], link_id='Q',
                             link_fn=link_fns.null_together)]
     with pytest.raises(RuntimeError, match="'MINIMUM_Q' holds 1 comma-separated"):
         record.postprocess(['"vol"', '"file"', '   1.000'], resolved)

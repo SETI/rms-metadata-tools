@@ -44,8 +44,8 @@ $NOTE
 #                   in PDS3 FORMAT notation
 #   LINK_ID       = an identifier naming the column's link group; the
 #                   columns in a table sharing it are postprocessed together
-#                   by the link function it names: LINK_ID "LINK_X" calls
-#                   link_x_fn(), from geometry_support/link_fns.py or the
+#                   by the link function it names: LINK_ID "X" calls
+#                   link__x(), from geometry_support/link_fns.py or the
 #                   host's geometry_config
 #
 # The right-hand side of BACKPLANE_KEY and MASK is a Python literal on a
@@ -394,7 +394,7 @@ $INCLUDE('column_formats.lbl')
   OBJECT                        = COLUMN
     NAME                        = "CENTER_X_COORDINATE"
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
-    LINK_ID                     = "LINK_CENTER_COORDINATE"
+    LINK_ID                     = "CENTER_COORDINATE"
     BACKPLANE_KEY               = ('center_coordinate', 'SUN', 'x')
     DESCRIPTION                 = "Center X coordinate is the predicted
       horizontal coordinate of the center of the Sun within this data product.
@@ -407,7 +407,7 @@ $INCLUDE('column_formats.lbl')
   OBJECT                        = COLUMN
     NAME                        = "CENTER_Y_COORDINATE"
     COLUMN_FORMAT               = "PIXEL_COORDINATE"
-    LINK_ID                     = "LINK_CENTER_COORDINATE"
+    LINK_ID                     = "CENTER_COORDINATE"
     BACKPLANE_KEY               = ('center_coordinate', 'SUN', 'y')
     DESCRIPTION                 = "Center Y coordinate is the predicted
       vertical coordinate of the center of the Sun within this data product.
