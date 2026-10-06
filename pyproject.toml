@@ -181,6 +181,7 @@ ignore_missing_imports = true
 # Third-party runtime deps that ship no type stubs or py.typed marker.
 module = [
     "oops.*",
+    "hosts.*",
     "polymath.*",
     "cspyce.*",
     "fortranformat.*",

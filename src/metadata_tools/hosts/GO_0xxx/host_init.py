@@ -6,6 +6,7 @@ registry loads lazily on the first ``get_geometry_config()`` call. The body
 registry (``metadata_tools.bodies``) is built lazily on its own first call and
 needs no import here.
 """
-import oops.hosts.galileo.ssi as ssi
+from hosts.galileo.ssi import SSI
 
-ssi.initialize()
+# The new host has no public initializer yet
+SSI._initialize()

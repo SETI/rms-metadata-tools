@@ -215,6 +215,12 @@ def test_get_system_unknown_body_is_none(monkeypatch: pytest.MonkeyPatch) -> Non
     assert bodies_select.get_system('NOPE') is None
 
 
+def test_get_system_lightsource_is_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A star registered as a LightSource has no parent and so no system."""
+    monkeypatch.setattr(oops.Body, 'BODY_REGISTRY', {'SIRIUS': types.SimpleNamespace()})
+    assert bodies_select.get_system('SIRIUS') is None
+
+
 def test_get_system_root_body_is_self(monkeypatch: pytest.MonkeyPatch) -> None:
     """A root body with no parent, such as the Sun, is its own system."""
     registry = {'SUN': types.SimpleNamespace(parent=None)}

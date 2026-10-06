@@ -16,7 +16,7 @@ library. Generating geometry tables therefore requires:
 
 - The SPICE kernels for the spacecraft and bodies in your collection, installed
   where ``oops`` can find them. The host's initialization step (for example
-  ``oops.hosts.galileo.ssi.initialize()``) loads them.
+  ``hosts.galileo.ssi.SSI._initialize()``) loads them.
 - The data volume tree and the project-supplied *corrected* index files for the
   collection.
 

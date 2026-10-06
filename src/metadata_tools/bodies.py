@@ -36,7 +36,7 @@ def get_bodies_registry() -> dict[str, Any]:
     """Return the body registry, building it from SPICE on the first call.
 
     Requires the host's oops module to have been initialized
-    (e.g. ``ssi.initialize()`` in ``host_init.py``) before the first call.
+    (e.g. ``SSI._initialize()`` in ``host_init.py``) before the first call.
 
     Returns:
         Mapping from body name to its oops ``Body`` object.
