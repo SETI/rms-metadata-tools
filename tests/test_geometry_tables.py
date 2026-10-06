@@ -255,7 +255,7 @@ def test_suite_create_processes_observations(
     """create() makes, adds, and writes records for a matching observation."""
     suite = Suite.__new__(Suite)
     suite.observations = [types.SimpleNamespace(basename='C0123.IMG',
-                                                filespec='data/C0123.IMG')]
+                                                filepath='data/C0123.IMG')]
     suite.glob = 'C0*'
     suite.first = None
     suite.volume_id = 'GO_0001'
@@ -280,7 +280,7 @@ def test_suite_create_skips_glob_mismatch(
     """Observations not matching the glob are skipped entirely."""
     suite = Suite.__new__(Suite)
     suite.observations = [types.SimpleNamespace(basename='OTHER.IMG',
-                                                filespec='data/OTHER.IMG')]
+                                                filepath='data/OTHER.IMG')]
     suite.glob = 'C0*'
     suite.first = None
     suite.volume_id = 'GO_0001'
@@ -305,7 +305,7 @@ def test_suite_create_skips_pattern_mismatch(monkeypatch: pytest.MonkeyPatch) ->
     """Observations outside the --pattern selection are skipped with a warning."""
     suite = Suite.__new__(Suite)
     suite.observations = [types.SimpleNamespace(basename='C0123.IMG',
-                                                filespec='data/C0123.IMG')]
+                                                filepath='data/C0123.IMG')]
     suite.glob = 'C0*'
     suite.first = None
     suite.volume_id = 'GO_0001'
@@ -328,7 +328,7 @@ def test_suite_create_skips_pattern_mismatch(monkeypatch: pytest.MonkeyPatch) ->
 def test_suite_create_stops_at_first(monkeypatch: pytest.MonkeyPatch) -> None:
     """With first=N, create() stops after N records and examines no further files."""
     suite = Suite.__new__(Suite)
-    suite.observations = [types.SimpleNamespace(basename=name, filespec='data/' + name)
+    suite.observations = [types.SimpleNamespace(basename=name, filepath='data/' + name)
                           for name in ('C01.IMG', 'C02.IMG', 'OTHER.IMG')]
     suite.glob = 'C0*'
     suite.first = 1

@@ -33,7 +33,7 @@ The Galileo Solid-State Imaging (SSI) host.
    * - Cumulative directory
      - ``GO_0xxx/GO_0999`` (excluded from the per-volume stages)
    * - ``oops`` host module
-     - ``oops.hosts.galileo.ssi``
+     - ``hosts.galileo.ssi`` (class ``SSI``)
 
 The host's mission table maps spacecraft-clock ranges to the primary body and
 the bodies of interest for the Venus, Earth, SL9, and Jupiter phases of the
