@@ -40,9 +40,9 @@ class Record:
       ``pointing_available`` set to False, when SPICE pointing is unavailable.
     - ``bodies``: the bodies to tabulate, and ``blocker``: the target, when it is
       in the field of view and can block or shadow the others, else None.
-    - ``boxes``: the bounding box of each tabulated body, and of the primary's
-      ring system, that is in the field of view; see :meth:`backplane_for`.
-      Empty when body-specific meshgrids are disabled.
+    - ``boxes``: the bounding box of each tabulated body that is in the field
+      of view; see :meth:`backplane_for`. Empty when body-specific meshgrids
+      are disabled.
 
     Each table then calls :meth:`add` with its resolved columns to produce its
     rows for this observation.
@@ -59,8 +59,8 @@ class Record:
             meshgrids: All meshgrids associated with this host.
             sampling: Pixel sampling density.
             body_samples: Minimum number of samples across the bounding box of
-                a body or ring system; 0 to sample every table on the meshgrid
-                of the whole field of view instead.
+                a body; 0 to sample every table on the meshgrid of the whole
+                field of view instead.
         """
         self.observation = observation
         config = get_geometry_config()
@@ -107,19 +107,10 @@ class Record:
             if blocker:
                 self.blocker = blocker[0]
 
-        # Locate each body, and the primary's ring system, in the image
+        # Locate each body in the image
         self.boxes: dict[str, tuple[Any, tuple[float, float]]] = {}
         if body_samples > 0:
-            located = list(self.bodies)
-            if self.rings_present and oops.Body.exists(self.ring_system):
-                located.append(self.ring_system)
-            self.boxes = bodies_select.bounding_boxes(self, located)
-
-    #===========================================================================
-    @property
-    def ring_system(self) -> str:
-        """The name of the body bounding the primary's ring system."""
-        return self.primary + '_RING_SYSTEM'
+            self.boxes = bodies_select.bounding_boxes(self, self.bodies)
 
     #===========================================================================
     def backplane_for(self, body: str | None) -> tuple[Any, int]:
@@ -130,8 +121,8 @@ class Record:
         appears. Each such backplane is built once and then reused.
 
         Parameters:
-            body: Name of the body or ring system, or None for a quantity that
-                belongs to no body.
+            body: Name of the body, or None for a quantity that belongs to no
+                body.
 
         Returns:
             The backplane and its pixel sampling density. These are the
@@ -260,8 +251,8 @@ class Record:
             name: The body to bind the BODYX placeholder to, if the columns
                 carry one.
             target: Optionally, the target name to write into the record.
-            grid: Optionally, the body or ring system whose bounding box is to
-                be sampled; by default the whole field of view is.
+            grid: Optionally, the body whose bounding box is to be sampled; by
+                default the whole field of view is.
             ignore_shadows: True to ignore any mask constraints applicable to
                 shadowing or to the sunlit faces of surfaces.
             allow_zero_rows: True to allow the function to return no rows. If

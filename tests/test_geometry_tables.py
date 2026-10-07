@@ -72,14 +72,12 @@ def test_sun_table_add_targets_sun() -> None:
 def test_ring_table_add_only_when_rings_present() -> None:
     """RingTable.add dispatches with the primary's name when rings are present.
 
-    The row is sampled across the primary's ring system.
+    No grid is named: the ring plane is sampled across the whole field of view.
     """
     table = _with_schema(tables.RingTable(level='summary'))
-    record = RecordingRecord(primary='JUPITER', rings_present=True,
-                             ring_system='JUPITER_RING_SYSTEM')
+    record = RecordingRecord(primary='JUPITER', rings_present=True)
     table.add(record)
-    assert record.calls == [
-        (('COLS',), {'name': 'JUPITER', 'grid': 'JUPITER_RING_SYSTEM'})]
+    assert record.calls == [(('COLS',), {'name': 'JUPITER'})]
 
 
 def test_ring_table_add_skips_without_rings() -> None:

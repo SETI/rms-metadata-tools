@@ -24,7 +24,7 @@ def get_args(host: str | None = None,
         exclude: List of volumes to exclude.
         sampling: Pixel sampling density.
         body_samples: Minimum number of samples across the bounding box of a
-            body or ring system; 0 to disable body-specific meshgrids.
+            body; 0 to disable body-specific meshgrids.
 
     Returns:
         Parser containing the argument specifications.
@@ -49,11 +49,11 @@ def get_args(host: str | None = None,
     gr.add_argument('--body-samples', '-b', type=int, metavar='body_samples',
                     default=body_samples,
                     help='''Minimum number of samples across the bounding box of
-                            each body or ring system, however small it appears.''')
+                            each body, however small it appears.''')
     gr.add_argument('--no-body-meshgrids', action='store_true',
-                    help='''Sample every body and ring system on the meshgrid of
-                            the whole field of view, rather than on a meshgrid
-                            of its own.''')
+                    help='''Sample every body on the meshgrid of the whole
+                            field of view, rather than on a meshgrid of its
+                            own.''')
 
     # Return parser
     return parser
@@ -75,7 +75,7 @@ def process_tables(template_name: str,
         exclude: List of volumes to exclude.
         sampling: Pixel sampling density.
         body_samples: Minimum number of samples across the bounding box of a
-            body or ring system; 0 to disable body-specific meshgrids.
+            body; 0 to disable body-specific meshgrids.
         glob: Glob pattern for data files.
         index_glob: Glob pattern for index files.
         args: Parsed arguments.
