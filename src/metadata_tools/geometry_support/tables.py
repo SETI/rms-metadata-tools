@@ -193,7 +193,7 @@ class RingTable(com.Table):
         """Add a Ring row.
 
         A row is added only when the record has a primary body and that primary
-        has rings. The row is sampled across the primary's ring system.
+        has rings.
 
         Parameters:
             record: Record describing the row to add.
@@ -203,8 +203,7 @@ class RingTable(com.Table):
         if record.primary:
             if record.rings_present:
                 self.rows += record.add(cast(TableSchema, self.schema).columns,
-                                        name=record.primary,
-                                        grid=record.ring_system)
+                                        name=record.primary)
 
 
 ################################################################################

@@ -245,9 +245,9 @@ def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) ->
     assert record.primary == 'JUPITER'
 
 
-def test_record_init_locates_bodies_and_ring_system(
+def test_record_init_locates_the_tabulated_bodies(
         monkeypatch: pytest.MonkeyPatch) -> None:
-    """The tabulated bodies and the primary's ring system are located together."""
+    """The tabulated bodies are located; the ring system is not."""
     _patch_record_spice(monkeypatch, primary='JUPITER')
     monkeypatch.setattr(bodies_mod, 'get_bodies_registry',
                         lambda: {'JUPITER': types.SimpleNamespace(ring_frame=object())})
@@ -261,7 +261,7 @@ def test_record_init_locates_bodies_and_ring_system(
 
     monkeypatch.setattr(bodies_select, 'bounding_boxes', _boxes)
     record = Record(_observation(), 'GO_0001', {}, 8, 32)
-    assert located == [['JUPITER', 'IO', 'JUPITER_RING_SYSTEM']]
+    assert located == [['JUPITER', 'IO']]
     assert cast(Any, record.boxes) == {'IO': 'BOX'}
     assert record.body_samples == 32
 
@@ -281,24 +281,6 @@ def test_record_init_locates_nothing_when_disabled(monkeypatch: pytest.MonkeyPat
     record = Record(_observation(), 'GO_0001', {}, 8, 0)
     assert record.boxes == {}
     assert record.backplane_for('IO') == (record.backplane, 8)
-
-
-def test_record_init_skips_a_missing_ring_system(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A primary with a ring frame but no ring system body has none to locate."""
-    _patch_record_spice(monkeypatch, primary='MARS')
-    monkeypatch.setattr(oops.Body, 'exists',
-                        staticmethod(lambda name: name != 'MARS_RING_SYSTEM'))
-    monkeypatch.setattr(bodies_mod, 'get_bodies_registry',
-                        lambda: {'MARS': types.SimpleNamespace(ring_frame=object())})
-    located: list[Any] = []
-
-    def _boxes(record: Any, bodies: Any) -> dict[str, Any]:
-        located.append(bodies)
-        return {}
-
-    monkeypatch.setattr(bodies_select, 'bounding_boxes', _boxes)
-    Record(_observation(), 'GO_0001', {}, 8)
-    assert located == [[]]
 
 
 #===============================================================================

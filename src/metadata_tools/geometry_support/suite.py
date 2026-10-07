@@ -56,7 +56,7 @@ class Suite:
                 volume.
             sampling: Pixel sampling density.
             body_samples: Minimum number of samples across the bounding box of
-                a body or ring system; 0 to disable body-specific meshgrids.
+                a body; 0 to disable body-specific meshgrids.
 
         Raises:
             ValueError: If index_glob is None.

@@ -71,8 +71,8 @@ Core engine modules:
   and the built-in `key__<NAME>` functions (`key_fns.py`); builds supplemental index tables.
 - `geometry_support/` — geometry table generation: `process.py` (entry point), `suite.py`
   (`Suite`), `record.py` (`Record`), `tables.py` (the table classes), `prep.py`, `masks.py`,
-  `meshgrids.py` (each body and ring-system row is sampled across its own inventory
-  bounding box, not the whole FOV),
+  `meshgrids.py` (each body row is sampled across its own inventory bounding box, not
+  the whole FOV),
   `formatting.py`, `bodies_select.py`, `formats.py` (the host's SCLK-resolved mission
   table), and `label_schema.py`, which reads each table's full column schema — label
   metadata and computation spec alike — from its label template.

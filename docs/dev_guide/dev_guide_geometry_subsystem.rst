@@ -51,17 +51,16 @@ each link function to its group of linked columns.
 Body-specific meshgrids
 =======================
 
-The sky table is sampled on the observation's FOV meshgrid, at the pixel
-sampling density (``--sampling``). A body or ring system that is small in the
-image would get few of those samples, or none, so each body row -- and the ring
-row -- is instead sampled across its own bounding box:
+The sky and ring tables are sampled on the observation's FOV meshgrid, at the
+pixel sampling density (``--sampling``). A body that is small in the image would
+get few of those samples, or none, so each body row is instead sampled across
+its own bounding box:
 
 - :func:`~metadata_tools.geometry_support.bodies_select.bounding_boxes` asks the
   ``oops`` inventory for the center and apparent diameter of each tabulated
-  body, and of the primary's ``<PRIMARY>_RING_SYSTEM`` body. The unrounded
-  values are used, so a box may be far smaller than a pixel. The inventory is
-  taken in the field of view of the FOV meshgrid, so a box is located in the
-  coordinates that meshgrid samples.
+  body. The unrounded values are used, so a box may be far smaller than a
+  pixel. The inventory is taken in the field of view of the FOV meshgrid, so a
+  box is located in the coordinates that meshgrid samples.
 - :func:`~metadata_tools.geometry_support.meshgrids.box_meshgrid` pads the box
   by 10% of its size on each side, clips it to the extent of the FOV meshgrid,
   and samples what remains at the pixel sampling density, but with never fewer
@@ -73,9 +72,11 @@ row -- is instead sampled across its own bounding box:
 ``--no-body-meshgrids`` (a ``body_samples`` of 0) turns all of this off, and no
 boxes are requested. Otherwise the FOV backplane is used instead for a body
 with no box (it is outside the field of view, wholly hidden, or the pointing is
-unavailable), for a primary with no ring system body, and for a box that covers
-the whole FOV meshgrid. The masks are evaluated on whichever backplane the row
-uses.
+unavailable) and for a box that covers the whole FOV meshgrid. The masks are
+evaluated on whichever backplane the row uses.
+
+The ring row keeps the FOV meshgrid because its columns describe the unbounded
+ring plane, which is never small in the image.
 
 Masks
 =====
