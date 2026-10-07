@@ -22,6 +22,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
              blocker: str | None, columns: Sequence['ResolvedColumn'], *,
              primary: str | None = None, target: str | None = None,
              name_length: int = defs.NAME_LENGTH,
+             sampling: int | None = None,
              ignore_shadows: bool = False,
              allow_zero_rows: bool = True, no_mask: bool = False,
              no_body: bool = False) -> list[list[str]]:
@@ -50,6 +51,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         name_length: The character width of a column to contain body names;
             default defs.NAME_LENGTH. Body names are padded or truncated to
             this width.
+        sampling: Pixel sampling density of the backplane; by default, that of
+            the record.
         ignore_shadows: True to ignore any mask constraints applicable to
             shadowing or to the sunlit faces of surfaces.
         allow_zero_rows: True to allow the function to return no rows. If False,
@@ -60,6 +63,9 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     Returns:
         The rows produced, each a list of column strings.
     """
+    if sampling is None:
+        sampling = record.sampling
+
     # Create all the needed pixel masks
     excluded_mask_dict: dict[tuple[Any, ...], polymath.Boolean] = {}
     if record.pointing_available and not no_mask:
@@ -129,7 +135,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
                 # resolve_schema guarantees every data column declares a null.
                 values = oops.Scalar(cast(float, null_value), False)
         data_columns.append(
-            formatting.formatted_column(values, stubs, record.sampling))
+            formatting.formatted_column(values, stubs, sampling))
 
     # An all-null row is dropped unless the caller demands a row regardless
     if nothing_found and allow_zero_rows:

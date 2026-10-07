@@ -80,6 +80,7 @@ The geometry engine is a package:
      tables.py          # InventoryTable, SkyTable, SunTable, RingTable, BodyTable
      prep.py            # prep_row(): builds the formatted columns for a row
      masks.py           # construct_excluded_mask(): excluded-pixel masks
+     meshgrids.py       # box_meshgrid(): a meshgrid sampling one body's bounding box
      formatting.py      # numeric/ISO column formatting
      label_schema.py    # resolve_schema(): reads the column schema from the template
      link_fns.py        # link functions for columns sharing a LINK_ID

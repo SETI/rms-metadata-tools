@@ -49,7 +49,17 @@ Table selection
    * - Option
      - Description
    * - ``--sampling N``, ``-s``
-     - Pixel sampling density used when building the meshgrids. Default: 8.
+     - Pixel sampling density: the spacing, in pixels, of the samples at which
+       the geometry is computed. Default: 8.
+   * - ``--body-samples N``, ``-b``
+     - Minimum number of samples across each body or ring system, along each
+       axis. A body is sampled across its own bounding box at the pixel
+       sampling density, or more finely if that would give fewer than ``N``
+       samples, so that it is resolved however small it appears. Default: 16.
+   * - ``--no-body-meshgrids``
+     - Sample every body and ring system at the pixel sampling density across
+       the whole field of view, instead of across its own bounding box. A body
+       much smaller than the sampling density may then get no samples at all.
 
 Volume selection
 ----------------

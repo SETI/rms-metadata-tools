@@ -3,7 +3,7 @@
 #
 # Free functions taking an explicit `record` argument so they can be exercised
 # without constructing a full SPICE-backed Record. Most access the record's
-# state read-only; inventory() may set record.pointing_available.
+# state read-only; the inventory functions may set record.pointing_available.
 ################################################################################
 """Body visibility and selection utilities for geometry table generation."""
 import re
@@ -38,18 +38,74 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
             inventory computation; likewise for AttributeError, IndexError,
             KeyError, LookupError, TypeError, and ValueError.
     """
+    return cast(list[str], _inventory(record, bodies) or [])
+
+#===============================================================================
+def bounding_boxes(record: 'Record',
+                   bodies: list[str]) -> dict[str, tuple[Any, tuple[float, float]]]:
+    """Obtain the bounding box of each body in the image, if possible.
+
+    The boxes are located in the field of view of the record's meshgrid, which
+    is not necessarily that of the observation: the two differ for an image
+    that is a cut-out window of the full frame.
+
+    Parameters:
+        record: The geometry record.
+        bodies: Bodies to test.
+
+    Returns:
+        Mapping from the name of each body that falls unobscured inside the
+        field of view to its box: the (u,v) coordinates of its center and its
+        (u,v) diameters, in pixels and unrounded. The mapping is empty if the
+        inventory cannot be computed; when the failure indicates missing
+        pointing data, record.pointing_available is also set to False.
+
+    Raises:
+        AssertionError: Re-raised, after logging, when raised unexpectedly by the
+            inventory computation; likewise for AttributeError, IndexError,
+            KeyError, LookupError, TypeError, and ValueError.
+    """
+    if not bodies:
+        return {}
+    full = cast(dict[str, dict[str, Any]],
+                _inventory(record, bodies, return_type='full',
+                           fov=record.meshgrid.fov) or {})
+    return {name: (entry['center_uv'],
+                   (float(entry['u_pixel_size']), float(entry['v_pixel_size'])))
+            for name, entry in full.items() if entry['inside']}
+
+#===============================================================================
+def _inventory(record: 'Record', bodies: list[str] | dict[str, Any],
+               **kwargs: Any) -> Any:
+    """Call the observation's inventory, handling missing pointing data.
+
+    Parameters:
+        record: The geometry record.
+        bodies: Bodies to test.
+        kwargs: Additional keyword arguments for the observation's inventory;
+            by default it returns the list of body names.
+
+    Returns:
+        The inventory, or None if it cannot be computed; when the failure
+        indicates missing pointing data, record.pointing_available is also set
+        to False.
+
+    Raises:
+        AssertionError: Re-raised, after logging, when raised unexpectedly by the
+            inventory computation; likewise for AttributeError, IndexError,
+            KeyError, LookupError, TypeError, and ValueError.
+    """
     logger = com.get_logger()
 
     # Attempt to obtain inventory
     try:
         try:
-            inventory = record.observation.inventory(
-                bodies, expand=get_geometry_config().EXPAND, cache=False)
+            return record.observation.inventory(
+                bodies, expand=get_geometry_config().EXPAND, cache=False, **kwargs)
         except TypeError:
             # oops >= 0.3 dropped the cache option (removed in the src restructure)
-            inventory = record.observation.inventory(
-                bodies, expand=get_geometry_config().EXPAND)
-        return cast(list[str], inventory)
+            return record.observation.inventory(
+                bodies, expand=get_geometry_config().EXPAND, **kwargs)
 
     # A RuntimeError is probably caused by missing spice data. There is
     # probably nothing we can do.
@@ -64,7 +120,7 @@ def inventory(record: 'Record', bodies: list[str] | dict[str, Any]) -> list[str]
         # Other kinds of errors are genuine bugs.
         else:
             logger.exception("Unexpected error during inventory")
-        return []
+        return None
 
     # Other kinds of errors are genuine bugs.
     except (AssertionError, AttributeError, IndexError, KeyError,

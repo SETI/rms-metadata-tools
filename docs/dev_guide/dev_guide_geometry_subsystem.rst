@@ -39,13 +39,43 @@ Record and prep
 :class:`~metadata_tools.geometry_support.record.Record` holds one observation's
 state: the primary body (from
 :func:`~metadata_tools.geometry_support.bodies_select.get_primary`), the selected
-bodies, and the ``oops`` backplane. Each table passes its own resolved columns
+bodies, and the ``oops`` backplanes. Each table passes its own resolved columns
 to :meth:`~metadata_tools.geometry_support.record.Record.add`, which binds the
-``BODYX`` placeholder to the body being written and calls
+``BODYX`` placeholder to the body being written, selects that body's backplane,
+and calls
 :func:`~metadata_tools.geometry_support.prep.prep_row`, which evaluates each
 column's backplane key, applies the excluded-pixel mask, and formats the result;
 :meth:`~metadata_tools.geometry_support.record.Record.postprocess` then applies
 each link function to its group of linked columns.
+
+Body-specific meshgrids
+=======================
+
+The sky table is sampled on the observation's FOV meshgrid, at the pixel
+sampling density (``--sampling``). A body or ring system that is small in the
+image would get few of those samples, or none, so each body row -- and the ring
+row -- is instead sampled across its own bounding box:
+
+- :func:`~metadata_tools.geometry_support.bodies_select.bounding_boxes` asks the
+  ``oops`` inventory for the center and apparent diameter of each tabulated
+  body, and of the primary's ``<PRIMARY>_RING_SYSTEM`` body. The unrounded
+  values are used, so a box may be far smaller than a pixel. The inventory is
+  taken in the field of view of the FOV meshgrid, so a box is located in the
+  coordinates that meshgrid samples.
+- :func:`~metadata_tools.geometry_support.meshgrids.box_meshgrid` pads the box
+  by 10% of its size on each side, clips it to the extent of the FOV meshgrid,
+  and samples what remains at the pixel sampling density, but with never fewer
+  than ``--body-samples`` samples along each axis (default 16).
+- :meth:`~metadata_tools.geometry_support.record.Record.backplane_for` builds
+  one backplane on each such meshgrid and reuses it for every column of that
+  body's row.
+
+``--no-body-meshgrids`` (a ``body_samples`` of 0) turns all of this off, and no
+boxes are requested. Otherwise the FOV backplane is used instead for a body
+with no box (it is outside the field of view, wholly hidden, or the pointing is
+unavailable), for a primary with no ring system body, and for a box that covers
+the whole FOV meshgrid. The masks are evaluated on whichever backplane the row
+uses.
 
 Masks
 =====
@@ -281,8 +311,11 @@ Important invariants
   carries the backplane key, the mask, the link fields, and one
   :class:`~metadata_tools.geometry_support.label_schema.ColumnStub` per value
   it produces -- all of it parsed from the label template.
-- **Meshgrids** are built once per :class:`~metadata_tools.geometry_support.suite.Suite`
-  and selected per observation by telemetry mode; they are not rebuilt per row.
+- **Meshgrids.** The FOV meshgrids are built once per
+  :class:`~metadata_tools.geometry_support.suite.Suite` and selected per
+  observation by telemetry mode. A body-specific meshgrid is built per
+  observation, once for each body in the field of view; see "Body-specific
+  meshgrids" above.
 - **One row per observation.** A call produces at most one row; with the
   default ``allow_zero_rows=True`` an all-null row is dropped (pass
   ``allow_zero_rows=False`` to force it).

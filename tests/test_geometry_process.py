@@ -25,7 +25,7 @@ def _args(tree: FCPath, **over: Any) -> types.SimpleNamespace:
     ns = types.SimpleNamespace(
         metadata_tree=str(tree), output_tree=str(tree), new_only=False,
         labels=False, volumes=None, exclude=None, first=None, sampling=8,
-        pattern=None)
+        body_samples=16, no_body_meshgrids=False, pattern=None)
     for k, v in over.items():
         setattr(ns, k, v)
     return ns
@@ -51,6 +51,43 @@ def test_get_args_defaults_and_parse() -> None:
     parser = proc.get_args(host='GO', sampling=8)
     args = parser.parse_args(['/meta', '/out', '--sampling', '4'])
     assert args.sampling == 4
+
+
+def test_get_args_body_samples_default_and_override() -> None:
+    """--body-samples defaults to 16 and parses over the provided default."""
+    parser = proc.get_args(host='GO')
+    assert parser.parse_args(['/meta', '/out']).body_samples == 16
+    assert parser.parse_args(['/meta', '/out', '--body-samples', '32']).body_samples == 32
+    assert proc.get_args(host='GO', body_samples=8).parse_args(
+        ['/meta', '/out']).body_samples == 8
+
+
+def test_get_args_no_body_meshgrids_is_off_by_default() -> None:
+    """--no-body-meshgrids is a flag, unset unless given."""
+    parser = proc.get_args(host='GO')
+    assert parser.parse_args(['/meta', '/out']).no_body_meshgrids is False
+    assert parser.parse_args(['/meta', '/out', '--no-body-meshgrids']).no_body_meshgrids is True
+
+
+@pytest.mark.parametrize(('disabled', 'expected'), [(False, 16), (True, 0)])
+def test_process_tables_passes_body_samples(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        disabled: bool, expected: int) -> None:
+    """The suite gets the sample count, or 0 when body meshgrids are disabled."""
+    tree = _tree(tmp_path)
+    seen: list[int] = []
+
+    class FakeSuite:
+        def __init__(self, indir: str, *a: Any, **k: Any) -> None:
+            seen.append(k['body_samples'])
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    proc.process_tables('GO_0xxx_supplemental_index',
+                        args=_args(tree, no_body_meshgrids=disabled))  # type: ignore[arg-type]
+    assert seen == [expected, expected]
 
 
 def test_get_args_new_only_is_a_flag() -> None:
