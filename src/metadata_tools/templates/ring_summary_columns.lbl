@@ -1186,9 +1186,9 @@ $INCLUDE('column_formats.lbl')
   OBJECT                        = COLUMN
     NAME                        = "RING_DIAMETER_IN_PIXELS"
     COLUMN_FORMAT               = "SIZE_IN_PIXELS"
-    BACKPLANE_KEY               = ('body_diameter_in_pixels', 'bodyx:RING', 'defs.RING_SYSTEM_RADII["bodyx"]')
-    DESCRIPTION                 = "Projected diameter of the main ring system
-      along their longest projected direction, converted to pixels. This
+    BACKPLANE_KEY               = ('body_diameter_in_pixels', 'bodyx_RING_SYSTEM')
+    DESCRIPTION                 = "Projected diameter of the ring system
+      along its longest projected direction, converted to pixels. This
       diameter is computed based on the body's current distance, but as if it
       fell at the center of the field of view.
 

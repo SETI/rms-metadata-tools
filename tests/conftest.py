@@ -20,10 +20,10 @@ Two conventions hold across the suite:
   every test in a worker. Change their attributes only through ``monkeypatch``
   (e.g. ``monkeypatch.setattr(get_host_config(), ...)``) so the change is undone
   after the test; a direct ``setattr`` would leak into later tests.
-- Tests that import private names (``_cat_rows``, ``_schema_cache``,
-  ``_resolve_dict_ref``, ...) do so deliberately, as drift guards on internals
-  that the public API does not expose. When a refactor breaks one, update it to
-  the new internals rather than deleting it.
+- Tests that import private names (``_cat_rows``, ``_schema_cache``, ...) do so
+  deliberately, as drift guards on internals that the public API does not
+  expose. When a refactor breaks one, update it to the new internals rather than
+  deleting it.
 """
 import types
 from collections.abc import Callable, Sequence

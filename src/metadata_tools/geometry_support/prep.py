@@ -99,8 +99,9 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         stubs = column.stubs
         null_flag = False
 
-        # Fill in the backplane array
-        if event_key[1] == defs.NULL:
+        # Fill in the backplane array. A target that is not registered, such
+        # as the ring system of a planet that has none, has nothing to evaluate.
+        if event_key[1] == defs.NULL or not masks.target_exists(event_key[1]):
             values: Any = oops.Scalar(0., True)
         else:
             if record.pointing_available:

@@ -96,10 +96,11 @@ def test_sky_and_sun_keys_are_already_bound(qualifier: str) -> None:
         assert defs.BODYX not in str(column.key), column.stubs[0].name
 
 
-def test_ring_diameter_key_holds_a_dict_reference() -> None:
-    """The ring diameter key defers a RING_SYSTEM_RADII lookup to substitution."""
+def test_ring_diameter_key_names_the_ring_system_body() -> None:
+    """The ring diameter takes its radius from the primary's ring system body."""
     columns = {c.stubs[0].name: c for c in resolve_schema(TEMPLATE_DIR, 'ring').columns}
-    assert 'RING_SYSTEM_RADII' in str(columns['RING_DIAMETER_IN_PIXELS'].key)
+    assert columns['RING_DIAMETER_IN_PIXELS'].key == (
+        'body_diameter_in_pixels', defs.BODYX + '_RING_SYSTEM')
 
 
 def test_only_the_centre_coordinates_are_linked() -> None:
