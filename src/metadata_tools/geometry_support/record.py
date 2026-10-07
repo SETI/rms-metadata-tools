@@ -113,10 +113,7 @@ class Record:
         """
         out: list[ResolvedColumn] = []
         for column in columns:
-            # The key is wrapped in a list because util.replace resolves an
-            # embedded dictionary reference -- the ring system radius lookup --
-            # only inside a nested list or tuple leaf, never at the top level.
-            key = util.replace([column.key], defs.BODYX, name)[0]
+            key = util.replace(column.key, defs.BODYX, name)
             out.append(dataclass_replace(column, key=key))
         return out
 

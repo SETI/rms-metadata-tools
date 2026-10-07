@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 import oops
+import pytest
 
 from metadata_tools.geometry_support import prep
 from metadata_tools.geometry_support.record import Record
@@ -62,7 +63,7 @@ def test_append_body_prefix_truncates_long_name() -> None:
 # prep_row summary path
 #===============================================================================
 def test_summary_writes_single_row(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """The summary path emits one formatted row."""
     # fake_backplane: conftest-private FakeBackplane stand-in for oops.Backplane.
@@ -76,7 +77,7 @@ def test_summary_writes_single_row(
 
 
 def test_summary_no_body_omits_prefixes(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """With no_body=True no body-name columns are inserted."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
@@ -89,7 +90,7 @@ def test_summary_no_body_omits_prefixes(
 
 
 def test_primary_prefix_when_no_target(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """With no target, the primary name fills the body prefix column."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
@@ -98,6 +99,25 @@ def test_primary_prefix_when_no_target(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
         _phase_cols(make_column), primary='JUPITER', target=None, no_mask=True)
     assert rows[0][2] == '"JUPITER     "'
+
+
+def test_unregistered_target_is_null_not_evaluated(
+        monkeypatch: pytest.MonkeyPatch, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A column whose target body is not registered is written as its null.
+
+    The ring diameter column names the primary's ring system body, which a
+    planet such as Mars does not have; the backplane is never asked for it.
+    """
+    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: False))
+    columns = [make_column(key=('body_diameter_in_pixels', 'MARS_RING_SYSTEM'),
+                           names=['RING_DIAMETER_IN_PIXELS'], flag='',
+                           width=8, print_format='%8.3f', null_value=-999.)]
+    # fake_backplane holds no evaluation for the key, so evaluating it would raise.
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        columns, primary='MARS', allow_zero_rows=False)
+    assert rows[0][-1] == '-999.000'
 
 
 def test_pointing_unavailable_writes_null_row(

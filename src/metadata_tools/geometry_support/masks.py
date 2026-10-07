@@ -13,6 +13,24 @@ import polymath
 
 
 #===============================================================================
+def target_exists(target: str | tuple[()]) -> bool:
+    """Determine whether a backplane target names a body registered with oops.
+
+    Parameters:
+        target: The name of the target surface, optionally modified (e.g.
+            "SATURN:RING"), or the empty tuple for quantities with no target
+            body.
+
+    Returns:
+        False only for a named target whose body is not registered; e.g. the
+        ring system of a planet that has none. A body-less target has no body
+        to look up.
+    """
+    if isinstance(target, str):
+        return bool(oops.Body.exists(target.split(':')[0]))
+    return True
+
+#===============================================================================
 def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: str | None,
                             mask_desc: tuple[str, str, str], *,
                             blocker: str | None = None,
@@ -52,12 +70,9 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
     if target == blocker:
         blocker = None
 
-    # Generate the new mask, with True means included. A body-less target (the
-    # empty tuple) has no body to look up.
-    if isinstance(target, str):
-        primary_name = target.split(':')[0]
-        if not oops.Body.exists(primary_name):
-            return polymath.Boolean(True)
+    # Generate the new mask, with True means included.
+    if not target_exists(target):
+        return polymath.Boolean(True)
 
     (masker, shadower, face) = mask_desc
 
