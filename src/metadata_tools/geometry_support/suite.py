@@ -190,7 +190,7 @@ class Suite:
                 name = self.observations[i].basename
 
                 # Make any sub selection
-                if pattern and fnmatch.filter([self.observations[i].filespec], pattern) == []:
+                if pattern and fnmatch.filter([self.observations[i].filepath], pattern) == []:
                     logger.warning("Skipping %s; pattern mismatch.", name)
                     continue
 

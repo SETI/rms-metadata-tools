@@ -6,7 +6,7 @@ and other settings used to compute geometry tables for the GO_0xxx collection.
 from typing import Any, cast
 
 import oops
-import oops.hosts.galileo.ssi as ssi
+from hosts.galileo.ssi import SSI
 
 import metadata_tools.hosts.GO_0xxx.host_config as host_config
 import metadata_tools.hosts.GO_0xxx.host_init  # noqa: F401  (side-effect import)
@@ -113,7 +113,25 @@ def except_test(observation: Any) -> bool:
 BORDER: int = 25             # in units of full-size SSI pixels
 NAC_PIXEL: float = 6.0e-6    # approximate full-size SSI pixel in units of radians
 EXPAND: float = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians
-from_index = ssi.from_index
+
+#=========================================================================================
+def from_index(index_filename: Any, supplemental_index_filename: Any = None) -> list[Any]:
+    """Return one observation per index row with a nonzero exposure.
+
+    The host returns an observation for every row. Zero-exposure rows are dropped
+    here, so the geometry tables hold the same rows as before.
+
+    Parameters:
+        index_filename: Path to the label of the index file.
+        supplemental_index_filename: Path to the label of the supplemental index file,
+            if any.
+
+    Returns:
+        The observations of the index, in row order, less those with zero exposure.
+    """
+    observations = SSI.from_index(index_filename, supplemental_index_filename)
+    return [observation for observation in observations if observation.texp != 0]
+
 
 
 ##########################################################################################
@@ -158,7 +176,7 @@ def meshgrids(sampling: float) -> dict[str, Any]:
 
         # Construct the meshgrid
         limit += 0.0001
-        meshgrid = oops.Meshgrid.for_fov(ssi.SSI.fovs[mode], origin,
+        meshgrid = oops.Meshgrid.for_fov(SSI._FOVS[mode], origin,
                                          undersample=under, limit=limit, swap=True)
         meshgrids[mode] = meshgrid
 

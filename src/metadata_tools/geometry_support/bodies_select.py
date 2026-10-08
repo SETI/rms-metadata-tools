@@ -123,10 +123,11 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
 
     # Add target body and parent
     if record.target and oops.Body.exists(record.target):
+        # A star target is registered by the oops host as a LightSource, which shares
+        # the Body registry but belongs to no system and is not a body to select.
         system = get_system(record.target)
         if system:
-            body_names += [system]
-        body_names += [record.target]
+            body_names += [system, record.target]
 
     # Cull duplicate bodies and verify all bodies are in the registry
     body_names = list(dict.fromkeys(body_names))
@@ -147,11 +148,15 @@ def get_system(body: str) -> str | None:
             with no parent (e.g. the Sun), the system is itself.
 
     Returns:
-        Name of system, body, or None if the body is not registered.
+        Name of system, body, or None if the body is not registered or is registered
+        as something other than a body (e.g. a star registered as a LightSource).
     """
     if body not in oops.Body.BODY_REGISTRY:
         return None
-    parent_body = oops.Body.BODY_REGISTRY[body].parent
+    entry = oops.Body.BODY_REGISTRY[body]
+    if not hasattr(entry, 'parent'):
+        return None
+    parent_body = entry.parent
     # A root body such as the Sun has no parent; it is its own system.
     if parent_body is None:
         return body
