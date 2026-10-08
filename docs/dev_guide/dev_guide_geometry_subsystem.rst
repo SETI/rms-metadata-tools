@@ -69,6 +69,19 @@ its own bounding box:
   one backplane on each such meshgrid and reuses it for every column of that
   body's row.
 
+A column that reaches beyond the body states a wider padding with the
+``MESHGRID_MARGIN`` keyword of its definition, as a fraction of the box's size.
+The limb columns state 1.5, which reaches 4 radii from the body's center: the
+3 radii of altitude that the limb altitude key allows. Such a column is sampled
+on a meshgrid of its own, one for each distinct margin among a table's columns,
+so a row may draw on more than one backplane;
+:func:`~metadata_tools.geometry_support.prep.prep_row` builds the masks for each.
+The minimum sample count is still counted across the body itself, so a wider
+margin adds samples around the body without spreading them thinner. Columns
+that are computed from one another, such as the limb clock angle from the limb
+altitude, must state the same margin. The margin has no effect on a row
+sampled on the FOV meshgrid.
+
 ``--no-body-meshgrids`` (a ``body_samples`` of 0) turns all of this off, and no
 boxes are requested. Otherwise the FOV backplane is used instead for a body
 with no box (it is outside the field of view, wholly hidden, or the pointing is
@@ -137,9 +150,7 @@ which a stub may override like ``FORMAT``):
 
 * ``BACKPLANE_KEY`` -- the key handed to ``Backplane.evaluate()``, as a Python
   tuple literal. The token ``'bodyx'`` (:data:`~metadata_tools.defs.BODYX`) is
-  substituted per body at row time, and a string of the form
-  ``'defs.<DICT>["bodyx"]'`` resolves to a ``defs`` dictionary lookup after
-  substitution.
+  substituted per body at row time.
 * ``MASK`` (default ``('', '', '')``) -- the ``(masker, shadower, face)``
   codes. The masker/shadower strings concatenate ``"P"`` (planet), ``"R"``
   (rings), and ``"M"`` (blocker body); the face is ``"D"``, ``"N"``, or ``""``.
@@ -149,6 +160,10 @@ which a stub may override like ``FORMAT``):
 * ``LINK_ID`` -- an identifier naming the column's link group: the columns in
   one table sharing it are postprocessed together by the group's link
   function, which the id names (see `Link functions`_ below).
+* ``MESHGRID_MARGIN`` (default 0.1) -- a number: the padding added to each side
+  of a body's bounding box when the column is sampled on a meshgrid of the
+  body's own, as a fraction of the box's size (see `Body-specific meshgrids`_
+  above).
 
 The right-hand side of ``BACKPLANE_KEY`` and ``MASK`` is a Python literal on a
 single line, parsed with :func:`ast.literal_eval`; nothing ever parses these

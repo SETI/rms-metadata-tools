@@ -93,7 +93,7 @@ class Record:
         # Create the backplanes
         self.meshgrid = self._meshgrid(observation, meshgrids)
         self.backplane = oops.backplane.Backplane(observation, self.meshgrid)
-        self._backplanes: dict[str, tuple[Any, int]] = {}
+        self._backplanes: dict[tuple[str, float], tuple[Any, int]] = {}
 
         # Get inventory for this record
         self.inventory = bodies_select.inventory(self, bodies_mod.get_bodies_registry())
@@ -113,16 +113,20 @@ class Record:
             self.boxes = bodies_select.bounding_boxes(self, self.bodies)
 
     #===========================================================================
-    def backplane_for(self, body: str | None) -> tuple[Any, int]:
+    def backplane_for(self, body: str | None,
+                      margin: float | None = None) -> tuple[Any, int]:
         """Return the backplane on which to tabulate one body.
 
         A body in the field of view is sampled on a meshgrid of its own,
         spanning its bounding box, so that it is resolved however small it
-        appears. Each such backplane is built once and then reused.
+        appears. Each such backplane is built once, for each margin asked of
+        it, and then reused.
 
         Parameters:
             body: Name of the body, or None for a quantity that belongs to no
                 body.
+            margin: Padding added to each side of the bounding box, as a
+                fraction of its size; by default, meshgrids.MARGIN.
 
         Returns:
             The backplane and its pixel sampling density. These are the
@@ -132,18 +136,21 @@ class Record:
         if body is None or body not in self.boxes:
             return self.backplane, self.sampling
 
-        if body not in self._backplanes:
+        if margin is None:
+            margin = meshgrids.MARGIN
+        key = (body, margin)
+        if key not in self._backplanes:
             center_uv, size_uv = self.boxes[body]
             grid = meshgrids.box_meshgrid(self.meshgrid, center_uv, size_uv,
-                                          self.sampling, self.body_samples)
+                                          self.sampling, self.body_samples, margin)
             if grid is None:
-                self._backplanes[body] = (self.backplane, self.sampling)
+                self._backplanes[key] = (self.backplane, self.sampling)
             else:
                 meshgrid, sampling = grid
-                self._backplanes[body] = (
+                self._backplanes[key] = (
                     oops.backplane.Backplane(self.observation, meshgrid), sampling)
 
-        return self._backplanes[body]
+        return self._backplanes[key]
 
     #===========================================================================
     @staticmethod
@@ -252,7 +259,9 @@ class Record:
                 carry one.
             target: Optionally, the target name to write into the record.
             grid: Optionally, the body whose bounding box is to be sampled; by
-                default the whole field of view is.
+                default the whole field of view is. Each column is sampled with
+                the margin it declares, so columns that differ in margin are
+                sampled on different meshgrids.
             ignore_shadows: True to ignore any mask constraints applicable to
                 shadowing or to the sunlit faces of surfaces.
             allow_zero_rows: True to allow the function to return no rows. If
@@ -269,10 +278,12 @@ class Record:
 
         # Prepare the rows
         backplane, sampling = self.backplane_for(grid)
+        grids = {column.margin: self.backplane_for(grid, column.margin)
+                 for column in columns if column.margin is not None}
         rows = prep.prep_row(self, self.prefixes, backplane, self.blocker,
                              columns,
                              primary=self.primary, target=target,
-                             sampling=sampling,
+                             sampling=sampling, grids=grids,
                              ignore_shadows=ignore_shadows,
                              allow_zero_rows=allow_zero_rows,
                              no_mask=no_mask,

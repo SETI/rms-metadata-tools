@@ -43,7 +43,7 @@ from dataclasses import dataclass
 # reference, which expansion always consumes. label_support strips exactly
 # this set from generated labels; tests pin the two against each other.
 PRIVATE_KEYWORDS = ('BACKPLANE_KEY', 'MASK', 'OVERFLOW_FORMAT', 'LINK_ID',
-                    'COLUMN_FORMAT')
+                    'MESHGRID_MARGIN', 'COLUMN_FORMAT')
 
 # Retired grammar, still swept from generated labels: VALUES (group size is
 # now the stub count) and LINK_FN (LINK_ID now names the link function). The

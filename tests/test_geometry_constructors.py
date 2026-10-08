@@ -311,8 +311,11 @@ def _boxed_record(monkeypatch: pytest.MonkeyPatch, grid: Any) -> tuple[Record, l
         built.append(meshgrid)
         return f'ON_{meshgrid}'
 
-    monkeypatch.setattr(meshgrids, 'box_meshgrid',
-                        lambda fov_grid, center, size, sampling, samples: grid)
+    def _box_meshgrid(fov_grid: Any, center: Any, size: Any, sampling: int,
+                      samples: int, margin: float) -> Any:
+        return grid and (f'{grid[0]}_{margin}', grid[1])
+
+    monkeypatch.setattr(meshgrids, 'box_meshgrid', _box_meshgrid)
     monkeypatch.setattr(oops.backplane, 'Backplane', _backplane)
     return record, built
 
@@ -321,9 +324,21 @@ def test_backplane_for_builds_one_backplane_per_body(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """A boxed body gets its own backplane, built once and then reused."""
     record, built = _boxed_record(monkeypatch, ('IO_GRID', 2))
-    assert record.backplane_for('IO') == ('ON_IO_GRID', 2)
-    assert record.backplane_for('IO') == ('ON_IO_GRID', 2)
-    assert built == ['IO_GRID']
+    assert record.backplane_for('IO') == ('ON_IO_GRID_0.1', 2)
+    assert record.backplane_for('IO') == ('ON_IO_GRID_0.1', 2)
+    assert built == ['IO_GRID_0.1']
+
+
+def test_backplane_for_builds_one_backplane_per_margin(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Each margin asked of a body gets a backplane of its own, built once."""
+    record, built = _boxed_record(monkeypatch, ('IO_GRID', 2))
+    assert record.backplane_for('IO', 1.5) == ('ON_IO_GRID_1.5', 2)
+    assert record.backplane_for('IO') == ('ON_IO_GRID_0.1', 2)
+    assert record.backplane_for('IO', 1.5) == ('ON_IO_GRID_1.5', 2)
+    # Naming the default margin is the same as naming none.
+    assert record.backplane_for('IO', meshgrids.MARGIN) == ('ON_IO_GRID_0.1', 2)
+    assert built == ['IO_GRID_1.5', 'IO_GRID_0.1']
 
 
 def test_backplane_for_unboxed_body_uses_the_fov(monkeypatch: pytest.MonkeyPatch) -> None:
