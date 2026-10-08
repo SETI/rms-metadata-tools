@@ -16,7 +16,7 @@ import metadata_tools
 import metadata_tools.bodies as bodies_mod
 import metadata_tools.common as com
 from metadata_tools.config import get_geometry_config
-from metadata_tools.geometry_support import bodies_select
+from metadata_tools.geometry_support import bodies_select, meshgrids
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.suite import Suite
 
@@ -35,6 +35,52 @@ def test_inventory_success(monkeypatch: pytest.MonkeyPatch) -> None:
     # `record` is a SimpleNamespace stub standing in for a Record.
     assert bodies_select.inventory(
         record, ['IO', 'EUROPA']) == ['IO', 'EUROPA']  # type: ignore[arg-type]
+
+
+def test_bounding_boxes_keeps_only_bodies_in_view(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """bounding_boxes() returns the centre and diameters of each body in view.
+
+    The inventory is taken in the field of view of the record's meshgrid, so
+    that a box is located in the coordinates the meshgrid samples.
+    """
+    monkeypatch.setattr(config, 'EXPAND', 0.5, raising=False)
+    seen: list[dict[str, Any]] = []
+
+    def _inventory(bodies: Any, **kwargs: Any) -> Any:
+        seen.append(kwargs)
+        return {'IO': {'inside': True, 'center_uv': (10.5, 20.5),
+                       'u_pixel_size': 3.25, 'v_pixel_size': 3.5},
+                'EUROPA': {'inside': False, 'center_uv': (-900., 5.),
+                           'u_pixel_size': 2., 'v_pixel_size': 2.}}
+
+    record = types.SimpleNamespace(observation=types.SimpleNamespace(inventory=_inventory),
+                                   meshgrid=types.SimpleNamespace(fov='FOV'),
+                                   pointing_available=True)
+    boxes = bodies_select.bounding_boxes(record, ['IO', 'EUROPA'])  # type: ignore[arg-type]
+    assert boxes == {'IO': ((10.5, 20.5), (3.25, 3.5))}
+    assert seen == [{'expand': 0.5, 'cache': False, 'return_type': 'full', 'fov': 'FOV'}]
+
+
+def test_bounding_boxes_without_bodies_skips_the_inventory() -> None:
+    """With no bodies there is nothing to locate, and no inventory call."""
+    record = types.SimpleNamespace(observation=object())
+    assert bodies_select.bounding_boxes(record, []) == {}  # type: ignore[arg-type]
+
+
+def test_bounding_boxes_missing_ckernel_is_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Without pointing there are no boxes, and pointing is marked unavailable."""
+    monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
+    _recording_logger(monkeypatch)
+
+    def _raise(bodies: Any, **kwargs: Any) -> Any:
+        raise RuntimeError('SPICE(CKINSUFFDATA): no pointing')
+
+    record = types.SimpleNamespace(observation=types.SimpleNamespace(inventory=_raise),
+                                   meshgrid=types.SimpleNamespace(fov='FOV'),
+                                   pointing_available=True)
+    assert bodies_select.bounding_boxes(record, ['IO']) == {}  # type: ignore[arg-type]
+    assert record.pointing_available is False
 
 
 def _recording_logger(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
@@ -155,6 +201,8 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
                         lambda record, bodies: [])
     monkeypatch.setattr(bodies_select, 'select_bodies',
                         lambda record, bodies: [])
+    monkeypatch.setattr(bodies_select, 'bounding_boxes',
+                        lambda record, bodies: {})
     monkeypatch.setattr(config, 'target_name',
                         lambda d: d.get('TARGET_NAME', 'SKY'), raising=False)
     monkeypatch.setattr(config, 'meshgrid',
@@ -195,6 +243,118 @@ def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) ->
     record = Record(_observation(), 'GO_0001', {}, 8)
     assert record.rings_present is True
     assert record.primary == 'JUPITER'
+
+
+def test_record_init_locates_the_tabulated_bodies(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The tabulated bodies are located; the ring system is not."""
+    _patch_record_spice(monkeypatch, primary='JUPITER')
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry',
+                        lambda: {'JUPITER': types.SimpleNamespace(ring_frame=object())})
+    monkeypatch.setattr(bodies_select, 'select_bodies',
+                        lambda record, bodies: ['JUPITER', 'IO'])
+    located: list[Any] = []
+
+    def _boxes(record: Any, bodies: Any) -> dict[str, Any]:
+        located.append(bodies)
+        return {'IO': 'BOX'}
+
+    monkeypatch.setattr(bodies_select, 'bounding_boxes', _boxes)
+    record = Record(_observation(), 'GO_0001', {}, 8, 32)
+    assert located == [['JUPITER', 'IO']]
+    assert cast(Any, record.boxes) == {'IO': 'BOX'}
+    assert record.body_samples == 32
+
+
+def test_record_init_locates_nothing_when_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With body_samples of 0, no boxes are requested and every row uses the FOV."""
+    _patch_record_spice(monkeypatch, primary='JUPITER')
+    monkeypatch.setattr(bodies_mod, 'get_bodies_registry',
+                        lambda: {'JUPITER': types.SimpleNamespace(ring_frame=object())})
+    monkeypatch.setattr(bodies_select, 'select_bodies',
+                        lambda record, bodies: ['JUPITER', 'IO'])
+
+    def _boxes(record: Any, bodies: Any) -> dict[str, Any]:
+        raise AssertionError('bounding boxes requested')
+
+    monkeypatch.setattr(bodies_select, 'bounding_boxes', _boxes)
+    record = Record(_observation(), 'GO_0001', {}, 8, 0)
+    assert record.boxes == {}
+    assert record.backplane_for('IO') == (record.backplane, 8)
+
+
+#===============================================================================
+# Record.backplane_for
+#===============================================================================
+def _boxed_record(monkeypatch: pytest.MonkeyPatch, grid: Any) -> tuple[Record, list[Any]]:
+    """Build a record with one boxed body and a patched meshgrid builder.
+
+    Parameters:
+        monkeypatch: The pytest monkeypatch fixture.
+        grid: What the patched box_meshgrid returns.
+
+    Returns:
+        The record, and the list of meshgrids that backplanes were built on.
+    """
+    # The sentinels stand in for oops objects, so the attributes are set untyped.
+    record: Any = Record.__new__(Record)
+    record.observation = 'OBS'
+    record.meshgrid = 'FOV_GRID'
+    record.backplane = 'FOV_BACKPLANE'
+    record.sampling = 8
+    record.body_samples = 16
+    record.boxes = {'IO': ((10., 20.), (3., 3.))}
+    record._backplanes = {}
+    built: list[Any] = []
+
+    def _backplane(obs: Any, meshgrid: Any) -> str:
+        built.append(meshgrid)
+        return f'ON_{meshgrid}'
+
+    def _box_meshgrid(fov_grid: Any, center: Any, size: Any, sampling: int,
+                      samples: int, margin: float) -> Any:
+        return grid and (f'{grid[0]}_{margin}', grid[1])
+
+    monkeypatch.setattr(meshgrids, 'box_meshgrid', _box_meshgrid)
+    monkeypatch.setattr(oops.backplane, 'Backplane', _backplane)
+    return record, built
+
+
+def test_backplane_for_builds_one_backplane_per_body(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A boxed body gets its own backplane, built once and then reused."""
+    record, built = _boxed_record(monkeypatch, ('IO_GRID', 2))
+    assert record.backplane_for('IO') == ('ON_IO_GRID_0.1', 2)
+    assert record.backplane_for('IO') == ('ON_IO_GRID_0.1', 2)
+    assert built == ['IO_GRID_0.1']
+
+
+def test_backplane_for_builds_one_backplane_per_margin(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Each margin asked of a body gets a backplane of its own, built once."""
+    record, built = _boxed_record(monkeypatch, ('IO_GRID', 2))
+    assert record.backplane_for('IO', 1.5) == ('ON_IO_GRID_1.5', 2)
+    assert record.backplane_for('IO') == ('ON_IO_GRID_0.1', 2)
+    assert record.backplane_for('IO', 1.5) == ('ON_IO_GRID_1.5', 2)
+    # Naming the default margin is the same as naming none.
+    assert record.backplane_for('IO', meshgrids.MARGIN) == ('ON_IO_GRID_0.1', 2)
+    assert built == ['IO_GRID_1.5', 'IO_GRID_0.1']
+
+
+def test_backplane_for_unboxed_body_uses_the_fov(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A body with no box, or no body at all, is tabulated on the FOV backplane."""
+    record, built = _boxed_record(monkeypatch, ('IO_GRID', 2))
+    assert record.backplane_for('EUROPA') == ('FOV_BACKPLANE', 8)
+    assert record.backplane_for(None) == ('FOV_BACKPLANE', 8)
+    assert built == []
+
+
+def test_backplane_for_falls_back_when_no_grid_is_built(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A box that yields no meshgrid of its own shares the FOV backplane."""
+    record, built = _boxed_record(monkeypatch, None)
+    assert record.backplane_for('IO') == ('FOV_BACKPLANE', 8)
+    assert built == []
 
 
 def test_record_init_sets_blocker_when_target_in_view(

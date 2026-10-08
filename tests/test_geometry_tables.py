@@ -13,8 +13,8 @@ import pytest
 import metadata_tools.common as com
 import metadata_tools.defs as defs
 from metadata_tools.config import get_geometry_config
+from metadata_tools.geometry_support import prep, tables
 from metadata_tools.geometry_support import suite as suite_mod
-from metadata_tools.geometry_support import tables
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.suite import Suite
 
@@ -70,7 +70,10 @@ def test_sun_table_add_targets_sun() -> None:
 
 
 def test_ring_table_add_only_when_rings_present() -> None:
-    """RingTable.add dispatches with the primary's name when rings are present."""
+    """RingTable.add dispatches with the primary's name when rings are present.
+
+    No grid is named: the ring plane is sampled across the whole field of view.
+    """
     table = _with_schema(tables.RingTable(level='summary'))
     record = RecordingRecord(primary='JUPITER', rings_present=True)
     table.add(record)
@@ -94,13 +97,13 @@ def test_ring_table_add_skips_without_primary() -> None:
 
 
 def test_body_table_add_iterates_bodies() -> None:
-    """BodyTable.add dispatches once per body with matching name and target."""
+    """BodyTable.add dispatches once per body, each sampled on its own grid."""
     table = _with_schema(tables.BodyTable(level='summary'))
     record = RecordingRecord(bodies=['IO', 'EUROPA'])
     table.add(record)
     assert record.calls == [
-        (('COLS',), {'name': 'IO', 'target': 'IO'}),
-        (('COLS',), {'name': 'EUROPA', 'target': 'EUROPA'})]
+        (('COLS',), {'name': 'IO', 'target': 'IO', 'grid': 'IO'}),
+        (('COLS',), {'name': 'EUROPA', 'target': 'EUROPA', 'grid': 'EUROPA'})]
 
 
 #===============================================================================
@@ -136,7 +139,8 @@ def test_record_add_builds_summary_line(
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     record = record_stub(
         pointing_available=True, sampling=8, blocker=None,
-        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane())
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane(),
+        boxes={})
     columns = [make_column(key=('phase_angle', 'IO'), flag='DEG',
                            valid_minimum=0., valid_maximum=180.)]
     lines = record.add(columns, no_body=True)
@@ -160,12 +164,42 @@ def test_record_add_binds_the_body_name(
 
     record = record_stub(
         pointing_available=True, sampling=8, blocker=None,
-        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Recording())
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Recording(),
+        boxes={})
     columns = [make_column(key=('phase_angle', defs.BODYX), flag='DEG',
                            valid_minimum=0., valid_maximum=180.)]
     lines = record.add(columns, name='JUPITER', no_body=True)
     assert seen == [('phase_angle', 'JUPITER')]
     assert lines == ['"vol","file",  28.648,  57.296']
+
+
+def test_record_add_samples_the_named_grid(
+        record_stub: Callable[..., Record], make_column: Callable[..., Any],
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A grid names the body whose backplane, and sampling, the row is built on."""
+    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
+    record = record_stub(
+        pointing_available=True, sampling=8, blocker=None,
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=None,
+        boxes={'IO': 'BOX'},
+        _backplanes={('IO', 0.1): (_Backplane(), 3), ('IO', 1.5): (_Backplane(), 5)})
+    seen: list[Any] = []
+    real = prep.prep_row
+
+    def _prep_row(*args: Any, **kwargs: Any) -> Any:
+        seen.append((args[2], kwargs['sampling'], kwargs['grids']))
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(prep, 'prep_row', _prep_row)
+    columns = [make_column(key=('phase_angle', 'IO'), flag='DEG',
+                           valid_minimum=0., valid_maximum=180.),
+               make_column(key=('limb_altitude', 'IO'), margin=1.5, flag='DEG',
+                           valid_minimum=0., valid_maximum=180.)]
+    lines = record.add(columns, grid='IO', no_body=True)
+    assert lines == ['"vol","file",  28.648,  57.296,  28.648,  57.296']
+    # The row's own backplane, plus one for the margin that a column declares.
+    assert seen == [(record._backplanes[('IO', 0.1)][0], 3,
+                     {1.5: record._backplanes[('IO', 1.5)]})]
 
 
 #===============================================================================
@@ -212,13 +246,14 @@ def test_suite_make_record_builds_one_record(monkeypatch: pytest.MonkeyPatch) ->
     suite.volume_id = 'GO_0001'
     suite.meshgrids = {}
     suite.sampling = 8
+    suite.body_samples = 16
     created: list[Any] = []
     monkeypatch.setattr(
         suite_mod, 'Record',
         lambda *args: created.append(args) or 'RECORD')  # type: ignore[func-returns-value]
     record = suite.make_record(0)
     assert record == 'RECORD'  # type: ignore[comparison-overlap]
-    assert created == [('obs0', 'GO_0001', {}, 8)]
+    assert created == [('obs0', 'GO_0001', {}, 8, 16)]
 
 
 def test_suite_add_dispatches_to_every_table() -> None:

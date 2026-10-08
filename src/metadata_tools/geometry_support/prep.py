@@ -2,7 +2,7 @@
 # geometry_support/prep.py - Row preparation for a geometry record.
 ################################################################################
 """Row preparation and body-prefix utilities for geometry table generation."""
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
@@ -22,6 +22,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
              blocker: str | None, columns: Sequence['ResolvedColumn'], *,
              primary: str | None = None, target: str | None = None,
              name_length: int = defs.NAME_LENGTH,
+             sampling: int | None = None,
+             grids: Mapping[float, tuple[Any, int]] | None = None,
              ignore_shadows: bool = False,
              allow_zero_rows: bool = True, no_mask: bool = False,
              no_body: bool = False) -> list[list[str]]:
@@ -50,6 +52,11 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         name_length: The character width of a column to contain body names;
             default defs.NAME_LENGTH. Body names are padded or truncated to
             this width.
+        sampling: Pixel sampling density of the backplane; by default, that of
+            the record.
+        grids: The backplane, and its pixel sampling density, for each
+            meshgrid margin that a column declares; a column that declares
+            none, or one not found here, uses *backplane*.
         ignore_shadows: True to ignore any mask constraints applicable to
             shadowing or to the sunlit faces of surfaces.
         allow_zero_rows: True to allow the function to return no rows. If False,
@@ -60,21 +67,31 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     Returns:
         The rows produced, each a list of column strings.
     """
-    # Create all the needed pixel masks
+    if sampling is None:
+        sampling = record.sampling
+
+    # Pair each column with the backplane it is sampled on
+    default_grid = (backplane, sampling)
+    column_grids = [default_grid if column.margin is None or not grids
+                    else grids.get(column.margin, default_grid)
+                    for column in columns]
+
+    # Create all the needed pixel masks, one set for each backplane
     excluded_mask_dict: dict[tuple[Any, ...], polymath.Boolean] = {}
     if record.pointing_available and not no_mask:
-        for column in columns:
+        for column, (column_backplane, _sampling) in zip(columns, column_grids,
+                                                         strict=True):
             event_key = column.key
             mask_desc = column.mask
             mask_target = event_key[1]
 
-            key = (mask_target,) + mask_desc
+            key = (id(column_backplane), mask_target) + mask_desc
             if key in excluded_mask_dict:
                 continue
 
             excluded_mask_dict[key] = \
                 masks.construct_excluded_mask(
-                            backplane, mask_target, primary, mask_desc,
+                            column_backplane, mask_target, primary, mask_desc,
                             blocker=blocker, ignore_shadows=ignore_shadows)
 
     # Initialize the list of columns
@@ -93,18 +110,20 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     nothing_found = True
 
     # For each column...
-    for column in columns:
+    for column, (column_backplane, column_sampling) in zip(columns, column_grids,
+                                                          strict=True):
         event_key = column.key
         mask_desc = column.mask
         stubs = column.stubs
         null_flag = False
 
-        # Fill in the backplane array
-        if event_key[1] == defs.NULL:
+        # Fill in the backplane array. A target that is not registered, such
+        # as the ring system of a planet that has none, has nothing to evaluate.
+        if event_key[1] == defs.NULL or not masks.target_exists(event_key[1]):
             values: Any = oops.Scalar(0., True)
         else:
             if record.pointing_available:
-                values = backplane.evaluate(event_key)
+                values = column_backplane.evaluate(event_key)
             else:
                 values = oops.Scalar(0., True)
                 null_flag = True
@@ -113,7 +132,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         # target so the function's `target` parameter is not clobbered.
         if excluded_mask_dict != {}:
             col_target = event_key[1]
-            excluded = excluded_mask_dict[(col_target,) + mask_desc]
+            excluded = excluded_mask_dict[(id(column_backplane), col_target) + mask_desc]
             values = values.mask_where(excluded)
 
         if not np.all(values.mask):
@@ -128,7 +147,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
                 # resolve_schema guarantees every data column declares a null.
                 values = oops.Scalar(cast(float, null_value), False)
         data_columns.append(
-            formatting.formatted_column(values, stubs, record.sampling))
+            formatting.formatted_column(values, stubs, column_sampling))
 
     # An all-null row is dropped unless the caller demands a row regardless
     if nothing_found and allow_zero_rows:

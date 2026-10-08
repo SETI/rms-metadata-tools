@@ -39,13 +39,57 @@ Record and prep
 :class:`~metadata_tools.geometry_support.record.Record` holds one observation's
 state: the primary body (from
 :func:`~metadata_tools.geometry_support.bodies_select.get_primary`), the selected
-bodies, and the ``oops`` backplane. Each table passes its own resolved columns
+bodies, and the ``oops`` backplanes. Each table passes its own resolved columns
 to :meth:`~metadata_tools.geometry_support.record.Record.add`, which binds the
-``BODYX`` placeholder to the body being written and calls
+``BODYX`` placeholder to the body being written, selects that body's backplane,
+and calls
 :func:`~metadata_tools.geometry_support.prep.prep_row`, which evaluates each
 column's backplane key, applies the excluded-pixel mask, and formats the result;
 :meth:`~metadata_tools.geometry_support.record.Record.postprocess` then applies
 each link function to its group of linked columns.
+
+Body-specific meshgrids
+=======================
+
+The sky and ring tables are sampled on the observation's FOV meshgrid, at the
+pixel sampling density (``--sampling``). A body that is small in the image would
+get few of those samples, or none, so each body row is instead sampled across
+its own bounding box:
+
+- :func:`~metadata_tools.geometry_support.bodies_select.bounding_boxes` asks the
+  ``oops`` inventory for the center and apparent diameter of each tabulated
+  body. The unrounded values are used, so a box may be far smaller than a
+  pixel. The inventory is taken in the field of view of the FOV meshgrid, so a
+  box is located in the coordinates that meshgrid samples.
+- :func:`~metadata_tools.geometry_support.meshgrids.box_meshgrid` pads the box
+  by 10% of its size on each side, clips it to the extent of the FOV meshgrid,
+  and samples what remains at the pixel sampling density, but with never fewer
+  than ``--body-samples`` samples along each axis (default 16).
+- :meth:`~metadata_tools.geometry_support.record.Record.backplane_for` builds
+  one backplane on each such meshgrid and reuses it for every column of that
+  body's row.
+
+A column that reaches beyond the body states a wider padding with the
+``MESHGRID_MARGIN`` keyword of its definition, as a fraction of the box's size.
+The limb columns state 1.5, which reaches 4 radii from the body's center: the
+3 radii of altitude that the limb altitude key allows. Such a column is sampled
+on a meshgrid of its own, one for each distinct margin among a table's columns,
+so a row may draw on more than one backplane;
+:func:`~metadata_tools.geometry_support.prep.prep_row` builds the masks for each.
+The minimum sample count is still counted across the body itself, so a wider
+margin adds samples around the body without spreading them thinner. Columns
+that are computed from one another, such as the limb clock angle from the limb
+altitude, must state the same margin. The margin has no effect on a row
+sampled on the FOV meshgrid.
+
+``--no-body-meshgrids`` (a ``body_samples`` of 0) turns all of this off, and no
+boxes are requested. Otherwise the FOV backplane is used instead for a body
+with no box (it is outside the field of view, wholly hidden, or the pointing is
+unavailable) and for a box that covers the whole FOV meshgrid. The masks are
+evaluated on whichever backplane the row uses.
+
+The ring row keeps the FOV meshgrid because its columns describe the unbounded
+ring plane, which is never small in the image.
 
 Masks
 =====
@@ -106,9 +150,7 @@ which a stub may override like ``FORMAT``):
 
 * ``BACKPLANE_KEY`` -- the key handed to ``Backplane.evaluate()``, as a Python
   tuple literal. The token ``'bodyx'`` (:data:`~metadata_tools.defs.BODYX`) is
-  substituted per body at row time, and a string of the form
-  ``'defs.<DICT>["bodyx"]'`` resolves to a ``defs`` dictionary lookup after
-  substitution.
+  substituted per body at row time.
 * ``MASK`` (default ``('', '', '')``) -- the ``(masker, shadower, face)``
   codes. The masker/shadower strings concatenate ``"P"`` (planet), ``"R"``
   (rings), and ``"M"`` (blocker body); the face is ``"D"``, ``"N"``, or ``""``.
@@ -118,6 +160,10 @@ which a stub may override like ``FORMAT``):
 * ``LINK_ID`` -- an identifier naming the column's link group: the columns in
   one table sharing it are postprocessed together by the group's link
   function, which the id names (see `Link functions`_ below).
+* ``MESHGRID_MARGIN`` (default 0.1) -- a number: the padding added to each side
+  of a body's bounding box when the column is sampled on a meshgrid of the
+  body's own, as a fraction of the box's size (see `Body-specific meshgrids`_
+  above).
 
 The right-hand side of ``BACKPLANE_KEY`` and ``MASK`` is a Python literal on a
 single line, parsed with :func:`ast.literal_eval`; nothing ever parses these
@@ -281,8 +327,11 @@ Important invariants
   carries the backplane key, the mask, the link fields, and one
   :class:`~metadata_tools.geometry_support.label_schema.ColumnStub` per value
   it produces -- all of it parsed from the label template.
-- **Meshgrids** are built once per :class:`~metadata_tools.geometry_support.suite.Suite`
-  and selected per observation by telemetry mode; they are not rebuilt per row.
+- **Meshgrids.** The FOV meshgrids are built once per
+  :class:`~metadata_tools.geometry_support.suite.Suite` and selected per
+  observation by telemetry mode. A body-specific meshgrid is built per
+  observation, once for each body in the field of view; see "Body-specific
+  meshgrids" above.
 - **One row per observation.** A call produces at most one row; with the
   default ``allow_zero_rows=True`` an all-null row is dropped (pass
   ``allow_zero_rows=False`` to force it).

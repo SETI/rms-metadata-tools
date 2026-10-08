@@ -96,10 +96,27 @@ def test_sky_and_sun_keys_are_already_bound(qualifier: str) -> None:
         assert defs.BODYX not in str(column.key), column.stubs[0].name
 
 
-def test_ring_diameter_key_holds_a_dict_reference() -> None:
-    """The ring diameter key defers a RING_SYSTEM_RADII lookup to substitution."""
+def test_ring_diameter_key_names_the_ring_system_body() -> None:
+    """The ring diameter takes its radius from the primary's ring system body."""
     columns = {c.stubs[0].name: c for c in resolve_schema(TEMPLATE_DIR, 'ring').columns}
-    assert 'RING_SYSTEM_RADII' in str(columns['RING_DIAMETER_IN_PIXELS'].key)
+    assert columns['RING_DIAMETER_IN_PIXELS'].key == (
+        'body_diameter_in_pixels', defs.BODYX + '_RING_SYSTEM')
+
+
+def test_only_the_limb_columns_widen_their_meshgrid() -> None:
+    """The limb columns reach 3 radii above the body, so they pad their box.
+
+    A margin of 1.5 diameters reaches 4 radii from the body's center, which is
+    the limit of 3 radii of altitude that the limb altitude key states. The
+    clock angle is computed from the altitude, so the two must agree.
+    """
+    margins = {stub.name: column.margin
+               for qualifier in sorted(SHIPPED)
+               for column in resolve_schema(TEMPLATE_DIR, qualifier).columns
+               for stub in column.stubs
+               if column.margin is not None}
+    assert margins == {'MINIMUM_LIMB_ALTITUDE': 1.5, 'MAXIMUM_LIMB_ALTITUDE': 1.5,
+                       'MINIMUM_LIMB_CLOCK_ANGLE': 1.5, 'MAXIMUM_LIMB_CLOCK_ANGLE': 1.5}
 
 
 def test_only_the_centre_coordinates_are_linked() -> None:
@@ -723,6 +740,26 @@ def test_a_link_id_without_a_function_is_an_error(tmp_path: Path) -> None:
     """A group whose function exists nowhere fails at parse time, not add time."""
     tdir = _sky_with_link(tmp_path, '    LINK_ID                     = "NOWHERE"\n')
     with pytest.raises(RuntimeError, match=r'no link function link__nowhere\(\)'):
+        resolve_schema(tdir, 'sky')
+
+
+def test_a_meshgrid_margin_is_read_as_a_number(tmp_path: Path) -> None:
+    """MESHGRID_MARGIN is a Python number; an integer is read as a float."""
+    tdir = _sky_with_link(tmp_path, '    MESHGRID_MARGIN             = 2\n')
+    columns = {c.stubs[0].name: c for c in resolve_schema(tdir, 'sky').columns}
+    margin = columns['MINIMUM_RIGHT_ASCENSION'].margin
+    assert margin == 2.0
+    assert isinstance(margin, float)
+    assert columns['MINIMUM_DECLINATION'].margin is None
+
+
+@pytest.mark.parametrize('value', ['-0.5', '"wide"', 'True', '(1, 2)'])
+def test_a_meshgrid_margin_must_be_a_non_negative_number(tmp_path: Path,
+                                                         value: str) -> None:
+    """Anything but a non-negative number is rejected when the table is built."""
+    tdir = _sky_with_link(tmp_path, f'    MESHGRID_MARGIN             = {value}\n')
+    with pytest.raises(RuntimeError,
+                       match='MESHGRID_MARGIN must be a non-negative number'):
         resolve_schema(tdir, 'sky')
 
 

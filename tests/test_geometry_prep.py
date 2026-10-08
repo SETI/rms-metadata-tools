@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 import oops
+import pytest
 
 from metadata_tools.geometry_support import prep
 from metadata_tools.geometry_support.record import Record
@@ -28,9 +29,10 @@ def _record(record_stub: Callable[..., Record], pointing: bool = True,
 
 
 def _phase_cols(make_column: Callable[..., Any],
-                mask: tuple[str, str, str] = ('', '', '')) -> list[Any]:
+                mask: tuple[str, str, str] = ('', '', ''),
+                margin: float | None = None) -> list[Any]:
     """Return a one-column schema: the IO phase-angle min/max pair."""
-    return [make_column(key=('phase_angle', 'IO'), mask=mask, flag='DEG',
+    return [make_column(key=('phase_angle', 'IO'), mask=mask, margin=margin, flag='DEG',
                         valid_minimum=0., valid_maximum=180.)]
 
 
@@ -62,7 +64,7 @@ def test_append_body_prefix_truncates_long_name() -> None:
 # prep_row summary path
 #===============================================================================
 def test_summary_writes_single_row(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """The summary path emits one formatted row."""
     # fake_backplane: conftest-private FakeBackplane stand-in for oops.Backplane.
@@ -76,7 +78,7 @@ def test_summary_writes_single_row(
 
 
 def test_summary_no_body_omits_prefixes(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """With no_body=True no body-name columns are inserted."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
@@ -89,7 +91,7 @@ def test_summary_no_body_omits_prefixes(
 
 
 def test_primary_prefix_when_no_target(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """With no target, the primary name fills the body prefix column."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
@@ -98,6 +100,25 @@ def test_primary_prefix_when_no_target(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
         _phase_cols(make_column), primary='JUPITER', target=None, no_mask=True)
     assert rows[0][2] == '"JUPITER     "'
+
+
+def test_unregistered_target_is_null_not_evaluated(
+        monkeypatch: pytest.MonkeyPatch, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A column whose target body is not registered is written as its null.
+
+    The ring diameter column names the primary's ring system body, which a
+    planet such as Mars does not have; the backplane is never asked for it.
+    """
+    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: False))
+    columns = [make_column(key=('body_diameter_in_pixels', 'MARS_RING_SYSTEM'),
+                           names=['RING_DIAMETER_IN_PIXELS'], flag='',
+                           width=8, print_format='%8.3f', null_value=-999.)]
+    # fake_backplane holds no evaluation for the key, so evaluating it would raise.
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        columns, primary='MARS', allow_zero_rows=False)
+    assert rows[0][-1] == '-999.000'
 
 
 def test_pointing_unavailable_writes_null_row(
@@ -128,3 +149,47 @@ def test_excluded_mask_applied_when_not_no_mask(
         target='IO', allow_zero_rows=True)
     # Fully excluded + allow_zero_rows -> nothing_found suppresses the row.
     assert rows == []
+
+
+def test_columns_are_sampled_on_the_grid_of_their_margin(
+        exists_true: None, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A column declaring a margin is evaluated, and masked, on that grid.
+
+    Each backplane has its own mask for the same target and mask codes: the
+    wide grid here is wholly excluded while the default grid is not.
+    """
+    wide = type(fake_backplane)(shape=(2, 2))
+    fake_backplane.evaluations[('phase_angle', 'IO')] = \
+        oops.Scalar(np.full((4, 4), 0.5), False)
+    wide.evaluations[('limb_altitude', 'IO')] = oops.Scalar(np.full((2, 2), 1.0), False)
+    wide.evaluations[('emission_angle', 'IO')] = oops.Scalar(np.full((2, 2), 1.0), False)
+    wide.in_back[('IO', 'JUPITER')] = np.ones((2, 2), dtype=bool)
+    columns = [
+        make_column(key=('phase_angle', 'IO'), mask=('P', '', '')),
+        make_column(key=('limb_altitude', 'IO'), margin=1.5,
+                    names=['MINIMUM_LIMB_ALTITUDE', 'MAXIMUM_LIMB_ALTITUDE']),
+        make_column(key=('emission_angle', 'IO'), margin=1.5, mask=('P', '', ''),
+                    names=['MINIMUM_EMISSION_ANGLE', 'MAXIMUM_EMISSION_ANGLE'])]
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None, columns,
+        primary='JUPITER', target='IO', no_body=True, grids={1.5: (wide, 3)})
+    assert rows == [['"vol"', '"file"', '  28.648,  28.648', '  57.296,  57.296',
+                     '-999.000,-999.000']]
+
+
+def test_a_margin_without_a_grid_uses_the_row_backplane(
+        exists_true: None, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A declared margin is ignored when the row has no grid for it.
+
+    The ring and sky rows, and a body with no bounding box, have only the
+    backplane of the whole field of view.
+    """
+    fake_backplane.evaluations[('phase_angle', 'IO')] = \
+        oops.Scalar(np.array([0.5, 1.0]), False)
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        _phase_cols(make_column, margin=1.5), primary='JUPITER', target='IO',
+        no_mask=True, no_body=True)
+    assert rows[0][-1] == '  28.648,  57.296'

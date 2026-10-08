@@ -36,8 +36,7 @@ $NOTE
 #
 #   BACKPLANE_KEY = <Python tuple literal>  the Backplane.evaluate() key; the
 #                   token 'bodyx' (defs.BODYX) is substituted per body at run
-#                   time, and a string 'defs.<DICT>["bodyx"]' resolves to a
-#                   defs dictionary lookup after substitution
+#                   time
 #   MASK          = ('<maskers>', '<shadowers>', '<face>'), letters P/R/M and
 #                   face D/N; omitted when no mask applies
 #   OVERFLOW_FORMAT = the fallback format when a value overflows the field,
@@ -47,6 +46,12 @@ $NOTE
 #                   by the link function it names: LINK_ID "X" calls
 #                   link__x(), from geometry_support/link_fns.py or the
 #                   host's geometry_config
+#   MESHGRID_MARGIN = a number: the padding added to each side of a body's
+#                   bounding box when the column is sampled on a meshgrid of
+#                   the body's own, as a fraction of the box's size (default
+#                   0.1). A column reaching beyond the body states its own,
+#                   and is then sampled on a meshgrid of its own; columns that
+#                   depend on one another must state the same margin
 #
 # The right-hand side of BACKPLANE_KEY and MASK is a Python literal on a
 # single line; nothing ever parses these lines as ODL.

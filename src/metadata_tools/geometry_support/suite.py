@@ -42,7 +42,7 @@ class Suite:
                        metadata_dir: str | Path | FCPath | None = None,
                        glob: str | None = None,
                        index_glob: str | None = None, first: int | None = None,
-                       sampling: int = 8) -> None:
+                       sampling: int = 8, body_samples: int = 16) -> None:
         """Construct a geometry Suite object.
 
         Parameters:
@@ -55,6 +55,8 @@ class Suite:
             first: If given, at most this many files are processed in each
                 volume.
             sampling: Pixel sampling density.
+            body_samples: Minimum number of samples across the bounding box of
+                a body; 0 to disable body-specific meshgrids.
 
         Raises:
             ValueError: If index_glob is None.
@@ -71,6 +73,7 @@ class Suite:
         self.index_glob = index_glob
         self.first = first
         self.sampling = sampling
+        self.body_samples = body_samples
 
         # Check for supplemental index
         if self.index_glob is None:
@@ -145,7 +148,8 @@ class Suite:
         return Record(self.observations[index],
                       self.volume_id,
                       self.meshgrids,
-                      self.sampling)
+                      self.sampling,
+                      self.body_samples)
 
     #===========================================================================
     def add(self, record: Record) -> None:

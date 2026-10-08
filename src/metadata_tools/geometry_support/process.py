@@ -15,13 +15,16 @@ from metadata_tools.geometry_support.suite import Suite
 #===============================================================================
 def get_args(host: str | None = None,
              exclude: list[str] | None = None,
-             sampling: int = 8) -> argparse.ArgumentParser:
+             sampling: int = 8,
+             body_samples: int = 16) -> argparse.ArgumentParser:
     """Build the argument parser for geometric metadata.
 
     Parameters:
         host: Host name, e.g. 'GOISS'.
         exclude: List of volumes to exclude.
         sampling: Pixel sampling density.
+        body_samples: Minimum number of samples across the bounding box of a
+            body; 0 to disable body-specific meshgrids.
 
     Returns:
         Parser containing the argument specifications.
@@ -43,6 +46,14 @@ def get_args(host: str | None = None,
     gr.add_argument('--sampling', '-s', type=int, metavar='sampling',
                     default=sampling,
                     help='''Pixel sampling density.''')
+    gr.add_argument('--body-samples', '-b', type=int, metavar='body_samples',
+                    default=body_samples,
+                    help='''Minimum number of samples across the bounding box of
+                            each body, however small it appears.''')
+    gr.add_argument('--no-body-meshgrids', action='store_true',
+                    help='''Sample every body on the meshgrid of the whole
+                            field of view, rather than on a meshgrid of its
+                            own.''')
 
     # Return parser
     return parser
@@ -52,6 +63,7 @@ def process_tables(template_name: str,
                    volumes: list[str] | None = None,
                    exclude: list[str] | None = None,
                    sampling: int = 8,
+                   body_samples: int = 16,
                    glob: str | None = None,
                    index_glob: str | None = None,
                    args: argparse.Namespace | None = None) -> None:
@@ -62,6 +74,8 @@ def process_tables(template_name: str,
         volumes: List of volume ids to process. Overrides args.volumes.
         exclude: List of volumes to exclude.
         sampling: Pixel sampling density.
+        body_samples: Minimum number of samples across the bounding box of a
+            body; 0 to disable body-specific meshgrids.
         glob: Glob pattern for data files.
         index_glob: Glob pattern for index files.
         args: Parsed arguments.
@@ -71,12 +85,14 @@ def process_tables(template_name: str,
     host, _index_type, template_dir = util.parse_template_name(template_name)
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
     if args is None:
-        parser = get_args(host=host, exclude=exclude, sampling=sampling)
+        parser = get_args(host=host, exclude=exclude, sampling=sampling,
+                          body_samples=body_samples)
         args = parser.parse_args()
 
     metadata_tree = FCPath(args.metadata_tree)
     output_tree = FCPath(args.output_tree)
     new_only = args.new_only
+    body_samples = 0 if args.no_body_meshgrids else args.body_samples
     labels_only = args.labels
 
     if volumes is None:
@@ -132,5 +148,6 @@ def process_tables(template_name: str,
 
                 suite = Suite(indir, outdir, template_path, metadata_dir,
                               glob=glob, index_glob=index_glob,
-                              first=args.first, sampling=args.sampling)
+                              first=args.first, sampling=args.sampling,
+                              body_samples=body_samples)
                 suite.create(labels_only=labels_only, pattern=args.pattern)

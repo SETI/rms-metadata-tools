@@ -3,7 +3,6 @@
 ################################################################################
 """Utility functions for path handling, file I/O, and metadata computations."""
 import math
-import re
 from pathlib import Path
 from typing import Any
 
@@ -171,43 +170,9 @@ def get_volume_subdir(path: FCPath, volume_id: str) -> FCPath:
     return splitpath(path, volume_id)[-1]
 
 #===============================================================================
-# Matches the only form produced by replacement_fn: "defs.<ATTR>["<key>"]"
-_DICT_REF = re.compile(r'^(\w+)\.(\w+)\["([^"]+)"\]$')
-
-
-def _resolve_dict_ref(ref: str) -> Any:
-    """Resolve a dict-reference string of the form ``defs.<ATTR>["<key>"]``.
-
-    Only dictionaries in the ``defs`` module are accessible.
-
-    Parameters:
-        ref: Reference string produced by :func:`replacement_fn`, e.g.
-            ``'defs.RING_SYSTEM_RADII["JUPITER"]'``.
-
-    Returns:
-        The value stored under ``<key>`` in the named ``defs`` dictionary.
-
-    Raises:
-        ValueError: If *ref* does not match the expected form or names a module
-            other than ``defs``.
-        AttributeError: If the named dictionary does not exist in ``defs``.
-        KeyError: If ``<key>`` is not present in the named dictionary.
-    """
-    m = _DICT_REF.match(ref)
-    if m is None:
-        raise ValueError(f'Unrecognized column reference: {ref!r}')
-    module_name, attr_name, key = m.groups()
-    if module_name != 'defs':
-        raise ValueError(f'Unknown module in column reference: {module_name!r}')
-    return getattr(defs, attr_name)[key]
-
-
-#===============================================================================
 def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> Any:
     """Return a copy of the tree of objects, with each occurrence of the
-    placeholder string replaced by the given name. Dictionary references are
-    resolved via an explicit lookup, but only within elements of nested list or
-    tuple leaves; top-level string leaves are not resolved.
+    placeholder string replaced by the given name.
 
     Parameters:
         tree: List or tuple containing the tree.
@@ -220,20 +185,9 @@ def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> A
 
     new_tree: list[Any] = []
     for leaf in tree:
-        # Main entries: replace placeholder and evaluate dict references
+        # Nested entries: recurse
         if isinstance(leaf, (tuple, list)):
-            # replace placeholder
-            replacement = replace(leaf, placeholder, name)
-
-            # resolve any dictionary references now that placeholders are resolved
-            lrep = list(replacement)
-            for i in range(len(lrep)):
-                if isinstance(lrep[i], str) and '[' in lrep[i]:
-                    lrep[i] = _resolve_dict_ref(lrep[i])
-            # Preserve the leaf's container type: lists stay lists, tuples tuples.
-            replacement = tuple(lrep) if isinstance(leaf, tuple) else lrep
-
-            new_tree.append(replacement)
+            new_tree.append(replace(leaf, placeholder, name))
 
         # Simple str with placeholders: replace placeholder and add to tree
         elif isinstance(leaf, str) and leaf.find(placeholder) != -1:

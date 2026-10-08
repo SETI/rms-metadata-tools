@@ -12,7 +12,7 @@ import metadata_tools.bodies as bodies_mod
 import metadata_tools.defs as defs
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
-from metadata_tools.geometry_support import bodies_select, formats, prep
+from metadata_tools.geometry_support import bodies_select, formats, meshgrids, prep
 from metadata_tools.geometry_support.link_fns import LinkedField, LinkFunction
 
 if TYPE_CHECKING:
@@ -34,11 +34,15 @@ class Record:
     - ``rings_present``: True only when there is a primary with a ring frame.
     - ``target``: the target name, from the host's ``target_name`` hook.
     - ``prefixes``: the quoted volume ID and file specification that begin every row.
-    - ``backplane``: the ``oops`` Backplane for the observation.
+    - ``backplane``: the ``oops`` Backplane sampling the observation's whole
+      field of view.
     - ``inventory``: the bodies in the field of view; empty, with
       ``pointing_available`` set to False, when SPICE pointing is unavailable.
     - ``bodies``: the bodies to tabulate, and ``blocker``: the target, when it is
       in the field of view and can block or shadow the others, else None.
+    - ``boxes``: the bounding box of each tabulated body that is in the field
+      of view; see :meth:`backplane_for`. Empty when body-specific meshgrids
+      are disabled.
 
     Each table then calls :meth:`add` with its resolved columns to produce its
     rows for this observation.
@@ -46,7 +50,7 @@ class Record:
 
     #===========================================================================
     def __init__(self, observation: Any, volume_id: str, meshgrids: dict[str, Any],
-                 sampling: int) -> None:
+                 sampling: int, body_samples: int = 16) -> None:
         """Construct a geometry record.
 
         Parameters:
@@ -54,6 +58,9 @@ class Record:
             volume_id: Volume ID.
             meshgrids: All meshgrids associated with this host.
             sampling: Pixel sampling density.
+            body_samples: Minimum number of samples across the bounding box of
+                a body; 0 to sample every table on the meshgrid of the whole
+                field of view instead.
         """
         self.observation = observation
         config = get_geometry_config()
@@ -63,6 +70,7 @@ class Record:
         self.primary, self.secondaries, self.selections, self.additions = \
             bodies_select.get_primary(self, formats.get_mission_table(), sclk)
         self.sampling = sampling
+        self.body_samples = body_samples
         self.pointing_available = True
 
         # Set up planet-based geometry
@@ -83,8 +91,9 @@ class Record:
                          '"%-32s"' % filespec.replace(".IMG", ".LBL")]
 
         # Create the backplanes
-        meshgrid = self._meshgrid(observation, meshgrids)
-        self.backplane = oops.backplane.Backplane(observation, meshgrid)
+        self.meshgrid = self._meshgrid(observation, meshgrids)
+        self.backplane = oops.backplane.Backplane(observation, self.meshgrid)
+        self._backplanes: dict[tuple[str, float], tuple[Any, int]] = {}
 
         # Get inventory for this record
         self.inventory = bodies_select.inventory(self, bodies_mod.get_bodies_registry())
@@ -97,6 +106,51 @@ class Record:
             blocker = bodies_select.inventory(self, [self.target])
             if blocker:
                 self.blocker = blocker[0]
+
+        # Locate each body in the image
+        self.boxes: dict[str, tuple[Any, tuple[float, float]]] = {}
+        if body_samples > 0:
+            self.boxes = bodies_select.bounding_boxes(self, self.bodies)
+
+    #===========================================================================
+    def backplane_for(self, body: str | None,
+                      margin: float | None = None) -> tuple[Any, int]:
+        """Return the backplane on which to tabulate one body.
+
+        A body in the field of view is sampled on a meshgrid of its own,
+        spanning its bounding box, so that it is resolved however small it
+        appears. Each such backplane is built once, for each margin asked of
+        it, and then reused.
+
+        Parameters:
+            body: Name of the body, or None for a quantity that belongs to no
+                body.
+            margin: Padding added to each side of the bounding box, as a
+                fraction of its size; by default, meshgrids.MARGIN.
+
+        Returns:
+            The backplane and its pixel sampling density. These are the
+            backplane sampling the whole field of view, and the record's
+            sampling, unless the body has a bounding box of its own.
+        """
+        if body is None or body not in self.boxes:
+            return self.backplane, self.sampling
+
+        if margin is None:
+            margin = meshgrids.MARGIN
+        key = (body, margin)
+        if key not in self._backplanes:
+            center_uv, size_uv = self.boxes[body]
+            grid = meshgrids.box_meshgrid(self.meshgrid, center_uv, size_uv,
+                                          self.sampling, self.body_samples, margin)
+            if grid is None:
+                self._backplanes[key] = (self.backplane, self.sampling)
+            else:
+                meshgrid, sampling = grid
+                self._backplanes[key] = (
+                    oops.backplane.Backplane(self.observation, meshgrid), sampling)
+
+        return self._backplanes[key]
 
     #===========================================================================
     @staticmethod
@@ -113,10 +167,7 @@ class Record:
         """
         out: list[ResolvedColumn] = []
         for column in columns:
-            # The key is wrapped in a list because util.replace resolves an
-            # embedded dictionary reference -- the ring system radius lookup --
-            # only inside a nested list or tuple leaf, never at the top level.
-            key = util.replace([column.key], defs.BODYX, name)[0]
+            key = util.replace(column.key, defs.BODYX, name)
             out.append(dataclass_replace(column, key=key))
         return out
 
@@ -193,6 +244,7 @@ class Record:
     #===============================================================================
     def add(self, columns: Sequence['ResolvedColumn'], *,
                   name: str | None = None, target: str | None = None,
+                  grid: str | None = None,
                   ignore_shadows: bool = False,
                   allow_zero_rows: bool = True, no_mask: bool = False,
                   no_body: bool = False) -> list[str]:
@@ -206,6 +258,10 @@ class Record:
             name: The body to bind the BODYX placeholder to, if the columns
                 carry one.
             target: Optionally, the target name to write into the record.
+            grid: Optionally, the body whose bounding box is to be sampled; by
+                default the whole field of view is. Each column is sampled with
+                the margin it declares, so columns that differ in margin are
+                sampled on different meshgrids.
             ignore_shadows: True to ignore any mask constraints applicable to
                 shadowing or to the sunlit faces of surfaces.
             allow_zero_rows: True to allow the function to return no rows. If
@@ -221,9 +277,13 @@ class Record:
             columns = Record.substitute(columns, name)
 
         # Prepare the rows
-        rows = prep.prep_row(self, self.prefixes, self.backplane, self.blocker,
+        backplane, sampling = self.backplane_for(grid)
+        grids = {column.margin: self.backplane_for(grid, column.margin)
+                 for column in columns if column.margin is not None}
+        rows = prep.prep_row(self, self.prefixes, backplane, self.blocker,
                              columns,
                              primary=self.primary, target=target,
+                             sampling=sampling, grids=grids,
                              ignore_shadows=ignore_shadows,
                              allow_zero_rows=allow_zero_rows,
                              no_mask=no_mask,

@@ -34,18 +34,16 @@ def test_substitute_binds_bodyx_in_every_key(make_column: Callable[..., Any]) ->
     assert bound[0].stubs == columns[0].stubs
 
 
-def test_substitute_resolves_embedded_dict_reference(
+def test_substitute_binds_bodyx_inside_a_body_name(
         make_column: Callable[..., Any]) -> None:
-    """A key holding a dictionary reference resolves once the body is known.
+    """The placeholder is bound where it is only part of a body name.
 
-    The ring diameter column's key carries a RING_SYSTEM_RADII lookup keyed by
-    the placeholder. util.replace resolves such a reference only inside a nested
-    list or tuple leaf, which is why substitute wraps the key before replacing.
+    The ring diameter column names the primary's ring system body, from which
+    oops takes the ring radius.
     """
-    key = ('body_diameter_in_pixels', defs.BODYX + ':RING',
-           'defs.RING_SYSTEM_RADII["bodyx"]')
+    key = ('body_diameter_in_pixels', defs.BODYX + '_RING_SYSTEM')
     bound = Record.substitute([make_column(key=key)], 'JUPITER')
-    assert bound[0].key[2] == defs.RING_SYSTEM_RADII['JUPITER']
+    assert bound[0].key == ('body_diameter_in_pixels', 'JUPITER_RING_SYSTEM')
 
 
 #===============================================================================

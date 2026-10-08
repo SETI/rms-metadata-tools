@@ -71,6 +71,8 @@ Core engine modules:
   and the built-in `key__<NAME>` functions (`key_fns.py`); builds supplemental index tables.
 - `geometry_support/` — geometry table generation: `process.py` (entry point), `suite.py`
   (`Suite`), `record.py` (`Record`), `tables.py` (the table classes), `prep.py`, `masks.py`,
+  `meshgrids.py` (each body row is sampled across its own inventory bounding box, not
+  the whole FOV),
   `formatting.py`, `bodies_select.py`, `formats.py` (the host's SCLK-resolved mission
   table), and `label_schema.py`, which reads each table's full column schema — label
   metadata and computation spec alike — from its label template.
@@ -133,7 +135,9 @@ grammar of `column_grammar.py`: each computed column is one `COLUMN_DEFINITION` 
 carrying the shared label metadata (FORMAT hence width/print format, UNIT hence unit
 conversion, NULL_CONSTANT, valid range, OVERFLOW_FORMAT) and the computation spec
 (`BACKPLANE_KEY` and `MASK` as Python literals parsed with `ast.literal_eval`, the
-`'bodyx'` token substituted per body at run time; `LINK_ID` naming the column's link group
+`'bodyx'` token substituted per body at run time; `MESHGRID_MARGIN`, the padding of a
+body's bounding box for a column that reaches beyond the body, which is then sampled on a
+meshgrid of its own; `LINK_ID` naming the column's link group
 and, as `link__<id>()` in `geometry_support/link_fns.py` or the host's `geometry_config`,
 the group's postprocess function) —
 and the shared lead-in DESCRIPTION — followed by one `COLUMN_STUB` object per value,

@@ -20,10 +20,10 @@ Two conventions hold across the suite:
   every test in a worker. Change their attributes only through ``monkeypatch``
   (e.g. ``monkeypatch.setattr(get_host_config(), ...)``) so the change is undone
   after the test; a direct ``setattr`` would leak into later tests.
-- Tests that import private names (``_cat_rows``, ``_schema_cache``,
-  ``_resolve_dict_ref``, ...) do so deliberately, as drift guards on internals
-  that the public API does not expose. When a refactor breaks one, update it to
-  the new internals rather than deleting it.
+- Tests that import private names (``_cat_rows``, ``_schema_cache``, ...) do so
+  deliberately, as drift guards on internals that the public API does not
+  expose. When a refactor breaks one, update it to the new internals rather than
+  deleting it.
 """
 import types
 from collections.abc import Callable, Sequence
@@ -206,13 +206,14 @@ def make_column(make_stub: Callable[..., Any]) -> Callable[..., Any]:
               names: Sequence[str] = ('MINIMUM_PHASE_ANGLE', 'MAXIMUM_PHASE_ANGLE'),
               overflow: str | None = None, link_id: str = '',
               link_fn: Callable[..., None] | None = None,
+              margin: float | None = None,
               **stub_kwargs: Any) -> ResolvedColumn:
         # flag and unit belong to the stub: they are derived from the label.
         stub_kwargs.setdefault('flag', 'DEG')
         stubs = tuple(make_stub(name=name, overflow_format=overflow, **stub_kwargs)
                       for name in names)
         return ResolvedColumn(key=key, mask=mask, link_id=link_id, link_fn=link_fn,
-                              stubs=stubs)
+                              margin=margin, stubs=stubs)
 
     return _make
 

@@ -231,10 +231,12 @@ class BodyTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a row for each body selected in the record.
 
+        Each row is sampled across its own body.
+
         Parameters:
             record: Record describing the rows to add; one row is added per
                 entry in record.bodies.
         """
         for name in record.bodies:
             self.rows += record.add(cast(TableSchema, self.schema).columns,
-                                    name=name, target=name)
+                                    name=name, target=name, grid=name)
