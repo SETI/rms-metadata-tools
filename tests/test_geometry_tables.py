@@ -181,20 +181,25 @@ def test_record_add_samples_the_named_grid(
     record = record_stub(
         pointing_available=True, sampling=8, blocker=None,
         primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=None,
-        boxes={'IO': 'BOX'}, _backplanes={'IO': (_Backplane(), 3)})
+        boxes={'IO': 'BOX'},
+        _backplanes={('IO', 0.1): (_Backplane(), 3), ('IO', 1.5): (_Backplane(), 5)})
     seen: list[Any] = []
     real = prep.prep_row
 
     def _prep_row(*args: Any, **kwargs: Any) -> Any:
-        seen.append((args[2], kwargs['sampling']))
+        seen.append((args[2], kwargs['sampling'], kwargs['grids']))
         return real(*args, **kwargs)
 
     monkeypatch.setattr(prep, 'prep_row', _prep_row)
     columns = [make_column(key=('phase_angle', 'IO'), flag='DEG',
+                           valid_minimum=0., valid_maximum=180.),
+               make_column(key=('limb_altitude', 'IO'), margin=1.5, flag='DEG',
                            valid_minimum=0., valid_maximum=180.)]
     lines = record.add(columns, grid='IO', no_body=True)
-    assert lines == ['"vol","file",  28.648,  57.296']
-    assert seen == [(record._backplanes['IO'][0], 3)]
+    assert lines == ['"vol","file",  28.648,  57.296,  28.648,  57.296']
+    # The row's own backplane, plus one for the margin that a column declares.
+    assert seen == [(record._backplanes[('IO', 0.1)][0], 3,
+                     {1.5: record._backplanes[('IO', 1.5)]})]
 
 
 #===============================================================================

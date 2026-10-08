@@ -206,13 +206,14 @@ def make_column(make_stub: Callable[..., Any]) -> Callable[..., Any]:
               names: Sequence[str] = ('MINIMUM_PHASE_ANGLE', 'MAXIMUM_PHASE_ANGLE'),
               overflow: str | None = None, link_id: str = '',
               link_fn: Callable[..., None] | None = None,
+              margin: float | None = None,
               **stub_kwargs: Any) -> ResolvedColumn:
         # flag and unit belong to the stub: they are derived from the label.
         stub_kwargs.setdefault('flag', 'DEG')
         stubs = tuple(make_stub(name=name, overflow_format=overflow, **stub_kwargs)
                       for name in names)
         return ResolvedColumn(key=key, mask=mask, link_id=link_id, link_fn=link_fn,
-                              stubs=stubs)
+                              margin=margin, stubs=stubs)
 
     return _make
 

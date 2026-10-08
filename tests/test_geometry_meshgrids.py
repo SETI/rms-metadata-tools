@@ -59,6 +59,25 @@ def test_axis_samples_clips_before_counting() -> None:
     assert (samples[0], samples[-1]) == pytest.approx((-25., -13.))
 
 
+def test_axis_samples_wider_margin_keeps_the_density_of_the_body() -> None:
+    """A wider margin adds samples around the body; it does not thin them out."""
+    samples = meshgrids.axis_samples(100., 10., -25., 825., 8, 16, margin=1.5)
+    assert samples is not None
+    # A margin of 1.5 reaches 2 diameters, 4 radii, from the center.
+    assert (samples[0], samples[-1]) == pytest.approx((80., 120.))
+    # The spacing is that of the default box: 12 pixels in 15 intervals.
+    assert len(samples) == 51
+    assert samples[1] - samples[0] == pytest.approx(12. / 15.)
+
+
+def test_axis_samples_wider_margin_of_a_large_body_keeps_the_pixel_sampling() -> None:
+    """A large body's wider box is still sampled at the pixel sampling density."""
+    samples = meshgrids.axis_samples(400., 200., -25., 825., 8, 16, margin=0.5)
+    assert samples is not None
+    assert (samples[0], samples[-1]) == pytest.approx((200., 600.))
+    assert samples[1] - samples[0] == pytest.approx(8.)
+
+
 @pytest.mark.parametrize('center', [-100., 900., float('nan')])
 def test_axis_samples_outside_the_limits_is_none(center: float) -> None:
     """A box beyond the FOV, or with no usable position, has no samples."""
@@ -89,6 +108,17 @@ def test_box_meshgrid_subpixel_sampling_is_at_least_one() -> None:
     grid = meshgrids.box_meshgrid(_fov_meshgrid(), (100., 300.), (0.5, 0.5), 8, 16)
     assert grid is not None
     assert grid[1] == 1
+
+
+def test_box_meshgrid_applies_the_margin() -> None:
+    """A margin widens the box along both axes."""
+    grid = meshgrids.box_meshgrid(_fov_meshgrid(), (100., 300.), (10., 10.), 8, 16,
+                                  margin=1.5)
+    assert grid is not None
+    uv = grid[0].uv.vals
+    assert grid[0].shape == (51, 51)
+    assert (uv[..., 0].min(), uv[..., 0].max()) == pytest.approx((80., 120.))
+    assert (uv[..., 1].min(), uv[..., 1].max()) == pytest.approx((280., 320.))
 
 
 def test_box_meshgrid_outside_the_fov_is_none() -> None:

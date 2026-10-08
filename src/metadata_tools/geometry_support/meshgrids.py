@@ -13,20 +13,26 @@ import numpy.typing as npt
 import oops
 
 MARGIN = 0.1
-"""Padding added to each side of a bounding box, as a fraction of its size.
+"""Default padding added to each side of a bounding box, as a fraction of its size.
 
 The inventory treats every body as a sphere at the nominal pixel scale; the
-margin absorbs what that approximation leaves out.
+margin absorbs what that approximation leaves out. A column that reaches
+further from the body, as the limb columns do, states a larger margin of its
+own with the MESHGRID_MARGIN keyword of its label template.
 """
 
 
 #===============================================================================
 def axis_samples(center: float, size: float, lower: float, upper: float,
-                 sampling: float, min_samples: int) -> npt.NDArray[np.float64] | None:
+                 sampling: float, min_samples: int,
+                 margin: float = MARGIN) -> npt.NDArray[np.float64] | None:
     """Sample one axis of a bounding box, clipped to the limits of the FOV grid.
 
-    The clipped box is sampled end to end at the pixel sampling density, but
-    never with fewer than *min_samples* samples, however small it is.
+    The clipped box is sampled end to end at the pixel sampling density, or
+    more finely if the body would otherwise get fewer than *min_samples*
+    samples, however small it is. That minimum is counted across the body with
+    the default margin -- or across the clipped box, if that is smaller -- so a
+    larger margin adds samples around the body without spreading them thinner.
 
     Parameters:
         center: Coordinate of the center of the box, in pixels.
@@ -34,12 +40,14 @@ def axis_samples(center: float, size: float, lower: float, upper: float,
         lower: Lower limit of the FOV grid.
         upper: Upper limit of the FOV grid.
         sampling: Pixel sampling density; the largest spacing allowed.
-        min_samples: Minimum number of samples.
+        min_samples: Minimum number of samples across the body.
+        margin: Padding added to each side of the box, as a fraction of its
+            size.
 
     Returns:
         The sample coordinates, or None if the box lies outside the limits.
     """
-    half = size * (0.5 + MARGIN)
+    half = size * (0.5 + margin)
     start = max(center - half, lower)
     stop = min(center + half, upper)
     # The negated test also rejects a NaN coordinate, as inventory() returns
@@ -47,12 +55,18 @@ def axis_samples(center: float, size: float, lower: float, upper: float,
     if not start < stop:
         return None
 
-    samples = max(min_samples, math.ceil((stop - start) / sampling) + 1)
-    return np.linspace(start, stop, samples)
+    extent = stop - start
+    body = min(extent, size * (1 + 2*MARGIN))
+    # The tolerance keeps a ratio that is a whole number in exact arithmetic
+    # from being rounded up to the next one.
+    intervals = max(math.ceil(extent / sampling - 1e-9),
+                    math.ceil(extent / body * (min_samples - 1) - 1e-9))
+    return np.linspace(start, stop, intervals + 1)
 
 #===============================================================================
 def box_meshgrid(fov_meshgrid: Any, center_uv: Any, size_uv: Any,
-                 sampling: int, min_samples: int) -> tuple[Any, int] | None:
+                 sampling: int, min_samples: int,
+                 margin: float = MARGIN) -> tuple[Any, int] | None:
     """Build a meshgrid sampling the bounding box of one body.
 
     The box is clipped to the extent of the observation's FOV meshgrid, which
@@ -63,7 +77,9 @@ def box_meshgrid(fov_meshgrid: Any, center_uv: Any, size_uv: Any,
         center_uv: The (u,v) coordinates of the center of the body.
         size_uv: The (u,v) diameters of the body, in pixels.
         sampling: Pixel sampling density of the FOV meshgrid.
-        min_samples: Minimum number of samples across the box, along each axis.
+        min_samples: Minimum number of samples across the body, along each axis.
+        margin: Padding added to each side of the box, as a fraction of its
+            size.
 
     Returns:
         The meshgrid and its pixel sampling density, rounded to at least 1; or
@@ -78,7 +94,7 @@ def box_meshgrid(fov_meshgrid: Any, center_uv: Any, size_uv: Any,
         lower = float(uv[..., i].min())
         upper = float(uv[..., i].max())
         samples = axis_samples(float(center_uv[i]), float(size_uv[i]), lower, upper,
-                               sampling, min_samples)
+                               sampling, min_samples, margin)
         if samples is None:
             return None
         covers_fov &= bool(samples[0] == lower and samples[-1] == upper)

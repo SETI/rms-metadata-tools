@@ -29,9 +29,10 @@ def _record(record_stub: Callable[..., Record], pointing: bool = True,
 
 
 def _phase_cols(make_column: Callable[..., Any],
-                mask: tuple[str, str, str] = ('', '', '')) -> list[Any]:
+                mask: tuple[str, str, str] = ('', '', ''),
+                margin: float | None = None) -> list[Any]:
     """Return a one-column schema: the IO phase-angle min/max pair."""
-    return [make_column(key=('phase_angle', 'IO'), mask=mask, flag='DEG',
+    return [make_column(key=('phase_angle', 'IO'), mask=mask, margin=margin, flag='DEG',
                         valid_minimum=0., valid_maximum=180.)]
 
 
@@ -148,3 +149,47 @@ def test_excluded_mask_applied_when_not_no_mask(
         target='IO', allow_zero_rows=True)
     # Fully excluded + allow_zero_rows -> nothing_found suppresses the row.
     assert rows == []
+
+
+def test_columns_are_sampled_on_the_grid_of_their_margin(
+        exists_true: None, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A column declaring a margin is evaluated, and masked, on that grid.
+
+    Each backplane has its own mask for the same target and mask codes: the
+    wide grid here is wholly excluded while the default grid is not.
+    """
+    wide = type(fake_backplane)(shape=(2, 2))
+    fake_backplane.evaluations[('phase_angle', 'IO')] = \
+        oops.Scalar(np.full((4, 4), 0.5), False)
+    wide.evaluations[('limb_altitude', 'IO')] = oops.Scalar(np.full((2, 2), 1.0), False)
+    wide.evaluations[('emission_angle', 'IO')] = oops.Scalar(np.full((2, 2), 1.0), False)
+    wide.in_back[('IO', 'JUPITER')] = np.ones((2, 2), dtype=bool)
+    columns = [
+        make_column(key=('phase_angle', 'IO'), mask=('P', '', '')),
+        make_column(key=('limb_altitude', 'IO'), margin=1.5,
+                    names=['MINIMUM_LIMB_ALTITUDE', 'MAXIMUM_LIMB_ALTITUDE']),
+        make_column(key=('emission_angle', 'IO'), margin=1.5, mask=('P', '', ''),
+                    names=['MINIMUM_EMISSION_ANGLE', 'MAXIMUM_EMISSION_ANGLE'])]
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None, columns,
+        primary='JUPITER', target='IO', no_body=True, grids={1.5: (wide, 3)})
+    assert rows == [['"vol"', '"file"', '  28.648,  28.648', '  57.296,  57.296',
+                     '-999.000,-999.000']]
+
+
+def test_a_margin_without_a_grid_uses_the_row_backplane(
+        exists_true: None, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A declared margin is ignored when the row has no grid for it.
+
+    The ring and sky rows, and a body with no bounding box, have only the
+    backplane of the whole field of view.
+    """
+    fake_backplane.evaluations[('phase_angle', 'IO')] = \
+        oops.Scalar(np.array([0.5, 1.0]), False)
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        _phase_cols(make_column, margin=1.5), primary='JUPITER', target='IO',
+        no_mask=True, no_body=True)
+    assert rows[0][-1] == '  28.648,  57.296'

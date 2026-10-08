@@ -17,8 +17,8 @@ stub's own object type. Any block may take its label format keywords from a
 format-dictionary entry (``COLUMN_FORMAT``), expanded before the schema is read;
 see :func:`metadata_tools.column_grammar.expand_format_references`.
 
-The spec keywords (``BACKPLANE_KEY``, ``MASK``, ``LINK_ID``, and
-``OVERFLOW_FORMAT``) are not PDS3 keywords, and neither are the definition
+The spec keywords (``BACKPLANE_KEY``, ``MASK``, ``LINK_ID``,
+``MESHGRID_MARGIN``, and ``OVERFLOW_FORMAT``) are not PDS3 keywords, and neither are the definition
 and stub blocks themselves: the label write path lowers every group to plain
 ``COLUMN`` objects and drops the spec keywords (see
 :func:`metadata_tools.column_grammar.merge_column_definitions` and
@@ -28,7 +28,9 @@ literal -- these lines are never parsed as ODL by anything -- while
 ``OVERFLOW_FORMAT`` uses the same PDS3 FORMAT notation as the FORMAT keyword
 and ``LINK_ID`` holds a quoted identifier naming the column's link group and,
 through it, the group's link function (see
-:mod:`metadata_tools.geometry_support.link_fns`).
+:mod:`metadata_tools.geometry_support.link_fns`). ``MESHGRID_MARGIN`` is a
+number: how far beyond a body's bounding box the column must be sampled (see
+:mod:`metadata_tools.geometry_support.meshgrids`).
 
 This mirrors :class:`metadata_tools.index_support.table.IndexTable`, which
 already derives its columns from its own template.
@@ -70,7 +72,7 @@ _NULL_KEYWORDS = ('NULL_CONSTANT', 'UNKNOWN_CONSTANT', 'INVALID_CONSTANT',
 
 # The keywords only a COLUMN_DEFINITION may carry. OVERFLOW_FORMAT is not
 # among them: it is format metadata, so a stub may override it like FORMAT.
-_DEFINITION_ONLY = ('BACKPLANE_KEY', 'MASK', 'LINK_ID')
+_DEFINITION_ONLY = ('BACKPLANE_KEY', 'MASK', 'LINK_ID', 'MESHGRID_MARGIN')
 
 # A LINK_ID: an identifier, because it names the group's link function.
 _LINK_ID_RE = re.compile(r'^[A-Z][A-Z0-9_]*$')
@@ -150,6 +152,11 @@ class ResolvedColumn:
             group.
         link_fn: The group's link function, which the LINK_ID names, or None
             when the column is unlinked.
+        margin: The MESHGRID_MARGIN: the padding added to each side of a
+            body's bounding box when the column is sampled on a meshgrid of
+            that body's own, as a fraction of the box's size; None for the
+            default. A column with a margin of its own is sampled on a meshgrid
+            of its own.
         stubs: The label metadata for each value this column produces, in slot
             order.
 
@@ -161,6 +168,7 @@ class ResolvedColumn:
     mask: tuple[str, str, str]
     link_id: str = ''
     link_fn: LinkFunction | None = None
+    margin: float | None = None
     stubs: tuple[ColumnStub, ...] = ()
 
     def __post_init__(self) -> None:
@@ -548,6 +556,18 @@ def _resolve_group(definition: 'column_grammar.Block',
                 f'but no link function {link_fns.function_name(link_id)}() is '
                 f'defined in {link_fns.__name__} or the host geometry_config')
 
+    margin: float | None = None
+    margin_raw = def_view.raw('MESHGRID_MARGIN')
+    if margin_raw is not None:
+        margin = _literal(margin_raw, 'MESHGRID_MARGIN', def_name, template)
+        if (isinstance(margin, bool) or not isinstance(margin, (int, float))
+                or margin < 0):
+            raise RuntimeError(
+                f'{template}: {noun} {def_name!r} MESHGRID_MARGIN must be a '
+                f'non-negative number, the padding as a fraction of the bounding '
+                f'box, not {margin!r}')
+        margin = float(margin)
+
     column_stubs: list[ColumnStub] = []
     if not stubs:
         # A plain COLUMN resolved with no stubs is its own single value.
@@ -583,7 +603,7 @@ def _resolve_group(definition: 'column_grammar.Block',
                 f'would null every value. Omit both to skip the range check.')
 
     return ResolvedColumn(key=key, mask=mask, link_id=link_id, link_fn=link_fn,
-                          stubs=tuple(column_stubs))
+                          margin=margin, stubs=tuple(column_stubs))
 
 
 #===============================================================================

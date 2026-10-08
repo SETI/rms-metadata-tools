@@ -134,7 +134,8 @@ table-level boilerplate.
    ``DESCRIPTION`` (what the quantity *is*), and the computation --
    ``BACKPLANE_KEY`` (a Python tuple literal, with ``'bodyx'`` where the body
    name goes), ``MASK`` if any bodies mask it, ``OVERFLOW_FORMAT`` (in PDS3
-   FORMAT notation) if a value can outgrow its field, and ``LINK_ID`` if a
+   FORMAT notation) if a value can outgrow its field, ``MESHGRID_MARGIN`` if
+   the quantity reaches beyond the body's bounding box, and ``LINK_ID`` if a
    postprocessing rule ties the column to others. A ``LINK_ID`` names its link
    function: ``X`` calls ``link__x()``, which must exist in
    ``geometry_support/link_fns.py`` or the host's ``geometry_config``
