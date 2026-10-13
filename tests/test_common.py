@@ -83,8 +83,7 @@ def test_write_labels_only_skips_table(monkeypatch: pytest.MonkeyPatch,
                                         tmp_path: Path) -> None:
     """write(labels_only=True) creates only the label, never the table file."""
     table = com.Table(output_dir=FCPath(tmp_path), volume_id='GO_0001',
-                      qualifier='inventory', suffix='_inventory.csv',
-                      use_global_template=True)
+                      qualifier='inventory', suffix='_inventory.csv')
     calls = []
     monkeypatch.setattr(util, 'write_txt_file',
                         lambda *a: calls.append('write'))

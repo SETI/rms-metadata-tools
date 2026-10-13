@@ -24,7 +24,7 @@ OBJECT                          = INVENTORY_SPREADSHEET
   FIELD_DELIMITER               = COMMA
   INDEX_TYPE                    = $index_type$
   DESCRIPTION                   = "This table identifies every body partially or fully
-    inside each image's field of view."
+    inside each $product$'s field of view."
 
   OBJECT                        = FIELD
     FIELD_NUMBER                = 1
@@ -41,7 +41,7 @@ OBJECT                          = INVENTORY_SPREADSHEET
     DATA_TYPE                   = CHARACTER
     BYTES                       = $FILESPEC_BYTES$
     FORMAT                      = A$FILESPEC_BYTES$
-    DESCRIPTION                 = "The full name of the raw image file, including the
+    DESCRIPTION                 = "The full name of the raw $product$ file, including the
         directory path, relative to the root directory of the PDS volume."
   END_OBJECT                    = FIELD
 

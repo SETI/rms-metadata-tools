@@ -215,12 +215,12 @@ def test_cleanup_calls_the_host_hook_if_any(monkeypatch: pytest.MonkeyPatch) -> 
     cfg.cleanup()
     assert called == ['cleanup']
 
-def test_get_expand_defaults_to_no_border(monkeypatch: pytest.MonkeyPatch) -> None:
-    """With no host EXPAND, the field of view has no border."""
-    _, geom = _bare_host(monkeypatch)
-    assert cfg.get_expand() == 0.
-    geom.EXPAND = 2.5e-4  # type: ignore[attr-defined]
-    assert cfg.get_expand() == 2.5e-4
+def test_get_border_defaults_to_no_border(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host BORDER, the field of view has no border."""
+    host, _ = _bare_host(monkeypatch)
+    assert cfg.get_border() == 0.
+    host.BORDER = 2.5e-4  # type: ignore[attr-defined]
+    assert cfg.get_border() == 2.5e-4
 
 
 def test_get_meshgrids_defaults_to_an_empty_cache(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -257,7 +257,7 @@ Label schema pull
 =================
 
 :func:`~metadata_tools.geometry_support.label_schema.resolve_schema` parses a
-host's summary template: a leading run of plain ``COLUMN`` objects with no
+summary template: a leading run of plain ``COLUMN`` objects with no
 ``BACKPLANE_KEY`` must match the table kind's fixed prefix columns
 (``VOLUME_ID``, ``FILE_SPECIFICATION_NAME``, and, per table kind,
 ``SYSTEM_NAME`` and ``BODY_NAME``); the rest of the table is self-contained
@@ -329,7 +329,7 @@ Important invariants
   it produces -- all of it parsed from the label template.
 - **Meshgrids.** A FOV meshgrid samples an observation's own FOV -- the cutout
   window, for an image that has one -- plus the border the host allows for
-  pointing uncertainty (``EXPAND``, an angle, so a summed mode gets
+  pointing uncertainty (``host_config.BORDER``, an angle, so a summed mode gets
   proportionally fewer pixels of border). It is built by
   :func:`~metadata_tools.geometry_support.meshgrids.fov_meshgrid` the first
   time a FOV is met and cached on the

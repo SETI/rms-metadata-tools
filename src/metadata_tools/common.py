@@ -161,7 +161,7 @@ class Table:
                  template_path: str | Path | FCPath | None = None,
                  volume_id: str | None = None, level: str | None = None,
                  qualifier: str | None = None,
-                 suffix: str | None = None, use_global_template: bool = False) -> None:
+                 suffix: str | None = None) -> None:
         """Constructor for a table object.
 
         Parameters:
@@ -173,8 +173,6 @@ class Table:
             qualifier: "sky", "sun", "ring", "body", "inventory", or
                 "supplemental".
             suffix: File name suffix.
-            use_global_template: If True, the label template is to be found in the
-                global template directory.
 
         Raises:
             ValueError: If output_dir is given without a volume_id.
@@ -185,8 +183,8 @@ class Table:
         self.volume_id = volume_id
         self.level = level
         self.qualifier = qualifier
-        self.use_global_template = use_global_template
         self.rows: list[str] = []
+        self.label_fields: dict[str, Any] = {}
         self.filename: FCPath
 
         if not output_dir:
@@ -223,7 +221,7 @@ class Table:
         if self.level:
             assert table_type is not None  # nosec B101  # type-narrowing invariant, not validation
             table_type += '_' + self.level
-        lab.create(self.filename, self.template_path,
-                   table_type=table_type, use_global_template=self.use_global_template)
+        lab.create(self.filename, self.template_path, table_type=table_type,
+                   fields=self.label_fields)
 
 ##########################################################################################

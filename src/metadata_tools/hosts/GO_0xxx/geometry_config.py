@@ -82,16 +82,6 @@ MISSION_TABLE: list[Any] = [
                                                                       'THEBE'],
                                                                                    ['SATURN'])]
 
-##########################################################################################
-# Mission-specific data (required)
-##########################################################################################
-BORDER: int = 25             # in units of full-size SSI pixels
-
-# Amount to expand the FOV on every side, in units of radians. The engine samples
-# each observation's own FOV with this border around it, and takes the inventory
-# of the bodies in view with the same allowance.
-EXPAND: float = BORDER * abs(float(SSI._FOVS['FULL'].uv_scale.vals[0]))
-
 #=========================================================================================
 def from_index(index_filename: Any, supplemental_index_filename: Any = None) -> list[Any]:
     """Return one observation per index row with a nonzero exposure.

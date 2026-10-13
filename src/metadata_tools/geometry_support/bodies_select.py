@@ -102,11 +102,11 @@ def _inventory(record: 'Record', bodies: list[str] | dict[str, Any],
     try:
         try:
             return record.observation.inventory(
-                bodies, expand=hooks.get_expand(), cache=False, **kwargs)
+                bodies, expand=hooks.get_border(), cache=False, **kwargs)
         except TypeError:
             # oops >= 0.3 dropped the cache option (removed in the src restructure)
             return record.observation.inventory(
-                bodies, expand=hooks.get_expand(), **kwargs)
+                bodies, expand=hooks.get_border(), **kwargs)
 
     # A RuntimeError is probably caused by missing spice data. There is
     # probably nothing we can do.

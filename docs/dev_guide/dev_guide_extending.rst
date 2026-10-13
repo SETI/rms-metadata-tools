@@ -17,9 +17,48 @@ is to copy the Galileo SSI host and adapt it:
    ``geometry_config.py``, ``host_init.py``, and ``__init__.py`` from an existing
    host (e.g. ``GO_0xxx``) as a starting point.
 #. Edit the configuration modules (below) and ``host_init.py``.
-#. Create a ``templates/`` subdirectory, copy the templates, rename them, edit
-   ``host_defs.lbl`` and the summary templates, and define the supplemental
-   metadata in the supplemental template.
+#. Create a ``templates/`` subdirectory holding two templates: ``host_defs.lbl``
+   and ``<HOST>_supplemental_index.lbl``. Copy them from an existing host, edit
+   ``host_defs.lbl`` (below), and define the supplemental metadata in the
+   supplemental template. The summary and inventory tables are labeled from the
+   templates all hosts share.
+
+``host_defs.lbl`` states the mission and instrument keywords that appear in
+every label, and defines the values the shared summary templates
+(``<kind>_summary.lbl`` in ``src/metadata_tools/templates/``) take from the
+host:
+
+.. code-block:: text
+
+   # The instrument, as it reads in a sentence
+   $ONCE(instrument = 'Galileo SSI')
+   # What one data product is called, and its plural: image, spectrum, ...
+   $ONCE(product = 'image')
+   $ONCE(products = 'images')
+   # Widths of a volume ID and of the FILE_SPECIFICATION_NAME column
+   $ONCE(volume_id_bytes = 7)
+   $ONCE(filespec_bytes = 32)
+   $ONCE(system_names = 'EARTH, VENUS, or JUPITER')
+   $ONCE(ring_system = 'Jupiter')
+   $ONCE(is_visual = True)
+   $ONCE(is_saturn = False)
+
+The templates take three more values from the engine, not from
+``host_defs.lbl``: ``FOV_BORDER``, the host's ``host_config.BORDER`` worded as
+an angle (the border sentence is omitted for a host with no border), and ``SAMPLING``
+and ``BODY_SAMPLES``, the sampling a geometry
+table was generated with. The last two are known only to a geometry run, so a
+cumulative label describes the sampling without stating its values.
+
+Each ``$ONCE`` value must be a literal: the geometry stage reads the column widths from the
+templates without generating a label, and substitutes only literal definitions
+(:func:`~metadata_tools.column_grammar.substitute_constants`). The values land
+in fixed lines of label prose, so keep them short enough that no line of a
+generated label outgrows the PDS3 line length.
+
+A host that must differ from a shared template -- a summary table or the
+inventory -- places a copy of its own, named ``<HOST>_<kind>.lbl``, in its
+``templates/`` directory; :func:`~metadata_tools.util.find_template` prefers it.
 
 The configuration modules form the contract the engine relies on. Console-script
 entry points call :func:`metadata_tools.config.set_host` with the host id, which
@@ -75,17 +114,20 @@ body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), and the
    EXCEPTIONS = [ ... ]           # regexes/predicates excluded from the SCLK test
    from_index = inst.from_index
 
-It should state the border to allow around a field of view for pointing
-uncertainty, as an angle; with none, the field of view is sampled as it is:
+The border to allow around a field of view is not set here but in
+``host_config.py``, since the labels state it too. It reflects the uncertainty
+in the spacecraft pointing, so it is an angle, the same for every instrument of
+the spacecraft:
 
 .. code-block:: python
 
-   EXPAND = 25 * 6.0e-6           # radians: 25 narrow-angle pixels
+   BORDER = 1.5e-4     # radians
 
-The engine samples each observation's own FOV (``observation.fov``) with that
-border around it, and takes the inventory of bodies in view with the same
-allowance. Because the border is an angle, a summed mode or a wider camera gets
-proportionally fewer pixels of it.
+With no ``BORDER``, the field of view is sampled as it is. The engine samples
+each observation's own FOV (``observation.fov``) with that border around it, and
+takes the inventory of bodies in view with the same allowance. Because the
+border is an angle, a summed mode or a wider camera gets proportionally fewer
+pixels of it, and the labels state it as an angle alone.
 
 It may also override these engine defaults, read through the accessors in
 :mod:`metadata_tools.config`:
@@ -140,8 +182,8 @@ and its computation -- so a new column is a template edit plus, at most, a new
 backplane function. The geometry column set is the same for every collection:
 it lives in the shared fragments in ``src/metadata_tools/templates/``
 (``body_summary_columns.lbl``, ``ring_summary_columns.lbl``, and so on), which
-every host's summary template pulls in with ``$INCLUDE``. A host's own
-``<HOST>_<kind>_summary.lbl`` carries only the prefix columns and the
+the shared summary templates pull in with ``$INCLUDE``. A summary template
+itself, ``<kind>_summary.lbl``, carries only the prefix columns and the
 table-level boilerplate.
 
 #. For a two-valued column, add a ``COLUMN_DEFINITION`` object to the shared
@@ -181,6 +223,7 @@ Removing a column is likewise a template-only edit: delete the definition and
 its stubs (or the single ``COLUMN``), and the computation goes with them.
 
 In the rare case that one collection must genuinely differ, a host can place
-its own edited copy of a fragment in its ``templates/`` directory: the
-directory holding the summary template is searched first when ``$INCLUDE``
-resolves, so the host copy shadows the shared one for that host alone.
+its own edited copy of a fragment in its ``templates/`` directory: the host's
+directory is searched first when ``$INCLUDE`` resolves
+(:class:`~metadata_tools.label_support.HostTemplate`), so the host copy shadows
+the shared one for that host alone.

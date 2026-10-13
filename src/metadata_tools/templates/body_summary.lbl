@@ -1,8 +1,25 @@
 $NOTE
 ##############################################################################
-# Geometry file template for sun geometry.
+# Geometry file template for bodies.
 #
-#  This template controls the creation of sun geometry labels.
+#  This template controls the creation of body geometry labels for every
+#  host. It takes the following from the host's host_defs.lbl:
+#
+#   instrument:       Name of the instrument, as it reads in a sentence.
+#   product:          What one data product is called, e.g. image, and
+#   products:         its plural.
+#   volume_id_bytes:  Width of a volume ID.
+#   filespec_bytes:   Width of the FILE_SPECIFICATION_NAME column.
+#   system_names:     The planetary systems observed, as they read in a list.
+#   is_visual:        True if the data were taken in visual light.
+#   is_saturn:        True if the Saturn system is observed.
+#
+#  The engine supplies the border allowed around the field of view
+#  (FOV_BORDER, worded from the host's host_config.BORDER) and, when the
+#  tables are generated, the sampling used (SAMPLING and BODY_SAMPLES).
+#
+#  A host that must differ shadows this template with a copy of its own,
+#  named <HOST>_body_summary.lbl, in its templates directory.
 #
 ##############################################################################
 $END_NOTE
@@ -16,7 +33,7 @@ PDS_VERSION_ID                  = PDS3
 RECORD_TYPE                     = $LABEL_VALUE("RECORD_TYPE")$
 RECORD_BYTES                    = $record_bytes$
 FILE_RECORDS                    = $records$
-^SUN_SUMMARY_TABLE             = "$table_name$"
+^BODY_SUMMARY_TABLE             = "$table_name$"
 
 $IF(index_type != 'CUMULATIVE')
 VOLUME_ID                       = "$volume_id$"
@@ -25,28 +42,40 @@ PRODUCT_CREATION_TIME           = $FILE_TIME(index_path)$
 
 $INCLUDE("host_defs.lbl")
 
-OBJECT                          = SUN_SUMMARY_TABLE
+OBJECT                          = BODY_SUMMARY_TABLE
   INTERCHANGE_FORMAT            = ASCII
   ROWS                          = $records$
   ROW_BYTES                     = $record_bytes$
   INDEX_TYPE                    = $index_type$
   DESCRIPTION                   = "This index describes the viewing
-    geometry of the Sun for the Galileo SSI image collection. The Sun is
-    treated as a target body; the file contains one row per image. Because
-    the Sun is itself the source of illumination, this table omits the
-    illumination-based quantities (such as phase, incidence, and sub-solar
-    geometry) that appear in the body geometry table.
+    geometry for the planetary bodies observed in the $instrument$ $product$
+    collection. The file contains multiple rows per $product$, one for each moon
+    or other targeted body that falls inside the $product$, plus one for the body
+    identified by the SYSTEM_NAME keyword ($system_names$) whether
+    or not it appears.
 
 $IF(index_type == 'CUMULATIVE')
-    This is the cumulative index, describing all the images in the collection.
+    This is the cumulative index, describing all the $products$ in the collection.
 $ELSE
-    This index describes the images found on volume $volume_id$.
+    This index describes the $products$ found on volume $volume_id$.
 $END_IF
 
     Two types of geometry are represented in this index. Gridded quantities
     were constructed by uniformly sampling the pixels that comprise each data
-    product on an 8x8 grid, i.e., every 64th pixel, spanning the field of
-    view. Gridless quantities represent a single value.
+$IF(SAMPLING)
+    product on a grid spanning the field of view, at intervals of no more
+    than $SAMPLING$ pixels along each axis. Gridless quantities represent a
+    single value.
+$ELSE
+    product on a grid spanning the field of view. Gridless quantities
+    represent a single value.
+$END_IF
+$IF(BODY_SAMPLES)
+
+    Each body inside the field of view is sampled on a grid of its own, at
+    least as fine, with no fewer than $BODY_SAMPLES$ samples across the body
+    however small it appears.
+$END_IF
 
     For each sampled pixel, a variety of geometric quantities have been
     calculated. All quantities, gridded and gridless, are tabulated in terms
@@ -59,19 +88,24 @@ $END_IF
     which an observation was taken. When this situation occurs, no row has
     been added to the file.
 
-    If the Sun is too small to have been captured in an 8x8 sampling of the
-    image, or if it falls outside the field of view, then the associated
-    NULL_CONSTANT will appear in the gridded columns. Quantities that are
-    independent of the field of view are tabulated regardless.
+$IF(FOV_BORDER)
+    To accommodate pointing uncertainty, the $instrument$ field of view has
+    been expanded on every side by $FOV_BORDER$.
 
-    To accommodate pointing uncertainty, the Galileo SSI field of view has
-    been expanded on every side by a distance equivalent to 25 narrow-angle
-    pixels."
+$END_IF
+    Regions of a body that are obscured by another body are excluded from the
+    tabulation. The dark side of each body is also generally excluded.
+$IF(BODY_SAMPLES == 0)
+    If a body is too small to have been captured by the sampling of the
+    $product$, then the associated NULL_CONSTANT will appear in each column.
+$END_IF
+    Quantities that are independent of the field of view are tabulated
+    regardless of obstruction or apparent body size."
 
   #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "VOLUME_ID"
-    FORMAT                      = A7
+    FORMAT                      = A$volume_id_bytes$
     DESCRIPTION                 = "The unique identifier for the PDS3 data
       volume."
   END_OBJECT                    = COLUMN
@@ -79,7 +113,7 @@ $END_IF
   #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "FILE_SPECIFICATION_NAME"
-    FORMAT                      = A32
+    FORMAT                      = A$filespec_bytes$
     DESCRIPTION                 = "The full directory path to the data file's
       label, relative to the root directory of the PDS volume."
   END_OBJECT                    = COLUMN
@@ -90,7 +124,7 @@ $END_IF
     FORMAT                      = A12
     NULL_CONSTANT               = "NONE"
     DESCRIPTION                 = "The planetary system to which this body
-      belongs. For the Sun this is the Sun itself."
+      belongs."
   END_OBJECT                    = COLUMN
 
   #===========================================================================
@@ -98,11 +132,10 @@ $END_IF
     NAME                        = "BODY_NAME"
     FORMAT                      = A12
     DESCRIPTION                 = "The name of the body for which the surface
-      geometry parameters in this row of the table are applicable. For this
-      table the body is always the Sun."
+      geometry parameters in this row of the table are applicable."
   END_OBJECT                    = COLUMN
 
-$INCLUDE('sun_summary_columns.lbl')
+$INCLUDE('body_summary_columns.lbl')
 
-END_OBJECT                      = SUN_SUMMARY_TABLE
+END_OBJECT                      = BODY_SUMMARY_TABLE
 END

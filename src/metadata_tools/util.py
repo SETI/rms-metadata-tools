@@ -87,6 +87,33 @@ def get_template_name(filename: str, volume_id: str, code_dir: FCPath) -> str:
     return filename.replace(volume_id, collection).split('.')[0]
 
 #===============================================================================
+def find_template(host_template_dir: FCPath, name: str) -> FCPath:
+    """Locate a label template: the host's own, or else the one all hosts share.
+
+    A host's template is named for its collection, ``<HOST>_<kind>.lbl``, in
+    the host's ``templates/`` directory. A host with none takes the shared
+    ``<kind>.lbl`` of the global template directory, so it carries a template
+    of its own only where it must differ.
+
+    Parameters:
+        host_template_dir: The host's ``templates/`` directory.
+        name: Name of the host's template, less its suffix, e.g.
+            ``GO_0xxx_body_summary``.
+
+    Returns:
+        Path to the shared template if the host has none and a shared one
+        exists; otherwise the path to the host's template, whether or not it
+        exists.
+    """
+    host_template = host_template_dir / (name + '.lbl')
+    if not host_template.is_file():
+        kind = name.removeprefix(host_template_dir.parent.name + '_')
+        shared_template = FCPath(defs.GLOBAL_TEMPLATE_PATH) / (kind + '.lbl')
+        if shared_template.is_file():
+            return shared_template
+    return host_template
+
+#===============================================================================
 def parse_template_name(template_name: str) -> tuple[str, str, FCPath]:
     """Determine host and index type from template name of the form:
 

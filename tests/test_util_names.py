@@ -3,10 +3,12 @@
 ################################################################################
 """Tests for the path and name arithmetic helpers in util.py."""
 import types
+from pathlib import Path
 
 import pytest
 from filecache import FCPath
 
+import metadata_tools.defs as defs
 import metadata_tools.util as util
 
 
@@ -94,6 +96,35 @@ def test_get_volume_subdir_returns_relative_tail() -> None:
     """The subpath below the volume directory is returned."""
     sub = util.get_volume_subdir(FCPath('/a/GO_0001/data/img.lbl'), 'GO_0001')
     assert sub.as_posix() == 'data/img.lbl'
+
+
+#===============================================================================
+# find_template
+#===============================================================================
+def test_find_template_falls_back_to_the_shared_template(tmp_path: Path) -> None:
+    """A host with no template of its own for a table takes the shared one."""
+    host_dir = FCPath(tmp_path / 'GO_0xxx' / 'templates')
+    assert util.find_template(host_dir, 'GO_0xxx_body_summary') == \
+        FCPath(defs.GLOBAL_TEMPLATE_PATH) / 'body_summary.lbl'
+    assert util.find_template(host_dir, 'GO_0xxx_inventory') == \
+        FCPath(defs.GLOBAL_TEMPLATE_PATH) / 'inventory.lbl'
+
+
+def test_find_template_prefers_the_host_template(tmp_path: Path) -> None:
+    """A host's own template shadows the shared one."""
+    (tmp_path / 'GO_0xxx' / 'templates').mkdir(parents=True)
+    own = tmp_path / 'GO_0xxx' / 'templates' / 'GO_0xxx_body_summary.lbl'
+    own.write_text('END\n', encoding='utf-8')
+    host_dir = FCPath(tmp_path / 'GO_0xxx' / 'templates')
+    assert util.find_template(host_dir, 'GO_0xxx_body_summary') == FCPath(own)
+
+
+def test_find_template_names_the_host_template_when_there_is_neither(
+        tmp_path: Path) -> None:
+    """With no shared template to fall back on, the host's is the one expected."""
+    host_dir = FCPath(tmp_path / 'GO_0xxx' / 'templates')
+    assert util.find_template(host_dir, 'GO_0xxx_supplemental_index') == \
+        host_dir / 'GO_0xxx_supplemental_index.lbl'
 
 
 #===============================================================================

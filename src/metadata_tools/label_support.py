@@ -12,6 +12,7 @@ from filecache import FCPath
 from pdstemplate import PdsTemplate
 from pdstemplate.pds3table import pds3_table_preprocessor
 
+import metadata_tools.config as hooks
 import metadata_tools.defs as defs
 import metadata_tools.util as util
 from metadata_tools.column_grammar import (
@@ -72,6 +73,37 @@ def _pds3_table_preprocessor(template_path: object, content: str) -> str:
 
 
 #===============================================================================
+class HostTemplate(PdsTemplate):
+    """A label template whose ``$INCLUDE`` files are sought in the host's directory first.
+
+    PdsTemplate looks for an included file beside the template that includes
+    it before anywhere else. That suits a template of the host's own, but the
+    shared templates sit beside the shared column fragments, which would then
+    always win. Searching the ``includes`` directories first, in the order
+    given, lets a host shadow any shared fragment with a copy of its own
+    whichever template includes it.
+    """
+
+    def _include_dirs(self) -> list[FCPath]:
+        """Ordered list of all include directories to search."""
+        dirs: list[FCPath] = list(self._includes)
+        dirs += [d for d in super()._include_dirs() if d not in dirs]
+        return dirs
+
+
+#===============================================================================
+def _border_text() -> str | None:
+    """Word the border the host allows around a field of view.
+
+    Returns:
+        The border as an angle; None if the host allows no border.
+    """
+    border = hooks.get_border()
+    if not border:
+        return None
+    return f'{border * 1000:g} milliradians'
+
+#===============================================================================
 def _inventory_field_bytes(filepath: FCPath, volume_id: str) -> tuple[int, int]:
     """Measure the fixed-width fields that begin each row of an inventory table.
 
@@ -99,8 +131,8 @@ def _inventory_field_bytes(filepath: FCPath, volume_id: str) -> tuple[int, int]:
 def create(filepath: str | Path | FCPath,
            host_template_path: str | Path | FCPath | None,
            *,
-           use_global_template: bool = False,
-           table_type: str | None = '') -> None:
+           table_type: str | None = '',
+           fields: dict[str, Any] | None = None) -> None:
     """Create a PDS3 label for a metadata table.
 
     If filepath does not refer to an existing file, the function returns without
@@ -108,14 +140,18 @@ def create(filepath: str | Path | FCPath,
 
     Parameters:
         filepath: Path to the local or remote table.
-        host_template_path: Path to the host template. If None, it is treated as
-            an empty path; a real host template path is needed only when
-            use_global_template is False.
-        use_global_template: If True, the label template is to be found in the
-            global template directory.
+        host_template_path: Path to the host template, which locates the host's
+            ``templates/`` directory. The label template is the host's own,
+            named for the table, or else the one all hosts share; see
+            :func:`metadata_tools.util.find_template`. If None, it is treated
+            as an empty path.
         table_type: One of BODY_SUMMARY, RING_SUMMARY, SKY_SUMMARY,
             SUPPLEMENTAL_INDEX, or INVENTORY; case-insensitive (the value is
             uppercased). None is treated as an empty string.
+        fields: Values for the template that only the caller knows: SAMPLING
+            and BODY_SAMPLES, the pixel sampling density and the minimum
+            number of samples across a body with which a geometry table was
+            generated. A template is given None for one that is not stated.
 
     Raises:
         ValueError: If the table filename does not start with a volume id.
@@ -139,13 +175,9 @@ def create(filepath: str | Path | FCPath,
         raise ValueError(f'table filename {filename!r} does not start with a volume id')
     volume_id = filename[:underscore + 5]
 
-    # Default template path
-    if use_global_template:
-        template_path = (FCPath(defs.GLOBAL_TEMPLATE_PATH) /
-                         FCPath('%s.lbl' % body[underscore+6:]))
-    else:
-        template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
-        template_path = host_template_dir / (template_name + '.lbl')
+    # The host's own template, or else the one all hosts share
+    template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
+    template_path = util.find_template(host_template_dir, template_name)
 
     # Default preprocessors: remove the comment lines, expand the
     # format-dictionary references, lower the definition/stub grammar to plain
@@ -161,16 +193,19 @@ def create(filepath: str | Path | FCPath,
         preprocess = [strip_comments]
 
     # Default template dictionary
-    fields: dict[str, Any] = {'VOLUME_ID'   : volume_id,
-                              'TABLE_TYPE'  : table_type}
+    fields = {'VOLUME_ID'   : volume_id,
+              'TABLE_TYPE'  : table_type,
+              'FOV_BORDER'  : _border_text(),
+              'SAMPLING'    : None,
+              'BODY_SAMPLES': None} | (fields or {})
     if 'inventory' in body:
         (fields['VOLUME_ID_BYTES'],
          fields['FILESPEC_BYTES']) = _inventory_field_bytes(filepath, volume_id)
 
     # Generate label
-    template = PdsTemplate(template_path, crlf=True,
-                           preprocess=preprocess,
-                           includes=[defs.GLOBAL_TEMPLATE_PATH, host_template_dir])
+    template = HostTemplate(template_path, crlf=True,
+                            preprocess=preprocess,
+                            includes=[host_template_dir, defs.GLOBAL_TEMPLATE_PATH])
     template.write(fields, label_path=label_path, mode='repair')
 
     return
