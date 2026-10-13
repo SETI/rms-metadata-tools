@@ -214,4 +214,19 @@ def test_cleanup_calls_the_host_hook_if_any(monkeypatch: pytest.MonkeyPatch) -> 
     geom.cleanup = lambda: called.append('cleanup')  # type: ignore[attr-defined]
     cfg.cleanup()
     assert called == ['cleanup']
+
+def test_get_expand_defaults_to_no_border(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host EXPAND, the field of view has no border."""
+    _, geom = _bare_host(monkeypatch)
+    assert cfg.get_expand() == 0.
+    geom.EXPAND = 2.5e-4  # type: ignore[attr-defined]
+    assert cfg.get_expand() == 2.5e-4
+
+
+def test_get_meshgrids_defaults_to_an_empty_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host hook, the engine starts each volume with an empty cache."""
+    _, geom = _bare_host(monkeypatch)
+    assert cfg.get_meshgrids(8) == {}
+    geom.meshgrids = lambda sampling: {'FULL': sampling}  # type: ignore[attr-defined]
+    assert cfg.get_meshgrids(8) == {'FULL': 8}
 ################################################################################

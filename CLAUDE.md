@@ -71,8 +71,9 @@ Core engine modules:
   and the built-in `key__<NAME>` functions (`key_fns.py`); builds supplemental index tables.
 - `geometry_support/` — geometry table generation: `process.py` (entry point), `suite.py`
   (`Suite`), `record.py` (`Record`), `tables.py` (the table classes), `prep.py`, `masks.py`,
-  `meshgrids.py` (each body row is sampled across its own inventory bounding box, not
-  the whole FOV),
+  `meshgrids.py` (the FOV meshgrid samples each observation's own `fov` plus the host's
+  angular `EXPAND` border, cached per FOV; each body row is sampled across its own
+  inventory bounding box, not the whole FOV),
   `formatting.py`, `bodies_select.py`, `formats.py` (the host's SCLK-resolved mission
   table), and `label_schema.py`, which reads each table's full column schema — label
   metadata and computation spec alike — from its label template.
@@ -109,10 +110,11 @@ only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
 - `host_config.py`, `index_config.py`, `geometry_config.py` — host-specific settings and
   optional override hooks (e.g. `key__<NAME>(label_path, label_dict)` to compute an index
   column; backplane functions for geometry). The data-label `glob` lives in `host_config`
-  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, and `cleanup` are
-  optional: the engine reads them through the accessors in `config.py`
-  (`get_volume_id()`, `get_exclude()`, `get_index_glob()`, `get_target_name()`,
-  `cleanup()`), which supply the defaults.
+  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, `cleanup`, `EXPAND`,
+  and `meshgrids`/`meshgrid` are optional: the engine reads them through the accessors
+  in `config.py` (`get_volume_id()`, `get_exclude()`, `get_index_glob()`,
+  `get_target_name()`, `cleanup()`, `get_expand()`, `get_meshgrids()`), which supply
+  the defaults.
 - `host_init.py` — initializes the host's `oops` host module (side-effect import).
 - `templates/` — PDS3 label templates (`host_defs.lbl`, `*_supplemental_index.lbl`,
   `*_{body,ring,sky,sun}_summary.lbl`); shared template fragments are in

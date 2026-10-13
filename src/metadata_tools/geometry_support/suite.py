@@ -113,7 +113,7 @@ class Suite:
         self.filespec_width = self._filespec_width()
 
         # Initialize meshgrids
-        self.meshgrids = config.meshgrids(sampling)
+        self.meshgrids = hooks.get_meshgrids(sampling)
 
     #===========================================================================
     def add_tables(self, output_dir: str | Path | FCPath) -> None:

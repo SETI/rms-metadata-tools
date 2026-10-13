@@ -262,6 +262,30 @@ def test_record_init_defaults_the_target_to_target_name(
     assert record.target == 'IO'
 
 
+def test_record_init_samples_the_fov_of_the_observation(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A host with no meshgrid hook gets a meshgrid of the observation's own FOV."""
+    _patch_record_spice(monkeypatch)
+    monkeypatch.delattr(config, 'meshgrid')
+    monkeypatch.setattr(config, 'EXPAND', 2.5e-4, raising=False)
+    built: list[Any] = []
+
+    def _fov_meshgrid(fov: Any, sampling: float, expand: float) -> str:
+        built.append((fov, sampling, expand))
+        return 'FOV_GRID'
+
+    monkeypatch.setattr(meshgrids, 'fov_meshgrid', _fov_meshgrid)
+    observation = _observation()
+    observation.fov = 'FOV'
+    cache: dict[Any, Any] = {}
+    record = Record(observation, 'GO_0001', cache, 8)
+    assert cast(Any, record.meshgrid) == 'FOV_GRID'
+    assert built == [('FOV', 8, 2.5e-4)]
+    # A second observation with the same FOV is served from the volume's cache.
+    assert cast(Any, Record(observation, 'GO_0001', cache, 8).meshgrid) == 'FOV_GRID'
+    assert len(built) == 1
+
+
 def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) -> None:
     """A primary with a ring frame sets rings_present."""
     _patch_record_spice(monkeypatch, primary='JUPITER')

@@ -21,6 +21,73 @@ def _fov_meshgrid(sampling: float = 8.5) -> Any:
 
 
 #===============================================================================
+# fov_meshgrid
+#===============================================================================
+def test_fov_meshgrid_matches_the_grid_the_galileo_host_built() -> None:
+    """A 25-pixel border reproduces the meshgrid the GO_0xxx host used to build."""
+    # The host sampled -25 to 825 in 107 intervals of 850/107 pixels, end to end.
+    grid = meshgrids.fov_meshgrid(FOV, 8, 25 * 1.e-5)
+    expected = oops.Meshgrid.for_fov(FOV, -25., undersample=850/107, limit=825.0001,
+                                     swap=True)
+    assert grid.uv.vals.shape == (108, 108, 2)
+    assert np.all(grid.uv.vals == expected.uv.vals)
+    assert grid.fov is FOV
+
+
+def test_fov_meshgrid_without_a_border_spans_the_fov() -> None:
+    """With no border the samples run from one edge of the FOV to the other."""
+    grid = meshgrids.fov_meshgrid(FOV, 8)
+    uv = grid.uv.vals
+    assert uv.shape == (101, 101, 2)
+    assert uv.min() == pytest.approx(0.)
+    assert uv.max() == pytest.approx(800.)
+
+
+def test_fov_meshgrid_border_is_an_angle() -> None:
+    """A summed FOV gets a border of proportionally fewer pixels."""
+    summed = oops.fov.SubsampledFOV(FOV, 2)
+    uv = meshgrids.fov_meshgrid(summed, 8, 25 * 1.e-5).uv.vals
+    # 400 pixels and two 12.5-pixel borders, in 54 intervals of 425/54 pixels.
+    assert uv.shape == (55, 55, 2)
+    assert uv.min() == pytest.approx(-12.5)
+    assert uv.max() == pytest.approx(412.5)
+
+
+def test_fov_meshgrid_samples_each_axis_of_a_window() -> None:
+    """A FOV trimmed to a cutout window is sampled over the window alone."""
+    window = oops.fov.SliceFOV(FOV, (100, 200), (400, 96))
+    uv = meshgrids.fov_meshgrid(window, 8, 25 * 1.e-5).uv.vals
+    # v axis first: 96 + 50 pixels in 19 intervals, 400 + 50 pixels in 57.
+    assert uv.shape == (20, 58, 2)
+    assert uv[..., 0].min() == pytest.approx(-25.)
+    assert uv[..., 1].min() == pytest.approx(-25.)
+    assert uv[..., 0].max() == pytest.approx(425.)
+    assert uv[..., 1].max() == pytest.approx(121.)
+
+
+#===============================================================================
+# cached_fov_meshgrid
+#===============================================================================
+def test_cached_fov_meshgrid_builds_each_fov_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The observations that share a FOV share its meshgrid."""
+    built: list[Any] = []
+
+    def _build(fov: Any, sampling: float, expand: float) -> str:
+        built.append((fov, sampling, expand))
+        return f'GRID{len(built)}'
+
+    monkeypatch.setattr(meshgrids, 'fov_meshgrid', _build)
+    other = oops.fov.SubsampledFOV(FOV, 2)
+    cache: dict[Any, Any] = {}
+    assert meshgrids.cached_fov_meshgrid(cache, FOV, 8, 1.e-4) == 'GRID1'
+    assert meshgrids.cached_fov_meshgrid(cache, other, 8, 1.e-4) == 'GRID2'
+    assert meshgrids.cached_fov_meshgrid(cache, FOV, 8, 1.e-4) == 'GRID1'
+    assert built == [(FOV, 8, 1.e-4), (other, 8, 1.e-4)]
+    # Each entry holds its FOV, so the identity it is keyed by stays unique.
+    assert cache[id(FOV)][0] is FOV
+
+
+#===============================================================================
 # axis_samples
 #===============================================================================
 def test_axis_samples_small_box_gets_the_minimum_count() -> None:

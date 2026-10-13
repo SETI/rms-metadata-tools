@@ -50,7 +50,7 @@ class Record:
     """
 
     #===========================================================================
-    def __init__(self, observation: Any, volume_id: str, meshgrids: dict[str, Any],
+    def __init__(self, observation: Any, volume_id: str, meshgrids: dict[Any, Any],
                  sampling: int, body_samples: int = 16,
                  filespec_width: int = 0) -> None:
         """Construct a geometry record.
@@ -240,17 +240,27 @@ class Record:
         return columns
 
     #===============================================================================
-    def _meshgrid(self, observation: Any, meshgrids: dict[str, Any]) -> Any:
-        """Look up the meshgrid for an observation.
+    def _meshgrid(self, observation: Any, fov_meshgrids: dict[Any, Any]) -> Any:
+        """Look up the meshgrid sampling the whole field of view of an observation.
+
+        By default the meshgrid samples the observation's own FOV, with the
+        border the host allows around it, and is built the first time that FOV
+        is met. A host that defines ``geometry_config.meshgrid`` chooses from
+        its own meshgrids instead.
 
         Parameters:
             observation: OOPS Observation object.
-            meshgrids: All meshgrids associated with this host.
+            fov_meshgrids: The meshgrids of this volume: those of the host's
+                ``meshgrids`` hook, or else the cache of the default ones.
 
         Returns:
             Meshgrid for the given observation.
         """
-        return get_geometry_config().meshgrid(meshgrids, observation)
+        hook = getattr(get_geometry_config(), 'meshgrid', None)
+        if hook is not None:
+            return hook(fov_meshgrids, observation)
+        return meshgrids.cached_fov_meshgrid(fov_meshgrids, observation.fov,
+                                             self.sampling, hooks.get_expand())
 
     #===============================================================================
     def add(self, columns: Sequence['ResolvedColumn'], *,

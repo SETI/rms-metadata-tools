@@ -46,12 +46,14 @@ know what they control.
     - ``MISSION_TABLE`` and ``EXCEPTIONS`` — the mapping from spacecraft-clock
       ranges to the primary body, secondaries, and other selected bodies, with
       regular-expression or predicate exceptions.
-    - The field-of-view expansion constants and the ``meshgrids`` /
-      ``meshgrid`` functions that define pixel sampling.
+    - ``EXPAND`` — the border allowed around each field of view for pointing
+      uncertainty, in radians. Each observation is sampled across its own
+      field of view plus this border.
     - The ``from_index`` hook.
     - Optionally, ``index_glob`` (by default a volume's index label is
       ``<volume_id>_index.lbl``), ``target_name`` (by default the
-      observation's TARGET_NAME), and ``cleanup`` (by default nothing).
+      observation's TARGET_NAME), ``cleanup`` (by default nothing), and
+      ``meshgrids`` / ``meshgrid`` (to replace the default pixel sampling).
 
 ``host_init.py``
     Imported for its side effects: it initializes the ``oops`` host module

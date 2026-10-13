@@ -214,3 +214,30 @@ def cleanup() -> None:
     hook = getattr(get_geometry_config(), 'cleanup', None)
     if hook is not None:
         hook()
+
+#===============================================================================
+def get_expand() -> float:
+    """The border the host allows around a field of view, for pointing uncertainty.
+
+    Returns:
+        The host's ``geometry_config.EXPAND``, in radians, if it defines one;
+        otherwise 0.
+    """
+    return float(getattr(get_geometry_config(), 'EXPAND', 0.))
+
+#===============================================================================
+def get_meshgrids(sampling: float) -> dict[Any, Any]:
+    """The meshgrids a volume's observations choose from.
+
+    Parameters:
+        sampling: Pixel sampling density.
+
+    Returns:
+        The result of the host's ``geometry_config.meshgrids`` if it defines
+        one; otherwise an empty dictionary, which the engine fills with a
+        meshgrid for each FOV it meets.
+    """
+    hook = getattr(get_geometry_config(), 'meshgrids', None)
+    if hook is not None:
+        return cast('dict[Any, Any]', hook(sampling))
+    return {}
