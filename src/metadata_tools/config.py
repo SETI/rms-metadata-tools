@@ -226,6 +226,17 @@ def cleanup() -> None:
         hook()
 
 #===============================================================================
+def get_extra_children() -> list[str]:
+    """The irregular children the host treats as it does the regular ones.
+
+    Returns:
+        The host's ``geometry_config.EXTRA_CHILDREN`` if it defines one;
+        otherwise an empty list, for which only the regular children of a
+        planet are considered.
+    """
+    return list(getattr(get_geometry_config(), 'EXTRA_CHILDREN', []))
+
+#===============================================================================
 def get_meshgrids(sampling: float) -> dict[Any, Any]:
     """The meshgrids a volume's observations choose from.
 

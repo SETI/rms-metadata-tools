@@ -223,6 +223,14 @@ def test_get_border_defaults_to_no_border(monkeypatch: pytest.MonkeyPatch) -> No
     assert cfg.get_border() == 2.5e-4
 
 
+def test_get_extra_children_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host EXTRA_CHILDREN, only regular children are considered."""
+    _, geom = _bare_host(monkeypatch)
+    assert cfg.get_extra_children() == []
+    geom.EXTRA_CHILDREN = ['PHOEBE']  # type: ignore[attr-defined]
+    assert cfg.get_extra_children() == ['PHOEBE']
+
+
 def test_get_meshgrids_defaults_to_an_empty_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     """With no host hook, the engine starts each volume with an empty cache."""
     _, geom = _bare_host(monkeypatch)

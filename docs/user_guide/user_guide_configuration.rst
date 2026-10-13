@@ -50,6 +50,9 @@ know what they control.
       ranges to the primary body, secondaries, and other selected bodies, with
       regular-expression or predicate exceptions.
     - The ``from_index`` hook.
+    - Optionally, ``EXTRA_CHILDREN`` — irregular moons to treat exactly as the
+      regular children of their planets are, in the selection of bodies and in
+      the inventory. By default only regular children are considered.
     - Optionally, ``index_glob`` (by default a volume's index label is
       ``<volume_id>_index.lbl``), ``target_name`` (by default the
       observation's TARGET_NAME), ``cleanup`` (by default nothing), and

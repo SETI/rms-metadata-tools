@@ -134,11 +134,19 @@ It may also override these engine defaults, read through the accessors in
 
 .. code-block:: python
 
+   EXTRA_CHILDREN = ['PHOEBE']            # default: regular children only
    index_glob = '<HOST>_????_index.lbl'   # default: <volume_id>_index.lbl
    def target_name(snapshot): ...         # default: snapshot['TARGET_NAME']
    def cleanup(): ...                     # default: nothing to clean up
    def meshgrids(sampling): ...           # default: an empty cache, and
    def meshgrid(meshgrids, snapshot): ... #   a meshgrid of snapshot.fov
+
+The engine considers only the regular children of a planet, since the irregular
+moons of the giant planets are numerous and their number keeps growing.
+``EXTRA_CHILDREN`` names the irregular moons a host wants treated exactly as
+the regular ones are: reachable by the mission table's selections, listed in the
+inventory, and ordered with their siblings. Each must be a child of one of the
+engine's planets, or the registry refuses it.
 
 The width of the FILE_SPECIFICATION_NAME column is whatever the host's summary
 templates declare for it (they must agree); the engine pads the file

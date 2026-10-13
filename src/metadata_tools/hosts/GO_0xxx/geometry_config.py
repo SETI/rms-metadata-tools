@@ -29,8 +29,9 @@ SC: int = -77
 #
 #  RULES:
 #   1. The primary and secondary bodies, if specified, are always included.
-#   2. Children of the primary are included if they intersect the FOV. If
-#      there are selections, then only the selected children are considered.
+#   2. Children of the primary (its regular children and any EXTRA_CHILDREN)
+#      are included if they intersect the FOV. If there are selections, then
+#      only the selected children are considered.
 #   3. If there is no primary, all selections that intersect the FOV are included.
 #   4. The target is always included.
 #   5. If the target is a satellite, the parent is included.

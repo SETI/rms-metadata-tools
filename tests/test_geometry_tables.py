@@ -342,6 +342,34 @@ def test_suite_create_processes_observations(
     assert written == [False]
 
 
+def test_suite_create_matches_a_data_file_to_the_label_glob(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """An index that names data files is matched against a glob of labels."""
+    suite = Suite.__new__(Suite)
+    suite.observations = [
+        types.SimpleNamespace(basename='N1454725799_1.IMG',
+                              filepath='data/1454725799_1455008789/N1454725799_1.IMG'),
+        types.SimpleNamespace(basename='X1454725799_1.IMG',
+                              filepath='data/1454725799_1455008789/X1454725799_1.IMG')]
+    suite.glob = '[NW]*.LBL'
+    suite.first = None
+    suite.volume_id = 'COISS_2001'
+    added: list[Any] = []
+    warnings: list[str] = []
+    monkeypatch.setattr(Suite, 'make_record', lambda self, i: i)
+    monkeypatch.setattr(Suite, 'add', lambda self, record: added.append(record))
+    monkeypatch.setattr(Suite, 'write', lambda self, labels_only=False: None)
+    monkeypatch.setattr(config, 'cleanup', lambda: None, raising=False)
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            info=lambda *a, **k: None,
+                            warning=lambda msg, *a: warnings.append(msg % a),
+                            close=lambda: None))
+    suite.create()
+    assert added == [0]
+    assert warnings == ['Skipping X1454725799_1.IMG; glob mismatch.']
+
+
 def test_suite_create_skips_glob_mismatch(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """Observations not matching the glob are skipped entirely."""
