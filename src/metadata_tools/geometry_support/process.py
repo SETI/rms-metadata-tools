@@ -106,6 +106,10 @@ def process_tables(template_name: str,
     if volumes:
         new_only = False
 
+    # By default, exclude the tree's cumulative volume
+    if exclude is None:
+        exclude = [util.get_cumulative_id(output_tree.name)]
+
     # Build volume glob
     vol_glob = util.get_volume_glob(output_tree.name)
 

@@ -3,12 +3,12 @@
 ################################################################################
 """Built-in key functions for index table columns."""
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 from filecache import FCPath
 
+import metadata_tools.config as hooks
 import metadata_tools.util as util
-from metadata_tools.config import get_host_config
 
 
 #===============================================================================
@@ -24,7 +24,7 @@ def key__volume_id(label_path: str | Path | FCPath,
     Returns:
         Volume ID.
     """
-    return cast(str, get_host_config().get_volume_id(FCPath(label_path)))
+    return hooks.get_volume_id(FCPath(label_path))
 
 #===============================================================================
 def key__file_specification_name(label_path: str | Path | FCPath,
@@ -40,4 +40,4 @@ def key__file_specification_name(label_path: str | Path | FCPath,
         File Specification name.
     """
     label_path = FCPath(label_path)
-    return util.get_volume_subdir(label_path, get_host_config().get_volume_id(label_path))
+    return util.get_volume_subdir(label_path, hooks.get_volume_id(label_path))

@@ -11,6 +11,12 @@ engine code, to populate the registry for the host being processed.
 """
 import importlib
 import types
+from pathlib import Path
+from typing import Any, cast
+
+from filecache import FCPath
+
+import metadata_tools.util as util
 
 _host_id: str | None = None
 _host_config: types.ModuleType | None = None
@@ -138,3 +144,73 @@ def get_geometry_config() -> types.ModuleType:
         _geometry_config = importlib.import_module(
             f'metadata_tools.hosts.{_host_id}.geometry_config')
     return _geometry_config
+
+################################################################################
+# Host hooks with engine defaults
+#
+#  A host defines one of these only where it must differ from the default.
+################################################################################
+
+#===============================================================================
+def get_volume_id(path: str | Path | FCPath) -> str:
+    """Determine the volume ID from a path into a volume tree.
+
+    Parameters:
+        path: Path to a volume, or to anything inside one.
+
+    Returns:
+        The result of the host's ``host_config.get_volume_id`` if it defines
+        one; otherwise that of :func:`metadata_tools.util.get_volume_id`.
+    """
+    hook = getattr(get_host_config(), 'get_volume_id', None)
+    if hook is not None:
+        return cast(str, hook(path))
+    return util.get_volume_id(path)
+
+#===============================================================================
+def get_exclude() -> list[str] | None:
+    """The volumes the host excludes from processing.
+
+    Returns:
+        The host's ``host_config.exclude`` if it defines one; otherwise None,
+        for which each stage excludes the cumulative volume of the tree it is
+        processing.
+    """
+    return cast('list[str] | None', getattr(get_host_config(), 'exclude', None))
+
+#===============================================================================
+def get_index_glob() -> str | None:
+    """The glob matching a volume's index label in its metadata directory.
+
+    Returns:
+        The host's ``geometry_config.index_glob`` if it defines one; otherwise
+        None, for which the label is named for the volume,
+        ``<volume_id>_index.lbl``.
+    """
+    return cast('str | None', getattr(get_geometry_config(), 'index_glob', None))
+
+#===============================================================================
+def get_target_name(observation_dict: dict[str, Any]) -> str:
+    """Determine the target of an observation.
+
+    Parameters:
+        observation_dict: The observation's dictionary of index values.
+
+    Returns:
+        The result of the host's ``geometry_config.target_name`` if it defines
+        one; otherwise the observation's TARGET_NAME.
+    """
+    hook = getattr(get_geometry_config(), 'target_name', None)
+    if hook is not None:
+        return str(hook(observation_dict))
+    return str(observation_dict['TARGET_NAME'])
+
+#===============================================================================
+def cleanup() -> None:
+    """Clean up after a volume's geometry tables and labels are written.
+
+    Calls the host's ``geometry_config.cleanup`` if it defines one.
+    """
+    hook = getattr(get_geometry_config(), 'cleanup', None)
+    if hook is not None:
+        hook()

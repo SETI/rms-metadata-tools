@@ -32,6 +32,45 @@ def test_create_rejects_filename_without_volume_id(tmp_path: Path) -> None:
         lab.create(FCPath(table), FCPath(tmp_path / 'tmpl.lbl'))
 
 
+def test_create_inventory_measures_its_fields(monkeypatch: pytest.MonkeyPatch,
+                                              tmp_path: Path) -> None:
+    """The inventory label takes its field widths from the table's first row."""
+    captured = _capture_template(monkeypatch)
+    table = tmp_path / 'COISS_2001_inventory.csv'
+    filespec = 'data/1455855935_1456049320/N1455970236_1.LBL'
+    table.write_text(f'"COISS_2001","{filespec}","SATURN,TITAN"\r\n', encoding='utf-8')
+    lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
+               use_global_template=True, table_type='inventory')
+    assert captured['fields']['VOLUME_ID'] == 'COISS_2001'
+    assert captured['fields']['VOLUME_ID_BYTES'] == 10
+    assert captured['fields']['FILESPEC_BYTES'] == 44
+
+
+def test_create_inventory_without_a_complete_row(monkeypatch: pytest.MonkeyPatch,
+                                                 tmp_path: Path) -> None:
+    """An empty inventory still labels its volume ID field."""
+    captured = _capture_template(monkeypatch)
+    table = tmp_path / 'GO_0001_inventory.csv'
+    table.write_text('', encoding='utf-8')
+    lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
+               use_global_template=True, table_type='inventory')
+    assert captured['fields']['VOLUME_ID_BYTES'] == 7
+    assert captured['fields']['FILESPEC_BYTES'] == 0
+
+
+def test_create_supplemental_index_has_no_inventory_fields(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Only the inventory label is given the inventory field widths."""
+    captured = _capture_template(monkeypatch)
+    host_dir = tmp_path / 'GO_0xxx' / 'templates'
+    host_dir.mkdir(parents=True)
+    table = tmp_path / 'GO_0001_supplemental_index.tab'
+    table.write_text('row', encoding='utf-8')
+    lab.create(FCPath(table), FCPath(host_dir / 'GO_0xxx_supplemental_index.lbl'),
+               table_type='supplemental_index')
+    assert captured['fields'] == {'VOLUME_ID': 'GO_0001', 'TABLE_TYPE': 'SUPPLEMENTAL_INDEX'}
+
+
 def _capture_template(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     """Install a PdsTemplate stub that records constructor and write arguments.
 

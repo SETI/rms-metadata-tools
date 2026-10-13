@@ -151,4 +151,67 @@ def test_set_host_failed_import_leaves_registry_unchanged(
     assert cfg.current_host_id() == 'GOOD'
     assert cfg.get_host_config() is good
     assert cfg.get_index_config() is goodidx
+
+#===============================================================================
+# host hooks with engine defaults
+#===============================================================================
+def _bare_host(monkeypatch: pytest.MonkeyPatch) -> tuple[types.ModuleType, types.ModuleType]:
+    """Register a host whose config modules define no hooks at all.
+
+    Returns:
+        The host_config and geometry_config stand-ins.
+    """
+    _clear_config(monkeypatch)
+    host = types.ModuleType('host')
+    geom = types.ModuleType('geom')
+    cfg.set_current(host_id='X', host_config=host,
+                    index_config=types.ModuleType('idx'), geometry_config=geom)
+    return host, geom
+
+
+def test_get_volume_id_defaults_to_the_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host hook, the volume ID is read from the path."""
+    _bare_host(monkeypatch)
+    assert cfg.get_volume_id('/v/COISS_2xxx/COISS_2001/data') == 'COISS_2001'
+
+
+def test_get_volume_id_prefers_the_host_hook(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A host's own get_volume_id overrides the default."""
+    host, _ = _bare_host(monkeypatch)
+    host.get_volume_id = lambda path: 'HOST_0001'  # type: ignore[attr-defined]
+    assert cfg.get_volume_id('/v/COISS_2xxx/COISS_2001/data') == 'HOST_0001'
+
+
+def test_get_exclude_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host exclude, None leaves the choice to each stage."""
+    host, _ = _bare_host(monkeypatch)
+    assert cfg.get_exclude() is None
+    host.exclude = ['GO_0001']  # type: ignore[attr-defined]
+    assert cfg.get_exclude() == ['GO_0001']
+
+
+def test_get_index_glob_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host index_glob, None leaves the index label named for the volume."""
+    _, geom = _bare_host(monkeypatch)
+    assert cfg.get_index_glob() is None
+    geom.index_glob = 'GO_????_index.lbl'  # type: ignore[attr-defined]
+    assert cfg.get_index_glob() == 'GO_????_index.lbl'
+
+
+def test_get_target_name_defaults_to_target_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host hook, the target is the observation's TARGET_NAME."""
+    _, geom = _bare_host(monkeypatch)
+    assert cfg.get_target_name({'TARGET_NAME': 'IO'}) == 'IO'
+    geom.target_name = lambda d: d['TARGET_NAME'].lower()  # type: ignore[attr-defined]
+    assert cfg.get_target_name({'TARGET_NAME': 'IO'}) == 'io'
+
+
+def test_cleanup_calls_the_host_hook_if_any(monkeypatch: pytest.MonkeyPatch) -> None:
+    """cleanup is a no-op for a host with no hook, and calls one that exists."""
+    _, geom = _bare_host(monkeypatch)
+    cfg.cleanup()
+    called: list[str] = []
+    geom.cleanup = lambda: called.append('cleanup')  # type: ignore[attr-defined]
+    cfg.cleanup()
+    assert called == ['cleanup']
 ################################################################################

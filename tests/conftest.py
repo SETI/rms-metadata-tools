@@ -42,9 +42,10 @@ def _install_fakes() -> None:
     """Install fake host config modules before collection."""
     attr_table: list[tuple[str, dict[str, Any]]] = [
         ('host_config',     {'get_volume_id': lambda p: 'GO_0001',
+                             'glob': 'C0*.LBL',
                              'SCLK_BASES': [16777215, 91, 10, 8],
                              'template_name': 'GO_0xxx_supplemental_index'}),
-        ('index_config',    {'glob': 'C0*.LBL'}),
+        ('index_config',    {}),
         ('geometry_config', {'MISSION_TABLE': [], 'SC': -77, 'EXPAND': 0.00015,
                              'target_name': lambda d: d.get('TARGET_NAME', 'SKY'),
                              'cleanup': lambda: None}),

@@ -10,11 +10,11 @@ from typing import cast
 from filecache import FCPath
 
 import metadata_tools.common as com
+import metadata_tools.config as hooks
 import metadata_tools.geometry_support as geom
 import metadata_tools.index_support as idx
 import metadata_tools.label_support as lab
 import metadata_tools.util as util
-from metadata_tools.config import get_host_config
 
 
 #===============================================================================
@@ -42,7 +42,6 @@ def _cat_rows(volume_tree: FCPath,
             regenerated. A missing cumulative table is logged and skipped.
     """
     logger = com.get_logger()
-    hconf = get_host_config()
 
     table_type = table.qualifier or ''
     if table.level:
@@ -95,8 +94,8 @@ def _cat_rows(volume_tree: FCPath,
         if fnmatch.filter([vol], volume_glob):
             if not volumes or vol in volumes:
                 if vol != cumulative_dir.name:
-                    volume_id = hconf.get_volume_id(root)
-                    cumulative_id = hconf.get_volume_id(cumulative_dir)
+                    volume_id = hooks.get_volume_id(root)
+                    cumulative_id = hooks.get_volume_id(cumulative_dir)
 
                     # Read the table file; skip this volume if it has none
                     table_file = root / ('%s_%s' % (vol, table_type) + ext)

@@ -9,6 +9,7 @@ from typing import Any
 from filecache import FCPath
 
 import metadata_tools.common as com
+import metadata_tools.config as hooks
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
 from metadata_tools.geometry_support.record import Record
@@ -30,7 +31,7 @@ class Suite:
     Construction reads the volume's observations through the host's
     ``from_index`` hook. It returns early, leaving the Suite without
     ``observations``, ``tables``, or ``meshgrids``, when no index file in
-    ``metadata_dir`` matches ``index_glob`` (``volume_id`` is then also unset) or
+    ``metadata_dir`` matches ``index_glob`` or
     when ``from_index`` raises FileNotFoundError (logged). :meth:`create` on such a
     Suite does nothing. Otherwise all of those attributes are set, ``tables``
     holding one inventory table plus a sky, ring, and body summary table.
@@ -51,7 +52,8 @@ class Suite:
             template_path: Path to the host template.
             metadata_dir: Directory containing the metadata files.
             glob: Glob pattern for data files.
-            index_glob: Glob pattern for index files.
+            index_glob: Glob pattern for index files; by default, the label
+                named for the volume, ``<volume_id>_index.lbl``.
             first: If given, at most this many files are processed in each
                 volume.
             sampling: Pixel sampling density.
@@ -59,7 +61,6 @@ class Suite:
                 a body; 0 to disable body-specific meshgrids.
 
         Raises:
-            ValueError: If index_glob is None.
             RuntimeError: If more than one index file is found in the metadata
                 directory.
         """
@@ -75,9 +76,10 @@ class Suite:
         self.sampling = sampling
         self.body_samples = body_samples
 
-        # Check for supplemental index
+        # Find the volume's index
+        self.volume_id = hooks.get_volume_id(self.input_dir)
         if self.index_glob is None:
-            raise ValueError('Suite requires an index_glob pattern')
+            self.index_glob = util.get_index_name(self.volume_id, None) + '.lbl'
         index_filenames = list(self.metadata_dir.glob(self.index_glob))
         if len(index_filenames) == 0:
             return
@@ -86,7 +88,6 @@ class Suite:
 
         index_filename = index_filenames[0]
         ext = index_filename.suffix
-        self.volume_id = config.get_volume_id(self.input_dir)
         supplemental_index_name = util.get_index_name(self.volume_id, 'supplemental')
         supplemental_index_filename = \
             self.input_dir.joinpath(supplemental_index_name+ext)
@@ -109,6 +110,7 @@ class Suite:
         # Initialize data tables
         self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = []
         self.add_tables(output_dir)
+        self.filespec_width = self._filespec_width()
 
         # Initialize meshgrids
         self.meshgrids = config.meshgrids(sampling)
@@ -136,6 +138,30 @@ class Suite:
             ]
 
     #===========================================================================
+    def _filespec_width(self) -> int:
+        """The character width of the tables' FILE_SPECIFICATION_NAME column.
+
+        Every table begins its rows with the same file specification, so the
+        host's templates must agree on the width of that column.
+
+        Returns:
+            The width the templates declare, less the enclosing quotes.
+
+        Raises:
+            RuntimeError: If the templates declare different widths, or none.
+        """
+        widths = {stub.width - 2
+                  for table in self.tables
+                  for stub in getattr(getattr(table, 'schema', None), 'prefix_stubs', ())
+                  if stub.name == 'FILE_SPECIFICATION_NAME'}
+        if len(widths) != 1:
+            raise RuntimeError(
+                '%s: the summary templates must declare one width for '
+                'FILE_SPECIFICATION_NAME, but declare %s'
+                % (self.template_path.parent, sorted(widths) or 'none'))
+        return int(widths.pop())
+
+    #===========================================================================
     def make_record(self, index: int) -> Record:
         """Create the record for one observation.
 
@@ -149,7 +175,8 @@ class Suite:
                       self.volume_id,
                       self.meshgrids,
                       self.sampling,
-                      self.body_samples)
+                      self.body_samples,
+                      self.filespec_width)
 
     #===========================================================================
     def add(self, record: Record) -> None:
@@ -222,5 +249,5 @@ class Suite:
         self.write(labels_only=labels_only)
 
         # Clean up
-        get_geometry_config().cleanup()
+        hooks.cleanup()
         logger.close()

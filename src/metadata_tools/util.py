@@ -2,7 +2,10 @@
 # util.py: Utility functions
 ################################################################################
 """Utility functions for path handling, file I/O, and metadata computations."""
+import fnmatch
+import itertools
 import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -218,6 +221,49 @@ def get_volume_glob(col: str) -> str:
     volume_glob = parts[0] + '_' + id_glob
 
     return volume_glob
+
+#===============================================================================
+def get_cumulative_id(col: str) -> str:
+    """Name the cumulative volume of a collection.
+
+    Parameters:
+        col: Collection name, e.g., GO_0xxx.
+
+    Returns:
+        The volume ID of the collection's cumulative volume, e.g., GO_0999.
+    """
+    parts = col.rsplit('_', 1)
+    return parts[0] + '_' + parts[1].replace('x', '9')
+
+#===============================================================================
+_COLLECTION_RE = re.compile(r'[A-Za-z][A-Za-z0-9]*_[0-9]*x+')
+_VOLUME_RE = re.compile(r'[A-Za-z][A-Za-z0-9]*_[0-9]{4}')
+
+def get_volume_id(path: str | Path | FCPath) -> str:
+    """Determine the volume ID from a path into a volume tree.
+
+    The volume is the directory under the collection directory, e.g. GO_0017
+    under GO_0xxx. Where the path names no collection, it is the first
+    component with the form of a volume ID.
+
+    Parameters:
+        path: Path to a volume, or to anything inside one.
+
+    Returns:
+        The volume ID.
+
+    Raises:
+        ValueError: If no component of the path is a volume ID.
+    """
+    parts = FCPath(path).parts
+    for part, child in itertools.pairwise(parts):
+        if (_COLLECTION_RE.fullmatch(part)
+                and fnmatch.fnmatchcase(child, get_volume_glob(part))):
+            return child
+    for part in parts:
+        if _VOLUME_RE.fullmatch(part):
+            return part
+    raise ValueError(f'no volume ID in path {str(path)!r}')
 
 #===============================================================================
 def add_by_base(x_digits: list[int], y_digits: list[int],

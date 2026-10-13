@@ -28,30 +28,30 @@ know what they control.
 ``host_config.py``
     Settings shared by every stage: ``template_name`` (the base name of the
     host's label templates and tables, e.g. ``GO_0xxx_supplemental_index``),
-    ``exclude`` (volumes to skip, e.g. the cumulative directory itself),
-    spacecraft-clock formatting constants, and ``get_volume_id()``, which
-    extracts the volume ID from a path. ``exclude`` lives here rather than in
-    ``geometry_config.py`` so the cumulative stage can read it without paying
-    the cost of importing SPICE.
+    ``glob`` (which data labels to include, e.g. ``C0*.LBL``), and
+    spacecraft-clock formatting constants. Two settings are optional, each
+    with an engine default: ``exclude`` (volumes to skip; by default the
+    cumulative volume of the tree being processed) and ``get_volume_id()``
+    (by default the volume ID is read from the path, as the directory under
+    the collection directory).
 
 ``index_config.py``
-    Index-stage settings: ``glob`` (which data labels to include, e.g.
-    ``C0*.LBL``) and any ``key__<NAME>`` functions that compute an index column
-    from the PDS3 label instead of copying it verbatim.
+    Any ``key__<NAME>`` functions that compute an index column from the PDS3
+    label instead of copying it verbatim.
 
 ``geometry_config.py``
     Geometry-stage settings, including:
 
     - ``SC`` — the NAIF spacecraft ID.
-    - ``glob`` / ``index_glob`` — patterns selecting data labels and the
-      supplemental index file.
-    - ``exclude`` — re-exported from ``host_config.exclude`` (see above).
     - ``MISSION_TABLE`` and ``EXCEPTIONS`` — the mapping from spacecraft-clock
       ranges to the primary body, secondaries, and other selected bodies, with
       regular-expression or predicate exceptions.
     - The field-of-view expansion constants and the ``meshgrids`` /
       ``meshgrid`` functions that define pixel sampling.
-    - ``from_index``, ``target_name``, and ``cleanup`` hooks.
+    - The ``from_index`` hook.
+    - Optionally, ``index_glob`` (by default a volume's index label is
+      ``<volume_id>_index.lbl``), ``target_name`` (by default the
+      observation's TARGET_NAME), and ``cleanup`` (by default nothing).
 
 ``host_init.py``
     Imported for its side effects: it initializes the ``oops`` host module

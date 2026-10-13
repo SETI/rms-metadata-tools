@@ -22,7 +22,7 @@ from metadata_tools.cli._host import (
     run_cloud_worker,
     single_task_as_task_file,
 )
-from metadata_tools.config import get_host_config, set_host
+from metadata_tools.config import get_exclude, get_host_config, set_host
 
 
 class _CumulativeTask:
@@ -89,5 +89,5 @@ def main() -> None:
 
     with single_task_as_task_file():
         run_cloud_worker(parser,
-                         _CumulativeTask(host_id, hconf.template_name, hconf.exclude),
+                         _CumulativeTask(host_id, hconf.template_name, get_exclude()),
                          supports_volumes=False)

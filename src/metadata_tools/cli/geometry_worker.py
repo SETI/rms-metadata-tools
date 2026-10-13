@@ -21,7 +21,7 @@ from metadata_tools.cli._host import (
     resolve_host_paths,
     run_cloud_worker,
 )
-from metadata_tools.config import get_geometry_config, get_host_config, set_host
+from metadata_tools.config import get_exclude, get_host_config, get_index_glob, set_host
 
 
 class _GeometryTask:
@@ -90,14 +90,13 @@ def main() -> None:
 
     set_host(host_id)
     hconf = get_host_config()
-    config = get_geometry_config()
 
     import metadata_tools.util as util
     from metadata_tools.geometry_support import get_args
 
     host, _, _ = util.parse_template_name(hconf.template_name)
-    parser = get_args(host=host, exclude=config.exclude)
+    parser = get_args(host=host, exclude=get_exclude())
 
     run_cloud_worker(parser, _GeometryTask(host_id, hconf.template_name,
-                                           config.glob, config.index_glob,
-                                           config.exclude))
+                                           hconf.glob, get_index_glob(),
+                                           get_exclude()))
