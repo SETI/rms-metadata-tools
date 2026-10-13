@@ -41,3 +41,34 @@ mission. Calibration and similar observations are excluded by the host's
 exception patterns. These details live in the host's ``geometry_config.py`` and
 are described, as an extension example, in
 :doc:`/dev_guide/dev_guide_extending`.
+
+Cassini ISS (``COISS_xxxx``)
+============================
+
+The Cassini Imaging Science Subsystem (ISS) host. One host serves both
+collections, ``COISS_1xxx`` (cruise and the Jupiter flyby) and ``COISS_2xxx``
+(Saturn), and both cameras: the narrow-angle and wide-angle images of a volume
+share its tables.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Property
+     - Value
+   * - Host directory
+     - ``src/metadata_tools/hosts/COISS_xxxx``
+   * - NAIF spacecraft ID
+     - ``-82``
+   * - Data label glob
+     - ``[NW]*.LBL``
+   * - Cumulative directories
+     - ``COISS_1xxx/COISS_1999`` and ``COISS_2xxx/COISS_2999`` (excluded from
+       the per-volume stages)
+   * - ``oops`` host module
+     - ``hosts.cassini.iss`` (class ``ISS``)
+
+The host's mission table covers the Earth flyby, the Jupiter flyby, and the
+Saturn approach and tour. The index on each Cassini ISS volume already holds
+the values a supplemental index would add, so the host defines no supplemental
+index template and the geometry stage reads the volume's index alone.

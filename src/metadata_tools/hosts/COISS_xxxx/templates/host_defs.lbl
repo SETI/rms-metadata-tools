@@ -1,0 +1,40 @@
+$NOTE
+##############################################################################
+# Host-specific label definitions.
+#
+#  This file provides host-specific definitions to appear in the supplemental
+#  and geometry labels.
+#
+##############################################################################
+$END_NOTE
+$NOTE
+##############################################################################
+# Values the shared summary templates take from this host
+##############################################################################
+$END_NOTE
+$ONCE(instrument = 'Cassini ISS')
+$ONCE(product = 'image')
+$ONCE(products = 'images')
+$ONCE(volume_id_bytes = 10)
+$ONCE(filespec_bytes = 45)
+$ONCE(system_names = 'VENUS, EARTH, JUPITER, or SATURN')
+$ONCE(ring_system = 'Jupiter or Saturn')
+$ONCE(is_visual = True)
+$ONCE(is_saturn = True)
+MISSION_NAME                    = "CASSINI-HUYGENS"
+INSTRUMENT_HOST_NAME            = "CASSINI ORBITER"
+INSTRUMENT_HOST_ID              = "CO"
+INSTRUMENT_NAME                 = "IMAGING SCIENCE SUBSYSTEM"
+INSTRUMENT_ID                   = "ISS"
+
+$NOTE
+##############################################################################
+# DATA_SET_ID definitions
+##############################################################################
+$END_NOTE
+$ONCE(volume_number = int(BASENAME(LABEL_PATH()).split('_')[1]))
+$IF(volume_number < 2000)
+DATA_SET_ID                     = "CO-E/V/J-ISSNA/ISSWA-2-EDR-V1.0"
+$ELSE
+DATA_SET_ID                     = "CO-S-ISSNA/ISSWA-2-EDR-V1.0"
+$END_IF

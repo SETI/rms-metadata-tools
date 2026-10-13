@@ -82,6 +82,7 @@ where = ["src"]
 "metadata_tools" = ["py.typed", "templates/*.lbl"]
 "metadata_tools.cli" = ["gcp_common_startup.sh"]
 "metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
+"metadata_tools.hosts.COISS_xxxx" = ["templates/*.lbl"]
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
