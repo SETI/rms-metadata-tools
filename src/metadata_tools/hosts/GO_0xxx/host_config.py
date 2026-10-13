@@ -11,6 +11,13 @@ template_name = 'GO_0xxx_supplemental_index'
 glob: str = 'C0*.LBL'
 
 ################################################################################
+# Border allowed around every field of view for uncertainty in the spacecraft
+# pointing, in radians. The engine expands each field of view by this angle,
+# and the labels state it.
+################################################################################
+BORDER: float = 1.5e-4
+
+################################################################################
 # Spacecraft clock modulo
 ################################################################################
 SCLK_BASES: list[int] = [16777215, 91, 10, 8]

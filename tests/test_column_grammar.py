@@ -9,6 +9,7 @@ the write path depends on, on small synthetic templates.
 """
 import pytest
 
+from metadata_tools import column_grammar
 from metadata_tools.column_grammar import (
     expand_format_references,
     keyword_value,
@@ -428,3 +429,34 @@ def test_comments_inside_a_block_are_harmless_once_stripped() -> None:
         '    NAME                        = "QUANTITY"\n    # Shared format.\n')
     assert (expand_format_references(None, _ENTRY + strip_comments(None, commented))
             == expand_format_references(None, _ENTRY + _REFERRING_GROUP))
+
+#===============================================================================
+# substitute_constants
+#===============================================================================
+def test_substitute_constants_writes_out_literal_definitions() -> None:
+    """A $ONCE definition with a literal value is substituted where it is used."""
+    content = ('$ONCE(filespec_bytes = 32)\n'
+               "  $ONCE(instrument = 'Galileo SSI')\n"
+               '    FORMAT = A$filespec_bytes$\n'
+               '    DESCRIPTION = "The $instrument$ image."\n')
+    result = column_grammar.substitute_constants('t.lbl', content)
+    assert '    FORMAT = A32\n' in result
+    assert 'The Galileo SSI image.' in result
+    # The definitions themselves are left for the label write.
+    assert '$ONCE(filespec_bytes = 32)\n' in result
+
+
+def test_substitute_constants_leaves_computed_values_alone() -> None:
+    """A value computed when the label is written is not a constant."""
+    content = ("$ONCE(volume_id = '_'.join(BASENAME(LABEL_PATH()).split('_')[:2]))\n"
+               'VOLUME_ID = "$volume_id$"\n'
+               'ROWS = $records$\n')
+    assert column_grammar.substitute_constants('t.lbl', content) == content
+
+
+def test_substitute_constants_drops_a_name_that_is_later_computed() -> None:
+    """A name redefined by a computed expression is no longer a constant."""
+    content = ('$ONCE(width = 32)\n'
+               '$ONCE(width = RECORD_BYTES(path))\n'
+               'FORMAT = A$width$\n')
+    assert column_grammar.substitute_constants('t.lbl', content) == content

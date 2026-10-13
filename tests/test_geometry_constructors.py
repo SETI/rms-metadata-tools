@@ -15,7 +15,7 @@ from filecache import FCPath
 import metadata_tools
 import metadata_tools.bodies as bodies_mod
 import metadata_tools.common as com
-from metadata_tools.config import get_geometry_config
+from metadata_tools.config import get_geometry_config, get_host_config
 from metadata_tools.geometry_support import bodies_select, meshgrids
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.suite import Suite
@@ -28,7 +28,7 @@ config = get_geometry_config()
 #===============================================================================
 def test_inventory_success(monkeypatch: pytest.MonkeyPatch) -> None:
     """inventory() returns the observation's body list when the call succeeds."""
-    monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
+    monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
     obs = types.SimpleNamespace(
         inventory=lambda bodies, expand, cache: ['IO', 'EUROPA'])
     record = types.SimpleNamespace(observation=obs, pointing_available=True)
@@ -44,7 +44,7 @@ def test_bounding_boxes_keeps_only_bodies_in_view(
     The inventory is taken in the field of view of the record's meshgrid, so
     that a box is located in the coordinates the meshgrid samples.
     """
-    monkeypatch.setattr(config, 'EXPAND', 0.5, raising=False)
+    monkeypatch.setattr(get_host_config(), 'BORDER', 0.5, raising=False)
     seen: list[dict[str, Any]] = []
 
     def _inventory(bodies: Any, **kwargs: Any) -> Any:
@@ -70,7 +70,7 @@ def test_bounding_boxes_without_bodies_skips_the_inventory() -> None:
 
 def test_bounding_boxes_missing_ckernel_is_empty(monkeypatch: pytest.MonkeyPatch) -> None:
     """Without pointing there are no boxes, and pointing is marked unavailable."""
-    monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
+    monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
     _recording_logger(monkeypatch)
 
     def _raise(bodies: Any, **kwargs: Any) -> Any:
@@ -100,7 +100,7 @@ def _recording_logger(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
 
 def test_inventory_missing_ckernel_clears_pointing(monkeypatch: pytest.MonkeyPatch) -> None:
     """A SPICE CKINSUFFDATA error is logged, yields an empty list, and clears pointing."""
-    monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
+    monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
     logged = _recording_logger(monkeypatch)
 
     def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
@@ -116,7 +116,7 @@ def test_inventory_missing_ckernel_clears_pointing(monkeypatch: pytest.MonkeyPat
 def test_inventory_unexpected_runtime_error_is_logged(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """A non-pointing RuntimeError is logged as unexpected and leaves pointing set."""
-    monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
+    monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
     logged = _recording_logger(monkeypatch)
 
     def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
@@ -131,7 +131,7 @@ def test_inventory_unexpected_runtime_error_is_logged(
 
 def test_inventory_other_error_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
     """Non-SPICE exceptions from observation.inventory() propagate as genuine bugs."""
-    monkeypatch.setattr(config, 'EXPAND', 0.0, raising=False)
+    monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
 
     def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
         raise ValueError('boom')
@@ -267,7 +267,7 @@ def test_record_init_samples_the_fov_of_the_observation(
     """A host with no meshgrid hook gets a meshgrid of the observation's own FOV."""
     _patch_record_spice(monkeypatch)
     monkeypatch.delattr(config, 'meshgrid')
-    monkeypatch.setattr(config, 'EXPAND', 2.5e-4, raising=False)
+    monkeypatch.setattr(get_host_config(), 'BORDER', 2.5e-4, raising=False)
     built: list[Any] = []
 
     def _fov_meshgrid(fov: Any, sampling: float, expand: float) -> str:
@@ -518,6 +518,9 @@ def test_suite_init_builds_tables_and_meshgrids(
                   index_glob='*_index.tab')
     assert suite.observations == ['obs']
     assert suite.meshgrids == {'m': 1}
+    # Each table's label states the sampling it was generated with.
+    assert all(table.label_fields == {'SAMPLING': 8, 'BODY_SAMPLES': 16}
+               for table in suite.tables)
     assert [t.qualifier for t in suite.tables] == ['inventory', 'sky', 'ring', 'body']
     # Each geometry table resolved its column set from that template directory.
     by_qualifier: dict[Any, Any] = {t.qualifier: t for t in suite.tables}

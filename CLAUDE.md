@@ -72,7 +72,7 @@ Core engine modules:
 - `geometry_support/` — geometry table generation: `process.py` (entry point), `suite.py`
   (`Suite`), `record.py` (`Record`), `tables.py` (the table classes), `prep.py`, `masks.py`,
   `meshgrids.py` (the FOV meshgrid samples each observation's own `fov` plus the host's
-  angular `EXPAND` border, cached per FOV; each body row is sampled across its own
+  angular `host_config.BORDER`, cached per FOV; each body row is sampled across its own
   inventory bounding box, not the whole FOV),
   `formatting.py`, `bodies_select.py`, `formats.py` (the host's SCLK-resolved mission
   table), and `label_schema.py`, which reads each table's full column schema — label
@@ -110,15 +110,23 @@ only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
 - `host_config.py`, `index_config.py`, `geometry_config.py` — host-specific settings and
   optional override hooks (e.g. `key__<NAME>(label_path, label_dict)` to compute an index
   column; backplane functions for geometry). The data-label `glob` lives in `host_config`
-  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, `cleanup`, `EXPAND`,
+  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, `cleanup`, `BORDER`,
   and `meshgrids`/`meshgrid` are optional: the engine reads them through the accessors
   in `config.py` (`get_volume_id()`, `get_exclude()`, `get_index_glob()`,
-  `get_target_name()`, `cleanup()`, `get_expand()`, `get_meshgrids()`), which supply
+  `get_target_name()`, `cleanup()`, `get_border()`, `get_meshgrids()`), which supply
   the defaults.
 - `host_init.py` — initializes the host's `oops` host module (side-effect import).
-- `templates/` — PDS3 label templates (`host_defs.lbl`, `*_supplemental_index.lbl`,
-  `*_{body,ring,sky,sun}_summary.lbl`); shared template fragments are in
-  `src/metadata_tools/templates/`.
+- `templates/` — the host's PDS3 label templates: `host_defs.lbl` (mission keywords plus
+  the literal `$ONCE` values the shared templates take from the host: instrument name,
+  the noun for one data product (`product`/`products`, e.g. image),
+  volume-ID and file-specification widths, system names, `is_visual`, `is_saturn`) and
+  `*_supplemental_index.lbl`. The engine gives every label `FOV_BORDER`
+  (`host_config.BORDER`, an angle in radians shared by every instrument of the
+  spacecraft, worded in milliradians) and, in a geometry run, `SAMPLING` and `BODY_SAMPLES`. The `{body,ring,sky,sun}_summary.lbl` and
+  `inventory.lbl` templates and the column fragments are shared, in
+  `src/metadata_tools/templates/`; a host shadows any of them with `<HOST>_<kind>.lbl`
+  (`util.find_template`), or a fragment with a same-named copy
+  (`label_support.HostTemplate` searches the host directory first).
 
 **Config registry:** the generic engine never imports a host's config modules directly (see
 issue #112). Entry points call `metadata_tools.config.set_host(host_id)` once, which
@@ -160,7 +168,7 @@ validates it all loudly at table construction; the write path lowers every group
 COLUMN objects (`merge_column_definitions`), so shipped labels never carry the grammar.
 
 **Adding a geometry column:** the column set is collection-independent and lives in the
-shared fragments in `src/metadata_tools/templates/`, which every host's summary template
+shared fragments in `src/metadata_tools/templates/`, which the shared summary templates
 `$INCLUDE`s. (1) add a COLUMN_DEFINITION plus its COLUMN_STUB object(s) — or a plain
 COLUMN for a single value — to the shared fragment for its table kind, referring to a
 format-dictionary entry by `COLUMN_FORMAT` when its format is a common one, (2) add the

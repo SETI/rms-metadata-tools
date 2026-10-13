@@ -168,6 +168,16 @@ def get_volume_id(path: str | Path | FCPath) -> str:
     return util.get_volume_id(path)
 
 #===============================================================================
+def get_border() -> float:
+    """The border the host allows around a field of view, for pointing uncertainty.
+
+    Returns:
+        The host's ``host_config.BORDER``, in radians, if it defines one;
+        otherwise 0.
+    """
+    return float(getattr(get_host_config(), 'BORDER', 0.))
+
+#===============================================================================
 def get_exclude() -> list[str] | None:
     """The volumes the host excludes from processing.
 
@@ -214,16 +224,6 @@ def cleanup() -> None:
     hook = getattr(get_geometry_config(), 'cleanup', None)
     if hook is not None:
         hook()
-
-#===============================================================================
-def get_expand() -> float:
-    """The border the host allows around a field of view, for pointing uncertainty.
-
-    Returns:
-        The host's ``geometry_config.EXPAND``, in radians, if it defines one;
-        otherwise 0.
-    """
-    return float(getattr(get_geometry_config(), 'EXPAND', 0.))
 
 #===============================================================================
 def get_meshgrids(sampling: float) -> dict[Any, Any]:

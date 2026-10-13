@@ -426,6 +426,22 @@ def _host_dir(tmp_path: Path) -> Path:
     return host
 
 
+def _shadow_template(host: Path, qualifier: str) -> Path:
+    """Give the host a copy of its own of a shared summary template.
+
+    Parameters:
+        host: The copied host directory.
+        qualifier: The table kind.
+
+    Returns:
+        Path to the host's copy, named for its collection.
+    """
+    shared = Path(defs.GLOBAL_TEMPLATE_PATH.as_posix()) / f'{qualifier}_summary.lbl'
+    path = host / 'templates' / f'{host.name}_{qualifier}_summary.lbl'
+    shutil.copyfile(shared, path)
+    return path
+
+
 def _shadow_fragment(host: Path, fragment: str, old: str, new: str,
                      count: int = 1) -> FCPath:
     """Place an edited copy of a shared column fragment in the host directory.
@@ -785,7 +801,7 @@ def test_private_keyword_on_prefix_column_is_an_error(tmp_path: Path) -> None:
     error.
     """
     host = _host_dir(tmp_path)
-    path = host / 'templates' / 'GO_0xxx_sky_summary.lbl'
+    path = _shadow_template(host, 'sky')
     text = path.read_text(encoding='utf-8')
     needle = '    NAME                        = "VOLUME_ID"\n'
     assert needle in text
@@ -794,6 +810,27 @@ def test_private_keyword_on_prefix_column_is_an_error(tmp_path: Path) -> None:
         encoding='utf-8')
     with pytest.raises(RuntimeError, match='prefix columns are not computed'):
         resolve_schema(FCPath(host / 'templates'), 'sky')
+
+
+def test_a_host_template_shadows_the_shared_one(tmp_path: Path) -> None:
+    """A host's own summary template is read in place of the shared one."""
+    host = _host_dir(tmp_path)
+    path = _shadow_template(host, 'sky')
+    text = path.read_text(encoding='utf-8')
+    needle = 'A$filespec_bytes$'
+    assert needle in text
+    path.write_text(text.replace(needle, 'A60', 1), encoding='utf-8')
+    schema = resolve_schema(FCPath(host / 'templates'), 'sky')
+    assert schema.prefix_stubs[1].width == 62
+
+
+@pytest.mark.parametrize('qualifier', sorted(SHIPPED))
+def test_prefix_widths_come_from_the_host_definitions(qualifier: str) -> None:
+    """The shared templates take the identification widths from host_defs.lbl."""
+    stubs = resolve_schema(TEMPLATE_DIR, qualifier).prefix_stubs
+    assert [stub.name for stub in stubs[:2]] == ['VOLUME_ID', 'FILE_SPECIFICATION_NAME']
+    # GO_0xxx declares 7 and 32; a written field also holds its quotes.
+    assert [stub.width for stub in stubs[:2]] == [9, 34]
 
 
 def test_narrow_overflow_format_is_an_error(tmp_path: Path) -> None:
@@ -809,7 +846,7 @@ def test_narrow_overflow_format_is_an_error(tmp_path: Path) -> None:
 def test_prefix_mismatch_is_an_error(tmp_path: Path) -> None:
     """A table whose identification columns differ from the expected run fails."""
     host = _host_dir(tmp_path)
-    path = host / 'templates' / 'GO_0xxx_sky_summary.lbl'
+    path = _shadow_template(host, 'sky')
     text = path.read_text(encoding='utf-8')
     path.write_text(text.replace('"VOLUME_ID"', '"VOLUME_IDENT"', 1), encoding='utf-8')
     with pytest.raises(RuntimeError, match='must begin with the prefix columns'):

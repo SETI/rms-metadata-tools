@@ -29,6 +29,9 @@ know what they control.
     Settings shared by every stage: ``template_name`` (the base name of the
     host's label templates and tables, e.g. ``GO_0xxx_supplemental_index``),
     ``glob`` (which data labels to include, e.g. ``C0*.LBL``), and
+    ``BORDER`` (the border allowed around every field of view for uncertainty
+    in the spacecraft pointing, in radians; the engine expands each field of
+    view by it and the labels state it), and
     spacecraft-clock formatting constants. Two settings are optional, each
     with an engine default: ``exclude`` (volumes to skip; by default the
     cumulative volume of the tree being processed) and ``get_volume_id()``
@@ -46,9 +49,6 @@ know what they control.
     - ``MISSION_TABLE`` and ``EXCEPTIONS`` — the mapping from spacecraft-clock
       ranges to the primary body, secondaries, and other selected bodies, with
       regular-expression or predicate exceptions.
-    - ``EXPAND`` — the border allowed around each field of view for pointing
-      uncertainty, in radians. Each observation is sampled across its own
-      field of view plus this border.
     - The ``from_index`` hook.
     - Optionally, ``index_glob`` (by default a volume's index label is
       ``<volume_id>_index.lbl``), ``target_name`` (by default the
@@ -76,8 +76,8 @@ from the host's label template (or a shared template in the package's global
 
 The label templates also define the columns themselves, for geometry tables as
 well as index tables. The geometry column set is the same for every collection
-and lives in shared template fragments that each host's
-``<HOST>_<kind>_summary.lbl`` pulls in: a single-valued column is one
+and lives in shared template fragments that the shared summary templates
+(``<kind>_summary.lbl``) pull in: a single-valued column is one
 ``COLUMN`` object, and a min/max pair is one ``COLUMN_DEFINITION`` object
 followed by a ``COLUMN_STUB`` per value, with each column's null value, valid
 range, and field width coming from its own object or from the definition it

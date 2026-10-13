@@ -46,14 +46,15 @@ from dataclasses import dataclass
 from typing import Any
 
 from filecache import FCPath
-from pdstemplate import PdsTemplate
 from pdstemplate.pds3table import Pds3Table
 
 import metadata_tools.defs as defs
+import metadata_tools.util as util
 from metadata_tools import column_grammar
 from metadata_tools.column_grammar import PRIVATE_KEYWORDS as PRIVATE_KEYWORDS  # re-export
 from metadata_tools.geometry_support import link_fns
 from metadata_tools.geometry_support.link_fns import LinkFunction
+from metadata_tools.label_support import HostTemplate
 
 # The prefix columns each table kind writes ahead of its geometry columns, in
 # order. These come from Record.prefixes and prep.append_body_prefix, not from
@@ -608,7 +609,10 @@ def _resolve_group(definition: 'column_grammar.Block',
 
 #===============================================================================
 def template_name_for(template_dir: FCPath, qualifier: str) -> str:
-    """Return the file name of a host's summary template for one table kind.
+    """Return the file name of a host's own summary template for one table kind.
+
+    A host with no such template takes the shared one; see
+    :func:`metadata_tools.util.find_template`.
 
     The write path reaches the same name from the other direction, by
     substituting the collection name into a table's file name; see
@@ -633,7 +637,8 @@ _schema_cache: dict[tuple[str, str], TableSchema] = {}
 def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     """Resolve one geometry table's column schema from its label template.
 
-    Parses the host's summary template: a leading run of plain ``COLUMN``
+    Parses the summary template, the host's own or else the shared one, with
+    the constants the host defines substituted: a leading run of plain ``COLUMN``
     objects must match the table kind's fixed prefix columns, and the rest of
     the table is a sequence of computed columns -- a plain ``COLUMN`` carrying
     its own BACKPLANE_KEY for a single-valued column, or a
@@ -665,14 +670,17 @@ def resolve_schema(template_dir: str | FCPath, qualifier: str) -> TableSchema:
     if cache_key in _schema_cache:
         return _schema_cache[cache_key]
 
-    template_path = template_dir / template_name_for(template_dir, qualifier)
+    template_path = util.find_template(
+        template_dir, template_name_for(template_dir, qualifier).removesuffix('.lbl'))
     # PdsTemplate expands $INCLUDE into .content at construction; the column
     # definitions live in the shared fragments, so this expansion is required.
-    template = PdsTemplate(template_path, crlf=True,
-                           includes=[defs.GLOBAL_TEMPLATE_PATH, template_dir])
+    template = HostTemplate(template_path, crlf=True,
+                            includes=[template_dir, defs.GLOBAL_TEMPLATE_PATH])
     try:
-        blocks = column_grammar.tokenize(column_grammar.expand_format_references(
-            template_path, column_grammar.strip_comments(template_path, template.content)))
+        content = column_grammar.strip_comments(template_path, template.content)
+        content = column_grammar.substitute_constants(template_path, content)
+        blocks = column_grammar.tokenize(
+            column_grammar.expand_format_references(template_path, content))
     except ValueError as error:
         raise RuntimeError(f'{template_path}: {error}') from None
 

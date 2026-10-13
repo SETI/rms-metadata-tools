@@ -56,8 +56,7 @@ def _cat_rows(volume_tree: FCPath,
             return
         logger.info('Writing cumulative label for %s.', cumulative_file)
         lab.create(cumulative_file, template_path,
-                   table_type=table_type.upper(),
-                   use_global_template=table.use_global_template)
+                   table_type=table_type.upper())
         return
 
     # Walk the input tree, adding lines for each found volume
@@ -117,8 +116,7 @@ def _cat_rows(volume_tree: FCPath,
 
         logger.info('Writing cumulative label.')
         lab.create(cumulative_file, template_path,
-                   table_type=table_type.upper(),
-                   use_global_template=table.use_global_template)
+                   table_type=table_type.upper())
 
 #===============================================================================
 def get_args(host: str | None = None,

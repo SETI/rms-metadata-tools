@@ -260,7 +260,7 @@ class Record:
         if hook is not None:
             return hook(fov_meshgrids, observation)
         return meshgrids.cached_fov_meshgrid(fov_meshgrids, observation.fov,
-                                             self.sampling, hooks.get_expand())
+                                             self.sampling, hooks.get_border())
 
     #===============================================================================
     def add(self, columns: Sequence['ResolvedColumn'], *,

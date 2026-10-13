@@ -2,7 +2,21 @@ $NOTE
 ##############################################################################
 # Geometry file template for sky geometry.
 #
-#  This template controls the creation of sky geometry labels.
+#  This template controls the creation of sky geometry labels for every
+#  host. It takes the following from the host's host_defs.lbl:
+#
+#   instrument:       Name of the instrument, as it reads in a sentence.
+#   product:          What one data product is called, e.g. image, and
+#   products:         its plural.
+#   volume_id_bytes:  Width of a volume ID.
+#   filespec_bytes:   Width of the FILE_SPECIFICATION_NAME column.
+#
+#  The engine supplies the border allowed around the field of view
+#  (FOV_BORDER, worded from the host's host_config.BORDER) and, when the
+#  tables are generated, the sampling used (SAMPLING and BODY_SAMPLES).
+#
+#  A host that must differ shadows this template with a copy of its own,
+#  named <HOST>_sky_summary.lbl, in its templates directory.
 #
 ##############################################################################
 $END_NOTE
@@ -31,24 +45,25 @@ OBJECT                          = SKY_SUMMARY_TABLE
   ROW_BYTES                     = $record_bytes$
   INDEX_TYPE                    = $index_type$
   DESCRIPTION                   = "This index describes the pointing
-    geometry for the Galileo SSI image collection. The file contains one row
-    per image, indicating the ranges of J2000 right ascension and declination
+    geometry for the $instrument$ $product$ collection. The file contains one row
+    per $product$, indicating the ranges of J2000 right ascension and declination
     sampled by the field of view.
 
-$IF(index_type == 'CUMULATIVE')
-    This is the cumulative index, describing all the images in the collection.
-$ELSE
-    This index describes the images found on volume $volume_id$.
-$END_IF
+$IF(FOV_BORDER)
+    To accommodate pointing uncertainty, the $instrument$ field of view has
+    been expanded on every side by $FOV_BORDER$.
 
-    To accommodate pointing uncertainty, the Galileo SSI field of view has
-    been expanded on every side by a distance equivalent to 25 narrow-angle
-    pixels."
+$END_IF
+$IF(index_type == 'CUMULATIVE')
+    This is the cumulative index, describing all the $products$ in the collection."
+$ELSE
+    This index describes the $products$ found on volume $volume_id$."
+$END_IF
 
   #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "VOLUME_ID"
-    FORMAT                      = A7
+    FORMAT                      = A$volume_id_bytes$
     DESCRIPTION                 = "The unique identifier for the PDS3 data
       volume."
   END_OBJECT                    = COLUMN
@@ -56,7 +71,7 @@ $END_IF
   #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "FILE_SPECIFICATION_NAME"
-    FORMAT                      = A32
+    FORMAT                      = A$filespec_bytes$
     DESCRIPTION                 = "The full directory path to the data file's
       label, relative to the root directory of the PDS volume."
   END_OBJECT                    = COLUMN

@@ -112,6 +112,10 @@ class Suite:
         self.add_tables(output_dir)
         self.filespec_width = self._filespec_width()
 
+        # The labels state the sampling the tables were generated with
+        for table in self.tables:
+            table.label_fields = {'SAMPLING': sampling, 'BODY_SAMPLES': body_samples}
+
         # Initialize meshgrids
         self.meshgrids = hooks.get_meshgrids(sampling)
 

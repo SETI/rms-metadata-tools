@@ -2,7 +2,23 @@ $NOTE
 ##############################################################################
 # Geometry file template for rings.
 #
-#  This template controls the creation of ring geometry labels.
+#  This template controls the creation of ring geometry labels for every
+#  host. It takes the following from the host's host_defs.lbl:
+#
+#   instrument:       Name of the instrument, as it reads in a sentence.
+#   product:          What one data product is called, e.g. image, and
+#   products:         its plural.
+#   volume_id_bytes:  Width of a volume ID.
+#   filespec_bytes:   Width of the FILE_SPECIFICATION_NAME column.
+#   ring_system:      The planetary systems whose rings are observed.
+#   is_visual:        True if the data were taken in visual light.
+#
+#  The engine supplies the border allowed around the field of view
+#  (FOV_BORDER, worded from the host's host_config.BORDER) and, when the
+#  tables are generated, the sampling used (SAMPLING and BODY_SAMPLES).
+#
+#  A host that must differ shadows this template with a copy of its own,
+#  named <HOST>_ring_summary.lbl, in its templates directory.
 #
 ##############################################################################
 $END_NOTE
@@ -31,19 +47,25 @@ OBJECT                          = RING_SUMMARY_TABLE
   ROW_BYTES                     = $record_bytes$
   INDEX_TYPE                    = $index_type$
   DESCRIPTION                   = "This index describes the ring viewing
-    geometry for the Galileo SSI image collection. The file contains one row
-    per image targeted at the Jupiter system.
+    geometry for the $instrument$ $product$ collection. The file contains one row
+    per $product$ targeted at the $ring_system$ system.
 
 $IF(index_type == 'CUMULATIVE')
-    This is the cumulative index, describing all the images in the collection.
+    This is the cumulative index, describing all the $products$ in the collection.
 $ELSE
-    This index describes the images found on volume $volume_id$.
+    This index describes the $products$ found on volume $volume_id$.
 $END_IF
 
     Two types of geometry are represented in this index. Gridded quantities
     were constructed by uniformly sampling the pixels that comprise each data
-    product on an 8x8 grid, i.e., every 64th pixel, spanning the field of
-    view. Gridless quantities represent a single value.
+$IF(SAMPLING)
+    product on a grid spanning the field of view, at intervals of no more
+    than $SAMPLING$ pixels along each axis. Gridless quantities represent a
+    single value.
+$ELSE
+    product on a grid spanning the field of view. Gridless quantities
+    represent a single value.
+$END_IF
 
     For each sampled pixel, a variety of geometric quantities have been
     calculated. All quantities, gridded and gridless, are tabulated in terms of
@@ -57,18 +79,19 @@ $END_IF
     which an observation was taken. When this situation occurs, no row has
     been added to the file.
 
+$IF(FOV_BORDER)
+    To accommodate pointing uncertainty, the $instrument$ field of view has
+    been expanded on every side by $FOV_BORDER$.
+
+$END_IF
     Regions of the ring plane that are obscured by the planet or a moon are
     excluded from the tabulation. Quantities that are independent of the field
-    of view are tabulated regardless of any obstruction.
-
-    To accommodate pointing uncertainty, the Galileo SSI field of view has
-    been expanded on every side by a distance equivalent to 25 narrow-angle
-    pixels."
+    of view are tabulated regardless of any obstruction."
 
   #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "VOLUME_ID"
-    FORMAT                      = A7
+    FORMAT                      = A$volume_id_bytes$
     DESCRIPTION                 = "The unique identifier for the PDS3 data
       volume."
   END_OBJECT                    = COLUMN
@@ -76,21 +99,20 @@ $END_IF
   #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "FILE_SPECIFICATION_NAME"
-    FORMAT                      = A32
-    DESCRIPTION                 = "The full directory path to the data file's,
+    FORMAT                      = A$filespec_bytes$
+    DESCRIPTION                 = "The full directory path to the data file's
       label, relative to the root directory of the PDS volume."
   END_OBJECT                    = COLUMN
 
   #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "SYSTEM_NAME"
-    FORMAT                      = A7
+    FORMAT                      = A12
     NULL_CONSTANT               = "NONE"
     DESCRIPTION                 = "The planetary system to which this ring
       belongs."
   END_OBJECT                    = COLUMN
 
-$ONCE(is_visual = True)
 $INCLUDE('ring_summary_columns.lbl')
 
 END_OBJECT                      = RING_SUMMARY_TABLE

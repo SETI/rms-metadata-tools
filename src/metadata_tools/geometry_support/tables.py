@@ -57,7 +57,6 @@ class InventoryTable(com.Table):
         super().__init__(output_dir=output_dir, template_path=template_path,
                          qualifier='inventory',
                          suffix="_inventory.csv",
-                         use_global_template=True,
                          level=None, **kwargs)
 
     #===========================================================================

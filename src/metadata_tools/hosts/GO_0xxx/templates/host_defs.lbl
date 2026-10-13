@@ -7,6 +7,20 @@ $NOTE
 #
 ##############################################################################
 $END_NOTE
+$NOTE
+##############################################################################
+# Values the shared summary templates take from this host
+##############################################################################
+$END_NOTE
+$ONCE(instrument = 'Galileo SSI')
+$ONCE(product = 'image')
+$ONCE(products = 'images')
+$ONCE(volume_id_bytes = 7)
+$ONCE(filespec_bytes = 32)
+$ONCE(system_names = 'EARTH, VENUS, or JUPITER')
+$ONCE(ring_system = 'Jupiter')
+$ONCE(is_visual = True)
+$ONCE(is_saturn = False)
 MISSION_NAME                    = "GALILEO"
 INSTRUMENT_HOST_NAME            = "GALILEO"
 INSTRUMENT_HOST_ID              = "GLL"

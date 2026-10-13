@@ -33,6 +33,7 @@ This module is deliberately light -- regular expressions and text
 manipulation only -- so :mod:`metadata_tools.label_support` can import it
 without touching the geometry engine.
 """
+import ast
 import re
 import textwrap
 from dataclasses import dataclass
@@ -264,6 +265,40 @@ def strip_comments(template_path: object, content: str) -> str:
         The content with every comment line removed.
     """
     return _COMMENT_RE.sub('', content)
+
+
+#===============================================================================
+_ONCE_RE = re.compile(r'(?m)^[ \t]*\$ONCE\((\w+)[ \t]*=[ \t]*(.*)\)[ \t]*\r?$')
+_SUBSTITUTION_RE = re.compile(r'\$(\w+)\$')
+
+def substitute_constants(template_path: object, content: str) -> str:
+    """Substitute the constants a template defines, for a reader that does not run it.
+
+    A template may define a value once, ``$ONCE(filespec_bytes = 32)``, and
+    use it wherever it likes, ``FORMAT = A$filespec_bytes$``. Generating a
+    label evaluates such expressions, but the schema read parses the template
+    without running it, and so needs the value written out. Only a definition
+    whose value is a Python literal is a constant; anything computed, such as
+    a value taken from the label path, is left for the label write.
+
+    Parameters:
+        template_path: The template path, unused; part of the preprocessor
+            call signature.
+        content: The template content.
+
+    Returns:
+        The content with each ``$name$`` that names a constant replaced by
+        the constant's value.
+    """
+    constants: dict[str, str] = {}
+    for name, expression in _ONCE_RE.findall(content):
+        try:
+            constants[name] = str(ast.literal_eval(expression))
+        except (ValueError, SyntaxError):
+            constants.pop(name, None)
+
+    return _SUBSTITUTION_RE.sub(
+        lambda match: constants.get(match.group(1), match.group(0)), content)
 
 
 #===============================================================================
