@@ -13,6 +13,7 @@ import oops
 
 import metadata_tools.bodies as bodies_mod
 import metadata_tools.common as com
+import metadata_tools.config as hooks
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
 
@@ -101,11 +102,11 @@ def _inventory(record: 'Record', bodies: list[str] | dict[str, Any],
     try:
         try:
             return record.observation.inventory(
-                bodies, expand=get_geometry_config().EXPAND, cache=False, **kwargs)
+                bodies, expand=hooks.get_expand(), cache=False, **kwargs)
         except TypeError:
             # oops >= 0.3 dropped the cache option (removed in the src restructure)
             return record.observation.inventory(
-                bodies, expand=get_geometry_config().EXPAND, **kwargs)
+                bodies, expand=hooks.get_expand(), **kwargs)
 
     # A RuntimeError is probably caused by missing spice data. There is
     # probably nothing we can do.

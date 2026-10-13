@@ -4,7 +4,7 @@
 # Config-free: depends only on oops and numpy so it can be unit-tested without
 # the host geometry_config plugin.
 ################################################################################
-"""Meshgrids that sample the bounding box of one body, rather than the whole FOV."""
+"""Meshgrids that sample an observation's whole FOV, or the bounding box of one body."""
 import math
 from typing import Any
 
@@ -21,6 +21,63 @@ further from the body, as the limb columns do, states a larger margin of its
 own with the MESHGRID_MARGIN keyword of its label template.
 """
 
+
+#===============================================================================
+def fov_meshgrid(fov: Any, sampling: float, expand: float = 0.) -> Any:
+    """Build a meshgrid sampling a whole FOV, and a border around it.
+
+    The border allows for pointing uncertainty. It is an angle, so that it is
+    as wide on the sky whatever the pixel scale of the FOV: the summed modes of
+    a camera get a border of proportionally fewer pixels.
+
+    Parameters:
+        fov: The oops FOV to sample.
+        sampling: Pixel sampling density; the largest spacing allowed. The
+            spacing is reduced so that the samples span the FOV and its border
+            exactly.
+        expand: The width of the border on each side of the FOV, in radians.
+
+    Returns:
+        The meshgrid, v axis first.
+    """
+    shape = np.asarray(fov.uv_shape.vals, dtype=np.float64)
+    border = expand / np.abs(np.asarray(fov.uv_scale.vals, dtype=np.float64))
+
+    # Define sampling of FOV
+    origin = -border
+    limit = shape + border
+
+    # Revise the sampling to be exact
+    samples = ((limit - origin) / sampling + 0.999).astype(int)
+    under = (limit - origin) / samples
+
+    # Construct the meshgrid
+    limit += 0.0001
+    return oops.Meshgrid.for_fov(fov, tuple(origin), undersample=tuple(under),
+                                 limit=tuple(limit), swap=True)
+
+#===============================================================================
+def cached_fov_meshgrid(cache: dict[Any, Any], fov: Any, sampling: float,
+                        expand: float = 0.) -> Any:
+    """Return the meshgrid sampling a whole FOV, building it on first use.
+
+    The observations of a volume share a handful of FOV objects, one for each
+    mode of each camera, so most are served from the cache.
+
+    Parameters:
+        cache: The meshgrids built so far, keyed by the identity of the FOV. An
+            entry also holds its FOV, so that the identity stays unique.
+        fov: The oops FOV to sample.
+        sampling: Pixel sampling density.
+        expand: The width of the border on each side of the FOV, in radians.
+
+    Returns:
+        The meshgrid; see :func:`fov_meshgrid`.
+    """
+    key = id(fov)
+    if key not in cache:
+        cache[key] = (fov, fov_meshgrid(fov, sampling, expand))
+    return cache[key][1]
 
 #===============================================================================
 def axis_samples(center: float, size: float, lower: float, upper: float,

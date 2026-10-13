@@ -1,11 +1,10 @@
 """Host-specific definitions and utilities for Galileo SSI (GLL SSI) geometry generation.
 
-This module defines the mission table, meshgrid construction, and other settings used
-to compute geometry tables for the GO_0xxx collection.
+This module defines the mission table and other settings used to compute geometry
+tables for the GO_0xxx collection.
 """
 from typing import Any
 
-import oops
 from hosts.galileo.ssi import SSI
 
 import metadata_tools.hosts.GO_0xxx.host_init  # noqa: F401  (side-effect import)
@@ -87,8 +86,11 @@ MISSION_TABLE: list[Any] = [
 # Mission-specific data (required)
 ##########################################################################################
 BORDER: int = 25             # in units of full-size SSI pixels
-NAC_PIXEL: float = 6.0e-6    # approximate full-size SSI pixel in units of radians
-EXPAND: float = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians
+
+# Amount to expand the FOV on every side, in units of radians. The engine samples
+# each observation's own FOV with this border around it, and takes the inventory
+# of the bodies in view with the same allowance.
+EXPAND: float = BORDER * abs(float(SSI._FOVS['FULL'].uv_scale.vals[0]))
 
 #=========================================================================================
 def from_index(index_filename: Any, supplemental_index_filename: Any = None) -> list[Any]:
@@ -107,66 +109,3 @@ def from_index(index_filename: Any, supplemental_index_filename: Any = None) -> 
     """
     observations = SSI.from_index(index_filename, supplemental_index_filename)
     return [observation for observation in observations if observation.texp != 0]
-
-
-
-##########################################################################################
-# Meshgrid functions (required)
-##########################################################################################
-
-MODE_SIZES: dict[str, int] = {"FULL": 1,
-              "NONE":  1,
-              "HMA":  1,
-              "HIM":  1,
-              "IM8":  1,
-              "HCA":  1,
-              "IM4":  1,
-              "XCM":  1,
-              "HCM":  1,
-              "HCJ":  1,
-              "HIS":  2,
-              "AI8":  2}
-
-#=========================================================================================
-def meshgrids(sampling: float) -> dict[str, Any]:
-    """Build a meshgrid for each SSI telemetry mode at the given pixel sampling.
-
-    Parameters:
-        sampling: Pixel sampling density.
-
-    Returns:
-        Mapping from telemetry mode name to its meshgrid object.
-    """
-    meshgrids: dict[str, Any] = {}
-    for mode in MODE_SIZES:
-        pixel_wrt_full = MODE_SIZES[mode]
-        pixels = 800 / MODE_SIZES[mode]
-
-        # Define sampling of FOV
-        origin = -float(BORDER) / pixel_wrt_full
-        limit = pixels - origin
-
-        # Revise the sampling to be exact
-        samples = int((limit - origin) / sampling + 0.999)
-        under = (limit - origin) / samples
-
-        # Construct the meshgrid
-        limit += 0.0001
-        meshgrid = oops.Meshgrid.for_fov(SSI._FOVS[mode], origin,
-                                         undersample=under, limit=limit, swap=True)
-        meshgrids[mode] = meshgrid
-
-    return meshgrids
-
-#=========================================================================================
-def meshgrid(meshgrids: dict[str, Any], snapshot: Any) -> Any:
-    """Determine the meshgrid given the dictionary derived from the SSI index file.
-
-    Parameters:
-        meshgrids: Meshgrid objects to choose from.
-        snapshot: Observation object for a GOSSI image.
-
-    Returns:
-        The selected meshgrid for this observation.
-    """
-    return meshgrids[snapshot.dict['TELEMETRY_FORMAT_ID']]

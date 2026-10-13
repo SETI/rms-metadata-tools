@@ -26,8 +26,8 @@ Suite
 =====
 
 :class:`~metadata_tools.geometry_support.suite.Suite` reads the volume's
-observations through the host's ``from_index`` hook, builds the per-mode
-meshgrids once, and builds the table list: an inventory table plus the sky,
+observations through the host's ``from_index`` hook, starts the volume's cache
+of FOV meshgrids, and builds the table list: an inventory table plus the sky,
 ring, and body tables. It loops over observations, building one
 :class:`~metadata_tools.geometry_support.record.Record` each and dispatching it
 to every table. A ``RuntimeError`` is raised if a volume contains more than one
@@ -327,9 +327,16 @@ Important invariants
   carries the backplane key, the mask, the link fields, and one
   :class:`~metadata_tools.geometry_support.label_schema.ColumnStub` per value
   it produces -- all of it parsed from the label template.
-- **Meshgrids.** The FOV meshgrids are built once per
-  :class:`~metadata_tools.geometry_support.suite.Suite` and selected per
-  observation by telemetry mode. A body-specific meshgrid is built per
+- **Meshgrids.** A FOV meshgrid samples an observation's own FOV -- the cutout
+  window, for an image that has one -- plus the border the host allows for
+  pointing uncertainty (``EXPAND``, an angle, so a summed mode gets
+  proportionally fewer pixels of border). It is built by
+  :func:`~metadata_tools.geometry_support.meshgrids.fov_meshgrid` the first
+  time a FOV is met and cached on the
+  :class:`~metadata_tools.geometry_support.suite.Suite`, since the observations
+  of a volume share a few FOV objects. The inventory of bodies in view uses the
+  same allowance. A host may instead supply ``meshgrids`` / ``meshgrid`` hooks
+  of its own. A body-specific meshgrid is built per
   observation, once for each body in the field of view; see "Body-specific
   meshgrids" above.
 - **One row per observation.** A call produces at most one row; with the

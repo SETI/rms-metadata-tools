@@ -80,7 +80,7 @@ The geometry engine is a package:
      tables.py          # InventoryTable, SkyTable, SunTable, RingTable, BodyTable
      prep.py            # prep_row(): builds the formatted columns for a row
      masks.py           # construct_excluded_mask(): excluded-pixel masks
-     meshgrids.py       # box_meshgrid(): a meshgrid sampling one body's bounding box
+     meshgrids.py       # fov_meshgrid(), box_meshgrid(): sample a FOV, or one body's box
      formatting.py      # numeric/ISO column formatting
      label_schema.py    # resolve_schema(): reads the column schema from the template
      link_fns.py        # link functions for columns sharing a LINK_ID
@@ -96,7 +96,7 @@ console-script entry points (see :doc:`dev_guide_environment`):
    src/metadata_tools/hosts/GO_0xxx/
      host_config.py            # shared host settings + data-label glob
      index_config.py           # key__<NAME> column functions
-     geometry_config.py        # SPICE id, mission table, meshgrids, hooks
+     geometry_config.py        # SPICE id, mission table, FOV border, hooks
      host_init.py              # initializes the oops host module (side effects)
      templates/                # host PDS3 label templates
 

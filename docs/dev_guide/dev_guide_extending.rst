@@ -62,8 +62,8 @@ and may override two engine defaults:
        ...
 
 ``geometry_config.py`` must provide the spacecraft ID, default selection, the
-body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), the ``from_index``
-reader, and the ``meshgrids`` / ``meshgrid`` functions:
+body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), and the
+``from_index`` reader:
 
 .. code-block:: python
 
@@ -75,8 +75,17 @@ reader, and the ``meshgrids`` / ``meshgrid`` functions:
    EXCEPTIONS = [ ... ]           # regexes/predicates excluded from the SCLK test
    from_index = inst.from_index
 
-   def meshgrids(sampling): ...
-   def meshgrid(meshgrids, snapshot): ...
+It should state the border to allow around a field of view for pointing
+uncertainty, as an angle; with none, the field of view is sampled as it is:
+
+.. code-block:: python
+
+   EXPAND = 25 * 6.0e-6           # radians: 25 narrow-angle pixels
+
+The engine samples each observation's own FOV (``observation.fov``) with that
+border around it, and takes the inventory of bodies in view with the same
+allowance. Because the border is an angle, a summed mode or a wider camera gets
+proportionally fewer pixels of it.
 
 It may also override these engine defaults, read through the accessors in
 :mod:`metadata_tools.config`:
@@ -86,6 +95,8 @@ It may also override these engine defaults, read through the accessors in
    index_glob = '<HOST>_????_index.lbl'   # default: <volume_id>_index.lbl
    def target_name(snapshot): ...         # default: snapshot['TARGET_NAME']
    def cleanup(): ...                     # default: nothing to clean up
+   def meshgrids(sampling): ...           # default: an empty cache, and
+   def meshgrid(meshgrids, snapshot): ... #   a meshgrid of snapshot.fov
 
 The width of the FILE_SPECIFICATION_NAME column is whatever the host's summary
 templates declare for it (they must agree); the engine pads the file
