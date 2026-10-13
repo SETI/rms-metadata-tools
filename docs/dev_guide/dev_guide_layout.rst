@@ -94,8 +94,8 @@ console-script entry points (see :doc:`dev_guide_environment`):
 .. code-block:: text
 
    src/metadata_tools/hosts/GO_0xxx/
-     host_config.py            # shared host settings + get_volume_id()
-     index_config.py           # index glob + key__<NAME> column functions
+     host_config.py            # shared host settings + data-label glob
+     index_config.py           # key__<NAME> column functions
      geometry_config.py        # SPICE id, mission table, meshgrids, hooks
      host_init.py              # initializes the oops host module (side effects)
      templates/                # host PDS3 label templates

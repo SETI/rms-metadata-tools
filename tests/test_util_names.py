@@ -110,6 +110,46 @@ def test_get_volume_glob_only_last_segment() -> None:
 
 
 #===============================================================================
+# get_cumulative_id
+#===============================================================================
+def test_get_cumulative_id_fills_the_x_digits_with_nines() -> None:
+    """The cumulative volume replaces each 'x' digit of the collection with 9."""
+    assert util.get_cumulative_id('GO_0xxx') == 'GO_0999'
+    assert util.get_cumulative_id('COISS_2xxx') == 'COISS_2999'
+
+
+#===============================================================================
+# get_volume_id
+#===============================================================================
+def test_get_volume_id_is_the_directory_under_the_collection() -> None:
+    """The volume is the collection directory's child, at any depth of path."""
+    assert util.get_volume_id('/holdings/volumes/GO_0xxx/GO_0017') == 'GO_0017'
+    assert util.get_volume_id(
+        FCPath('/v/COISS_2xxx/COISS_2001/data/1455855935_1456049320/N1455970236_1.LBL')
+        ) == 'COISS_2001'
+    # Each collection of a host names its own volumes.
+    assert util.get_volume_id('/v/COISS_1xxx/COISS_1009/index/index.lbl') == 'COISS_1009'
+
+
+def test_get_volume_id_reads_remote_paths() -> None:
+    """A bucket path is searched like a local one."""
+    assert util.get_volume_id(
+        FCPath('gs://bucket/metadata/GO_0xxx/GO_0999/GO_0999_index.lbl')) == 'GO_0999'
+
+
+def test_get_volume_id_without_a_collection_directory() -> None:
+    """With no collection in the path, the first volume-like component is taken."""
+    assert util.get_volume_id('/scratch/GO_0017/C3/JUPITER/C0368976900R.LBL') == 'GO_0017'
+
+
+def test_get_volume_id_rejects_a_path_with_no_volume() -> None:
+    """A path naming no volume is an error."""
+    # The Cassini data directory is two clock counts, not a volume ID.
+    with pytest.raises(ValueError, match=r"no volume ID in path '/scratch/1455855935_1456049320'"):
+        util.get_volume_id('/scratch/1455855935_1456049320')
+
+
+#===============================================================================
 # get_observation_id
 #===============================================================================
 def test_get_observation_id_reads_subfields() -> None:

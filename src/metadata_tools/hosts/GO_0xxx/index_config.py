@@ -1,7 +1,7 @@
 """Host-specific utilities and key functions for Galileo SSI (GLL SSI) index generation.
 
-This module supplies the file glob and the ``key__<NAME>`` functions used to populate
-columns of the GO_0xxx supplemental index table.
+This module supplies the ``key__<NAME>`` functions used to populate columns of the
+GO_0xxx supplemental index table.
 """
 from pathlib import Path
 from typing import Any, cast
@@ -13,11 +13,6 @@ from filecache import FCPath
 import metadata_tools.common as com
 import metadata_tools.util as util
 from metadata_tools.hosts.GO_0xxx import host_config as hconf
-
-##########################################################################################
-# GO_0xxx arguments
-##########################################################################################
-glob: str = 'C0*.LBL'
 
 ##########################################################################################
 # Key functions (optional)

@@ -231,8 +231,35 @@ def test_record_init_no_primary(monkeypatch: pytest.MonkeyPatch) -> None:
     # since the attribute is typed as a real oops Backplane.
     assert cast(Any, record.backplane) == 'BACKPLANE'
     assert record.prefixes[0] == '"GO_0001"'
-    # The .IMG suffix is rewritten to .LBL in the file-spec prefix.
-    assert '.LBL' in record.prefixes[1]
+    # The .IMG suffix is rewritten to .LBL in the file-spec prefix, which is
+    # unpadded when no column width is given.
+    assert record.prefixes[1] == '"DATA/C0123.LBL"'
+
+
+def test_record_init_pads_the_file_specification(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The file specification is padded to the width of its column."""
+    _patch_record_spice(monkeypatch)
+    record = Record(_observation(), 'GO_0001', {}, 8, filespec_width=20)
+    assert record.prefixes[1] == '"DATA/C0123.LBL      "'
+
+
+def test_record_init_rejects_an_overlong_file_specification(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A file specification wider than its column is an error, not a ragged row."""
+    _patch_record_spice(monkeypatch)
+    with pytest.raises(ValueError, match=re.escape(
+            "file specification 'DATA/C0123.LBL' is wider than the 10 characters "
+            "of the FILE_SPECIFICATION_NAME column")):
+        Record(_observation(), 'GO_0001', {}, 8, filespec_width=10)
+
+
+def test_record_init_defaults_the_target_to_target_name(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A host with no target_name hook takes the target from TARGET_NAME."""
+    _patch_record_spice(monkeypatch)
+    monkeypatch.delattr(config, 'target_name')
+    record = Record(_observation(target='IO'), 'GO_0001', {}, 8)
+    assert record.target == 'IO'
 
 
 def test_record_init_with_primary_sets_rings(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -402,10 +429,14 @@ def test_suite_init_returns_without_index(tmp_path: Path) -> None:
     assert not hasattr(suite, 'observations')
 
 
-def test_suite_init_requires_index_glob(tmp_path: Path) -> None:
-    """A Suite without an index_glob is rejected up front."""
-    with pytest.raises(ValueError, match='Suite requires an index_glob pattern'):
-        Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path)
+def test_suite_init_defaults_index_glob_to_the_volume(tmp_path: Path) -> None:
+    """With no index_glob, the index label is the one named for the volume."""
+    # A second volume's label in the directory is not a match, so nothing is
+    # ambiguous; the conftest host names the volume GO_0001.
+    (tmp_path / 'GO_0002_index.lbl').write_text('a', encoding='utf-8')
+    suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path)
+    assert suite.index_glob == 'GO_0001_index.lbl'
+    assert not hasattr(suite, 'observations')
 
 
 def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:

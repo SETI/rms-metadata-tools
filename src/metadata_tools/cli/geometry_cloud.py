@@ -85,7 +85,7 @@ from metadata_tools.cli._host import (
     resolve_host_paths,
     volumes_as_task_file,
 )
-from metadata_tools.config import get_geometry_config, get_host_config, set_host
+from metadata_tools.config import get_exclude, get_host_config, set_host
 
 _WORKER = 'metadata-geometry-worker'
 
@@ -114,13 +114,12 @@ def main() -> None:
 
     set_host(host_id)
     hconf = get_host_config()
-    config = get_geometry_config()
 
     import metadata_tools.util as util
     from metadata_tools.geometry_support import get_args
 
     host, _, _ = util.parse_template_name(hconf.template_name)
-    parser = get_args(host=host, exclude=config.exclude)
+    parser = get_args(host=host, exclude=get_exclude())
 
     if create_startup_file is not None:
         Path(create_startup_file).write_text(

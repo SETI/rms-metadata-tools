@@ -71,12 +71,11 @@ call those functions directly from Python:
 
    set_host('GO_0xxx')
 
-   from metadata_tools.config import get_host_config, get_index_config
+   from metadata_tools.config import get_host_config
    hconf = get_host_config()
-   iconfig = get_index_config()
 
    # Pass volumes explicitly; sys.argv supplies remaining options.
-   process_index(hconf.template_name, glob=iconfig.glob, volumes=['GO_0017'])
+   process_index(hconf.template_name, glob=hconf.glob, volumes=['GO_0017'])
 
 The geometry and cumulative stages are driven the same way through
 :func:`~metadata_tools.geometry_support.process.process_tables` and

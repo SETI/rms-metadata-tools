@@ -35,53 +35,62 @@ convention is involved.
 .. code-block:: python
 
    template_name = '<HOST>_supplemental_index'   # base name of templates/tables
-   exclude = ['<HOST>_9999']      # volumes excluded from processing (e.g. the
-                                   # cumulative-index volume itself); lives here,
-                                   # not in geometry_config.py, so the cumulative
-                                   # stage can read it without the SPICE cost of
-                                   # importing geometry_config
+   glob = 'C0*.LBL'               # which data labels to include
 
-   def get_volume_id(label_path):
-       """Return the volume ID for a path under this collection."""
-       ...
-
-``index_config.py`` must provide the data-label ``glob`` and may provide any
-number of ``key__<name>`` column functions:
+and may override two engine defaults:
 
 .. code-block:: python
 
-   glob = 'C0*.LBL'   # which data labels to include
+   exclude = ['<HOST>_0001']      # volumes excluded from processing; by default
+                                   # the cumulative volume of the tree being
+                                   # processed (GO_0999 under GO_0xxx)
+
+   def get_volume_id(label_path):
+       """Return the volume ID for a path under this collection.
+
+       By default the volume is the directory under the collection directory,
+       e.g. COISS_2001 under COISS_2xxx (util.get_volume_id).
+       """
+       ...
+
+``index_config.py`` may provide any number of ``key__<name>`` column functions:
+
+.. code-block:: python
 
    def key__start_time(label_path, label_dict):
        """Compute the START_TIME column for one data product."""
        ...
 
-``geometry_config.py`` must provide the spacecraft ID, file globs, default
-selection, the body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), the
-``from_index`` reader, the ``meshgrids`` / ``meshgrid`` functions,
-``target_name``, and ``cleanup``. It typically re-exports ``host_config.exclude``
-under the same name, since the geometry stage (unlike the cumulative stage)
-already pays the SPICE import cost:
+``geometry_config.py`` must provide the spacecraft ID, default selection, the
+body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), the ``from_index``
+reader, and the ``meshgrids`` / ``meshgrid`` functions:
 
 .. code-block:: python
 
    import oops.hosts.<mission>.<instrument> as inst
 
-   import metadata_tools.hosts.<HOST>.host_config as host_config
-
    SC = -77                       # NAIF spacecraft ID
-   glob = 'C0*.LBL'
-   index_glob = '<HOST>_????_index.lbl'
    selection = 'S'
-   exclude = host_config.exclude
    MISSION_TABLE = [ ... ]        # SCLK ranges -> primary, secondaries, ...
    EXCEPTIONS = [ ... ]           # regexes/predicates excluded from the SCLK test
    from_index = inst.from_index
 
    def meshgrids(sampling): ...
    def meshgrid(meshgrids, snapshot): ...
-   def target_name(snapshot): ...
-   def cleanup(): ...
+
+It may also override these engine defaults, read through the accessors in
+:mod:`metadata_tools.config`:
+
+.. code-block:: python
+
+   index_glob = '<HOST>_????_index.lbl'   # default: <volume_id>_index.lbl
+   def target_name(snapshot): ...         # default: snapshot['TARGET_NAME']
+   def cleanup(): ...                     # default: nothing to clean up
+
+The width of the FILE_SPECIFICATION_NAME column is whatever the host's summary
+templates declare for it (they must agree); the engine pads the file
+specification to that width in every table, and the inventory label reports the
+widths found in the table.
 
 ``host_init.py`` initializes the ``oops`` host module so the body registry is
 populated, and is imported only for that side effect:

@@ -1,23 +1,19 @@
 """Host-specific definitions and utilities for Galileo SSI (GLL SSI) geometry generation.
 
-This module defines the mission table, meshgrid construction, target-name resolution,
-and other settings used to compute geometry tables for the GO_0xxx collection.
+This module defines the mission table, meshgrid construction, and other settings used
+to compute geometry tables for the GO_0xxx collection.
 """
-from typing import Any, cast
+from typing import Any
 
 import oops
 from hosts.galileo.ssi import SSI
 
-import metadata_tools.hosts.GO_0xxx.host_config as host_config
 import metadata_tools.hosts.GO_0xxx.host_init  # noqa: F401  (side-effect import)
 
 ##########################################################################################
 # GO_0xxx arguments
 ##########################################################################################
 SC: int = -77
-index_glob: str = 'GO_????_index.lbl'
-exclude: list[str] = host_config.exclude
-glob: str = 'C0*.LBL'
 
 
 ##########################################################################################
@@ -86,26 +82,6 @@ MISSION_TABLE: list[Any] = [
                                                                       'AMALTHEA',
                                                                       'THEBE'],
                                                                                    ['SATURN'])]
-
-##########################################################################################
-# Exception functions
-##########################################################################################
-
-#=========================================================================================
-def except_test(observation: Any) -> bool:
-    """Return True if this observation should be skipped for geometry.
-
-    GO_0xxx never skips observations. Hosts that need to filter specific
-    observations can override this function in their geometry_config.
-
-    Parameters:
-        observation: OOPS Observation object.
-
-    Returns:
-        True if the observation should be skipped; always False for GO_0xxx.
-    """
-    return False
-
 
 ##########################################################################################
 # Mission-specific data (required)
@@ -194,35 +170,3 @@ def meshgrid(meshgrids: dict[str, Any], snapshot: Any) -> Any:
         The selected meshgrid for this observation.
     """
     return meshgrids[snapshot.dict['TELEMETRY_FORMAT_ID']]
-
-
-##########################################################################################
-# Utilities (required)
-##########################################################################################
-
-#=========================================================================================
-# Defined once in host_config and re-exported here so both configs stay in sync.
-get_volume_id = host_config.get_volume_id
-
-
-##########################################################################################
-# SSI geometry functions (required)
-##########################################################################################
-
-#=========================================================================================
-def target_name(snapshot: dict[str, Any]) -> str:
-    """Determine the target name from the snapshot's dictionary.
-
-    Parameters:
-        snapshot: Snapshot observation dictionary.
-
-    Returns:
-        The snapshot's TARGET_NAME value.
-    """
-
-    return cast(str, snapshot["TARGET_NAME"])
-
-#=========================================================================================
-def cleanup() -> None:
-    """Clean up after geometry generation, called after tables and labels are written."""
-    pass

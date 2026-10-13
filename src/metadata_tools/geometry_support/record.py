@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 import oops
 
 import metadata_tools.bodies as bodies_mod
+import metadata_tools.config as hooks
 import metadata_tools.defs as defs
 import metadata_tools.util as util
 from metadata_tools.config import get_geometry_config
@@ -50,7 +51,8 @@ class Record:
 
     #===========================================================================
     def __init__(self, observation: Any, volume_id: str, meshgrids: dict[str, Any],
-                 sampling: int, body_samples: int = 16) -> None:
+                 sampling: int, body_samples: int = 16,
+                 filespec_width: int = 0) -> None:
         """Construct a geometry record.
 
         Parameters:
@@ -61,9 +63,14 @@ class Record:
             body_samples: Minimum number of samples across the bounding box of
                 a body; 0 to sample every table on the meshgrid of the whole
                 field of view instead.
+            filespec_width: The character width of the FILE_SPECIFICATION_NAME
+                column, as the host's templates declare it; the file
+                specification is padded to it. With 0 it is written unpadded.
+
+        Raises:
+            ValueError: If the file specification is wider than the column.
         """
         self.observation = observation
-        config = get_geometry_config()
 
         # Determine primary, if any
         sclk = str(observation.dict["SPACECRAFT_CLOCK_START_COUNT"])
@@ -83,12 +90,16 @@ class Record:
             self.rings_present = registry[self.primary].ring_frame is not None
 
         # Determine target
-        self.target = str(config.target_name(observation.dict))
+        self.target = hooks.get_target_name(observation.dict)
 
         # Create the record prefix
-        filespec = observation.dict["FILE_SPECIFICATION_NAME"]
+        filespec = observation.dict["FILE_SPECIFICATION_NAME"].replace(".IMG", ".LBL")
+        if filespec_width and len(filespec) > filespec_width:
+            raise ValueError(
+                f'file specification {filespec!r} is wider than the '
+                f'{filespec_width} characters of the FILE_SPECIFICATION_NAME column')
         self.prefixes = ['"' + volume_id + '"',
-                         '"%-32s"' % filespec.replace(".IMG", ".LBL")]
+                         '"' + filespec.ljust(filespec_width) + '"']
 
         # Create the backplanes
         self.meshgrid = self._meshgrid(observation, meshgrids)

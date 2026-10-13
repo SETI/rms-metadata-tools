@@ -2,13 +2,15 @@
 # tests/test_geometry_tables.py: table classes, Record.add, Suite helpers.
 ################################################################################
 """Tests for the geometry table classes, Record.add, and Suite helpers."""
+import re
 import types
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import oops
 import pytest
+from filecache import FCPath
 
 import metadata_tools.common as com
 import metadata_tools.defs as defs
@@ -247,13 +249,43 @@ def test_suite_make_record_builds_one_record(monkeypatch: pytest.MonkeyPatch) ->
     suite.meshgrids = {}
     suite.sampling = 8
     suite.body_samples = 16
+    suite.filespec_width = 32
     created: list[Any] = []
     monkeypatch.setattr(
         suite_mod, 'Record',
         lambda *args: created.append(args) or 'RECORD')  # type: ignore[func-returns-value]
     record = suite.make_record(0)
     assert record == 'RECORD'  # type: ignore[comparison-overlap]
-    assert created == [('obs0', 'GO_0001', {}, 8, 16)]
+    assert created == [('obs0', 'GO_0001', {}, 8, 16, 32)]
+
+
+def _table_with_filespec(width: int) -> Any:
+    """Return a table stand-in whose schema declares a file-specification width."""
+    stub = types.SimpleNamespace(name='FILE_SPECIFICATION_NAME', width=width)
+    other = types.SimpleNamespace(name='VOLUME_ID', width=9)
+    return types.SimpleNamespace(schema=types.SimpleNamespace(prefix_stubs=(other, stub)))
+
+
+def test_suite_filespec_width_comes_from_the_templates() -> None:
+    """The width is the templates' FILE_SPECIFICATION_NAME width, less the quotes."""
+    suite = Suite.__new__(Suite)
+    # The inventory table has no schema; a bare table has schema None.
+    suite.tables = cast(Any, [types.SimpleNamespace(), types.SimpleNamespace(schema=None),
+                              _table_with_filespec(46), _table_with_filespec(46)])
+    assert suite._filespec_width() == 44
+
+
+def test_suite_filespec_width_rejects_templates_that_disagree(tmp_path: Any) -> None:
+    """Tables that share a row prefix must declare one width for it."""
+    suite = Suite.__new__(Suite)
+    suite.template_path = FCPath(tmp_path / 'templates' / 'X_supplemental_index.lbl')
+    suite.tables = [_table_with_filespec(34), _table_with_filespec(46)]
+    with pytest.raises(RuntimeError, match=re.escape(
+            'must declare one width for FILE_SPECIFICATION_NAME, but declare [32, 44]')):
+        suite._filespec_width()
+    suite.tables = []
+    with pytest.raises(RuntimeError, match='but declare none'):
+        suite._filespec_width()
 
 
 def test_suite_add_dispatches_to_every_table() -> None:

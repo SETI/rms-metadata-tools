@@ -2,9 +2,11 @@
 # label_support.py - Tools for generating metadata labels.
 ################################################################################
 """Tools for generating PDS3 metadata labels from templates."""
+import csv
 import re
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from filecache import FCPath
 from pdstemplate import PdsTemplate
@@ -67,6 +69,30 @@ def _pds3_table_preprocessor(template_path: object, content: str) -> str:
     """
     return str(pds3_table_preprocessor(template_path, content,
                                        formats=True, numbers=True, validate=False))
+
+
+#===============================================================================
+def _inventory_field_bytes(filepath: FCPath, volume_id: str) -> tuple[int, int]:
+    """Measure the fixed-width fields that begin each row of an inventory table.
+
+    Every row begins with the volume ID and the file specification, the latter
+    padded to the width of the host's FILE_SPECIFICATION_NAME column. The widths
+    are read from the first row, so the label describes the table as written.
+
+    Parameters:
+        filepath: Path to the inventory table.
+        volume_id: The table's volume ID.
+
+    Returns:
+        A tuple of the widths in bytes of the VOLUME_ID and
+        FILE_SPECIFICATION_NAME fields. For a table with no complete first row,
+        the width of the volume ID and zero.
+    """
+    with filepath.open('r', encoding='utf-8', newline='') as stream:
+        row = next(csv.reader(stream), [])
+    if len(row) < 2:
+        return (len(volume_id), 0)
+    return (len(row[0]), len(row[1]))
 
 
 #===============================================================================
@@ -135,8 +161,11 @@ def create(filepath: str | Path | FCPath,
         preprocess = [strip_comments]
 
     # Default template dictionary
-    fields: dict[str, str] = {'VOLUME_ID'   : volume_id,
+    fields: dict[str, Any] = {'VOLUME_ID'   : volume_id,
                               'TABLE_TYPE'  : table_type}
+    if 'inventory' in body:
+        (fields['VOLUME_ID_BYTES'],
+         fields['FILESPEC_BYTES']) = _inventory_field_bytes(filepath, volume_id)
 
     # Generate label
     template = PdsTemplate(template_path, crlf=True,

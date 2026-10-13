@@ -9,7 +9,7 @@ The full list of command-line options is documented in the user guide.
 import sys
 
 from metadata_tools.cli._host import load_host
-from metadata_tools.config import get_host_config, set_host
+from metadata_tools.config import get_exclude, get_host_config, set_host
 
 
 def main() -> None:
@@ -23,4 +23,4 @@ def main() -> None:
 
     import metadata_tools.cumulative_support as cml
 
-    cml.create_cumulative_indexes(hconf.template_name, exclude=hconf.exclude)
+    cml.create_cumulative_indexes(hconf.template_name, exclude=get_exclude())

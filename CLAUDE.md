@@ -108,7 +108,11 @@ only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
 
 - `host_config.py`, `index_config.py`, `geometry_config.py` — host-specific settings and
   optional override hooks (e.g. `key__<NAME>(label_path, label_dict)` to compute an index
-  column; backplane functions for geometry).
+  column; backplane functions for geometry). The data-label `glob` lives in `host_config`
+  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, and `cleanup` are
+  optional: the engine reads them through the accessors in `config.py`
+  (`get_volume_id()`, `get_exclude()`, `get_index_glob()`, `get_target_name()`,
+  `cleanup()`), which supply the defaults.
 - `host_init.py` — initializes the host's `oops` host module (side-effect import).
 - `templates/` — PDS3 label templates (`host_defs.lbl`, `*_supplemental_index.lbl`,
   `*_{body,ring,sky,sun}_summary.lbl`); shared template fragments are in

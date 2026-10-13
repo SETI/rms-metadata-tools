@@ -1,7 +1,7 @@
 $ONCE(csv_file = LABEL_PATH()[:-4] + '.csv')
 $ONCE(records = FILE_RECORDS(csv_file))
 $ONCE(record_bytes = RECORD_BYTES(csv_file))
-$ONCE(name_bytes = record_bytes - (7 + 3 + 32 + 3 + 2 + 2))
+$ONCE(name_bytes = record_bytes - (VOLUME_ID_BYTES + 3 + FILESPEC_BYTES + 3 + 2 + 2))
 $ONCE(index_type = 'CUMULATIVE' if VOLUME_ID.endswith('999') else 'SINGLE')
 PDS_VERSION_ID                  = PDS3
 RECORD_TYPE                     = STREAM
@@ -30,8 +30,8 @@ OBJECT                          = INVENTORY_SPREADSHEET
     FIELD_NUMBER                = 1
     NAME                        = VOLUME_ID
     DATA_TYPE                   = CHARACTER
-    BYTES                       = 7
-    FORMAT                      = A7
+    BYTES                       = $VOLUME_ID_BYTES$
+    FORMAT                      = A$VOLUME_ID_BYTES$
     DESCRIPTION                 = "The unique identifier for the PDS data volume."
   END_OBJECT                    = FIELD
 
@@ -39,8 +39,8 @@ OBJECT                          = INVENTORY_SPREADSHEET
     FIELD_NUMBER                = 2
     NAME                        = FILE_SPECIFICATION_NAME
     DATA_TYPE                   = CHARACTER
-    BYTES                       = 32
-    FORMAT                      = A32
+    BYTES                       = $FILESPEC_BYTES$
+    FORMAT                      = A$FILESPEC_BYTES$
     DESCRIPTION                 = "The full name of the raw image file, including the
         directory path, relative to the root directory of the PDS volume."
   END_OBJECT                    = FIELD

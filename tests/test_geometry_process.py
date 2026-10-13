@@ -145,6 +145,26 @@ def test_process_tables_excludes_volume(
     assert built == ['GO_0001']
 
 
+def test_process_tables_excludes_the_cumulative_volume_by_default(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """With no exclude at all, the tree's cumulative volume is skipped."""
+    tree = _tree(tmp_path)
+    (Path(tree.as_posix()) / 'GO_0999').mkdir()
+    built: list[str] = []
+
+    class FakeSuite:
+        def __init__(self, indir: str, *a: Any, **k: Any) -> None:
+            built.append(FCPath(indir).name)
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    proc.process_tables('GO_0xxx_supplemental_index',
+                        args=_args(tree))  # type: ignore[arg-type]
+    assert sorted(built) == ['GO_0001', 'GO_0002']
+
+
 def test_process_tables_uses_args_exclude_over_parameter(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """A user-supplied --exclude (args.exclude) must override the exclude= parameter."""

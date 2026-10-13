@@ -21,7 +21,7 @@ from metadata_tools.cli._host import (
     resolve_host_paths,
     run_cloud_worker,
 )
-from metadata_tools.config import get_host_config, get_index_config, set_host
+from metadata_tools.config import get_host_config, set_host
 
 
 class _IndexTask:
@@ -80,7 +80,6 @@ def main() -> None:
 
     set_host(host_id)
     hconf = get_host_config()
-    config = get_index_config()
 
     import metadata_tools.util as util
     from metadata_tools.index_support import get_args
@@ -88,4 +87,4 @@ def main() -> None:
     host, index_type, _ = util.parse_template_name(hconf.template_name)
     parser = get_args(host=host, index_type=index_type)
 
-    run_cloud_worker(parser, _IndexTask(host_id, hconf.template_name, config.glob))
+    run_cloud_worker(parser, _IndexTask(host_id, hconf.template_name, hconf.glob))

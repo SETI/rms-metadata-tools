@@ -11,7 +11,7 @@ The full list of command-line options is documented in the user guide.
 import sys
 
 from metadata_tools.cli._host import load_host
-from metadata_tools.config import get_host_config, get_index_config, set_host
+from metadata_tools.config import get_host_config, set_host
 
 
 def main() -> None:
@@ -22,8 +22,7 @@ def main() -> None:
     load_host(host_id)
     set_host(host_id)
     hconf = get_host_config()
-    config = get_index_config()
 
     import metadata_tools.index_support as idx
 
-    idx.process_index(hconf.template_name, glob=config.glob)
+    idx.process_index(hconf.template_name, glob=hconf.glob)
