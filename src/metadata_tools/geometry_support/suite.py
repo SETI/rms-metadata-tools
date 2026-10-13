@@ -229,8 +229,13 @@ class Suite:
                     logger.warning("Skipping %s; pattern mismatch.", name)
                     continue
 
-                # Match the glob pattern
-                match = fnmatch.filter([name], self.glob)
+                # Match the glob pattern. The glob names data labels, while an
+                # index may name the data files they describe, so the name is
+                # given the extension of the glob before it is matched.
+                glob = self.glob or '*'
+                suffix = Path(glob).suffix
+                label_name = Path(name).with_suffix(suffix).name if suffix else name
+                match = fnmatch.filter([label_name], glob)
                 if match == []:
                     logger.warning("Skipping %s; glob mismatch.", name)
                     continue

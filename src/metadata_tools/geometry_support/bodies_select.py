@@ -136,8 +136,9 @@ def select_bodies(record: 'Record', bodies: dict[str, Any]) -> list[str]:
     The selection follows these rules:
 
        1. The primary and secondary bodies are always included.
-       2. Children of the primary are included if they intersect the FOV. If
-          there are selections, then only the selected children are considered.
+       2. Children of the primary (its regular children and any EXTRA_CHILDREN)
+          are included if they intersect the FOV. If there are selections, then
+          only the selected children are considered.
        3. If there is no primary, all selections that intersect the FOV are
           included.
        4. The target is included whenever it is registered with oops.
