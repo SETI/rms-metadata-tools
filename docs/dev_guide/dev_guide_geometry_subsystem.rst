@@ -22,6 +22,13 @@ constructs a :class:`~metadata_tools.geometry_support.suite.Suite` and calls
 option skips volumes that already contain an ``*_inventory.csv``; supplying
 explicit volumes disables it.
 
+Before the walk, :func:`~metadata_tools.geometry_support.process.limit_quick_caches`
+cuts the number of interpolation tables (``QuickPath`` and ``QuickFrame``) that
+``oops`` keeps per path and per frame from 40 to ``QUICK_CACHE_SIZE`` (2). The
+tables speed up the evaluation of a single image, but each image is at a new
+time, so tables kept from earlier images are almost never reused and only add
+memory. Disabling the tables altogether makes a run about 2.6 times slower.
+
 Suite
 =====
 

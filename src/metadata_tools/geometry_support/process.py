@@ -5,11 +5,32 @@
 import argparse
 import fnmatch
 
+import oops
 from filecache import FCPath
 
 import metadata_tools.common as com
 import metadata_tools.util as util
 from metadata_tools.geometry_support.suite import Suite
+
+# Number of QuickPath and QuickFrame tables oops keeps per path and per frame.
+# The tables pay off within an image, but every image is at a new time, so a
+# table is almost never reused by another one. With the oops default of 40, a
+# 3,745-image Cassini volume grew past 7 GB. With 2, the first 60 images ran at
+# the same speed, wrote identical tables, and used 879 MB rather than 1,554 MB.
+# Disabling the tables instead made the run 2.6 times slower.
+QUICK_CACHE_SIZE = 2
+
+
+#===============================================================================
+def limit_quick_caches(size: int = QUICK_CACHE_SIZE) -> None:
+    """Limit the number of interpolation tables oops keeps per path and frame.
+
+    Parameters:
+        size: Maximum number of QuickPath tables per path and of QuickFrame
+            tables per frame.
+    """
+    oops.config.QUICK.dictionary['quickpath_cache_size'] = size
+    oops.config.QUICK.dictionary['quickframe_cache_size'] = size
 
 
 #===============================================================================
@@ -109,6 +130,9 @@ def process_tables(template_name: str,
     # By default, exclude the tree's cumulative volume
     if exclude is None:
         exclude = [util.get_cumulative_id(output_tree.name)]
+
+    # Keep oops from accumulating interpolation tables across images
+    limit_quick_caches()
 
     # Build volume glob
     vol_glob = util.get_volume_glob(output_tree.name)
