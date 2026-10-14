@@ -6,6 +6,7 @@ import types
 from pathlib import Path
 from typing import Any
 
+import oops
 import pytest
 from filecache import FCPath
 
@@ -123,6 +124,27 @@ def test_process_tables_builds_suite(
                         args=_args(tree))  # type: ignore[arg-type]
     assert 'GO_0001' in built
     assert built.count('created') == 2
+
+
+def test_process_tables_limits_quick_caches(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The oops QuickPath and QuickFrame caches are cut to QUICK_CACHE_SIZE."""
+    quick = oops.config.QUICK.dictionary
+    monkeypatch.setitem(quick, 'quickpath_cache_size', 40)
+    monkeypatch.setitem(quick, 'quickframe_cache_size', 40)
+
+    class FakeSuite:
+        def __init__(self, *a: Any, **k: Any) -> None:
+            pass
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    proc.process_tables('GO_0xxx_supplemental_index',
+                        args=_args(_tree(tmp_path)))  # type: ignore[arg-type]
+    assert quick['quickpath_cache_size'] == proc.QUICK_CACHE_SIZE
+    assert quick['quickframe_cache_size'] == proc.QUICK_CACHE_SIZE
 
 
 def test_process_tables_excludes_volume(
