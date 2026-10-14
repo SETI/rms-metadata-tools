@@ -108,6 +108,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     # Append the backplane columns
     data_columns = []
     nothing_found = True
+    pole_dict: dict[tuple[Any, ...], bool] = {}
 
     # For each column...
     for column, (column_backplane, column_sampling) in zip(columns, column_grids,
@@ -138,6 +139,19 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         if not np.all(values.mask):
             nothing_found = False
 
+        # Longitudes on a body cover the whole circle when one of its poles is
+        # visible, however the meshgrid samples the region around it
+        complete = False
+        if (event_key[0] == 'longitude' and record.pointing_available
+                and not np.all(values.mask)):
+            pole_desc = ('', '', '') if no_mask else mask_desc
+            pole_key = (id(column_backplane), event_key[1]) + pole_desc
+            if pole_key not in pole_dict:
+                pole_dict[pole_key] = masks.pole_in_view(
+                    column_backplane, event_key[1], primary, pole_desc,
+                    blocker=blocker, ignore_shadows=ignore_shadows)
+            complete = pole_dict[pole_key]
+
         # Save the column, formatted as its label template declares
         null_value = stubs[0].null_value
         if null_flag:
@@ -147,7 +161,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
                 # resolve_schema guarantees every data column declares a null.
                 values = oops.Scalar(cast(float, null_value), False)
         data_columns.append(
-            formatting.formatted_column(values, stubs, column_sampling))
+            formatting.formatted_column(values, stubs, column_sampling,
+                                        complete=complete))
 
     # An all-null row is dropped unless the caller demands a row regardless
     if nothing_found and allow_zero_rows:

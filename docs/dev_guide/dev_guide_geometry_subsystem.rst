@@ -106,6 +106,22 @@ boolean mask of pixels to exclude for a column, honoring the column's masker,
 shadower, and face codes. It depends only on ``oops`` and ``numpy`` so it can be
 unit-tested without a host plugin.
 
+:func:`~metadata_tools.geometry_support.masks.pole_in_view` serves the cyclic
+columns of a body's longitude (``('longitude', <body>, ...)``). The range of such
+a column is normally inferred from the samples, as the complement of the largest
+gap between their values. That inference fails when a pole is visible: every
+longitude is then visible too, but the samples reach the region around the pole
+at scattered longitudes, so there is always a gap, and where it falls is an
+accident of sampling. :func:`~metadata_tools.geometry_support.prep.prep_row`
+therefore asks whether either pole lies on the body's visible face, within the
+area the backplane samples, and outside the column's mask; if one does, the
+column reports the whole circle (0 to 360, or -180 to 180). A pole is visible
+from any vantage point away from the body's equatorial plane, so this is the
+usual case; the range is narrower only when the body is seen nearly edge-on to
+its equator, when the visible pole is masked (for example, in darkness under a
+``'D'`` face code), or when it is outside the field of view, as it often is from
+close range.
+
 Formatting and formats
 ======================
 

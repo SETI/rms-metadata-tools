@@ -172,6 +172,21 @@ def test_circle_coverage_minus_180_flag() -> None:
     assert result == [-180., 180.]
 
 
+def test_circle_coverage_complete_skips_the_samples() -> None:
+    """Coverage known to be complete is the full circle, whatever the samples."""
+    angles = oops.Scalar(np.arange(10., 101.), False)
+    assert formatting.circle_coverage(angles, -999., 8) == [10., 100.]
+    assert formatting.circle_coverage(angles, -999., 8, complete=True) == [0., 360.]
+    assert formatting.circle_coverage(angles, -999., 8, flag='-180',
+                                      complete=True) == [-180., 180.]
+
+
+def test_circle_coverage_complete_but_fully_masked_is_double_null() -> None:
+    """Complete coverage does not override a fully masked column."""
+    assert formatting.circle_coverage(oops.Scalar([1., 2.], True), -999., 8,
+                                      complete=True) == [-999., -999.]
+
+
 def test_circle_coverage_partially_masked_scalar() -> None:
     """Masked angles are ignored; the unmasked ones drive the coverage."""
     # antimask selects the two unmasked angles; the helper still runs.

@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 #===============================================================================
 def circle_coverage(angles: Any, null_value: float | str, sampling: int,
-                    flag: str | None = None) -> list[Any]:
+                    flag: str | None = None, *, complete: bool = False) -> list[Any]:
     """Return inferred angular coverage, accounting for the mask.
 
     Parameters:
@@ -31,17 +31,23 @@ def circle_coverage(angles: Any, null_value: float | str, sampling: int,
         sampling: Pixel sampling density.
         flag: "-180" to return values in the range (-180,180) rather than
             (0,360).
+        complete: True if the coverage is known to be complete, as it is for
+            the longitudes on a body when one of its poles is visible.
 
     Returns:
         Minimum and maximum values in the cyclic array.
     """
 
+    # Return null if fully masked
+    if isinstance(angles, polymath.Scalar) and angles.mask is True:
+        return [null_value, null_value]
+
+    # Known complete coverage needs no inference from the samples
+    if complete:
+        return [-180., 180.] if flag == '-180' else [0., 360.]
+
     # Apply mask
     if isinstance(angles, polymath.Scalar):
-        # Return null if fully masked
-        if angles.mask is True:
-            return [null_value, null_value]
-
         # Use full array if not masked
         if angles.mask is False:
             angles = angles.values
@@ -55,7 +61,7 @@ def circle_coverage(angles: Any, null_value: float | str, sampling: int,
 
 #===============================================================================
 def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
-                     sampling: int) -> str:
+                     sampling: int, *, complete: bool = False) -> str:
     """Return one formatted column (or a pair of columns) as a string.
 
     Parameters:
@@ -65,6 +71,8 @@ def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
             width, print format, overflow format, null value, and valid range
             all come from here, which is to say from the host's label template.
         sampling: Pixel sampling density.
+        complete: True if the coverage of a cyclic column is known to be
+            complete; see circle_coverage.
 
     Returns:
         Formatted column.
@@ -100,10 +108,11 @@ def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
             results = [null_value, null_value]
 
         elif flag == "360":
-            results = circle_coverage(values, null_value, sampling)
+            results = circle_coverage(values, null_value, sampling, complete=complete)
 
         elif flag == "-180":
-            results = circle_coverage(values, null_value, sampling, flag=flag)
+            results = circle_coverage(values, null_value, sampling, flag=flag,
+                                      complete=complete)
 
         else:
             results = [values.min().as_builtin(), values.max().as_builtin()]
