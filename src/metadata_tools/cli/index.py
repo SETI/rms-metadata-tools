@@ -6,7 +6,21 @@ Examples:
     metadata-index GO_0xxx $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ \\
         $RMS_METADATA_TEST/GO_0xxx/ --volumes GO_0022
 
-The full list of command-line options is documented in the user guide.
+Command-line arguments:
+
+  HOST_ID                     Host directory, e.g. GO_0xxx or COISS_xxxx. It must
+                              come first.
+  volume_tree                 Top of the tree holding the volumes' data labels.
+  metadata_tree               Top of the tree holding the volumes' index files.
+  output_tree                 Top of the tree in which to write the new index files.
+  --volumes [VOLUME ...]      Process only these volumes.
+  --pattern, -p PATTERN       Process only the files matching this glob pattern.
+  --labels, -l                Write labels for existing index files; create no files.
+  --type, -t TYPE             Type of index file to create. The default comes from
+                              the host's template name, e.g. "supplemental".
+  --help, -h                  Print a summary of the arguments and exit.
+
+The user guide describes the options in more detail.
 """
 import sys
 

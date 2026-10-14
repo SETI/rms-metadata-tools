@@ -10,7 +10,26 @@ script. For local runs, use this command directly:
   metadata-cumulative-worker GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/
   metadata-cumulative-worker GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/ --volumes GO_0017
 
-The full list of command-line options is documented in the user guide.
+Command-line arguments:
+
+  HOST_ID                     Host directory, e.g. GO_0xxx or COISS_xxxx. It must
+                              come first.
+  output_dir                  The collection's cumulative volume directory, e.g.
+                              GO_0xxx/GO_0999/. Its parent holds the per-volume
+                              tables to combine.
+  --volumes [VOLUME ...]      Combine only these volumes.
+  --exclude, -e [VOLUME ...]  Skip these volumes. The default is the host's
+                              configured list.
+  --labels, -l                Write labels for existing cumulative tables; combine
+                              nothing.
+  --help, -h                  Print a summary of the arguments and exit.
+
+All rms-cloud-tasks Worker arguments are also accepted, for example
+--num-simultaneous-tasks, --task-file, --max-num-tasks and --max-runtime; the
+rms-cloud-tasks documentation lists them all. Unless --task-file is given,
+--volumes is also the source of the Worker's tasks.
+
+The user guide describes the options in more detail.
 """
 import sys
 from typing import Any
