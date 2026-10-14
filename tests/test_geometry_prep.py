@@ -9,7 +9,7 @@ import numpy as np
 import oops
 import pytest
 
-from metadata_tools.geometry_support import prep
+from metadata_tools.geometry_support import masks, prep
 from metadata_tools.geometry_support.record import Record
 
 
@@ -193,3 +193,41 @@ def test_a_margin_without_a_grid_uses_the_row_backplane(
         _phase_cols(make_column, margin=1.5), primary='JUPITER', target='IO',
         no_mask=True, no_body=True)
     assert rows[0][-1] == '  28.648,  57.296'
+
+
+#===============================================================================
+# Longitude coverage with a visible pole
+#===============================================================================
+def _longitude_cols(make_column: Callable[..., Any]) -> list[Any]:
+    """Return the IO longitude min/max pair and its phase-angle neighbour."""
+    return [make_column(key=('longitude', 'IO', 'iau', 'west'), mask=('', '', 'D'),
+                        names=['MINIMUM_IAU_LONGITUDE', 'MAXIMUM_IAU_LONGITUDE'],
+                        flag='360', valid_minimum=0., valid_maximum=360.),
+            make_column(key=('phase_angle', 'IO'), mask=('', '', 'D'), flag='DEG',
+                        valid_minimum=0., valid_maximum=180.)]
+
+
+@pytest.mark.parametrize(('pole', 'expected'),
+                         [(False, '  10.000, 100.000'), (True, '   0.000, 360.000')])
+def test_longitude_covers_the_circle_when_a_pole_is_in_view(
+        monkeypatch: pytest.MonkeyPatch, exists_true: None,
+        record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any], pole: bool, expected: str) -> None:
+    """A visible pole makes the longitudes complete; other columns are untouched."""
+    calls: list[tuple[Any, ...]] = []
+
+    def _pole_in_view(backplane: Any, target: Any, primary: Any, mask_desc: Any,
+                      **kwargs: Any) -> bool:
+        calls.append((target, mask_desc))
+        return pole
+
+    monkeypatch.setattr(masks, 'pole_in_view', _pole_in_view)
+    fake_backplane.evaluations[('longitude', 'IO', 'iau', 'west')] = \
+        oops.Scalar(np.radians(np.arange(10., 101.)), False)
+    fake_backplane.evaluations[('phase_angle', 'IO')] = \
+        oops.Scalar(np.array([0.5, 1.0]), False)
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        _longitude_cols(make_column), primary='JUPITER', target='IO', no_body=True)
+    assert rows[0][-2:] == [expected, '  28.648,  57.296']
+    assert calls == [('IO', ('', '', 'D'))]
