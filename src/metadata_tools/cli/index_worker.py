@@ -10,7 +10,26 @@ script. For local parallelism without GCP, use this command directly:
   metadata-index-worker GO_0xxx $RMS_VOLUMES/GO_0xxx/ $RMS_METADATA/GO_0xxx/ \\
       $RMS_METADATA_TEST/GO_0xxx/ --volumes GO_0022 GO_0016 --num-simultaneous-tasks 12
 
-The full list of command-line options is documented in the user guide.
+Command-line arguments:
+
+  HOST_ID                     Host directory, e.g. GO_0xxx or COISS_xxxx. It must
+                              come first.
+  volume_tree                 Top of the tree holding the volumes' data labels.
+  metadata_tree               Top of the tree holding the volumes' index files.
+  output_tree                 Top of the tree in which to write the new index files.
+  --volumes [VOLUME ...]      Process only these volumes.
+  --pattern, -p PATTERN       Process only the files matching this glob pattern.
+  --labels, -l                Write labels for existing index files; create no files.
+  --type, -t TYPE             Type of index file to create. The default comes from
+                              the host's template name, e.g. "supplemental".
+  --help, -h                  Print a summary of the arguments and exit.
+
+All rms-cloud-tasks Worker arguments are also accepted, for example
+--num-simultaneous-tasks, --task-file, --max-num-tasks and --max-runtime; the
+rms-cloud-tasks documentation lists them all. Unless --task-file is given,
+--volumes is also the source of the Worker's tasks.
+
+The user guide describes the options in more detail.
 """
 import sys
 from typing import Any

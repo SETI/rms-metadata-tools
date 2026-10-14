@@ -9,11 +9,26 @@ cwd-relative, so run it from the run directory:
 
     metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/
     metadata-task-list GO_0xxx $RMS_VOLUMES/GO_0xxx/ --output retry_tasks.json
+    metadata-task-list COISS_xxxx $RMS_METADATA/COISS_2xxx/
 
 **Explicit mode**: no HOST_ID; volumes are specified directly and the task file is
 written to the required ``--output`` path (cwd-relative unless absolute):
 
     metadata-task-list --volumes GO_0001 GO_0002 --output tasks.json
+
+Command-line arguments, scan mode:
+
+  HOST_ID                     Host directory, e.g. GO_0xxx or COISS_xxxx. It must
+                              come first.
+  tree                        Top of the volume or metadata tree to scan.
+  --output, -o FILE           Task list to write (default ./tasks.json).
+  --help, -h                  Print a summary of the arguments and exit.
+
+Command-line arguments, explicit mode:
+
+  --volumes VOLUME [...]      Volumes to include. Required.
+  --output, -o FILE           Task list to write. Required.
+  --help, -h                  Print a summary of the arguments and exit.
 """
 import argparse
 import sys

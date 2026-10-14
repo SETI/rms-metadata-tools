@@ -59,17 +59,45 @@ To preview the startup script that would be sent to GCP instances:
       $RMS_METADATA_TEST_GCP/GO_0xxx/ --create-startup-file startup.sh --ssh-paste \\
       --volumes GO_0022
 
-Optional overrides (all consumed before dispatch; do not reach cloud_tasks or the worker):
-  --startup-template <file>   Use <file> instead of the packaged template.
-  --oops-resources <name>     Persistent disk name for OOPS resources.
-  --service-account <account> GCP service account (overrides $GCP_SERVICE_ACCOUNT).
-  --debug-branch <branch>     Git branch to clone on GCP VMs (overrides
+Command-line arguments:
+
+  HOST_ID                     Host directory, e.g. GO_0xxx or COISS_xxxx. It must
+                              come first.
+  volume_tree                 Top of the tree holding the volumes' data labels.
+  metadata_tree               Top of the tree holding the volumes' index files.
+  output_tree                 Top of the tree in which to write the new index files.
+  --volumes [VOLUME ...]      Process only these volumes.
+  --pattern, -p PATTERN       Process only the files matching this glob pattern.
+  --labels, -l                Write labels for existing index files; create no files.
+  --type, -t TYPE             Type of index file to create. The default comes from
+                              the host's template name, e.g. "supplemental".
+  --help, -h                  Print a summary of the arguments and exit.
+
+Dispatch arguments, which are not passed to the workers:
+
+  --config FILE               cloud_tasks configuration. The default is
+                              cloud/<HOST>/gcp_index_config.yml, if it exists.
+  --task-file FILE            Task list. The default is ./tasks.json, if it
+                              exists and neither --volumes nor --continue is
+                              given. --volumes is turned into a temporary task
+                              file.
+  --create-startup-file FILE  Write the instances' startup script to FILE and exit
+                              without dispatching.
+  --startup-template FILE     Build the startup script from FILE instead of the
+                              packaged template.
+  --oops-resources NAME       Persistent disk holding the OOPS resources.
+  --service-account ACCOUNT   GCP service account (overrides $GCP_SERVICE_ACCOUNT).
+  --debug-branch BRANCH       Git branch to clone on the instances (overrides
                               $GCP_DEBUG_BRANCH).
-  --ssh-paste                 With --create-startup-file: replace ``cd /root`` with
+  --ssh-paste                 With --create-startup-file, replace ``cd /root`` with
                               ``cd ~`` so the script can be pasted into an SSH
                               terminal as a non-root user.
 
-The full list of command-line options is documented in the user guide.
+All other ``cloud_tasks run`` arguments are also accepted and passed to it, for
+example --use-spot, --image, --max-instances and --continue; ``cloud_tasks run
+--help`` lists them all.
+
+The user guide describes the options in more detail.
 """
 import sys
 from pathlib import Path
