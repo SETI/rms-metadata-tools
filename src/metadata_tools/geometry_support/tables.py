@@ -63,9 +63,15 @@ class InventoryTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add an Inventory row.
 
+        An observation without pointing gets no row, as in the other tables: an
+        empty body list then means that nothing is in view, never that the
+        inventory could not be computed.
+
         Parameters:
             record: Record describing the row to add.
         """
+        if not record.pointing_available:
+            return
         line = ",".join(record.prefixes) + ',"' + ",".join(record.inventory) + '"'
         self.rows += [line]
 

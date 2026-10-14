@@ -44,9 +44,18 @@ def test_inventory_table_add_formats_prefixes_and_list() -> None:
     """InventoryTable.add joins the prefixes and body list into one CSV row."""
     table = tables.InventoryTable()
     record = types.SimpleNamespace(prefixes=['"vol"', '"file"'],
-                                   inventory=['IO', 'EUROPA'])
+                                   inventory=['IO', 'EUROPA'], pointing_available=True)
     table.add(record)  # type: ignore[arg-type]
     assert table.rows == ['"vol","file","IO,EUROPA"']
+
+
+def test_inventory_table_skips_an_observation_without_pointing() -> None:
+    """An observation without pointing gets no inventory row, as in the other tables."""
+    table = tables.InventoryTable()
+    record = types.SimpleNamespace(prefixes=['"vol"', '"file"'], inventory=[],
+                                   pointing_available=False)
+    table.add(record)  # type: ignore[arg-type]
+    assert table.rows == []
 
 
 def _with_schema(table: Any, columns: Any = ('COLS',)) -> Any:
