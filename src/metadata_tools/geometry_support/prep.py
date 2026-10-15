@@ -140,23 +140,30 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         if not np.all(values.mask):
             nothing_found = False
 
-        # Longitudes on a body cover the whole circle when one of its poles is
-        # visible, however the meshgrid samples the region around it
+        # A visible pole of a body is an extreme of its latitude, and every
+        # longitude meets there; the meshgrid samples the region around it at
+        # scattered points and never on the pole itself
         complete = False
-        if (event_key[0] == 'longitude' and record.pointing_available
+        if (event_key[0] in ('longitude', 'latitude') and record.pointing_available
                 and not np.all(values.mask)):
             # The pole is located once per backplane, and its backplane shared
             # by every mask tested against it
             body_key = (id(column_backplane), event_key[1])
             if body_key not in poles:
                 poles[body_key] = masks.find_pole(column_backplane, event_key[1])
+            pole = poles[body_key]
             pole_desc = ('', '', '') if no_mask else mask_desc
             pole_key = body_key + pole_desc
             if pole_key not in pole_dict:
                 pole_dict[pole_key] = masks.pole_in_view(
-                    poles[body_key], column_backplane, event_key[1], primary, pole_desc,
+                    pole, column_backplane, event_key[1], primary, pole_desc,
                     blocker=blocker, ignore_shadows=ignore_shadows)
-            complete = pole_dict[pole_key]
+
+            if pole is not None and pole_dict[pole_key]:
+                if event_key[0] == 'longitude':
+                    complete = True
+                elif len(stubs) == 2:
+                    values = with_pole_latitude(values, pole.north)
 
         # Save the column, formatted as its label template declares
         null_value = stubs[0].null_value
@@ -175,6 +182,26 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         return []
 
     return [prefix_columns + data_columns]
+
+#===============================================================================
+def with_pole_latitude(values: Any, north: bool) -> Any:
+    """Return the unmasked latitudes of a column with that of a visible pole added.
+
+    The minimum and maximum of the result then include the pole's exact latitude,
+    which no sample of a meshgrid reaches.
+
+    Parameters:
+        values: A Scalar of latitudes in radians, with its mask applied.
+        north: True to add the north pole's latitude, False for the south's.
+
+    Returns:
+        An unmasked Scalar of the unmasked latitudes and the pole's.
+    """
+    latitudes = np.asarray(values.vals, dtype=np.float64)
+    if np.any(values.mask):
+        latitudes = latitudes[np.asarray(values.antimask)]
+    pole_latitude = np.pi/2 if north else -np.pi/2
+    return oops.Scalar(np.append(latitudes.ravel(), pole_latitude), False)
 
 #===============================================================================
 def append_body_prefix(prefix_columns: list[str], body: str | None, length: int) -> None:

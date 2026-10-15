@@ -118,6 +118,13 @@ therefore asks whether a pole lies on the body's visible face, within the area
 the backplane samples, and outside the column's mask; if one does, the column
 reports the whole circle (0 to 360, or -180 to 180).
 
+The same pole bounds the body's latitude columns (``('latitude', <body>, ...)``):
+when it passes a latitude column's mask, its latitude, 90 or -90 degrees, is
+added to the column's values before their minimum and maximum are taken
+(:func:`~metadata_tools.geometry_support.prep.with_pole_latitude`). No sample
+falls exactly on the pole, so without it the bound falls short, by more on a
+small body sampled coarsely.
+
 The test is costly for its size, because a backplane of one pixel takes nearly as
 long to set up as a large one, so it is arranged to do little work.
 ``find_pole`` considers only the pole on the observer's side of the equatorial
