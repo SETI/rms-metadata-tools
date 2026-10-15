@@ -170,7 +170,7 @@ def test_nonexistent_target_returns_boolean_true(
 
 
 #===============================================================================
-# pole_in_view
+# find_pole and pole_in_view
 #===============================================================================
 class _FakeObs:
     """An observation that places each pole at a fixed pixel, or fails to."""
@@ -180,12 +180,14 @@ class _FakeObs:
         self.fov = object()
         self.poles = poles
         self.implemented = implemented
+        self.located: list[float] = []
 
     def uv_from_coords(self, surface: Any, coords: tuple[float, float]) -> Any:
         """Return the pixel of the pole at the given latitude, masked if hidden."""
         if not self.implemented:
             raise NotImplementedError
-        uv = self.poles[coords[1]]
+        self.located.append(coords[1])
+        uv = self.poles.get(coords[1])
         if uv is None:
             return oops.Pair((0., 0.), True)
         return oops.Pair(uv)
@@ -195,8 +197,9 @@ class _FakeObs:
 def pole_backplane(monkeypatch: pytest.MonkeyPatch, exists_true: None) -> Any:
     """Return a factory for a backplane sampling pixels 0 to 10 in u and v.
 
-    The single-pixel backplane built at a pole is replaced by a marker, and the
-    mask applied there is excluded only for the latitudes listed in its
+    The factory takes the observation and the sub-observer and sub-solar
+    latitudes. The single-pixel backplane built at a pole records its pixel, and
+    the mask applied there is excluded only for the pixels listed in the
     ``excluded`` attribute.
     """
     monkeypatch.setattr(oops.Body, 'lookup',
@@ -205,60 +208,98 @@ def pole_backplane(monkeypatch: pytest.MonkeyPatch, exists_true: None) -> Any:
     monkeypatch.setattr(oops.backplane, 'Backplane',
                         lambda obs, meshgrid: types.SimpleNamespace(uv=meshgrid))
     excluded: list[tuple[float, float]] = []
+    masked: list[tuple[str, str, str]] = []
 
-    def _mask(backplane: Any, *args: Any, **kwargs: Any) -> polymath.Boolean:
+    def _mask(backplane: Any, target: Any, primary: Any, mask_desc: Any,
+              **kwargs: Any) -> polymath.Boolean:
+        masked.append(mask_desc)
         uv = tuple(np.asarray(backplane.uv.vals).ravel())
         return polymath.Boolean(uv in excluded)
 
     monkeypatch.setattr(masks, 'construct_excluded_mask', _mask)
     grid = np.stack(np.meshgrid(np.arange(11.), np.arange(11.)), axis=-1)
 
-    def _make(obs: _FakeObs) -> Any:
+    def _make(obs: _FakeObs, sub_observer_lat: float = -0.3,
+              sub_solar_lat: float = -0.4) -> Any:
         return types.SimpleNamespace(
             obs=obs, meshgrid=types.SimpleNamespace(uv=oops.Pair(grid)),
-            excluded=excluded)
+            sub_observer_latitude=lambda target: oops.Scalar(sub_observer_lat),
+            sub_solar_latitude=lambda target: oops.Scalar(sub_solar_lat),
+            excluded=excluded, masked=masked)
 
     return _make
 
 
+def _in_view(backplane: Any, mask_desc: tuple[str, str, str] = ('', '', '')) -> bool:
+    """Locate the pole of SATURN and test it against one mask."""
+    pole = masks.find_pole(backplane, 'SATURN')
+    return masks.pole_in_view(pole, backplane, 'SATURN', 'SATURN', mask_desc)
+
+
 def test_pole_in_view_when_a_pole_is_visible(pole_backplane: Any) -> None:
     """A pole on the visible face, inside the sampled area, is in view."""
-    obs = _FakeObs({np.pi/2: None, -np.pi/2: (4., 6.)})
-    assert masks.pole_in_view(pole_backplane(obs), 'SATURN', 'SATURN', ('', '', ''))
+    obs = _FakeObs({-np.pi/2: (4., 6.)})
+    assert _in_view(pole_backplane(obs))
+
+
+def test_only_the_pole_on_the_observers_side_is_located(pole_backplane: Any) -> None:
+    """The pole across the equator from the observer is never considered."""
+    obs = _FakeObs({np.pi/2: (4., 6.), -np.pi/2: (5., 5.)})
+    assert _in_view(pole_backplane(obs, sub_observer_lat=-0.3))
+    assert obs.located == [-np.pi/2]
+    obs = _FakeObs({np.pi/2: (4., 6.)})
+    assert not _in_view(pole_backplane(obs, sub_observer_lat=-0.3))
+    obs = _FakeObs({np.pi/2: (4., 6.)})
+    assert not _in_view(pole_backplane(obs, sub_observer_lat=0.))
+    assert obs.located == []
 
 
 def test_pole_on_far_side_is_not_in_view(pole_backplane: Any) -> None:
-    """Poles on the far side of the body are not in view."""
-    obs = _FakeObs({np.pi/2: None, -np.pi/2: None})
-    assert not masks.pole_in_view(pole_backplane(obs), 'SATURN', 'SATURN', ('', '', ''))
+    """A pole hidden on the far side of the body is not in view."""
+    obs = _FakeObs({-np.pi/2: None})
+    assert not _in_view(pole_backplane(obs))
 
 
 def test_pole_outside_sampled_area_is_not_in_view(pole_backplane: Any) -> None:
     """A pole beyond the area the backplane samples is not in view."""
-    obs = _FakeObs({np.pi/2: (12., 5.), -np.pi/2: (5., -1.)})
-    assert not masks.pole_in_view(pole_backplane(obs), 'SATURN', 'SATURN', ('', '', ''))
+    obs = _FakeObs({-np.pi/2: (5., -1.)})
+    assert not _in_view(pole_backplane(obs))
 
 
 def test_excluded_pole_is_not_in_view(pole_backplane: Any) -> None:
-    """A pole excluded by the column's mask is not in view, but the other may be."""
-    obs = _FakeObs({np.pi/2: (2., 3.), -np.pi/2: (7., 8.)})
-    backplane = pole_backplane(obs)
+    """A pole excluded by the column's mask is not in view."""
+    backplane = pole_backplane(_FakeObs({-np.pi/2: (2., 3.)}))
+    assert _in_view(backplane)
     backplane.excluded.append((2., 3.))
-    assert masks.pole_in_view(backplane, 'SATURN', 'SATURN', ('', '', 'D'))
-    backplane.excluded.append((7., 8.))
-    assert not masks.pole_in_view(backplane, 'SATURN', 'SATURN', ('', '', 'D'))
+    assert not _in_view(backplane)
 
 
-def test_pole_in_view_is_false_for_rings_and_bodyless_targets(pole_backplane: Any) -> None:
-    """A modified target, such as a ring, and the sky have no poles to test."""
-    obs = _FakeObs({np.pi/2: (4., 6.), -np.pi/2: (4., 6.)})
-    assert not masks.pole_in_view(pole_backplane(obs), 'SATURN:RING', 'SATURN',
-                                  ('', '', ''))
-    assert not masks.pole_in_view(pole_backplane(obs), (), None, ('', '', ''))
+def test_a_pole_in_darkness_fails_the_day_side_mask_untested(pole_backplane: Any) -> None:
+    """With the Sun across the equator, the 'D' face excludes the pole at once."""
+    backplane = pole_backplane(_FakeObs({-np.pi/2: (4., 6.)}), sub_solar_lat=0.2)
+    assert not _in_view(backplane, ('RM', 'R', 'D'))
+    assert backplane.masked == []
+    assert _in_view(backplane, ('RM', 'R', ''))
+    assert backplane.masked == [('RM', 'R', '')]
 
 
-def test_pole_in_view_is_false_when_the_observation_cannot_locate_it(
+def test_one_pole_serves_every_mask(pole_backplane: Any) -> None:
+    """A located pole is tested against each mask on its one backplane."""
+    backplane = pole_backplane(_FakeObs({-np.pi/2: (4., 6.)}))
+    pole = masks.find_pole(backplane, 'SATURN')
+    assert pole is not None
+    assert not pole.north
+    for desc in (('RM', 'R', 'D'), ('RM', 'R', '')):
+        assert masks.pole_in_view(pole, backplane, 'SATURN', 'SATURN', desc)
+    assert backplane.masked == [('RM', 'R', 'D'), ('RM', 'R', '')]
+
+
+def test_no_pole_for_rings_bodyless_targets_or_unlocatable_points(
         pole_backplane: Any) -> None:
-    """An observation without uv_from_coords leaves the coverage to the samples."""
-    obs = _FakeObs({}, implemented=False)
-    assert not masks.pole_in_view(pole_backplane(obs), 'SATURN', 'SATURN', ('', '', ''))
+    """A ring, the sky, and an observation without uv_from_coords have no pole."""
+    backplane = pole_backplane(_FakeObs({-np.pi/2: (4., 6.)}))
+    assert masks.find_pole(backplane, 'SATURN:RING') is None
+    assert masks.find_pole(backplane, ()) is None
+    assert masks.find_pole(pole_backplane(_FakeObs({}, implemented=False)),
+                           'SATURN') is None
+    assert not masks.pole_in_view(None, backplane, 'SATURN', 'SATURN', ('', '', ''))

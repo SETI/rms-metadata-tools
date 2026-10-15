@@ -207,20 +207,26 @@ def _longitude_cols(make_column: Callable[..., Any]) -> list[Any]:
                         valid_minimum=0., valid_maximum=180.)]
 
 
-@pytest.mark.parametrize(('pole', 'expected'),
+@pytest.mark.parametrize(('pole_visible', 'expected'),
                          [(False, '  10.000, 100.000'), (True, '   0.000, 360.000')])
 def test_longitude_covers_the_circle_when_a_pole_is_in_view(
         monkeypatch: pytest.MonkeyPatch, exists_true: None,
         record_stub: Callable[..., Record], fake_backplane: Any,
-        make_column: Callable[..., Any], pole: bool, expected: str) -> None:
+        make_column: Callable[..., Any], pole_visible: bool, expected: str) -> None:
     """A visible pole makes the longitudes complete; other columns are untouched."""
     calls: list[tuple[Any, ...]] = []
+    found: list[Any] = []
 
-    def _pole_in_view(backplane: Any, target: Any, primary: Any, mask_desc: Any,
-                      **kwargs: Any) -> bool:
-        calls.append((target, mask_desc))
-        return pole
+    def _find_pole(backplane: Any, target: Any) -> Any:
+        found.append(target)
+        return 'pole'
 
+    def _pole_in_view(pole: Any, backplane: Any, target: Any, primary: Any,
+                      mask_desc: Any, **kwargs: Any) -> bool:
+        calls.append((pole, target, mask_desc))
+        return pole_visible
+
+    monkeypatch.setattr(masks, 'find_pole', _find_pole)
     monkeypatch.setattr(masks, 'pole_in_view', _pole_in_view)
     fake_backplane.evaluations[('longitude', 'IO', 'iau', 'west')] = \
         oops.Scalar(np.radians(np.arange(10., 101.)), False)
@@ -230,4 +236,5 @@ def test_longitude_covers_the_circle_when_a_pole_is_in_view(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
         _longitude_cols(make_column), primary='JUPITER', target='IO', no_body=True)
     assert rows[0][-2:] == [expected, '  28.648,  57.296']
-    assert calls == [('IO', ('', '', 'D'))]
+    assert calls == [('pole', 'IO', ('', '', 'D'))]
+    assert found == ['IO']

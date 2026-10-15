@@ -106,16 +106,26 @@ boolean mask of pixels to exclude for a column, honoring the column's masker,
 shadower, and face codes. It depends only on ``oops`` and ``numpy`` so it can be
 unit-tested without a host plugin.
 
-:func:`~metadata_tools.geometry_support.masks.pole_in_view` serves the cyclic
+:func:`~metadata_tools.geometry_support.masks.find_pole` and
+:func:`~metadata_tools.geometry_support.masks.pole_in_view` serve the cyclic
 columns of a body's longitude (``('longitude', <body>, ...)``). The range of such
 a column is normally inferred from the samples, as the complement of the largest
 gap between their values. That inference fails when a pole is visible: every
 longitude is then visible too, but the samples reach the region around the pole
 at scattered longitudes, so there is always a gap, and where it falls is an
 accident of sampling. :func:`~metadata_tools.geometry_support.prep.prep_row`
-therefore asks whether either pole lies on the body's visible face, within the
-area the backplane samples, and outside the column's mask; if one does, the
-column reports the whole circle (0 to 360, or -180 to 180). A pole is visible
+therefore asks whether a pole lies on the body's visible face, within the area
+the backplane samples, and outside the column's mask; if one does, the column
+reports the whole circle (0 to 360, or -180 to 180).
+
+The test is costly for its size, because a backplane of one pixel takes nearly as
+long to set up as a large one, so it is arranged to do little work.
+``find_pole`` considers only the pole on the observer's side of the equatorial
+plane, the only one that can be visible, and builds one backplane at its pixel
+for each body; ``pole_in_view`` tests each column's mask on that backplane, so
+the masks share whatever they have in common. Under a ``'D'`` face code, a pole
+with the Sun across the equator is in darkness and fails without being tested.
+Both shortcuts are exact. A pole is visible
 from any vantage point away from the body's equatorial plane, so this is the
 usual case; the range is narrower only when the body is seen nearly edge-on to
 its equator, when the visible pole is masked (for example, in darkness under a
