@@ -108,6 +108,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     # Append the backplane columns
     data_columns = []
     nothing_found = True
+    poles: dict[tuple[Any, ...], masks.Pole | None] = {}
     pole_dict: dict[tuple[Any, ...], bool] = {}
 
     # For each column...
@@ -144,11 +145,16 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         complete = False
         if (event_key[0] == 'longitude' and record.pointing_available
                 and not np.all(values.mask)):
+            # The pole is located once per backplane, and its backplane shared
+            # by every mask tested against it
+            body_key = (id(column_backplane), event_key[1])
+            if body_key not in poles:
+                poles[body_key] = masks.find_pole(column_backplane, event_key[1])
             pole_desc = ('', '', '') if no_mask else mask_desc
-            pole_key = (id(column_backplane), event_key[1]) + pole_desc
+            pole_key = body_key + pole_desc
             if pole_key not in pole_dict:
                 pole_dict[pole_key] = masks.pole_in_view(
-                    column_backplane, event_key[1], primary, pole_desc,
+                    poles[body_key], column_backplane, event_key[1], primary, pole_desc,
                     blocker=blocker, ignore_shadows=ignore_shadows)
             complete = pole_dict[pole_key]
 
