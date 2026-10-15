@@ -1,0 +1,57 @@
+# Production GCP config for the COISS_xxxx geometry stage.
+#
+# The 125 volumes (COISS_1001-1009 and COISS_2001-2116) hold 443,177 images:
+# a median of 3,812 a volume and a maximum of 7,361 (COISS_2072). Each volume
+# is one task. Locally a task runs at 4-5 s an image, so a median volume takes
+# about five hours, the largest about nine, and the whole collection about
+# 500 task-hours.
+#
+# Memory still grows by about 2 MB an image after the oops interpolation caches
+# are limited, so the largest volumes may need over 15 GB; each task gets 4
+# vCPUs and 16 GB, as for Galileo. Eight 32-vCPU spot instances give 64 task
+# slots: two waves of the queue, about ten hours in all if the tasks run as fast
+# as they do locally. Dispatch with:
+#
+#   metadata-geometry-cloud COISS_xxxx <paths...> --use-spot \
+#       --config gcp_geometry_prod_config.yml --task-file ./tasks.json
+#
+# The Cassini host has no index stage, so nothing else creates the volume
+# directories of the output tree: each volume to process needs one there,
+# holding at least one file, before dispatch.
+#
+# The default (unsuffixed) gcp_geometry_config.yml remains the small test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-geometry-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  # Prefer the newest general-purpose/compute families for per-core speed.
+  instance_types:           ["^c4-standard-.*", "^n4-standard-.*", "^n2-standard-.*"]
+  min_cpu:                  32
+  max_cpu:                  32
+  max_instances:            8
+  cpus_per_task:            4
+  min_memory_per_task:      16           # GB
+
+  # The largest volume takes about nine hours locally; fourteen flags a
+  # genuinely wedged task without killing a slow-but-live one.
+  max_runtime:              50400
+
+  # Per-task FileCache holds the volume's index and label data; the OOPS
+  # resources (SPICE kernels) live on the separately attached persistent
+  # disk named by $OOPS_RESOURCES_DISK, not the boot disk.
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      20           # GB: OS + venv + clone/pip install
+  boot_disk_per_task:       5            # GB per concurrent task slot
+
+  # Spot fleet hygiene: re-queue tasks lost to preemption, but do not loop
+  # tasks that fail on their own.
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  # Cost guard: eight 32-vCPU spot instances typically land well under this;
+  # the cap bites only on spot price spikes or on-demand fallback.
+  max_total_price_per_hour: 12.00        # USD/hour

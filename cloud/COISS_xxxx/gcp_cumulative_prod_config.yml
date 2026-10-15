@@ -1,0 +1,38 @@
+# Production GCP config for the COISS_xxxx cumulative stage.
+#
+# The cumulative stage is a single task per collection that concatenates every
+# volume's tables into COISS_1999 or COISS_2999. COISS_2001's body table alone
+# is 26 MB, so COISS_2999's will be about 3 GB, read into memory before it is
+# written: the task gets 16 GB, and a boot disk large enough for the per-task
+# cache to hold every volume's tables at once. Spot is still used (the task is
+# cheap to restart and retry_on_exit re-queues it). Dispatch with:
+#
+#   metadata-cumulative-cloud COISS_xxxx <output_dir> --use-spot \
+#       --config gcp_cumulative_prod_config.yml
+#
+# The default (unsuffixed) gcp_cumulative_config.yml remains the test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-cumulative-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  instance_types:           ["^n2-standard-.*", "^n4-standard-.*"]
+  min_cpu:                  4
+  max_cpu:                  4
+  max_instances:            1
+  cpus_per_task:            1
+  min_memory_per_task:      16           # GB
+
+  # Pure I/O and concatenation; four hours is generous.
+  max_runtime:              14400
+
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      100          # GB: room for every volume's tables
+
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  max_total_price_per_hour: 1.00         # USD/hour

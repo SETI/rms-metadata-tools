@@ -1,0 +1,22 @@
+# Test GCP config for the COISS_xxxx geometry stage: one small instance, one
+# task at a time. Use it to try a volume or two before a production run, e.g.
+#
+#   metadata-geometry-cloud COISS_xxxx <paths...> --use-spot --volumes COISS_2077
+#
+# COISS_2077, with 40 images, is the smallest volume. A typical volume holds
+# about 3,800 images and takes several hours on one task.
+provider: gcp
+gcp:
+  job_id:                   metadata-geometry-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  instance_types:           ["^n2-.*", "^n3-.*", "^n4-.*"]
+  boot_disk_types:          pd-balanced
+  max_instances:            1
+  cpus_per_task:            1
+  min_memory_per_task:      16           # GB; see gcp_geometry_prod_config.yml
+
+  max_runtime:              50400
+  max_cpu:                  4
