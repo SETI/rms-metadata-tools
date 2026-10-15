@@ -238,3 +238,36 @@ def test_longitude_covers_the_circle_when_a_pole_is_in_view(
     assert rows[0][-2:] == [expected, '  28.648,  57.296']
     assert calls == [('pole', 'IO', ('', '', 'D'))]
     assert found == ['IO']
+
+
+@pytest.mark.parametrize(('north', 'visible', 'expected'),
+                         [(False, True, ' -90.000,  40.000'),
+                          (True, True, ' -20.000,  90.000'),
+                          (True, False, ' -20.000,  40.000')])
+def test_a_visible_pole_bounds_the_latitude(
+        monkeypatch: pytest.MonkeyPatch, exists_true: None,
+        record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any], north: bool, visible: bool,
+        expected: str) -> None:
+    """The latitude range reaches the pole exactly when the pole is in view."""
+    monkeypatch.setattr(masks, 'find_pole',
+                        lambda backplane, target: masks.Pole(None, north))
+    monkeypatch.setattr(masks, 'pole_in_view', lambda *a, **k: visible)
+    fake_backplane.evaluations[('latitude', 'IO', 'centric')] = \
+        oops.Scalar(np.radians([-20., 10., 40.]), False)
+    column = make_column(key=('latitude', 'IO', 'centric'), mask=('', '', 'D'),
+                         names=['MINIMUM_PLANETOCENTRIC_LATITUDE',
+                                'MAXIMUM_PLANETOCENTRIC_LATITUDE'],
+                         flag='DEG', valid_minimum=-90., valid_maximum=90.)
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None, [column],
+        primary='JUPITER', target='IO', no_body=True)
+    assert rows[0][-1] == expected
+
+
+def test_with_pole_latitude_keeps_only_unmasked_values() -> None:
+    """Masked latitudes are dropped and the pole's latitude is added."""
+    values = oops.Scalar(np.array([0.1, 0.2, 0.3]), np.array([False, True, False]))
+    result = prep.with_pole_latitude(values, north=False)
+    assert not np.any(result.mask)
+    assert list(result.vals) == [0.1, 0.3, -np.pi/2]
