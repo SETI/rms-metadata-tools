@@ -72,3 +72,10 @@ The host's mission table covers the Earth flyby, the Jupiter flyby, and the
 Saturn approach and tour. The index on each Cassini ISS volume already holds
 the values a supplemental index would add, so the host defines no supplemental
 index template and the geometry stage reads the volume's index alone.
+
+Since there is no index stage, nothing creates the volume directories of the
+output tree, as the index stage does for other hosts. Each volume to process
+needs a directory there before the geometry stage runs; on Google Cloud Storage,
+where a directory exists only through the files in it, it must hold at least one
+file. ``cloud/COISS_xxxx/`` has GCP configs for the geometry and cumulative
+stages only.
