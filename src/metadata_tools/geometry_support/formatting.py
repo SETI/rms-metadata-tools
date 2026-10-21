@@ -45,7 +45,7 @@ def circle_coverage(angles: Any, null_value: float | str, sampling: int,
 
         # Apply mask if full mask present
         else:
-            angles = angles.values[angles.antimask]
+            angles = np.asarray(angles.values)[angles.antimask]
 
     return util._get_range_mod360(angles,
                                   width=sampling+1, diffmin=1, alt_format=flag)
