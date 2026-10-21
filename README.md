@@ -64,7 +64,7 @@ volume tree from a small per-collection configuration.
 ## Installation
 
 `rms-metadata-tools` requires **Python 3.11 or later** and is tested on Python
-3.11, 3.12, and 3.13. Generating geometry tables additionally requires the SPICE
+3.11, 3.12, 3.13, 3.14, and 3.15. Generating geometry tables additionally requires the SPICE
 kernels for your collection, installed where `oops` can find them.
 
 Install from PyPI:
