@@ -128,7 +128,7 @@ def _render(tmp_path: Path, kind: str, fields: dict[str, Any]) -> str:
         preprocess=[strip_comments, expand_format_references, merge_column_definitions],
         includes=[FCPath(host_dir), defs.GLOBAL_TEMPLATE_PATH])
     defaults = {'LABEL_VALUE': lambda name: 'FIXED_LENGTH', 'FOV_BORDER': None,
-                'SAMPLING': None, 'BODY_SAMPLES': None}
+                'SAMPLING': None, 'BODY_SAMPLES': None, 'IS_SATURN': False}
     label = template.generate(defaults | fields,
                               label_path=table.with_suffix('.lbl').as_posix())
     assert template.error_count == 0
@@ -150,6 +150,57 @@ def test_body_label_without_body_grids_warns_of_small_bodies(tmp_path: Path) -> 
     text = _render(tmp_path, 'body', {'FOV_BORDER': _BORDER, 'SAMPLING': 8, 'BODY_SAMPLES': 0})
     assert 'samples across the body' not in text
     assert 'If a body is too small to have been captured by the sampling' in text
+
+
+@pytest.mark.parametrize(('rows', 'is_saturn'), [
+    ('"COISS_1009","a.LBL","SATURN      ","MIMAS       ",1.0\r\n', True),
+    ('"COISS_1008","a.LBL","            ","EARTH       ",1.0\r\n'
+     '"COISS_1008","b.LBL","SATURN      ","SATURN      ",1.0\r\n', True),
+    ('"COISS_1004","a.LBL","JUPITER     ","SATURN      ",1.0\r\n', False),
+    ('row\r\n', False),
+    ('', False),
+])
+def test_create_reads_is_saturn_from_the_system_column(monkeypatch: pytest.MonkeyPatch,
+                                                       tmp_path: Path, rows: str,
+                                                       is_saturn: bool) -> None:
+    """A body label says Saturn only if a row's SYSTEM_NAME does, whatever the caller gave."""
+    captured = _capture_template(monkeypatch)
+    table = tmp_path / 'COISS_1009_body_summary.tab'
+    table.write_text(rows, encoding='utf-8')
+    lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
+               table_type='BODY_SUMMARY', fields={'SAMPLING': 8})
+    assert captured['fields']['IS_SATURN'] is is_saturn
+
+
+def test_create_does_not_read_a_system_column_from_other_tables(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Only the body table's label describes the main rings."""
+    captured = _capture_template(monkeypatch)
+    table = tmp_path / 'COISS_2001_ring_summary.tab'
+    table.write_text('"COISS_2001","a.LBL","SATURN      ",1.0\r\n', encoding='utf-8')
+    lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
+               table_type='ring_summary')
+    assert 'IS_SATURN' not in captured['fields']
+
+
+@pytest.mark.parametrize(('is_saturn', 'phrases', 'absent'), [
+    (True, ['Regions of a body in the Saturn system that are obscured by the main rings',
+            'the shadow of the main rings.',
+            'For a body in the Saturn system, so are points that are obscured by the '
+            'main rings or that lie in their shadow.',
+            'For a body in the Saturn system, so are points that are obscured by the '
+            'main rings.'], []),
+    (False, [], ['Saturn', 'main rings']),
+])
+def test_body_label_describes_the_rings_only_for_saturn(tmp_path: Path, is_saturn: bool,
+                                                        phrases: list[str],
+                                                        absent: list[str]) -> None:
+    """The ring exclusions are worded per body, since a table can mix systems."""
+    text = _render(tmp_path, 'body', {'IS_SATURN': is_saturn})
+    for phrase in phrases:
+        assert phrase in text
+    for phrase in absent:
+        assert phrase not in text
 
 
 @pytest.mark.parametrize('kind', ['body', 'ring', 'sky'])

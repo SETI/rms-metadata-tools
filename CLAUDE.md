@@ -120,10 +120,11 @@ only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
 - `templates/` — the host's PDS3 label templates: `host_defs.lbl` (mission keywords plus
   the literal `$ONCE` values the shared templates take from the host: instrument name,
   the noun for one data product (`product`/`products`, e.g. image),
-  volume-ID and file-specification widths, system names, `is_visual`, `is_saturn`) and
+  volume-ID and file-specification widths, system names, `is_visual`) and
   `*_supplemental_index.lbl`. The engine gives every label `FOV_BORDER`
   (`host_config.BORDER`, an angle in radians shared by every instrument of the
-  spacecraft, worded in milliradians) and, in a geometry run, `SAMPLING` and `BODY_SAMPLES`. The `{body,ring,sky,sun}_summary.lbl` and
+  spacecraft, worded in milliradians), every body label `IS_SATURN` (whether any row's
+  `SYSTEM_NAME` is `SATURN`, read from the table) and, in a geometry run, `SAMPLING` and `BODY_SAMPLES`. The `{body,ring,sky,sun}_summary.lbl` and
   `inventory.lbl` templates and the column fragments are shared, in
   `src/metadata_tools/templates/`; a host shadows any of them with `<HOST>_<kind>.lbl`
   (`util.find_template`), or a fragment with a same-named copy
