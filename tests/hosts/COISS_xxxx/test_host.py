@@ -146,8 +146,8 @@ def _render(tmp_path: Path, volume_id: str) -> str:
         preprocess=[strip_comments, expand_format_references, merge_column_definitions],
         includes=[FCPath(HOST_TEMPLATES), defs.GLOBAL_TEMPLATE_PATH])
     fields = {'LABEL_VALUE': lambda name: 'FIXED_LENGTH', 'FOV_BORDER': None,
-              'SAMPLING': None, 'BODY_SAMPLES': None, 'VOLUME_ID': volume_id,
-              'TABLE_TYPE': 'BODY_SUMMARY'}
+              'SAMPLING': None, 'BODY_SAMPLES': None, 'IS_SATURN': False,
+              'VOLUME_ID': volume_id, 'TABLE_TYPE': 'BODY_SUMMARY'}
     label = template.generate(fields, label_path=table.with_suffix('.lbl').as_posix())
     assert template.error_count == 0
     return ' '.join(label.split())

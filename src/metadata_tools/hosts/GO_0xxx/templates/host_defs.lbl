@@ -20,7 +20,6 @@ $ONCE(filespec_bytes = 32)
 $ONCE(system_names = 'EARTH, VENUS, or JUPITER')
 $ONCE(ring_system = 'Jupiter')
 $ONCE(is_visual = True)
-$ONCE(is_saturn = False)
 MISSION_NAME                    = "GALILEO"
 INSTRUMENT_HOST_NAME            = "GALILEO"
 INSTRUMENT_HOST_ID              = "GLL"

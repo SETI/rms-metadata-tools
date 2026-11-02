@@ -41,11 +41,12 @@ host:
    $ONCE(system_names = 'EARTH, VENUS, or JUPITER')
    $ONCE(ring_system = 'Jupiter')
    $ONCE(is_visual = True)
-   $ONCE(is_saturn = False)
 
-The templates take three more values from the engine, not from
+The templates take four more values from the engine, not from
 ``host_defs.lbl``: ``FOV_BORDER``, the host's ``host_config.BORDER`` worded as
-an angle (the border sentence is omitted for a host with no border), and ``SAMPLING``
+an angle (the border sentence is omitted for a host with no border); ``IS_SATURN``,
+true when any row of a body table has the ``SYSTEM_NAME`` ``SATURN``, read from
+the table itself; and ``SAMPLING``
 and ``BODY_SAMPLES``, the sampling a geometry
 table was generated with. The last two are known only to a geometry run, so a
 cumulative label describes the sampling without stating its values.
