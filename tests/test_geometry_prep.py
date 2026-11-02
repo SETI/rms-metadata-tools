@@ -9,7 +9,7 @@ import numpy as np
 import oops
 import pytest
 
-from metadata_tools.geometry_support import masks, prep
+from metadata_tools.geometry_support import bodies_select, masks, prep
 from metadata_tools.geometry_support.record import Record
 
 
@@ -88,6 +88,34 @@ def test_summary_no_body_omits_prefixes(
         _phase_cols(make_column), primary='JUPITER', target='IO', no_mask=True, no_body=True)
     # Only the two prefixes + one data column, no body-name columns inserted.
     assert len(rows[0]) == 3
+
+
+def test_masks_take_the_system_named_in_the_prefix(
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any], monkeypatch: pytest.MonkeyPatch) -> None:
+    """A row with no primary gives its masks the same system that its prefix states."""
+    systems: dict[str, Any] = {}
+
+    def _mask(*args: Any, system: Any = None, **kwargs: Any) -> Any:
+        systems['mask'] = system
+        return oops.Boolean(False)
+
+    def _pole(*args: Any, system: Any = None, **kwargs: Any) -> bool:
+        systems['pole'] = system
+        return False
+
+    monkeypatch.setattr(bodies_select, 'get_system', lambda body: 'SATURN')
+    monkeypatch.setattr(masks, 'construct_excluded_mask', _mask)
+    monkeypatch.setattr(masks, 'find_pole', lambda *args: None)
+    monkeypatch.setattr(masks, 'pole_in_view', _pole)
+    fake_backplane.evaluations[('longitude', 'MIMAS')] = \
+        oops.Scalar(np.array([0.5, 1.0]), False)
+    column = make_column(key=('longitude', 'MIMAS'), mask=('R', 'R', ''), flag='DEG',
+                         valid_minimum=0., valid_maximum=360.)
+    rows = prep.prep_row(_record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+                         [column], primary='', target='MIMAS')
+    assert rows[0][2] == '"SATURN      "'
+    assert systems == {'mask': 'SATURN', 'pole': 'SATURN'}
 
 
 def test_primary_prefix_when_no_target(
