@@ -5,6 +5,7 @@
 # the host geometry_config plugin.
 ################################################################################
 """Excluded-pixel mask construction for geometry backplane processing."""
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -36,7 +37,8 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
                             mask_desc: tuple[str, str, str], *,
                             blocker: str | None = None,
                             ignore_shadows: bool = False,
-                            system: str | None = None) -> polymath.Boolean:
+                            dense_rings: str | None = None,
+                            companions: Sequence[str] = ()) -> polymath.Boolean:
     """Return a mask of excluded pixels for the given target.
 
     The mask is built from the specified target, maskers and shadowers.
@@ -62,9 +64,10 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
             appear in the mask_desc.
         ignore_shadows: True to ignore any shadower or face constraints; default
             is False.
-        system: Optionally, the name of the system the target belongs to. Saturn's
-            main rings apply to a target in the Saturn system even when the
-            observation has no primary.
+        dense_rings: Optionally, the name of the ring body to use for any "R" codes
+            that appear in the mask_desc. Without one, those codes do nothing.
+        companions: The names of any bodies that obscure and shadow the target
+            wherever the primary does, for any "P" codes in the mask_desc.
 
     Returns:
         polymath.Boolean mask; scalar True/False for all-excluded/none-excluded,
@@ -84,16 +87,15 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
     # backplane.meshgrid.shape works for every oops version; Backplane.shape went
     # private (_shape) in oops >= 0.3
     excluded = np.zeros(backplane.meshgrid.shape, dtype='bool')
-    saturn_rings = "SATURN" in (primary, system)
 
     # Handle maskers
-    if "R" in masker and saturn_rings:
-        excluded |= backplane.where_in_back(target, "SATURN_MAIN_RINGS").vals
+    if "R" in masker and dense_rings:
+        excluded |= backplane.where_in_back(target, dense_rings).vals
 
     if "P" in masker:
         excluded |= backplane.where_in_back(target, primary).vals
-        if primary == "PLUTO":
-            excluded |= backplane.where_in_back(target, "CHARON").vals
+        for companion in companions:
+            excluded |= backplane.where_in_back(target, companion).vals
 
     if "M" in masker and blocker is not None:
         excluded |= backplane.where_in_back(target, blocker).vals
@@ -101,14 +103,13 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
     if not ignore_shadows:
 
         # Handle shadowers
-        if "R" in shadower and saturn_rings:
-            excluded |= backplane.where_inside_shadow(target,
-                                                      "SATURN_MAIN_RINGS").vals
+        if "R" in shadower and dense_rings:
+            excluded |= backplane.where_inside_shadow(target, dense_rings).vals
 
         if "P" in shadower:
             excluded |= backplane.where_inside_shadow(target, primary).vals
-            if primary == "PLUTO":
-                excluded |= backplane.where_inside_shadow(target, "CHARON").vals
+            for companion in companions:
+                excluded |= backplane.where_inside_shadow(target, companion).vals
 
         if "M" in shadower and blocker is not None:
             excluded |= backplane.where_inside_shadow(target, blocker).vals
@@ -197,7 +198,8 @@ def pole_in_view(pole: Pole | None, backplane: Any, target: str | tuple[()],
                  primary: str | None, mask_desc: tuple[str, str, str], *,
                  blocker: str | None = None,
                  ignore_shadows: bool = False,
-                 system: str | None = None) -> bool:
+                 dense_rings: str | None = None,
+                 companions: Sequence[str] = ()) -> bool:
     """Determine whether a pole of the target is visible and outside a mask.
 
     The pole's backplane is shared by every mask tested against it, so the
@@ -214,7 +216,9 @@ def pole_in_view(pole: Pole | None, backplane: Any, target: str | tuple[()],
             appear in the mask_desc.
         ignore_shadows: True to ignore any shadower or face constraints; default
             is False.
-        system: Optionally, the name of the system the target belongs to, as for
+        dense_rings: Optionally, the name of the ring body, as for
+            construct_excluded_mask.
+        companions: The names of the primary's companions, as for
             construct_excluded_mask.
 
     Returns:
@@ -231,5 +235,5 @@ def pole_in_view(pole: Pole | None, backplane: Any, target: str | tuple[()],
 
     excluded = construct_excluded_mask(pole.backplane, target, primary, mask_desc,
                                        blocker=blocker, ignore_shadows=ignore_shadows,
-                                       system=system)
+                                       dense_rings=dense_rings, companions=companions)
     return not np.any(excluded.vals)

@@ -128,7 +128,7 @@ def _render(tmp_path: Path, kind: str, fields: dict[str, Any]) -> str:
         preprocess=[strip_comments, expand_format_references, merge_column_definitions],
         includes=[FCPath(host_dir), defs.GLOBAL_TEMPLATE_PATH])
     defaults = {'LABEL_VALUE': lambda name: 'FIXED_LENGTH', 'FOV_BORDER': None,
-                'SAMPLING': None, 'BODY_SAMPLES': None, 'IS_SATURN': False}
+                'SAMPLING': None, 'BODY_SAMPLES': None, 'DENSE_RINGS': ''}
     label = template.generate(defaults | fields,
                               label_path=table.with_suffix('.lbl').as_posix())
     assert template.error_count == 0
@@ -152,55 +152,71 @@ def test_body_label_without_body_grids_warns_of_small_bodies(tmp_path: Path) -> 
     assert 'If a body is too small to have been captured by the sampling' in text
 
 
-@pytest.mark.parametrize(('rows', 'is_saturn'), [
-    ('"COISS_1009","a.LBL","SATURN      ","MIMAS       ",1.0\r\n', True),
-    ('"COISS_1008","a.LBL","            ","EARTH       ",1.0\r\n'
-     '"COISS_1008","b.LBL","SATURN      ","SATURN      ",1.0\r\n', True),
-    ('"COISS_1004","a.LBL","JUPITER     ","SATURN      ",1.0\r\n', False),
-    ('row\r\n', False),
-    ('', False),
+@pytest.mark.parametrize(('rows', 'systems'), [
+    ('"X_0001","a.LBL","XENON       ","XMOON       ",1.0\r\n', 'Xenon'),
+    ('"X_0001","a.LBL","            ","EARTH       ",1.0\r\n'
+     '"X_0001","b.LBL","KRYPTON     ","KRYPTON     ",1.0\r\n'
+     '"X_0001","c.LBL","XENON       ","XENON       ",1.0\r\n', 'Krypton or Xenon'),
+    ('"X_0001","a.LBL","OTHER       ","XENON       ",1.0\r\n', ''),
+    ('row\r\n', ''),
+    ('', ''),
 ])
-def test_create_reads_is_saturn_from_the_system_column(monkeypatch: pytest.MonkeyPatch,
-                                                       tmp_path: Path, rows: str,
-                                                       is_saturn: bool) -> None:
-    """A body label says Saturn only if a row's SYSTEM_NAME does, whatever the caller gave."""
+def test_create_reads_dense_rings_from_the_system_column(monkeypatch: pytest.MonkeyPatch,
+                                                         tmp_path: Path, rows: str,
+                                                         systems: str) -> None:
+    """A body label names the systems the host gives rings, if its table has them."""
     captured = _capture_template(monkeypatch)
-    table = tmp_path / 'COISS_1009_body_summary.tab'
+    monkeypatch.setattr(get_host_config(), 'DENSE_RINGS',
+                        {'XENON': 'XENON_RINGS', 'KRYPTON': 'KRYPTON_RINGS'}, raising=False)
+    table = tmp_path / 'X_0001_body_summary.tab'
     table.write_text(rows, encoding='utf-8')
     lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
                table_type='BODY_SUMMARY', fields={'SAMPLING': 8})
-    assert captured['fields']['IS_SATURN'] is is_saturn
+    assert captured['fields']['DENSE_RINGS'] == systems
+
+
+def test_create_with_no_host_rings_names_no_system(monkeypatch: pytest.MonkeyPatch,
+                                                   tmp_path: Path) -> None:
+    """A host that defines no dense rings gets no ring wording, whatever its table says."""
+    captured = _capture_template(monkeypatch)
+    table = tmp_path / 'X_0001_body_summary.tab'
+    table.write_text('"X_0001","a.LBL","XENON       ","XENON       ",1.0\r\n',
+                     encoding='utf-8')
+    lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
+               table_type='body_summary')
+    assert captured['fields']['DENSE_RINGS'] == ''
 
 
 def test_create_does_not_read_a_system_column_from_other_tables(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """Only the body table's label describes the main rings."""
+    """Only the body table's label describes the dense rings."""
     captured = _capture_template(monkeypatch)
-    table = tmp_path / 'COISS_2001_ring_summary.tab'
-    table.write_text('"COISS_2001","a.LBL","SATURN      ",1.0\r\n', encoding='utf-8')
+    monkeypatch.setattr(get_host_config(), 'DENSE_RINGS', {'XENON': 'XENON_RINGS'},
+                        raising=False)
+    table = tmp_path / 'X_0001_ring_summary.tab'
+    table.write_text('"X_0001","a.LBL","XENON       ",1.0\r\n', encoding='utf-8')
     lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
                table_type='ring_summary')
-    assert 'IS_SATURN' not in captured['fields']
+    assert 'DENSE_RINGS' not in captured['fields']
 
 
-@pytest.mark.parametrize(('is_saturn', 'phrases', 'absent'), [
-    (True, ['Regions of a body in the Saturn system that are obscured by the main rings',
-            'the shadow of the main rings.',
-            'For a body in the Saturn system, so are points that are obscured by the '
-            'main rings or that lie in their shadow.',
-            'For a body in the Saturn system, so are points that are obscured by the '
-            'main rings.'], []),
-    (False, [], ['Saturn', 'main rings']),
-])
-def test_body_label_describes_the_rings_only_for_saturn(tmp_path: Path, is_saturn: bool,
-                                                        phrases: list[str],
-                                                        absent: list[str]) -> None:
-    """The ring exclusions are worded per body, since a table can mix systems."""
-    text = _render(tmp_path, 'body', {'IS_SATURN': is_saturn})
-    for phrase in phrases:
-        assert phrase in text
-    for phrase in absent:
-        assert phrase not in text
+def test_body_label_names_the_systems_with_dense_rings(tmp_path: Path) -> None:
+    """The ring exclusions are worded per body and name the host's systems."""
+    text = _render(tmp_path, 'body', {'DENSE_RINGS': 'Xenon'})
+    assert 'Regions of a body in the Xenon system that are obscured by the dense rings' in text
+    assert 'are regions in the shadow of the dense rings.' in text
+    assert ('For a body in the Xenon system, so are points that are obscured by the '
+            'dense rings or that lie in their shadow.') in text
+    assert ('For a body in the Xenon system, so are points that are obscured by the '
+            'dense rings.') in text
+
+
+def test_body_label_without_dense_rings_says_nothing_of_them(tmp_path: Path) -> None:
+    """A body label with no dense rings to state still describes the body's shape."""
+    text = _render(tmp_path, 'body', {'DENSE_RINGS': ''})
+    assert 'dense rings' not in text
+    assert 'Saturn' not in text
+    assert "The body's shape has been modeled as an ellipsoid." in text
 
 
 @pytest.mark.parametrize('kind', ['body', 'ring', 'sky'])

@@ -9,6 +9,7 @@ import numpy as np
 import oops
 import pytest
 
+from metadata_tools.config import get_host_config
 from metadata_tools.geometry_support import bodies_select, masks, prep
 from metadata_tools.geometry_support.record import Record
 
@@ -90,32 +91,41 @@ def test_summary_no_body_omits_prefixes(
     assert len(rows[0]) == 3
 
 
-def test_masks_take_the_system_named_in_the_prefix(
+@pytest.mark.parametrize(('primary', 'target', 'system', 'dense_rings', 'companions'), [
+    ('', 'XMOON', 'XENON', 'XENON_RINGS', []),               # no primary: the system decides
+    ('XENON', 'OTHER', 'OTHER', 'XENON_RINGS', ['XMOON']),   # the primary alone decides
+    ('OTHER', 'OTHER', 'OTHER', None, []),                   # the host names neither
+])
+def test_masks_take_the_rings_and_companions_the_host_names(
         exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
-        make_column: Callable[..., Any], monkeypatch: pytest.MonkeyPatch) -> None:
-    """A row with no primary gives its masks the same system that its prefix states."""
-    systems: dict[str, Any] = {}
+        make_column: Callable[..., Any], monkeypatch: pytest.MonkeyPatch, primary: str,
+        target: str, system: str, dense_rings: str | None, companions: list[str]) -> None:
+    """The masks and the pole test get what the host names for this row's planet."""
+    seen: dict[str, Any] = {}
 
-    def _mask(*args: Any, system: Any = None, **kwargs: Any) -> Any:
-        systems['mask'] = system
+    def _mask(*args: Any, **kwargs: Any) -> Any:
+        seen['mask'] = (kwargs['dense_rings'], kwargs['companions'])
         return oops.Boolean(False)
 
-    def _pole(*args: Any, system: Any = None, **kwargs: Any) -> bool:
-        systems['pole'] = system
+    def _pole(*args: Any, **kwargs: Any) -> bool:
+        seen['pole'] = (kwargs['dense_rings'], kwargs['companions'])
         return False
 
-    monkeypatch.setattr(bodies_select, 'get_system', lambda body: 'SATURN')
+    host = get_host_config()
+    monkeypatch.setattr(host, 'DENSE_RINGS', {'XENON': 'XENON_RINGS'}, raising=False)
+    monkeypatch.setattr(host, 'COMPANIONS', {'XENON': ['XMOON']}, raising=False)
+    monkeypatch.setattr(bodies_select, 'get_system', lambda body: system)
     monkeypatch.setattr(masks, 'construct_excluded_mask', _mask)
     monkeypatch.setattr(masks, 'find_pole', lambda *args: None)
     monkeypatch.setattr(masks, 'pole_in_view', _pole)
-    fake_backplane.evaluations[('longitude', 'MIMAS')] = \
+    fake_backplane.evaluations[('longitude', target)] = \
         oops.Scalar(np.array([0.5, 1.0]), False)
-    column = make_column(key=('longitude', 'MIMAS'), mask=('R', 'R', ''), flag='DEG',
+    column = make_column(key=('longitude', target), mask=('R', 'R', ''), flag='DEG',
                          valid_minimum=0., valid_maximum=360.)
     rows = prep.prep_row(_record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-                         [column], primary='', target='MIMAS')
-    assert rows[0][2] == '"SATURN      "'
-    assert systems == {'mask': 'SATURN', 'pole': 'SATURN'}
+                         [column], primary=primary, target=target)
+    assert rows[0][2] == f'"{system:<12}"'
+    assert seen == {'mask': (dense_rings, companions), 'pole': (dense_rings, companions)}
 
 
 def test_primary_prefix_when_no_target(

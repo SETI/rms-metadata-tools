@@ -46,6 +46,11 @@ def test_border_is_the_pointing_uncertainty_angle() -> None:
     assert host_config.BORDER == 1.5e-4
 
 
+def test_saturn_has_the_dense_rings() -> None:
+    """Only Saturn's main rings are dense enough to mask a body."""
+    assert host_config.DENSE_RINGS == {'SATURN': 'SATURN_MAIN_RINGS'}
+
+
 #===============================================================================
 # geometry_config, with the oops host replaced
 #===============================================================================
@@ -146,7 +151,7 @@ def _render(tmp_path: Path, volume_id: str) -> str:
         preprocess=[strip_comments, expand_format_references, merge_column_definitions],
         includes=[FCPath(HOST_TEMPLATES), defs.GLOBAL_TEMPLATE_PATH])
     fields = {'LABEL_VALUE': lambda name: 'FIXED_LENGTH', 'FOV_BORDER': None,
-              'SAMPLING': None, 'BODY_SAMPLES': None, 'IS_SATURN': False,
+              'SAMPLING': None, 'BODY_SAMPLES': None, 'DENSE_RINGS': '',
               'VOLUME_ID': volume_id, 'TABLE_TYPE': 'BODY_SUMMARY'}
     label = template.generate(fields, label_path=table.with_suffix('.lbl').as_posix())
     assert template.error_count == 0

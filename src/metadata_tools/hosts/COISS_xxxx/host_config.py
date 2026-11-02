@@ -17,3 +17,10 @@ glob: str = '[NW]*.LBL'
 # and the labels state it.
 ################################################################################
 BORDER: float = 1.5e-4
+
+################################################################################
+# The rings that obscure and shadow the bodies of a system, by system name. The
+# engine applies them in the masks of the geometry columns, and the body labels
+# say so.
+################################################################################
+DENSE_RINGS: dict[str, str] = {'SATURN': 'SATURN_MAIN_RINGS'}

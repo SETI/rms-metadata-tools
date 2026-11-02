@@ -178,6 +178,26 @@ def get_border() -> float:
     return float(getattr(get_host_config(), 'BORDER', 0.))
 
 #===============================================================================
+def get_dense_rings() -> dict[str, str]:
+    """The ring bodies dense enough to obscure and shadow the bodies of their systems.
+
+    Returns:
+        The host's ``host_config.DENSE_RINGS``, keyed by system name, if it defines
+        one; otherwise an empty dictionary, for which rings never mask a body.
+    """
+    return dict(getattr(get_host_config(), 'DENSE_RINGS', {}))
+
+#===============================================================================
+def get_companions() -> dict[str, list[str]]:
+    """The bodies that obscure and shadow a target wherever its primary does.
+
+    Returns:
+        The host's ``host_config.COMPANIONS``, keyed by primary name, if it defines
+        one; otherwise an empty dictionary.
+    """
+    return dict(getattr(get_host_config(), 'COMPANIONS', {}))
+
+#===============================================================================
 def get_exclude() -> list[str] | None:
     """The volumes the host excludes from processing.
 
