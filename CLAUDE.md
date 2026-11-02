@@ -110,10 +110,10 @@ only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
 - `host_config.py`, `index_config.py`, `geometry_config.py` — host-specific settings and
   optional override hooks (e.g. `key__<NAME>(label_path, label_dict)` to compute an index
   column; backplane functions for geometry). The data-label `glob` lives in `host_config`
-  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, `cleanup`, `EXTRA_CHILDREN`, `BORDER`,
+  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, `cleanup`, `EXTRA_CHILDREN`, `BORDER`, `DENSE_RINGS`, `COMPANIONS`,
   and `meshgrids`/`meshgrid` are optional: the engine reads them through the accessors
   in `config.py` (`get_volume_id()`, `get_exclude()`, `get_index_glob()`,
-  `get_target_name()`, `cleanup()`, `get_border()`, `get_extra_children()`, `get_meshgrids()`), which supply
+  `get_target_name()`, `cleanup()`, `get_border()`, `get_dense_rings()`, `get_companions()`, `get_extra_children()`, `get_meshgrids()`), which supply
   the defaults.
 - `host_init.py` — initializes the mission's `oops` host package, e.g. `host_galileo.oops` from
   `rms-host-galileo` (side-effect import).
@@ -123,8 +123,8 @@ only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
   volume-ID and file-specification widths, system names, `is_visual`) and
   `*_supplemental_index.lbl`. The engine gives every label `FOV_BORDER`
   (`host_config.BORDER`, an angle in radians shared by every instrument of the
-  spacecraft, worded in milliradians), every body label `IS_SATURN` (whether any row's
-  `SYSTEM_NAME` is `SATURN`, read from the table) and, in a geometry run, `SAMPLING` and `BODY_SAMPLES`. The `{body,ring,sky,sun}_summary.lbl` and
+  spacecraft, worded in milliradians), every body label `DENSE_RINGS` (the systems in the
+  table's `SYSTEM_NAME` column that `host_config.DENSE_RINGS` names, read from the table) and, in a geometry run, `SAMPLING` and `BODY_SAMPLES`. The `{body,ring,sky,sun}_summary.lbl` and
   `inventory.lbl` templates and the column fragments are shared, in
   `src/metadata_tools/templates/`; a host shadows any of them with `<HOST>_<kind>.lbl`
   (`util.find_template`), or a fragment with a same-named copy

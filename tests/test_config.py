@@ -223,6 +223,22 @@ def test_get_border_defaults_to_no_border(monkeypatch: pytest.MonkeyPatch) -> No
     assert cfg.get_border() == 2.5e-4
 
 
+def test_get_dense_rings_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host DENSE_RINGS, no rings mask a body."""
+    host, _ = _bare_host(monkeypatch)
+    assert cfg.get_dense_rings() == {}
+    host.DENSE_RINGS = {'XENON': 'XENON_RINGS'}  # type: ignore[attr-defined]
+    assert cfg.get_dense_rings() == {'XENON': 'XENON_RINGS'}
+
+
+def test_get_companions_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host COMPANIONS, a primary masks alone."""
+    host, _ = _bare_host(monkeypatch)
+    assert cfg.get_companions() == {}
+    host.COMPANIONS = {'XENON': ['XMOON']}  # type: ignore[attr-defined]
+    assert cfg.get_companions() == {'XENON': ['XMOON']}
+
+
 def test_get_extra_children_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
     """With no host EXTRA_CHILDREN, only regular children are considered."""
     _, geom = _bare_host(monkeypatch)

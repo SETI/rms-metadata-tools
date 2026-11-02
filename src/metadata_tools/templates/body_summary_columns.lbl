@@ -4,12 +4,13 @@ $NOTE
 #   is_visual:      True if this product was taken in visual light. If so,
 #                   regions on the dark side of target bodies are ignored;
 #                   otherwise, they are included.
-#   IS_SATURN:      True if any row of this table belongs to the Saturn system,
-#                   supplied by the engine.
+#   DENSE_RINGS:    The systems in this table whose dense rings the host names,
+#                   as they read in a sentence, or empty; supplied by the
+#                   engine.
 # Below, we temporarily set the variable `night_override` to True for columns
 # where the night side of a body should be included even if the observation is
 # visual, and `ring_shadow` to True for columns whose MASK excludes the shadow
-# of the main rings, so that the descriptions say so.
+# of the dense rings, so that the descriptions say so.
 #
 # Column grammar: each computed column is one COLUMN_DEFINITION object --
 # holding the computation spec, the label metadata shared by the column's

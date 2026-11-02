@@ -44,9 +44,10 @@ host:
 
 The templates take four more values from the engine, not from
 ``host_defs.lbl``: ``FOV_BORDER``, the host's ``host_config.BORDER`` worded as
-an angle (the border sentence is omitted for a host with no border); ``IS_SATURN``,
-true when any row of a body table has the ``SYSTEM_NAME`` ``SATURN``, read from
-the table itself; and ``SAMPLING``
+an angle (the border sentence is omitted for a host with no border); ``DENSE_RINGS``,
+the systems in a body table's ``SYSTEM_NAME`` column for which the host defines
+``host_config.DENSE_RINGS``, as they read in a sentence and read from the table
+itself; and ``SAMPLING``
 and ``BODY_SAMPLES``, the sampling a geometry
 table was generated with. The last two are known only to a geometry run, so a
 cumulative label describes the sampling without stating its values.
@@ -131,6 +132,18 @@ each observation's own FOV (``observation.fov``) with that border around it, and
 takes the inventory of bodies in view with the same allowance. Because the
 border is an angle, a summed mode or a wider camera gets proportionally fewer
 pixels of it, and the labels state it as an angle alone.
+
+A host whose planets have rings dense enough to hide or shadow other bodies names
+them in ``host_config.py``, by system. A primary with companions that do the same
+names those too. The engine itself names no planet; both default to none:
+
+.. code-block:: python
+
+   DENSE_RINGS = {'SATURN': 'SATURN_MAIN_RINGS'}
+   COMPANIONS = {'PLUTO': ['CHARON']}
+
+The rings apply to a row when either the observation's primary or the system of
+the row's body is named. The companions apply with the ``P`` masker and shadower.
 
 It may also override these engine defaults, read through the accessors in
 :mod:`metadata_tools.config`:

@@ -53,35 +53,21 @@ def test_planet_masker_ors_in_back(exists_true: None, fake_backplane: Any) -> No
     assert np.asarray(result.vals).sum() == 1
 
 
-def test_ring_masker_only_for_saturn(exists_true: None, fake_backplane: Any) -> None:
-    """The 'R' masker applies the main-ring obscuration for primary SATURN."""
-    fake_backplane.in_back[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
+def test_ring_masker_uses_the_named_rings(exists_true: None, fake_backplane: Any) -> None:
+    """The 'R' masker applies the obscuration of the ring body it is given."""
+    fake_backplane.in_back[('IO', 'XENON_RINGS')] = _one_pixel()
     result = masks.construct_excluded_mask(
-        fake_backplane, 'IO', 'SATURN', ('R', '', ''), ignore_shadows=True)
+        fake_backplane, 'IO', 'XENON', ('R', '', ''), ignore_shadows=True,
+        dense_rings='XENON_RINGS')
     assert np.asarray(result.vals).sum() == 1
 
 
-@pytest.mark.parametrize('primary', ['', None])
-def test_rings_apply_to_a_saturn_target_without_a_primary(exists_true: None,
-                                                          fake_backplane: Any,
-                                                          primary: str | None) -> None:
-    """Outside any mission phase, the target's system still brings in the rings."""
-    fake_backplane.in_back[('MIMAS', 'SATURN_MAIN_RINGS')] = _one_pixel()
-    fake_backplane.inside_shadow[('MIMAS', 'SATURN_MAIN_RINGS')] = _one_pixel()
-    masked = masks.construct_excluded_mask(
-        fake_backplane, 'MIMAS', primary, ('R', '', ''), ignore_shadows=True, system='SATURN')
-    shadowed = masks.construct_excluded_mask(
-        fake_backplane, 'MIMAS', primary, ('', 'R', ''), system='SATURN')
-    assert np.asarray(masked.vals).sum() == 1
-    assert np.asarray(shadowed.vals).sum() == 1
-
-
-def test_rings_do_not_apply_to_another_system(exists_true: None, fake_backplane: Any) -> None:
-    """A target in another system with no primary is not masked by the rings."""
+def test_ring_codes_do_nothing_without_dense_rings(exists_true: None,
+                                                   fake_backplane: Any) -> None:
+    """With no ring body given, the 'R' codes mask nothing, whatever the primary."""
     fake_backplane.in_back[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
     fake_backplane.inside_shadow[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
-    result = masks.construct_excluded_mask(
-        fake_backplane, 'IO', '', ('R', 'R', ''), system='JUPITER')
+    result = masks.construct_excluded_mask(fake_backplane, 'IO', 'SATURN', ('R', 'R', ''))
     assert not np.any(result.vals)
 
 
@@ -128,22 +114,24 @@ def test_shadowers_applied_when_not_ignored(exists_true: None, fake_backplane: A
     assert np.asarray(result.vals).sum() == 1
 
 
-def test_pluto_primary_also_masks_charon(exists_true: None, fake_backplane: Any) -> None:
-    """A PLUTO primary masker also masks pixels behind CHARON."""
+def test_companions_mask_with_the_primary(exists_true: None, fake_backplane: Any) -> None:
+    """A 'P' masker also masks the pixels behind the primary's companions."""
     fake_backplane.in_back[('IO', 'PLUTO')] = _one_pixel()
     charon = np.zeros((4, 4), dtype=bool)
     charon[1, 1] = True
     fake_backplane.in_back[('IO', 'CHARON')] = charon
     result = masks.construct_excluded_mask(
-        fake_backplane, 'IO', 'PLUTO', ('P', '', ''), ignore_shadows=True)
+        fake_backplane, 'IO', 'PLUTO', ('P', '', ''), ignore_shadows=True,
+        companions=['CHARON'])
     assert np.asarray(result.vals).sum() == 2
 
 
-def test_ring_shadower_for_saturn(exists_true: None, fake_backplane: Any) -> None:
-    """The 'R' shadower masks pixels inside the main rings' shadow."""
-    fake_backplane.inside_shadow[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
+def test_ring_shadower_uses_the_named_rings(exists_true: None, fake_backplane: Any) -> None:
+    """The 'R' shadower masks pixels inside the shadow of the ring body it is given."""
+    fake_backplane.inside_shadow[('IO', 'XENON_RINGS')] = _one_pixel()
     result = masks.construct_excluded_mask(
-        fake_backplane, 'IO', 'SATURN', ('', 'R', ''), ignore_shadows=False)
+        fake_backplane, 'IO', 'XENON', ('', 'R', ''), ignore_shadows=False,
+        dense_rings='XENON_RINGS')
     assert np.asarray(result.vals).sum() == 1
 
 
@@ -156,14 +144,15 @@ def test_moon_shadower(exists_true: None, fake_backplane: Any) -> None:
     assert np.asarray(result.vals).sum() == 1
 
 
-def test_pluto_shadower_also_shadows_charon(exists_true: None, fake_backplane: Any) -> None:
-    """A PLUTO shadower also masks pixels inside CHARON's shadow."""
+def test_companions_shadow_with_the_primary(exists_true: None, fake_backplane: Any) -> None:
+    """A 'P' shadower also masks the pixels inside the shadows of the companions."""
     fake_backplane.inside_shadow[('IO', 'PLUTO')] = _one_pixel()
     charon = np.zeros((4, 4), dtype=bool)
     charon[2, 2] = True
     fake_backplane.inside_shadow[('IO', 'CHARON')] = charon
     result = masks.construct_excluded_mask(
-        fake_backplane, 'IO', 'PLUTO', ('', 'P', ''), ignore_shadows=False)
+        fake_backplane, 'IO', 'PLUTO', ('', 'P', ''), ignore_shadows=False,
+        companions=['CHARON'])
     assert np.asarray(result.vals).sum() == 2
 
 
