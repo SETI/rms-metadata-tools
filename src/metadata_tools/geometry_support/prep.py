@@ -76,6 +76,9 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
                     else grids.get(column.margin, default_grid)
                     for column in columns]
 
+    # The system named in the row's prefix also decides whether Saturn's rings apply
+    system = None if target is None else bodies_select.get_system(target)
+
     # Create all the needed pixel masks, one set for each backplane
     excluded_mask_dict: dict[tuple[Any, ...], polymath.Boolean] = {}
     if record.pointing_available and not no_mask:
@@ -92,7 +95,8 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
             excluded_mask_dict[key] = \
                 masks.construct_excluded_mask(
                             column_backplane, mask_target, primary, mask_desc,
-                            blocker=blocker, ignore_shadows=ignore_shadows)
+                            blocker=blocker, ignore_shadows=ignore_shadows,
+                            system=system)
 
     # Initialize the list of columns
     prefix_columns = list(prefixes)  # make a copy
@@ -100,7 +104,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
     # Append the target and system name as needed
     if not no_body:
         if target is not None:
-            append_body_prefix(prefix_columns, bodies_select.get_system(target), name_length)
+            append_body_prefix(prefix_columns, system, name_length)
             append_body_prefix(prefix_columns, target, name_length)
         else:
             append_body_prefix(prefix_columns, primary, name_length)
@@ -157,7 +161,7 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
             if pole_key not in pole_dict:
                 pole_dict[pole_key] = masks.pole_in_view(
                     pole, column_backplane, event_key[1], primary, pole_desc,
-                    blocker=blocker, ignore_shadows=ignore_shadows)
+                    blocker=blocker, ignore_shadows=ignore_shadows, system=system)
 
             if pole is not None and pole_dict[pole_key]:
                 if event_key[0] == 'longitude':

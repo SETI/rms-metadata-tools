@@ -61,6 +61,30 @@ def test_ring_masker_only_for_saturn(exists_true: None, fake_backplane: Any) -> 
     assert np.asarray(result.vals).sum() == 1
 
 
+@pytest.mark.parametrize('primary', ['', None])
+def test_rings_apply_to_a_saturn_target_without_a_primary(exists_true: None,
+                                                          fake_backplane: Any,
+                                                          primary: str | None) -> None:
+    """Outside any mission phase, the target's system still brings in the rings."""
+    fake_backplane.in_back[('MIMAS', 'SATURN_MAIN_RINGS')] = _one_pixel()
+    fake_backplane.inside_shadow[('MIMAS', 'SATURN_MAIN_RINGS')] = _one_pixel()
+    masked = masks.construct_excluded_mask(
+        fake_backplane, 'MIMAS', primary, ('R', '', ''), ignore_shadows=True, system='SATURN')
+    shadowed = masks.construct_excluded_mask(
+        fake_backplane, 'MIMAS', primary, ('', 'R', ''), system='SATURN')
+    assert np.asarray(masked.vals).sum() == 1
+    assert np.asarray(shadowed.vals).sum() == 1
+
+
+def test_rings_do_not_apply_to_another_system(exists_true: None, fake_backplane: Any) -> None:
+    """A target in another system with no primary is not masked by the rings."""
+    fake_backplane.in_back[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
+    fake_backplane.inside_shadow[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
+    result = masks.construct_excluded_mask(
+        fake_backplane, 'IO', '', ('R', 'R', ''), system='JUPITER')
+    assert not np.any(result.vals)
+
+
 def test_moon_blocker_masker(exists_true: None, fake_backplane: Any) -> None:
     """The 'M' masker applies the blocker moon's obscuration."""
     fake_backplane.in_back[('IO', 'EUROPA')] = _one_pixel()
