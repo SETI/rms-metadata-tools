@@ -115,7 +115,8 @@ only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
   in `config.py` (`get_volume_id()`, `get_exclude()`, `get_index_glob()`,
   `get_target_name()`, `cleanup()`, `get_border()`, `get_extra_children()`, `get_meshgrids()`), which supply
   the defaults.
-- `host_init.py` — initializes the host's `oops` host module (side-effect import).
+- `host_init.py` — initializes the mission's `oops` host package, e.g. `host_galileo.oops` from
+  `rms-host-galileo` (side-effect import).
 - `templates/` — the host's PDS3 label templates: `host_defs.lbl` (mission keywords plus
   the literal `$ONCE` values the shared templates take from the host: instrument name,
   the noun for one data product (`product`/`products`, e.g. image),

@@ -32,8 +32,8 @@ The Galileo Solid-State Imaging (SSI) host.
      - ``C0*.LBL``
    * - Cumulative directory
      - ``GO_0xxx/GO_0999`` (excluded from the per-volume stages)
-   * - ``oops`` host module
-     - ``hosts.galileo.ssi`` (class ``SSI``)
+   * - ``oops`` host package
+     - ``rms-host-galileo``: ``host_galileo.oops`` (class ``GalileoSSI``)
 
 The host's mission table maps spacecraft-clock ranges to the primary body and
 the bodies of interest for the Venus, Earth, SL9, and Jupiter phases of the
@@ -65,8 +65,8 @@ share its tables.
    * - Cumulative directories
      - ``COISS_1xxx/COISS_1999`` and ``COISS_2xxx/COISS_2999`` (excluded from
        the per-volume stages)
-   * - ``oops`` host module
-     - ``hosts.cassini.iss`` (class ``ISS``)
+   * - ``oops`` host package
+     - ``rms-host-cassini``: ``host_cassini.oops`` (class ``CassiniISS``)
 
 The host's mission table covers the Earth flyby, the Jupiter flyby, and the
 Saturn approach and tour. The index on each Cassini ISS volume already holds

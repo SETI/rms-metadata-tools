@@ -51,7 +51,7 @@ def test_border_is_the_pointing_uncertainty_angle() -> None:
 #===============================================================================
 @pytest.fixture
 def geometry_config(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
-    """Import the host's geometry_config with a stand-in for the oops ISS host.
+    """Import the host's geometry_config with a stand-in for the Cassini ISS host.
 
     The real host furnishes SPICE kernels when it is initialized; the stand-in
     records the index files it is asked to read in its ``calls`` attribute.
@@ -60,7 +60,7 @@ def geometry_config(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
         calls: ClassVar[list[Any]] = []
 
         @staticmethod
-        def _initialize() -> None:
+        def initialize() -> None:
             pass
 
         @staticmethod
@@ -68,8 +68,8 @@ def geometry_config(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
             FakeISS.calls.append(filename)
             return ['observation']
 
-    monkeypatch.setitem(sys.modules, 'hosts.cassini.iss',
-                        types.SimpleNamespace(ISS=FakeISS))
+    monkeypatch.setitem(sys.modules, 'host_cassini.oops',
+                        types.SimpleNamespace(CassiniISS=FakeISS))
     for name in ('metadata_tools.hosts.COISS_xxxx.geometry_config',
                  'metadata_tools.hosts.COISS_xxxx.host_init'):
         monkeypatch.delitem(sys.modules, name, raising=False)
@@ -115,7 +115,7 @@ def test_from_index_reads_only_the_index(geometry_config: Any) -> None:
     """Observations come from the volume index; the supplemental index is unused."""
     result = geometry_config.from_index('COISS_2001_index.lbl', 'unused.lbl')
     assert result == ['observation']
-    assert geometry_config.ISS.calls == ['COISS_2001_index.lbl']
+    assert geometry_config.CassiniISS.calls == ['COISS_2001_index.lbl']
 
 
 #===============================================================================

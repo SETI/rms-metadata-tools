@@ -27,6 +27,8 @@ The package targets **Python 3.11+**. Its principal dependencies are:
 
 - ``rms-oops`` — the geometry/SPICE engine that computes backplanes; the
   geometry stage is built on it.
+- ``rms-host-galileo`` and ``rms-host-cassini`` — the mission hosts, plug-ins to
+  ``oops.Host`` that read each mission's files and indexes into observations.
 - ``rms-filecache`` — the ``FCPath`` path abstraction used for every file
   access, so local and remote (``gs://``, ``s3://``) storage are interchangeable.
 - ``rms-pdstemplate`` — renders PDS3 labels from templates.

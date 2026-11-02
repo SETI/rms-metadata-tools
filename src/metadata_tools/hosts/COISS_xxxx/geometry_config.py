@@ -5,7 +5,7 @@ tables for the COISS_1xxx and COISS_2xxx collections.
 """
 from typing import Any
 
-from hosts.cassini.iss import ISS
+from host_cassini.oops import CassiniISS
 
 import metadata_tools.hosts.COISS_xxxx.host_init  # noqa: F401  (side-effect import)
 
@@ -78,5 +78,5 @@ def from_index(index_filename: Any, supplemental_index_filename: Any = None) -> 
     Returns:
         The observations of the index, in row order.
     """
-    observations: list[Any] = ISS.from_index(index_filename)
+    observations: list[Any] = CassiniISS.from_index(index_filename)
     return observations
