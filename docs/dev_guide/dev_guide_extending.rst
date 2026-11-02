@@ -106,13 +106,15 @@ body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), and the
 
 .. code-block:: python
 
-   import oops.hosts.<mission>.<instrument> as inst
+   from host_<mission>.oops import <Instrument>
 
    SC = -77                       # NAIF spacecraft ID
    selection = 'S'
    MISSION_TABLE = [ ... ]        # SCLK ranges -> primary, secondaries, ...
    EXCEPTIONS = [ ... ]           # regexes/predicates excluded from the SCLK test
-   from_index = inst.from_index
+
+   def from_index(index_filename, supplemental_index_filename=None):
+       return <Instrument>.from_index(index_filename)
 
 The border to allow around a field of view is not set here but in
 ``host_config.py``, since the labels state it too. It reflects the uncertainty
@@ -153,13 +155,15 @@ templates declare for it (they must agree); the engine pads the file
 specification to that width in every table, and the inventory label reports the
 widths found in the table.
 
-``host_init.py`` initializes the ``oops`` host module so the body registry is
-populated, and is imported only for that side effect:
+``host_init.py`` initializes the mission's ``oops`` host package
+(``rms-host-<mission>``) so the body registry is populated, and is imported only
+for that side effect:
 
 .. code-block:: python
 
-   import oops.hosts.<mission>.<instrument> as inst
-   inst.initialize()
+   from host_<mission>.oops import <Instrument>
+
+   <Instrument>.initialize()
 
 Finally, add tests under ``tests/hosts/<HOST>/`` (marked ``requires_archive``).
 

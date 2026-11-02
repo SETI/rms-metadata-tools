@@ -59,10 +59,11 @@ def _event_tai(label_path: str | Path | FCPath,
 def _start_tai_from_sclk(label_dict: dict[str, Any]) -> float:
     """Derive the start of the exposure from the spacecraft clock count in a label.
 
-    The oops Galileo SSI host does the conversion, including the shutter delay and
-    the one-frame offset of an EXTENDED exposure. The host is imported here, on first
-    use, so ordinary index runs stay free of oops; it furnishes only the leapseconds
-    and Galileo SCLK kernels.
+    The Galileo SSI host does the conversion, including the shutter delay and the
+    one-frame offset of an EXTENDED exposure. The conversion is private to the host,
+    which offers no public equivalent, but the alternative is to duplicate its clock
+    model here. The host is imported here, on first use, so ordinary index runs stay
+    free of oops; it furnishes only the leapseconds and Galileo SCLK kernels.
 
     Parameters:
         label_dict: Dictionary containing the PDS label fields. It must give
@@ -71,9 +72,9 @@ def _start_tai_from_sclk(label_dict: dict[str, Any]) -> float:
     Returns:
         The start of the exposure in seconds TAI.
     """
-    from hosts.galileo.ssi import SSI
+    from host_galileo.oops import GalileoSSI
 
-    return float(julian.tai_from_tdb(SSI._tstart_from_sclk(label_dict)))
+    return float(julian.tai_from_tdb(GalileoSSI._tstart_from_sclk(label_dict)))
 
 #=========================================================================================
 def _spacecraft_clock_start_count_from_label(label_dict: dict[str, Any]) -> str:

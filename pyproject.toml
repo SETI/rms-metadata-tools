@@ -10,14 +10,18 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=2.3.0",
-  "rms-oops>=0.2.0",
+  # The oops.Host API and the host packages are not released yet; see the install step
+  # in .github/workflows/run-tests.yml. Set real minimum versions once they are on PyPI.
+  "rms-oops>=0.3.1.dev0",
+  "rms-host-galileo",
+  "rms-host-cassini",
   "rms-polymath>=2.0.0",
   "rms-filecache>=3.1.0",
   "rms-pdslogger>=3.0.0",
   "rms-julian>=3.0.1",
-  "rms-pdsparser>=2.0.0",
+  "rms-pdsparser>=2.4.0",
   "rms-pdstable>=1.0.3",
-  "rms-vicar>=1.2.1",
+  "rms-vicar>=1.4.0",
   "rms-pdstemplate>=2.4.0",
   "rms-textkernel>=1.1.1",
   "fortranformat>=2.0.3",
@@ -175,6 +179,8 @@ fail_under = 90
 [tool.mypy]
 strict = true
 disallow_subclassing_any = false
+# The host packages ship a py.typed marker, but their signatures are not annotated.
+untyped_calls_exclude = ["host_galileo", "host_cassini"]
 
 [[tool.mypy.overrides]]
 module = "metadata_tools._version"
@@ -184,7 +190,6 @@ ignore_missing_imports = true
 # Third-party runtime deps that ship no type stubs or py.typed marker.
 module = [
     "oops.*",
-    "hosts.*",
     "polymath.*",
     "cspyce.*",
     "fortranformat.*",
