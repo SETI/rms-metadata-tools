@@ -23,4 +23,4 @@ BORDER: float = 1.5e-4
 # engine applies them in the masks of the geometry columns, and the body labels
 # say so.
 ################################################################################
-DENSE_RINGS: dict[str, str] = {'SATURN': 'SATURN_MAIN_RINGS'}
+OPAQUE_RINGS: dict[str, str] = {'SATURN': 'SATURN_MAIN_RINGS'}

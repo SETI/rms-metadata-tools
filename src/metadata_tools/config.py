@@ -178,14 +178,14 @@ def get_border() -> float:
     return float(getattr(get_host_config(), 'BORDER', 0.))
 
 #===============================================================================
-def get_dense_rings() -> dict[str, str]:
-    """The ring bodies dense enough to obscure and shadow the bodies of their systems.
+def get_opaque_rings() -> dict[str, str]:
+    """The ring bodies treated as opaque, which obscure and shadow the bodies of their systems.
 
     Returns:
-        The host's ``host_config.DENSE_RINGS``, keyed by system name, if it defines
+        The host's ``host_config.OPAQUE_RINGS``, keyed by system name, if it defines
         one; otherwise an empty dictionary, for which rings never mask a body.
     """
-    return dict(getattr(get_host_config(), 'DENSE_RINGS', {}))
+    return dict(getattr(get_host_config(), 'OPAQUE_RINGS', {}))
 
 #===============================================================================
 def get_companions() -> dict[str, list[str]]:

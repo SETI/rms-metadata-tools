@@ -37,7 +37,7 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
                             mask_desc: tuple[str, str, str], *,
                             blocker: str | None = None,
                             ignore_shadows: bool = False,
-                            dense_rings: str | None = None,
+                            opaque_rings: str | None = None,
                             companions: Sequence[str] = ()) -> polymath.Boolean:
     """Return a mask of excluded pixels for the given target.
 
@@ -64,7 +64,7 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
             appear in the mask_desc.
         ignore_shadows: True to ignore any shadower or face constraints; default
             is False.
-        dense_rings: Optionally, the name of the ring body to use for any "R" codes
+        opaque_rings: Optionally, the name of the ring body to use for any "R" codes
             that appear in the mask_desc. Without one, those codes do nothing.
         companions: The names of any bodies that obscure and shadow the target
             wherever the primary does, for any "P" codes in the mask_desc.
@@ -89,8 +89,8 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
     excluded = np.zeros(backplane.meshgrid.shape, dtype='bool')
 
     # Handle maskers
-    if "R" in masker and dense_rings:
-        excluded |= backplane.where_in_back(target, dense_rings).vals
+    if "R" in masker and opaque_rings:
+        excluded |= backplane.where_in_back(target, opaque_rings).vals
 
     if "P" in masker:
         excluded |= backplane.where_in_back(target, primary).vals
@@ -103,8 +103,8 @@ def construct_excluded_mask(backplane: Any, target: str | tuple[()], primary: st
     if not ignore_shadows:
 
         # Handle shadowers
-        if "R" in shadower and dense_rings:
-            excluded |= backplane.where_inside_shadow(target, dense_rings).vals
+        if "R" in shadower and opaque_rings:
+            excluded |= backplane.where_inside_shadow(target, opaque_rings).vals
 
         if "P" in shadower:
             excluded |= backplane.where_inside_shadow(target, primary).vals
@@ -198,7 +198,7 @@ def pole_in_view(pole: Pole | None, backplane: Any, target: str | tuple[()],
                  primary: str | None, mask_desc: tuple[str, str, str], *,
                  blocker: str | None = None,
                  ignore_shadows: bool = False,
-                 dense_rings: str | None = None,
+                 opaque_rings: str | None = None,
                  companions: Sequence[str] = ()) -> bool:
     """Determine whether a pole of the target is visible and outside a mask.
 
@@ -216,7 +216,7 @@ def pole_in_view(pole: Pole | None, backplane: Any, target: str | tuple[()],
             appear in the mask_desc.
         ignore_shadows: True to ignore any shadower or face constraints; default
             is False.
-        dense_rings: Optionally, the name of the ring body, as for
+        opaque_rings: Optionally, the name of the ring body, as for
             construct_excluded_mask.
         companions: The names of the primary's companions, as for
             construct_excluded_mask.
@@ -235,5 +235,5 @@ def pole_in_view(pole: Pole | None, backplane: Any, target: str | tuple[()],
 
     excluded = construct_excluded_mask(pole.backplane, target, primary, mask_desc,
                                        blocker=blocker, ignore_shadows=ignore_shadows,
-                                       dense_rings=dense_rings, companions=companions)
+                                       opaque_rings=opaque_rings, companions=companions)
     return not np.any(excluded.vals)

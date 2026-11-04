@@ -223,12 +223,12 @@ def test_get_border_defaults_to_no_border(monkeypatch: pytest.MonkeyPatch) -> No
     assert cfg.get_border() == 2.5e-4
 
 
-def test_get_dense_rings_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
-    """With no host DENSE_RINGS, no rings mask a body."""
+def test_get_opaque_rings_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host OPAQUE_RINGS, no rings mask a body."""
     host, _ = _bare_host(monkeypatch)
-    assert cfg.get_dense_rings() == {}
-    host.DENSE_RINGS = {'XENON': 'XENON_RINGS'}  # type: ignore[attr-defined]
-    assert cfg.get_dense_rings() == {'XENON': 'XENON_RINGS'}
+    assert cfg.get_opaque_rings() == {}
+    host.OPAQUE_RINGS = {'XENON': 'XENON_RINGS'}  # type: ignore[attr-defined]
+    assert cfg.get_opaque_rings() == {'XENON': 'XENON_RINGS'}
 
 
 def test_get_companions_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:

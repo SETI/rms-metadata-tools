@@ -1,11 +1,11 @@
       The body's shape has been modeled as an ellipsoid. Surface intercept
       points that are obscured by the planet or a targeted body are ignored.
-$IF(DENSE_RINGS and ring_shadow)
-      For a body in the $DENSE_RINGS$ system, so are points that are obscured by
-      the dense rings or that lie in their shadow.
-$ELSE_IF(DENSE_RINGS)
-      For a body in the $DENSE_RINGS$ system, so are points that are obscured by
-      the dense rings.
+$IF(OPAQUE_RINGS and ring_shadow)
+      For a body in the $OPAQUE_RINGS$ system, so are points that are obscured by
+      the opaque rings or that lie in their shadow.
+$ELSE_IF(OPAQUE_RINGS)
+      For a body in the $OPAQUE_RINGS$ system, so are points that are obscured by
+      the opaque rings.
 $END_IF
 $IF(is_visual and not night_override)
       Points on the night side of the body are also ignored."

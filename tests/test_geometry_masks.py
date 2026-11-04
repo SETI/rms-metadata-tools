@@ -58,11 +58,11 @@ def test_ring_masker_uses_the_named_rings(exists_true: None, fake_backplane: Any
     fake_backplane.in_back[('IO', 'XENON_RINGS')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'XENON', ('R', '', ''), ignore_shadows=True,
-        dense_rings='XENON_RINGS')
+        opaque_rings='XENON_RINGS')
     assert np.asarray(result.vals).sum() == 1
 
 
-def test_ring_codes_do_nothing_without_dense_rings(exists_true: None,
+def test_ring_codes_do_nothing_without_opaque_rings(exists_true: None,
                                                    fake_backplane: Any) -> None:
     """With no ring body given, the 'R' codes mask nothing, whatever the primary."""
     fake_backplane.in_back[('IO', 'SATURN_MAIN_RINGS')] = _one_pixel()
@@ -131,7 +131,7 @@ def test_ring_shadower_uses_the_named_rings(exists_true: None, fake_backplane: A
     fake_backplane.inside_shadow[('IO', 'XENON_RINGS')] = _one_pixel()
     result = masks.construct_excluded_mask(
         fake_backplane, 'IO', 'XENON', ('', 'R', ''), ignore_shadows=False,
-        dense_rings='XENON_RINGS')
+        opaque_rings='XENON_RINGS')
     assert np.asarray(result.vals).sum() == 1
 
 

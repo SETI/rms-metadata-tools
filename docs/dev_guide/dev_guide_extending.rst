@@ -44,9 +44,9 @@ host:
 
 The templates take four more values from the engine, not from
 ``host_defs.lbl``: ``FOV_BORDER``, the host's ``host_config.BORDER`` worded as
-an angle (the border sentence is omitted for a host with no border); ``DENSE_RINGS``,
+an angle (the border sentence is omitted for a host with no border); ``OPAQUE_RINGS``,
 the systems in a body table's ``SYSTEM_NAME`` column for which the host defines
-``host_config.DENSE_RINGS``, as they read in a sentence and read from the table
+``host_config.OPAQUE_RINGS``, as they read in a sentence and read from the table
 itself; and ``SAMPLING``
 and ``BODY_SAMPLES``, the sampling a geometry
 table was generated with. The last two are known only to a geometry run, so a
@@ -133,13 +133,13 @@ takes the inventory of bodies in view with the same allowance. Because the
 border is an angle, a summed mode or a wider camera gets proportionally fewer
 pixels of it, and the labels state it as an angle alone.
 
-A host whose planets have rings dense enough to hide or shadow other bodies names
-them in ``host_config.py``, by system. A primary with companions that do the same
+A host whose planets have rings to be treated as opaque, hiding and shadowing other
+bodies, names them in ``host_config.py``, by system. A primary with companions that do the same
 names those too. The engine itself names no planet; both default to none:
 
 .. code-block:: python
 
-   DENSE_RINGS = {'SATURN': 'SATURN_MAIN_RINGS'}
+   OPAQUE_RINGS = {'SATURN': 'SATURN_MAIN_RINGS'}
    COMPANIONS = {'PLUTO': ['CHARON']}
 
 The rings apply to a row when either the observation's primary or the system of
