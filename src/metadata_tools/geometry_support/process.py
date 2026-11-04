@@ -138,6 +138,7 @@ def process_tables(template_name: str,
     vol_glob = util.get_volume_glob(output_tree.name)
 
     # Walk the volume tree, making indexes for each found volume
+    found: set[str] = set()
     for root, dirs, _files in output_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
@@ -155,6 +156,7 @@ def process_tables(template_name: str,
         # Proceed only if this root is a volume
         if fnmatch.filter([vol], vol_glob):
             if not volumes or vol in volumes:
+                found.add(vol)
 
                 # Set up input and output directories
                 indir = root
@@ -179,3 +181,5 @@ def process_tables(template_name: str,
                               first=args.first, sampling=args.sampling,
                               body_samples=body_samples)
                 suite.create(labels_only=labels_only, pattern=args.pattern)
+
+    util.require_volumes(volumes, found, output_tree)

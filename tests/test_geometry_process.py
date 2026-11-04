@@ -288,3 +288,48 @@ def test_process_tables_volumes_filter(
                         args=_args(tree),  # type: ignore[arg-type]
                         volumes=['GO_0001'])
     assert built == ['GO_0001']
+
+
+def test_process_tables_rejects_a_volume_not_in_the_tree(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A volume requested with no directory in the output tree is an error.
+
+    In a cloud bucket an empty volume directory does not exist, and the worker
+    would otherwise report success having written nothing.
+    """
+    tree = _tree(tmp_path)
+    built: list[str] = []
+
+    class FakeSuite:
+        def __init__(self, indir: str, *a: Any, **k: Any) -> None:
+            built.append(FCPath(indir).name)
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    with pytest.raises(FileNotFoundError, match=r'^no directory for GO_0003 in '):
+        proc.process_tables('GO_0xxx_supplemental_index',
+                            args=_args(tree),  # type: ignore[arg-type]
+                            volumes=['GO_0001', 'GO_0003'])
+    assert built == ['GO_0001']
+
+
+def test_process_tables_accepts_a_requested_volume_that_is_excluded(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A volume found but excluded is skipped, not reported missing."""
+    tree = _tree(tmp_path)
+    built: list[str] = []
+
+    class FakeSuite:
+        def __init__(self, indir: str, *a: Any, **k: Any) -> None:
+            built.append(FCPath(indir).name)
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    proc.process_tables('GO_0xxx_supplemental_index',
+                        args=_args(tree),  # type: ignore[arg-type]
+                        volumes=['GO_0001', 'GO_0002'], exclude=['GO_0002'])
+    assert built == ['GO_0001']

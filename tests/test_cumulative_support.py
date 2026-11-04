@@ -68,6 +68,30 @@ def test_cat_rows_excludes_volume(
     assert written['content'] == ['x']
 
 
+def test_cat_rows_rejects_a_volume_not_in_the_tree(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
+    """A volume requested with no directory in the tree is an error, and nothing is written.
+
+    An excluded volume that is present is not reported missing.
+    """
+    root = tmp_path / 'GO_0xxx'
+    for vol in ('GO_0001', 'GO_0002'):
+        vdir = root / vol
+        vdir.mkdir(parents=True)
+        (vdir / f'{vol}_sky_summary.tab').write_text('x\r\n', encoding='utf-8')
+    cumulative_dir = root / 'GO_0999'
+    cumulative_dir.mkdir()
+    monkeypatch.setattr(hconf, 'get_volume_id', lambda p: FCPath(p).name)
+    written: list[Any] = []
+    monkeypatch.setattr(util, 'write_txt_file', lambda *a: written.append(a))
+    monkeypatch.setattr(lab, 'create', lambda *a, **k: None)
+    with pytest.raises(FileNotFoundError, match=r'^no directory for GO_0003 in '):
+        cum._cat_rows(FCPath(root), FCPath(cumulative_dir), FCPath('/tmpl.lbl'),
+                      'GO_0[0-9][0-9][0-9]', geom.SkyTable(level='summary'),
+                      volumes=['GO_0001', 'GO_0002', 'GO_0003'], exclude=['GO_0002'])
+    assert written == []
+
+
 def test_cat_rows_inventory_uses_csv(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path, silent_logger: None) -> None:
     """The inventory table is written with a .csv suffix."""

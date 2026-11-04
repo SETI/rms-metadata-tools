@@ -77,5 +77,6 @@ Since there is no index stage, nothing creates the volume directories of the
 output tree, as the index stage does for other hosts. Each volume to process
 needs a directory there before the geometry stage runs; on Google Cloud Storage,
 where a directory exists only through the files in it, it must hold at least one
-file. ``cloud/COISS_xxxx/`` has GCP configs for the geometry and cumulative
-stages only.
+file, such as a copy of the volume's index. A volume named by ``--volumes`` that
+has no directory there is an error. ``cloud/COISS_xxxx/`` has GCP configs for
+the geometry and cumulative stages only.
