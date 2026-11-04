@@ -128,7 +128,7 @@ def _render(tmp_path: Path, kind: str, fields: dict[str, Any]) -> str:
         preprocess=[strip_comments, expand_format_references, merge_column_definitions],
         includes=[FCPath(host_dir), defs.GLOBAL_TEMPLATE_PATH])
     defaults = {'LABEL_VALUE': lambda name: 'FIXED_LENGTH', 'FOV_BORDER': None,
-                'SAMPLING': None, 'BODY_SAMPLES': None, 'DENSE_RINGS': ''}
+                'SAMPLING': None, 'BODY_SAMPLES': None, 'OPAQUE_RINGS': ''}
     label = template.generate(defaults | fields,
                               label_path=table.with_suffix('.lbl').as_posix())
     assert template.error_count == 0
@@ -161,60 +161,60 @@ def test_body_label_without_body_grids_warns_of_small_bodies(tmp_path: Path) -> 
     ('row\r\n', ''),
     ('', ''),
 ])
-def test_create_reads_dense_rings_from_the_system_column(monkeypatch: pytest.MonkeyPatch,
+def test_create_reads_opaque_rings_from_the_system_column(monkeypatch: pytest.MonkeyPatch,
                                                          tmp_path: Path, rows: str,
                                                          systems: str) -> None:
     """A body label names the systems the host gives rings, if its table has them."""
     captured = _capture_template(monkeypatch)
-    monkeypatch.setattr(get_host_config(), 'DENSE_RINGS',
+    monkeypatch.setattr(get_host_config(), 'OPAQUE_RINGS',
                         {'XENON': 'XENON_RINGS', 'KRYPTON': 'KRYPTON_RINGS'}, raising=False)
     table = tmp_path / 'X_0001_body_summary.tab'
     table.write_text(rows, encoding='utf-8')
     lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
                table_type='BODY_SUMMARY', fields={'SAMPLING': 8})
-    assert captured['fields']['DENSE_RINGS'] == systems
+    assert captured['fields']['OPAQUE_RINGS'] == systems
 
 
 def test_create_with_no_host_rings_names_no_system(monkeypatch: pytest.MonkeyPatch,
                                                    tmp_path: Path) -> None:
-    """A host that defines no dense rings gets no ring wording, whatever its table says."""
+    """A host that defines no opaque rings gets no ring wording, whatever its table says."""
     captured = _capture_template(monkeypatch)
     table = tmp_path / 'X_0001_body_summary.tab'
     table.write_text('"X_0001","a.LBL","XENON       ","XENON       ",1.0\r\n',
                      encoding='utf-8')
     lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
                table_type='body_summary')
-    assert captured['fields']['DENSE_RINGS'] == ''
+    assert captured['fields']['OPAQUE_RINGS'] == ''
 
 
 def test_create_does_not_read_a_system_column_from_other_tables(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """Only the body table's label describes the dense rings."""
+    """Only the body table's label describes the opaque rings."""
     captured = _capture_template(monkeypatch)
-    monkeypatch.setattr(get_host_config(), 'DENSE_RINGS', {'XENON': 'XENON_RINGS'},
+    monkeypatch.setattr(get_host_config(), 'OPAQUE_RINGS', {'XENON': 'XENON_RINGS'},
                         raising=False)
     table = tmp_path / 'X_0001_ring_summary.tab'
     table.write_text('"X_0001","a.LBL","XENON       ",1.0\r\n', encoding='utf-8')
     lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
                table_type='ring_summary')
-    assert 'DENSE_RINGS' not in captured['fields']
+    assert 'OPAQUE_RINGS' not in captured['fields']
 
 
-def test_body_label_names_the_systems_with_dense_rings(tmp_path: Path) -> None:
+def test_body_label_names_the_systems_with_opaque_rings(tmp_path: Path) -> None:
     """The ring exclusions are worded per body and name the host's systems."""
-    text = _render(tmp_path, 'body', {'DENSE_RINGS': 'Xenon'})
-    assert 'Regions of a body in the Xenon system that are obscured by the dense rings' in text
-    assert 'are regions in the shadow of the dense rings.' in text
+    text = _render(tmp_path, 'body', {'OPAQUE_RINGS': 'Xenon'})
+    assert 'Regions of a body in the Xenon system that are obscured by the opaque rings' in text
+    assert 'are regions in the shadow of the opaque rings.' in text
     assert ('For a body in the Xenon system, so are points that are obscured by the '
-            'dense rings or that lie in their shadow.') in text
+            'opaque rings or that lie in their shadow.') in text
     assert ('For a body in the Xenon system, so are points that are obscured by the '
-            'dense rings.') in text
+            'opaque rings.') in text
 
 
-def test_body_label_without_dense_rings_says_nothing_of_them(tmp_path: Path) -> None:
-    """A body label with no dense rings to state still describes the body's shape."""
-    text = _render(tmp_path, 'body', {'DENSE_RINGS': ''})
-    assert 'dense rings' not in text
+def test_body_label_without_opaque_rings_says_nothing_of_them(tmp_path: Path) -> None:
+    """A body label with no opaque rings to state still describes the body's shape."""
+    text = _render(tmp_path, 'body', {'OPAQUE_RINGS': ''})
+    assert 'opaque rings' not in text
     assert 'Saturn' not in text
     assert "The body's shape has been modeled as an ellipsoid." in text
 
