@@ -63,6 +63,7 @@ def _cat_rows(volume_tree: FCPath,
     logger.info('Building Cumulative %s table', table_type)
     content: list[str] = []
     cumulative_file = FCPath('')
+    found: set[str] = set()
     for root, dirs, _files in volume_tree.walk(top_down=True):
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
@@ -79,6 +80,7 @@ def _cat_rows(volume_tree: FCPath,
         # Determine notional volume
         parts = root.parts
         vol = parts[-1]
+        found.add(vol)
 
         # Do not continue if this volume is excluded
         skip = False
@@ -108,6 +110,8 @@ def _cat_rows(volume_tree: FCPath,
                     cumulative_file = \
                         FCPath(table_file.as_posix().replace(volume_id, cumulative_id))
                     content += lines
+
+    util.require_volumes(volumes, found, volume_tree)
 
     # Write table and label
     if content:

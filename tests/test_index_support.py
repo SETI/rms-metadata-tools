@@ -328,6 +328,36 @@ def test_create_index_logs_and_skips_volume_without_primary(
     assert warnings == ['Skipping GO_0001: No primary index for GO_0001']
 
 
+def test_create_index_rejects_a_volume_not_in_the_tree(
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_volume_tree: Callable[..., FCPath]) -> None:
+    """A volume requested with no directory in the volume tree is an error."""
+    tree = tmp_volume_tree(files={'_index.tab': ['x']})
+    processed: list[str] = []
+
+    class FakeIndexTable:
+        def __init__(self, *a: Any, **kwargs: Any) -> None:
+            processed.append(kwargs['volume_id'])
+            self.unused: set[str] = set()
+
+        def create(self, labels_only: bool = False, pattern: Any = None) -> None:
+            pass
+
+    closes: list[bool] = []
+    monkeypatch.setattr(idx.process, 'IndexTable', FakeIndexTable)
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            info=lambda *a, **k: None,
+                            warning=lambda *a, **k: None,
+                            close=lambda **k: closes.append(True)))
+    with pytest.raises(FileNotFoundError, match=r'^no directory for GO_0003 in '):
+        idx.process._create_index(tree, tree, FCPath('/tmpl.lbl'),
+                                  volumes=['GO_0002', 'GO_0003'])
+    assert processed == ['GO_0002']
+    # The log is closed before the error is raised.
+    assert closes == [True]
+
+
 
 
 #===============================================================================

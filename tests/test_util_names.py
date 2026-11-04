@@ -150,6 +150,24 @@ def test_get_cumulative_id_fills_the_x_digits_with_nines() -> None:
 
 
 #===============================================================================
+# require_volumes
+#===============================================================================
+@pytest.mark.parametrize('volumes', [None, [], ['GO_0001'], ['GO_0001', 'GO_0002']])
+def test_require_volumes_accepts_volumes_found(volumes: list[str] | None) -> None:
+    """No volume requested, or only volumes found, is no error."""
+    util.require_volumes(volumes, {'GO_0001', 'GO_0002', 'GO_0999'}, FCPath('/m/GO_0xxx'))
+
+
+def test_require_volumes_names_each_missing_volume() -> None:
+    """A volume requested but not found is an error naming it and the tree."""
+    with pytest.raises(FileNotFoundError,
+                       match=r'^no directory for GO_0002, GO_0003 in gs://b/GO_0xxx; '
+                             r'each volume to process needs one there'):
+        util.require_volumes(['GO_0003', 'GO_0001', 'GO_0002'], ['GO_0001'],
+                             FCPath('gs://b/GO_0xxx'))
+
+
+#===============================================================================
 # get_volume_id
 #===============================================================================
 def test_get_volume_id_is_the_directory_under_the_collection() -> None:

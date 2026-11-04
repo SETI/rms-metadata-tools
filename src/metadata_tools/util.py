@@ -6,6 +6,7 @@ import fnmatch
 import itertools
 import math
 import re
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, cast
 
@@ -262,6 +263,30 @@ def get_cumulative_id(col: str) -> str:
     """
     parts = col.rsplit('_', 1)
     return parts[0] + '_' + parts[1].replace('x', '9')
+
+#===============================================================================
+def require_volumes(volumes: Iterable[str] | None, found: Iterable[str],
+                    tree: FCPath) -> None:
+    """Raise unless every volume requested was found in a tree.
+
+    A volume is found by walking a tree of directories, and in a cloud bucket a
+    directory exists only while it holds a file; a volume missing there would
+    otherwise be skipped without a word.
+
+    Parameters:
+        volumes: The volume IDs requested; None or empty to request none in
+            particular.
+        found: The volume IDs found in the tree.
+        tree: The tree walked, for the message.
+
+    Raises:
+        FileNotFoundError: If a requested volume was not found.
+    """
+    missing = sorted(set(volumes or ()) - set(found))
+    if missing:
+        raise FileNotFoundError(f'no directory for {", ".join(missing)} in '
+                                f'{tree.as_posix()}; each volume to process needs '
+                                'one there, holding at least one file')
 
 #===============================================================================
 _COLLECTION_RE = re.compile(r'[A-Za-z][A-Za-z0-9]*_[0-9]*x+')

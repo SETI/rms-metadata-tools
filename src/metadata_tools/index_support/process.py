@@ -83,6 +83,7 @@ def _create_index(volume_tree: FCPath,
     unused: set[str] | None = None
 
     # Walk the input tree, making indexes for each found volume
+    found: set[str] = set()
     for root, dirs, _files in volume_tree.walk():
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
@@ -101,6 +102,7 @@ def _create_index(volume_tree: FCPath,
         if fnmatch.filter([vol], vol_glob):
             # volumes=None means all volumes; an explicit list (even empty) is a filter.
             if volumes is None or vol in volumes:
+                found.add(vol)
 
                 # Determine input and output directories
                 indir = root
@@ -122,6 +124,8 @@ def _create_index(volume_tree: FCPath,
     if unused:
         logger.warning('Unused columns: %s', unused)
     logger.close(force=True)
+
+    util.require_volumes(volumes, found, volume_tree)
 
 #===============================================================================
 def process_index(template_name: str,
