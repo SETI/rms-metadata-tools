@@ -2,6 +2,9 @@
 # tests/test_util_math.py: Pure numeric helpers in util.py.
 ################################################################################
 """Tests for the pure numeric helpers in util.py."""
+from typing import Any
+
+import julian
 import numpy as np
 import pytest
 
@@ -110,11 +113,87 @@ def test_convert_mission_table_drops_label_and_converts_ticks(
     monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: int(sclk))
     # Source row: (phase_label, (sclk0, sclk1), exceptions, primary,
     #              secondaries, selections, additions).
-    table = [('PHASE_LABEL', ('100', '200'), ['BAD_OBS'], 'JUPITER',
+    table: list[Any] = [('PHASE_LABEL', ('100', '200'), ['BAD_OBS'], 'JUPITER',
               ['IO'], ['EUROPA'], ['ADRASTEA'])]
     converted = util.convert_mission_table(table, -77)
-    assert converted == [((100, 200), ['BAD_OBS'], 'JUPITER',
+    assert converted == [(util.MissionRange('SCLK', 100, 200), ['BAD_OBS'], 'JUPITER',
                           ['IO'], ['EUROPA'], ['ADRASTEA'])]
+
+
+@pytest.mark.parametrize(('value', 'expected'), [
+    ('1979-03-05T12:00:00', True),
+    ('1979-03-05 12:00:00', True),
+    ('1979-064T12:00:00.000', True),
+    ('1979-03-05', True),
+    ('1979-064', True),
+    ('  1979-03-05T12:00  ', True),
+    ('00180626.00', False),       # Galileo
+    ('1312157197.240', False),    # Cassini
+    ('16368:18:001', False),      # Voyager FDS
+    ('2/16368:18:001', False),    # partitioned
+    ('1979-0', False),
+])
+def test_is_time_string(value: str, expected: bool) -> None:
+    """ISO dates and times are told apart from clock counts."""
+    assert util.is_time_string(value) is expected
+
+
+def test_tdb_from_iso_matches_julian() -> None:
+    """A UTC time converts to the TDB seconds julian gives, in either date form."""
+    expected = julian.tdb_from_tai(julian.tai_from_iso('1979-03-05T12:00:00'))
+    assert util.tdb_from_iso('1979-03-05T12:00:00') == pytest.approx(expected)
+    assert util.tdb_from_iso('1979-064T12:00:00') == pytest.approx(expected)
+    assert util.tdb_from_iso('1979-03-05') == pytest.approx(expected - 43200.)
+
+
+def test_convert_mission_table_time_rows_need_no_sc(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Time-keyed rows convert to TDB seconds without SPICE or a spacecraft ID."""
+    def no_sclk(sclk: str, sc: int) -> int:
+        raise AssertionError('sclk_to_ticks called')
+    monkeypatch.setattr(util, 'sclk_to_ticks', no_sclk)
+    table: list[Any] = [('JUPITER ', ('1979-01-06', '1979-04-13T12:00:00'), [], 'JUPITER',
+              [], ['IO'], [])]
+    converted = util.convert_mission_table(table, None)
+    assert converted == [(util.MissionRange('TIME',
+                                            util.tdb_from_iso('1979-01-06'),
+                                            util.tdb_from_iso('1979-04-13T12:00:00')),
+                          [], 'JUPITER', [], ['IO'], [])]
+
+
+def test_convert_mission_table_mixed_rows(monkeypatch: pytest.MonkeyPatch) -> None:
+    """One table may hold rows keyed by clock and rows keyed by time."""
+    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: int(sclk))
+    table: list[Any] = [('A', ('100', '200'), [], 'JUPITER', [], [], []),
+             ('B', ('1980-01-01', '1980-12-31'), [], 'SATURN', [], [], [])]
+    converted = util.convert_mission_table(table, -31)
+    assert [row[0].key for row in converted] == ['SCLK', 'TIME']
+
+
+def test_convert_mission_table_sclk_row_without_sc_raises() -> None:
+    """A clock-keyed row in a host with no SC is an error."""
+    table: list[Any] = [('A', ('100', '200'), [], 'JUPITER', [], [], [])]
+    with pytest.raises(ValueError, match="'A' is keyed by spacecraft clock"):
+        util.convert_mission_table(table, None)
+
+
+def test_convert_mission_table_mixed_bounds_raise(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A row whose bounds mix a time and a clock count is an error."""
+    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: int(sclk))
+    table: list[Any] = [('A', ('100', '1980-01-01'), [], 'JUPITER', [], [], [])]
+    with pytest.raises(ValueError, match='mixes a time and a clock count'):
+        util.convert_mission_table(table, -31)
+
+
+@pytest.mark.parametrize('bounds', [('200', '100'), ('1980-12-31', '1980-01-01')])
+def test_convert_mission_table_reversed_bounds_raise(
+        monkeypatch: pytest.MonkeyPatch, bounds: tuple[str, str]) -> None:
+    """A row that ends before it starts is an error, in either units."""
+    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: int(sclk))
+    table: list[Any] = [('A', bounds, [], 'JUPITER', [], [], [])]
+    with pytest.raises(ValueError, match='ends before it starts'):
+        util.convert_mission_table(table, -31)
 
 
 #===============================================================================

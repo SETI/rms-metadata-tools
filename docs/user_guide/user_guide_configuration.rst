@@ -45,10 +45,15 @@ know what they control.
 ``geometry_config.py``
     Geometry-stage settings, including:
 
-    - ``SC`` — the NAIF spacecraft ID.
     - ``MISSION_TABLE`` and ``EXCEPTIONS`` — the mapping from spacecraft-clock
-      ranges to the primary body, secondaries, and other selected bodies, with
-      regular-expression or predicate exceptions.
+      or time ranges to the primary body, secondaries, and other selected
+      bodies, with regular-expression or predicate exceptions. A row's bounds
+      are two clock-count strings or two ISO dates or times (UTC, e.g.
+      ``'1979-03-05T12:00:00'`` or ``'1979-064'``); a host whose spacecraft
+      share one collection keys its rows by time, since their clocks cannot be
+      compared.
+    - ``SC`` — the NAIF ID of the spacecraft whose clock keys the mission
+      table; needed only if a row is keyed by clock.
     - The ``from_index`` hook.
     - Optionally, ``EXTRA_CHILDREN`` — irregular moons to treat exactly as the
       regular children of their planets are, in the selection of bodies and in

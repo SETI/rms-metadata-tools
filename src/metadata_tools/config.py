@@ -246,6 +246,17 @@ def cleanup() -> None:
         hook()
 
 #===============================================================================
+def get_spacecraft_id() -> int | None:
+    """The NAIF ID of the spacecraft whose clock keys the mission table.
+
+    Returns:
+        The host's ``geometry_config.SC`` if it defines one; otherwise None,
+        which is allowed only if every mission-table row is keyed by time.
+    """
+    sc = getattr(get_geometry_config(), 'SC', None)
+    return None if sc is None else int(sc)
+
+#===============================================================================
 def get_extra_children() -> list[str]:
     """The irregular children the host treats as it does the regular ones.
 

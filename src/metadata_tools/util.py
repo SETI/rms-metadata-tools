@@ -8,9 +8,10 @@ import math
 import re
 from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, NamedTuple, cast
 
 import cspyce
+import julian
 import numpy as np
 import numpy.typing as npt
 import pdstable
@@ -564,24 +565,87 @@ def get_observation_id(observation: Any) -> str:
     return str(observation.subfields['dict']['OBSERVATION_ID'])
 
 #===============================================================================
-def convert_mission_table(table: list[Any], sc: int) -> list[Any]:
-    """Convert mission table SCLK count string to ticks using sclk_to_ticks().
+class MissionRange(NamedTuple):
+    """The span of one mission-table row, in the units of its key."""
+
+    #: 'SCLK' for a span in spacecraft-clock ticks, 'TIME' for one in TDB seconds.
+    key: str
+    #: The start of the span.
+    start: float
+    #: The end of the span, inclusive.
+    stop: float
+
+# A date, yyyy-mm-dd or yyyy-ddd, alone or followed by a time. No spacecraft-clock
+# string has this form.
+_ISO_DATE = re.compile(r'\d{4}-(\d{2}-\d{2}|\d{3})([T ]|$)')
+
+#===============================================================================
+def is_time_string(value: str) -> bool:
+    """Whether a mission-table bound is an ISO date or time, not a clock count.
 
     Parameters:
-        table: Systems table.
-        sc: NAIF spacecraft identifier.
+        value: The bound, e.g. '1979-03-05T12:00:00' or '00180626.00'.
+
+    Returns:
+        True if the bound is an ISO date (yyyy-mm-dd or yyyy-ddd), with or
+        without a time of day.
+    """
+    return bool(_ISO_DATE.match(value.strip()))
+
+#===============================================================================
+def tdb_from_iso(value: str) -> float:
+    """Convert an ISO date or time (UTC) to TDB seconds past J2000.
+
+    Parameters:
+        value: The date or time, e.g. '1979-03-05T12:00:00' or '1979-064'.
+
+    Returns:
+        The time in TDB seconds, as oops observation times are.
+    """
+    return float(julian.tdb_from_tai(julian.tai_from_iso(value.strip())))
+
+#===============================================================================
+def convert_mission_table(table: list[Any], sc: int | None) -> list[Any]:
+    """Convert the bounds of each mission-table row to numbers.
+
+    A row's bounds are either two spacecraft-clock count strings, converted to
+    ticks with sclk_to_ticks(), or two ISO dates or times (UTC), converted to TDB
+    seconds. A host whose spacecraft share one collection keys its rows by time,
+    since their clock counts cannot be compared; one table may hold rows of both
+    kinds.
+
+    Parameters:
+        table: Mission table.
+        sc: NAIF spacecraft identifier; may be None if no row is keyed by clock.
 
     Returns:
         Converted mission table. Each output row drops the first element of the
-        input row and consists of a (start_ticks, stop_ticks) pair converted from
-        the SCLK count strings in element 1, followed by input elements 2-6.
+        input row and consists of a MissionRange converted from the bounds in
+        element 1, followed by input elements 2-6.
+
+    Raises:
+        ValueError: If a row mixes a time with a clock count, ends before it
+            starts, or is keyed by clock while sc is None.
     """
     new_table: list[Any] = []
     for item in table:
-        new_table.append(
-            ((sclk_to_ticks(item[1][0], sc),
-              sclk_to_ticks(item[1][1], sc)),
-              item[2], item[3], item[4], item[5], item[6]))
+        (label, (start, stop)) = (str(item[0]).strip(), item[1])
+        kinds = {is_time_string(start), is_time_string(stop)}
+        if kinds == {True}:
+            span = MissionRange('TIME', tdb_from_iso(start), tdb_from_iso(stop))
+        elif kinds == {False}:
+            if sc is None:
+                raise ValueError(f'Mission-table row {label!r} is keyed by '
+                                 'spacecraft clock, but the host defines no SC')
+            span = MissionRange('SCLK', sclk_to_ticks(start, sc),
+                                sclk_to_ticks(stop, sc))
+        else:
+            raise ValueError(f'Mission-table row {label!r} mixes a time and a '
+                             f'clock count: {start!r}, {stop!r}')
+        if span.stop < span.start:
+            raise ValueError(f'Mission-table row {label!r} ends before it starts: '
+                             f'{start!r}, {stop!r}')
+        new_table.append((span, item[2], item[3], item[4], item[5], item[6]))
 
     return new_table
 

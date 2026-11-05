@@ -10,24 +10,24 @@ ranges, and computation -- comes from the host's label templates, read back by
 from typing import Any
 
 import metadata_tools.util as util
-from metadata_tools.config import current_host_id, get_geometry_config
+from metadata_tools.config import current_host_id, get_geometry_config, get_spacecraft_id
 
 _mission_table_cache: dict[str, list[Any]] = {}
 
 #===============================================================================
 def get_mission_table() -> list[Any]:
-    """The active host's mission table, with SCLK strings converted to ticks.
+    """The active host's mission table, with each row's bounds converted to numbers.
 
-    Computed once per host and cached, since the conversion requires SPICE
-    (via ``util.convert_mission_table``) and the source table does not change
-    within a process.
+    Computed once per host and cached, since the conversion of clock counts
+    requires SPICE (via ``util.convert_mission_table``) and the source table
+    does not change within a process.
 
     Returns:
-        The host mission table with spacecraft-clock strings converted to ticks.
+        The host mission table, each row's span a ``util.MissionRange`` in clock
+        ticks or TDB seconds.
     """
     host_id = current_host_id()
     if host_id not in _mission_table_cache:
-        config = get_geometry_config()
         _mission_table_cache[host_id] = util.convert_mission_table(
-            config.MISSION_TABLE, config.SC)
+            get_geometry_config().MISSION_TABLE, get_spacecraft_id())
     return _mission_table_cache[host_id]

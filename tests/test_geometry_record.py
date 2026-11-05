@@ -287,31 +287,86 @@ def test_obs_excluded_no_exception_matches(monkeypatch: pytest.MonkeyPatch) -> N
 #===============================================================================
 # bodies_select.get_primary
 #===============================================================================
+def _primary_record(sclk: Any = '150', tstart: float = 0.) -> Any:
+    """A Record stand-in whose observation has a clock count and a start time.
+
+    Parameters:
+        sclk: The observation's SPACECRAFT_CLOCK_START_COUNT.
+        tstart: The observation's start time, in TDB seconds.
+
+    Returns:
+        A SimpleNamespace with an `observation` carrying `dict` and `time`.
+    """
+    observation = types.SimpleNamespace(dict={'SPACECRAFT_CLOCK_START_COUNT': sclk},
+                                        time=(tstart, tstart + 1.))
+    return types.SimpleNamespace(observation=observation)
+
+
 def test_get_primary_in_range(monkeypatch: pytest.MonkeyPatch) -> None:
     """An SCLK inside a row's range returns that row's primary and body lists."""
-    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: 150)
-    table: list[Any] = [((100, 200), [], 'JUPITER', ['IO'], ['EUROPA'], ['ADRASTEA'])]
-    record = types.SimpleNamespace(observation=object())
-    # `record` is a SimpleNamespace stub standing in for a Record.
-    result = bodies_select.get_primary(record, table, '150')  # type: ignore[arg-type]
+    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: int(sclk))
+    table: list[Any] = [(util.MissionRange('SCLK', 100, 200), [], 'JUPITER',
+                         ['IO'], ['EUROPA'], ['ADRASTEA'])]
+    result = bodies_select.get_primary(_primary_record('150'), table)
     assert result == ('JUPITER', ['IO'], ['EUROPA'], ['ADRASTEA'])
+
+
+def test_get_primary_converts_sclk_with_the_host_sc(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """The clock count is converted with the host's spacecraft ID."""
+    calls: list[tuple[str, int]] = []
+    def fake_ticks(sclk: str, sc: int) -> int:
+        calls.append((sclk, sc))
+        return 150
+    monkeypatch.setattr(util, 'sclk_to_ticks', fake_ticks)
+    table: list[Any] = [(util.MissionRange('SCLK', 100, 200), [], 'JUPITER', [], [], [])]
+    bodies_select.get_primary(_primary_record('00150.00'), table)
+    assert calls == [('00150.00', -77)]
 
 
 def test_get_primary_no_match_returns_fail(monkeypatch: pytest.MonkeyPatch) -> None:
     """An SCLK outside every range returns the empty-primary failure tuple."""
-    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: 999)
-    table: list[Any] = [((100, 200), [], 'JUPITER', ['IO'], [], [])]
-    record = types.SimpleNamespace(observation=object())
-    assert bodies_select.get_primary(
-        record, table, '999') == ('', [], [], [])  # type: ignore[arg-type]
+    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: int(sclk))
+    table: list[Any] = [(util.MissionRange('SCLK', 100, 200), [], 'JUPITER',
+                         ['IO'], [], [])]
+    assert bodies_select.get_primary(_primary_record('999'), table) == ('', [], [], [])
 
 
 def test_get_primary_excluded_observation_short_circuits(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """A row whose exceptions exclude the observation returns the failure tuple."""
-    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: 150)
+    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: int(sclk))
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0CAL')
-    table: list[Any] = [((100, 200), ['.*CAL'], 'JUPITER', ['IO'], [], [])]
-    record = types.SimpleNamespace(observation=object())
+    table: list[Any] = [(util.MissionRange('SCLK', 100, 200), ['.*CAL'], 'JUPITER',
+                         ['IO'], [], [])]
+    assert bodies_select.get_primary(_primary_record('150'), table) == ('', [], [], [])
+
+
+def test_get_primary_time_row_uses_start_time() -> None:
+    """A time-keyed row spans the observation's start time; no clock is read."""
+    table: list[Any] = [
+        (util.MissionRange('TIME', 0., 100.), [], 'JUPITER', [], [], []),
+        (util.MissionRange('TIME', 100., 200.), [], 'SATURN', ['TITAN'], [], [])]
+    # An unreadable clock count shows that the clock is never converted.
+    record = _primary_record(sclk='UNK', tstart=150.)
+    assert bodies_select.get_primary(record, table) == ('SATURN', ['TITAN'], [], [])
+
+
+def test_get_primary_time_row_bounds_are_inclusive() -> None:
+    """An observation starting exactly at either bound is spanned."""
+    table: list[Any] = [(util.MissionRange('TIME', 100., 200.), [], 'URANUS', [], [], [])]
+    assert bodies_select.get_primary(_primary_record(tstart=100.), table)[0] == 'URANUS'
+    assert bodies_select.get_primary(_primary_record(tstart=200.), table)[0] == 'URANUS'
+    assert bodies_select.get_primary(_primary_record(tstart=200.5), table)[0] == ''
+
+
+def test_get_primary_mixed_rows(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Each row is tested in its own units; the first row that spans wins."""
+    monkeypatch.setattr(util, 'sclk_to_ticks', lambda sclk, sc: int(sclk))
+    table: list[Any] = [
+        (util.MissionRange('SCLK', 100, 200), [], 'JUPITER', [], [], []),
+        (util.MissionRange('TIME', 1000., 2000.), [], 'SATURN', [], [], [])]
     assert bodies_select.get_primary(
-        record, table, '150') == ('', [], [], [])  # type: ignore[arg-type]
+        _primary_record('999', tstart=1500.), table)[0] == 'SATURN'
+    assert bodies_select.get_primary(
+        _primary_record('150', tstart=1500.), table)[0] == 'JUPITER'
