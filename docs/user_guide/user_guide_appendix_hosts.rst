@@ -80,3 +80,47 @@ where a directory exists only through the files in it, it must hold at least one
 file, such as a copy of the volume's index. A volume named by ``--volumes`` that
 has no directory there is an error. ``cloud/COISS_xxxx/`` has GCP configs for
 the geometry and cumulative stages only.
+
+Voyager ISS (``VGISS_xxxx``)
+============================
+
+The Voyager Imaging Science Subsystem (ISS) host. One host serves all four
+collections, ``VGISS_5xxx`` (Jupiter), ``VGISS_6xxx`` (Saturn), ``VGISS_7xxx``
+(Uranus), and ``VGISS_8xxx`` (Neptune), both spacecraft, and both cameras. In a
+volume ID ``VGISS_<P><S><NN>``, the digit ``S`` names the spacecraft (``1`` or
+``2``; ``9`` for the cumulative volume).
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Property
+     - Value
+   * - Host directory
+     - ``src/metadata_tools/hosts/VGISS_xxxx``
+   * - NAIF spacecraft ID
+     - None: the mission table is keyed by time (the spacecraft are ``-31`` and
+       ``-32``)
+   * - Data label glob
+     - ``C*_RAW.LBL``
+   * - Index read by the geometry stage
+     - ``VGISS_*_raw_image_index.lbl``, with the volume's supplemental index
+   * - Cumulative directories
+     - ``VGISS_5999``, ``VGISS_6999``, ``VGISS_7999``, and ``VGISS_8999`` under
+       their collections (excluded from the per-volume stages)
+   * - ``oops`` host package
+     - ``rms-host-voyager``: ``host_voyager.oops`` (class ``VoyagerISS``); not
+       yet published
+
+Each collection holds the images of both spacecraft, whose clocks cannot be
+compared, so the host's mission table is keyed by time: one row for each
+planet, spanning both spacecraft's encounters there. Calibration frames (the
+targets ``DARK``, ``CAL LAMPS``, and ``PLAQUE``) are excluded by a predicate,
+since the Voyager index has no ``OBSERVATION_ID``.
+
+Each image is archived as several products; the geometry describes the raw
+image, and reads the volume's raw-image index, which has one row per image,
+rather than its full index, which has one per product. The RMS Node's metadata
+already holds each volume's supplemental index, so, as for Cassini ISS, there
+is no index stage, and each volume to process needs a directory in the output
+tree before the geometry stage runs.
