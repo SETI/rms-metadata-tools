@@ -73,9 +73,8 @@ class Record:
         self.observation = observation
 
         # Determine primary, if any
-        sclk = str(observation.dict["SPACECRAFT_CLOCK_START_COUNT"])
         self.primary, self.secondaries, self.selections, self.additions = \
-            bodies_select.get_primary(self, formats.get_mission_table(), sclk)
+            bodies_select.get_primary(self, formats.get_mission_table())
         self.sampling = sampling
         self.body_samples = body_samples
         self.pointing_available = True

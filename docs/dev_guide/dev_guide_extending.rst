@@ -102,21 +102,33 @@ and may override two engine defaults:
        """Compute the START_TIME column for one data product."""
        ...
 
-``geometry_config.py`` must provide the spacecraft ID, default selection, the
-body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), and the
-``from_index`` reader:
+``geometry_config.py`` must provide the default selection, the body-selection
+``MISSION_TABLE`` (and its ``EXCEPTIONS``), the ``from_index`` reader, and,
+if any mission-table row is keyed by spacecraft clock, the spacecraft ID:
 
 .. code-block:: python
 
    from host_<mission>.oops import <Instrument>
 
-   SC = -77                       # NAIF spacecraft ID
+   SC = -77                       # NAIF spacecraft ID (for SCLK-keyed rows)
    selection = 'S'
-   MISSION_TABLE = [ ... ]        # SCLK ranges -> primary, secondaries, ...
-   EXCEPTIONS = [ ... ]           # regexes/predicates excluded from the SCLK test
+   MISSION_TABLE = [ ... ]        # SCLK or time ranges -> primary, secondaries, ...
+   EXCEPTIONS = [ ... ]           # regexes/predicates excluded from the range test
 
    def from_index(index_filename, supplemental_index_filename=None):
        return <Instrument>.from_index(index_filename)
+
+Each row of the mission table is keyed either by spacecraft clock, with two
+clock-count strings, or by time, with two ISO dates or times (UTC); one table may
+hold both. A collection that mixes spacecraft, such as Voyager's, keys its rows
+by time, since the clocks of different spacecraft cannot be compared, and then
+needs no ``SC``:
+
+.. code-block:: python
+
+   MISSION_TABLE = [
+     ('VG1 JUP ', ('1979-01-06', '1979-04-13'), EXCEPTIONS, 'JUPITER', [], [], []),
+     ('VG2 JUP ', ('1979-04-24', '1979-08-05'), EXCEPTIONS, 'JUPITER', [], [], [])]
 
 The border to allow around a field of view is not set here but in
 ``host_config.py``, since the labels state it too. It reflects the uncertainty

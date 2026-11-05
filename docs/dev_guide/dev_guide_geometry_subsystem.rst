@@ -332,12 +332,15 @@ Body selection
 
 The candidates come from the host's **mission table**
 (``MISSION_TABLE`` in ``geometry_config.py``): one row per mission phase, giving
-an SCLK range, exception patterns for observations to skip, and that phase's
-primary, secondaries, selections, and additions.
-:func:`~metadata_tools.geometry_support.formats.get_mission_table` converts the
-SCLK strings to ticks once per host and caches the result (the conversion needs
-SPICE), and :func:`~metadata_tools.geometry_support.bodies_select.get_primary`
-picks the row whose SCLK range contains the observation's clock count — an
+a range, exception patterns for observations to skip, and that phase's
+primary, secondaries, selections, and additions. A range is keyed either by
+spacecraft clock (two count strings) or by time (two ISO dates or times, UTC);
+a collection of more than one spacecraft keys its rows by time.
+:func:`~metadata_tools.geometry_support.formats.get_mission_table` converts each
+range once per host to a :class:`~metadata_tools.util.MissionRange` in clock
+ticks or TDB seconds and caches the result (the clock conversion needs SPICE),
+and :func:`~metadata_tools.geometry_support.bodies_select.get_primary` picks the
+first row whose range contains the observation's clock count or start time — an
 observation matching a row's exceptions gets no primary and is written with
 null geometry.
 

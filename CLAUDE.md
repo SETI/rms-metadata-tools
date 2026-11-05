@@ -74,8 +74,8 @@ Core engine modules:
   `meshgrids.py` (the FOV meshgrid samples each observation's own `fov` plus the host's
   angular `host_config.BORDER`, cached per FOV; each body row is sampled across its own
   inventory bounding box, not the whole FOV),
-  `formatting.py`, `bodies_select.py`, `formats.py` (the host's SCLK-resolved mission
-  table), and `label_schema.py`, which reads each table's full column schema — label
+  `formatting.py`, `bodies_select.py`, `formats.py` (the host's mission table, each
+  row's range resolved to clock ticks or TDB seconds), and `label_schema.py`, which reads each table's full column schema — label
   metadata and computation spec alike — from its label template.
 - `cumulative_support.py` — walks a volume tree and concatenates per-volume tables.
 - `label_support.py` — generates PDS3 `.lbl` labels from templates using `rms-pdstemplate`;
@@ -110,10 +110,11 @@ only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
 - `host_config.py`, `index_config.py`, `geometry_config.py` — host-specific settings and
   optional override hooks (e.g. `key__<NAME>(label_path, label_dict)` to compute an index
   column; backplane functions for geometry). The data-label `glob` lives in `host_config`
-  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, `cleanup`, `EXTRA_CHILDREN`, `BORDER`, `OPAQUE_RINGS`, `COMPANIONS`,
+  alone. Mission-table rows are keyed by SCLK strings or by ISO times (UTC); `SC` is
+  needed only for SCLK rows. `SC`, `get_volume_id`, `exclude`, `index_glob`, `target_name`, `cleanup`, `EXTRA_CHILDREN`, `BORDER`, `OPAQUE_RINGS`, `COMPANIONS`,
   and `meshgrids`/`meshgrid` are optional: the engine reads them through the accessors
   in `config.py` (`get_volume_id()`, `get_exclude()`, `get_index_glob()`,
-  `get_target_name()`, `cleanup()`, `get_border()`, `get_opaque_rings()`, `get_companions()`, `get_extra_children()`, `get_meshgrids()`), which supply
+  `get_target_name()`, `get_spacecraft_id()`, `cleanup()`, `get_border()`, `get_opaque_rings()`, `get_companions()`, `get_extra_children()`, `get_meshgrids()`), which supply
   the defaults.
 - `host_init.py` — initializes the mission's `oops` host package, e.g. `host_galileo.oops` from
   `rms-host-galileo` (side-effect import).
