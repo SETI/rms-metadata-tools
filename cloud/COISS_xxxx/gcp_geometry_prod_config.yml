@@ -2,18 +2,21 @@
 #
 # The 125 volumes (COISS_1001-1009 and COISS_2001-2116) hold 443,177 images:
 # a median of 3,812 a volume and a maximum of 7,361 (COISS_2072). Each volume
-# is one task. Locally a task runs at 4-5 s an image, so a median volume takes
-# about five hours, the largest about nine, and the whole collection about
-# 500 task-hours.
+# is one task. On an n2 core a task runs at about 1.8 s an image (COISS_2072
+# on n2-highmem-2, 2026-11-04: 3 h 37 min, peak 6.3 GB), so a median volume
+# takes about two hours, the largest under four, and the whole collection
+# about 220 task-hours.
 #
-# Memory still grows by about 2 MB an image after the oops interpolation caches
-# are limited, so the largest volumes may need over 15 GB; each task gets 4
-# vCPUs and 16 GB, as for Galileo. Eight 32-vCPU spot instances give 64 task
-# slots: two waves of the queue, about ten hours in all if the tasks run as fast
-# as they do locally. Dispatch with:
+# Each task gets 2 vCPUs, one core as in that trial, and 8 GB. Eight 32-vCPU
+# instances give 128 task slots, so every volume runs at once and the run takes
+# about as long as the largest volume. Spot instances are preempted too often
+# for tasks of hours, so dispatch on demand, without --use-spot:
 #
-#   metadata-geometry-cloud COISS_xxxx <paths...> --use-spot \
+#   metadata-geometry-cloud COISS_xxxx <paths...> \
 #       --config gcp_geometry_prod_config.yml --task-file ./tasks.json
+#
+# Keep the dispatching machine awake for the whole run: while it sleeps, the
+# orchestrator neither terminates idle instances nor tracks running ones.
 #
 # The Cassini host has no index stage, so nothing else creates the volume
 # directories of the output tree: each volume to process needs one there,
@@ -27,17 +30,19 @@ gcp:
   region:                   us-central1
   zone:                     us-central1-a
 
-  # Prefer the newest general-purpose/compute families for per-core speed.
-  instance_types:           ["^c4-standard-.*", "^n4-standard-.*", "^n2-standard-.*"]
+  # cloud_tasks takes the cheapest type per vCPU among those that qualify, not
+  # the first listed. c4 and n4 take only hd-balanced boot disks, so with
+  # pd-balanced only n2 qualifies.
+  instance_types:           ["^n2-standard-.*"]
   min_cpu:                  32
   max_cpu:                  32
   max_instances:            8
-  cpus_per_task:            4
-  min_memory_per_task:      16           # GB
+  cpus_per_task:            2
+  min_memory_per_task:      8            # GB
 
-  # The largest volume takes about nine hours locally; fourteen flags a
-  # genuinely wedged task without killing a slow-but-live one.
-  max_runtime:              50400
+  # The largest volume takes under four hours; eight flags a wedged task
+  # without killing a slow-but-live one.
+  max_runtime:              28800
 
   # Per-task FileCache holds the volume's index and label data; the OOPS
   # resources (SPICE kernels) live on the separately attached persistent
@@ -46,12 +51,12 @@ gcp:
   boot_disk_base_size:      20           # GB: OS + venv + clone/pip install
   boot_disk_per_task:       5            # GB per concurrent task slot
 
-  # Spot fleet hygiene: re-queue tasks lost to preemption, but do not loop
-  # tasks that fail on their own.
+  # Re-queue tasks lost with their instance, but do not loop tasks that fail
+  # on their own.
   retry_on_exit:            true
   retry_on_exception:       false
   retry_on_timeout:         false
 
-  # Cost guard: eight 32-vCPU spot instances typically land well under this;
-  # the cap bites only on spot price spikes or on-demand fallback.
-  max_total_price_per_hour: 12.00        # USD/hour
+  # Cost guard: eight on-demand n2-standard-32 instances cost about $12.50 an
+  # hour.
+  max_total_price_per_hour: 14.00        # USD/hour
