@@ -123,4 +123,5 @@ image, and reads the volume's raw-image index, which has one row per image,
 rather than its full index, which has one per product. The RMS Node's metadata
 already holds each volume's supplemental index, so, as for Cassini ISS, there
 is no index stage, and each volume to process needs a directory in the output
-tree before the geometry stage runs.
+tree before the geometry stage runs. ``cloud/VGISS_xxxx/`` has GCP configs for
+the geometry and cumulative stages only.

@@ -1,0 +1,39 @@
+# Production GCP config for the VGISS_xxxx cumulative stage.
+#
+# The cumulative stage is a single task per collection, dispatched once for each
+# of VGISS_5999, 6999, 7999, and 8999, that concatenates every volume's tables.
+# The largest collection, VGISS_5xxx, has 31,337 images, under a tenth of
+# COISS_2xxx's, whose cumulative body table is about 3 GB; so these should stay
+# well under 1 GB, read into memory before they are written. The task gets 4 GB.
+# Spot is used (the task is cheap to restart and retry_on_exit re-queues it).
+# Dispatch each collection with:
+#
+#   metadata-cumulative-cloud VGISS_xxxx <output_dir> --use-spot \
+#       --config gcp_cumulative_prod_config.yml
+#
+# The default (unsuffixed) gcp_cumulative_config.yml remains the test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-cumulative-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  instance_types:           ["^n2-standard-.*", "^n4-standard-.*"]
+  min_cpu:                  4
+  max_cpu:                  4
+  max_instances:            1
+  cpus_per_task:            1
+  min_memory_per_task:      4            # GB
+
+  # Pure I/O and concatenation; two hours is generous.
+  max_runtime:              7200
+
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      50           # GB: room for every volume's tables
+
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  max_total_price_per_hour: 1.00         # USD/hour
