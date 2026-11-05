@@ -1,0 +1,65 @@
+# Production GCP config for the VGISS_xxxx geometry stage.
+#
+# The 87 volumes (VGISS_5101-5214, 6101-6215, 7201-7207, and 8201-8210) hold
+# 76,652 images: a median of 883 a volume and a maximum of 1,594 (VGISS_5116).
+# Each volume is one task. Voyager has not been timed yet; at the Cassini rate
+# on an n2 core, about 1.8 s an image, a median volume takes under half an
+# hour, the largest under an hour, and the whole collection about 40
+# task-hours. Retune these values after a trial on the largest volume.
+#
+# Each task gets 2 vCPUs, one core, and 8 GB; Cassini's largest volume, with
+# over four times as many images, peaked at 6.3 GB. Three 32-vCPU instances
+# give 48 task slots: two waves of the queue, about two hours in all. Tasks
+# this short lose little to a preemption, which retry_on_exit re-queues, so
+# dispatch on spot:
+#
+#   metadata-geometry-cloud VGISS_xxxx <paths...> --use-spot \
+#       --config gcp_geometry_prod_config.yml --task-file ./tasks.json
+#
+# Keep the dispatching machine awake for the whole run: while it sleeps, the
+# orchestrator neither terminates idle instances nor tracks running ones.
+#
+# The Voyager host has no index stage, so nothing else creates the volume
+# directories of the output tree: each volume to process needs one there,
+# holding at least one file, before dispatch. The instances must also install
+# rms-host-voyager, which the startup script does not do until the package is
+# published.
+#
+# The default (unsuffixed) gcp_geometry_config.yml remains the small test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-geometry-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  # cloud_tasks takes the cheapest type per vCPU among those that qualify, not
+  # the first listed. c4 and n4 take only hd-balanced boot disks, so with
+  # pd-balanced only n2 qualifies.
+  instance_types:           ["^n2-standard-.*"]
+  min_cpu:                  32
+  max_cpu:                  32
+  max_instances:            3
+  cpus_per_task:            2
+  min_memory_per_task:      8            # GB
+
+  # The largest volume should take under an hour; four flags a wedged task
+  # without killing a slow-but-live one while the rate is still unmeasured.
+  max_runtime:              14400
+
+  # Per-task FileCache holds the volume's index and label data; the OOPS
+  # resources (SPICE kernels) live on the separately attached persistent
+  # disk named by $OOPS_RESOURCES_DISK, not the boot disk.
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      20           # GB: OS + venv + clone/pip install
+  boot_disk_per_task:       5            # GB per concurrent task slot
+
+  # Spot fleet hygiene: re-queue tasks lost to preemption, but do not loop
+  # tasks that fail on their own.
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  # Cost guard: three spot n2-standard-32 instances typically land well under
+  # this; three on demand cost about $4.70 an hour, which it also covers.
+  max_total_price_per_hour: 5.00         # USD/hour

@@ -63,6 +63,9 @@ the package, so that dispatch works from a pip install.
 - `COISS_xxxx`: geometry and cumulative stages only, since the Cassini ISS host
   has no index stage. Its output tree needs a directory, holding at least one
   file, for each volume before the geometry stage runs.
+- `VGISS_xxxx`: geometry and cumulative stages only, as for Cassini ISS. Its
+  geometry stage also needs `rms-host-voyager` on the instances, which the
+  startup script does not install until the package is published.
 
 See the "Distributed (cloud) runs" chapter of the user guide for the commands and their
 options.
