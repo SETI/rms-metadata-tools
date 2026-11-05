@@ -15,6 +15,8 @@ dependencies = [
   "rms-oops>=0.3.1.dev0",
   "rms-host-galileo",
   "rms-host-cassini",
+  # rms-host-voyager (the VGISS_xxxx host) is not published yet; add it here, and to
+  # the install step of run-tests.yml, once it is.
   "rms-polymath>=2.0.0",
   "rms-filecache>=3.1.0",
   "rms-pdslogger>=3.0.0",
@@ -87,6 +89,7 @@ where = ["src"]
 "metadata_tools.cli" = ["gcp_common_startup.sh"]
 "metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
 "metadata_tools.hosts.COISS_xxxx" = ["templates/*.lbl"]
+"metadata_tools.hosts.VGISS_xxxx" = ["templates/*.lbl"]
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
@@ -178,7 +181,7 @@ fail_under = 90
 strict = true
 disallow_subclassing_any = false
 # The host packages ship a py.typed marker, but their signatures are not annotated.
-untyped_calls_exclude = ["host_galileo", "host_cassini"]
+untyped_calls_exclude = ["host_galileo", "host_cassini", "host_voyager"]
 
 [[tool.mypy.overrides]]
 module = "metadata_tools._version"
@@ -201,6 +204,11 @@ module = [
     "cloud_tasks.*",
     "spicedb.*",
 ]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Not published yet; remove this override once rms-host-voyager is installed.
+module = ["host_voyager", "host_voyager.*"]
 ignore_missing_imports = true
 
 
