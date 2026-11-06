@@ -1,10 +1,14 @@
 # Test GCP config for the VGISS_xxxx geometry stage: one small instance, one
 # task at a time. Use it to try a volume or two before a production run, e.g.
 #
-#   metadata-geometry-cloud VGISS_xxxx <paths...> --use-spot --volumes VGISS_5102
+#   metadata-geometry-cloud VGISS_xxxx <paths...> --use-spot --volumes VGISS_6102
 #
-# VGISS_5102, with 317 images, is the smallest volume. A typical volume holds
-# about 900 images and should take under half an hour on one task.
+# VGISS_6102, with 394 images, is the smallest volume whose every image the
+# spacecraft SP kernels now cover; the 22 volumes they do not wholly cover
+# (see gcp_geometry_prod_config.yml), among them the smaller VGISS_5102, fail
+# until a cruise SPK is furnished. A typical volume holds
+# about 900 images and, at about 2.7 s an image, takes about 40 minutes on one
+# task.
 provider: gcp
 gcp:
   job_id:                   metadata-geometry-job
