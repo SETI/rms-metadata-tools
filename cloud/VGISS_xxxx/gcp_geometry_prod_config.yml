@@ -22,9 +22,9 @@
 #
 # The Voyager host has no index stage, so nothing else creates the volume
 # directories of the output tree: each volume to process needs one there,
-# holding at least one file, before dispatch. The instances must also install
-# rms-host-voyager, which the startup script does not do until the package is
-# published.
+# holding at least one file, before dispatch. The startup script installs
+# rms-host-voyager from GitHub only on the --debug-branch path, so pass
+# --debug-branch until the package is published.
 #
 # The encounter SP kernels cover only each encounter's core weeks, so 13,232
 # images in 22 volumes (VGISS_5101-5104, 5119, 5120, 5201-5205, 6101,

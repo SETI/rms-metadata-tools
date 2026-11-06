@@ -19,8 +19,10 @@ if [ -n "${BRANCH:-}" ]; then
     REPO_DIR="$(pwd)"
     python3 -m venv venv
     # The oops.Host API and the host packages are not released. Remove this command once
-    # they are on PyPI.
-    "$REPO_DIR/venv/bin/pip" install "rms-oops @ git+https://github.com/SETI/rms-oops@mrs_260925_host_reorg" "rms-host-galileo @ git+https://github.com/SETI/rms-host-galileo@ms_261013_initial_port" "rms-host-cassini @ git+https://github.com/SETI/rms-host-cassini@ms_261004_initial_port"
+    # they are on PyPI. rms-host-voyager is not yet a dependency in pyproject.toml; its
+    # branch carries the cruise SPKs, which the VGISS_xxxx volumes outside the
+    # encounters need.
+    "$REPO_DIR/venv/bin/pip" install "rms-oops @ git+https://github.com/SETI/rms-oops@mrs_260925_host_reorg" "rms-host-galileo @ git+https://github.com/SETI/rms-host-galileo@ms_261013_initial_port" "rms-host-cassini @ git+https://github.com/SETI/rms-host-cassini@ms_261004_initial_port" "rms-host-voyager @ git+https://github.com/SETI/rms-host-voyager@jns_261106_cruise_spks"
     "$REPO_DIR/venv/bin/pip" install ".[cloud]"
 else
     REPO_DIR="$(pwd)"
