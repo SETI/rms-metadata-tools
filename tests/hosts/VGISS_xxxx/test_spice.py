@@ -25,7 +25,7 @@ def voyager_host() -> None:
 def test_mission_table_resolves_to_time_ranges() -> None:
     """The engine resolves every row to a time range, with no spacecraft ID."""
     table = formats.get_mission_table()
-    assert [row[1] for row in table] == ['JUPITER', 'SATURN', 'URANUS', 'NEPTUNE']
+    assert [row[2] for row in table] == ['JUPITER', 'SATURN', 'URANUS', 'NEPTUNE']
     assert {row[0].key for row in table} == {'TIME'}
 
 
