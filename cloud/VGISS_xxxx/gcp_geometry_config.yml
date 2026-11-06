@@ -6,7 +6,7 @@
 # VGISS_6102, with 394 images, is the smallest volume the encounter SP kernels
 # cover entirely. To try the cruise SPKs (see gcp_geometry_prod_config.yml),
 # use a volume outside the encounters, e.g. VGISS_5102. A typical volume holds
-# about 900 images and, at about 2.7 s an image, takes about 40 minutes on one
+# about 900 images and, at about 3.4 s an image, takes about 50 minutes on one
 # task.
 provider: gcp
 gcp:
