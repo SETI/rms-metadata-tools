@@ -2,16 +2,17 @@
 #
 # The 87 volumes (VGISS_5101-5214, 6101-6215, 7201-7207, and 8201-8210) hold
 # 76,652 images: a median of 883 a volume and a maximum of 1,594 (VGISS_5116).
-# Each volume is one task. Voyager has not been timed yet; at the Cassini rate
-# on an n2 core, about 1.8 s an image, a median volume takes under half an
-# hour, the largest under an hour, and the whole collection about 40
-# task-hours. Retune these values after a trial on the largest volume.
+# Each volume is one task. A trial on the first 20 images of VGISS_8201 took
+# about 2.7 s an image on one local core and peaked at 550 MB, so a median
+# volume takes about 40 minutes, the largest about 72, and the whole
+# collection about 57 task-hours. Retune these values after a trial on the
+# largest volume on an n2 instance.
 #
-# Each task gets 2 vCPUs, one core, and 8 GB; Cassini's largest volume, with
-# over four times as many images, peaked at 6.3 GB. Three 32-vCPU instances
-# give 48 task slots: two waves of the queue, about two hours in all. Tasks
-# this short lose little to a preemption, which retry_on_exit re-queues, so
-# dispatch on spot:
+# Each task gets 2 vCPUs, one core, and 8 GB, ample beside the trial's peak;
+# Cassini's largest volume, with over four times as many images, peaked at
+# 6.3 GB. Three 32-vCPU instances give 48 task slots: two waves of the queue,
+# about two and a half hours in all. Tasks this short lose little to a
+# preemption, which retry_on_exit re-queues, so dispatch on spot:
 #
 #   metadata-geometry-cloud VGISS_xxxx <paths...> --use-spot \
 #       --config gcp_geometry_prod_config.yml --task-file ./tasks.json
@@ -24,6 +25,13 @@
 # holding at least one file, before dispatch. The instances must also install
 # rms-host-voyager, which the startup script does not do until the package is
 # published.
+#
+# The spacecraft SP kernels that rms-host-voyager furnishes cover only each
+# encounter's core weeks, leaving 13,232 images without a spacecraft position,
+# and a volume stops at its first such image. Until a cruise SPK is furnished,
+# these 22 volumes fail, 14 of them lying wholly outside the coverage:
+#
+#   VGISS_5101-5104, 5119, 5120, 5201-5205, 6101, 6115-6121, 6201, 6212, 7207
 #
 # The default (unsuffixed) gcp_geometry_config.yml remains the small test setup.
 provider: gcp
@@ -43,8 +51,8 @@ gcp:
   cpus_per_task:            2
   min_memory_per_task:      8            # GB
 
-  # The largest volume should take under an hour; four flags a wedged task
-  # without killing a slow-but-live one while the rate is still unmeasured.
+  # The largest volume should take under an hour and a half; four flags a
+  # wedged task without killing a slow-but-live one on a slower instance.
   max_runtime:              14400
 
   # Per-task FileCache holds the volume's index and label data; the OOPS
