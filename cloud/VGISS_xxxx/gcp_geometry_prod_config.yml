@@ -2,16 +2,16 @@
 #
 # The 87 volumes (VGISS_5101-5214, 6101-6215, 7201-7207, and 8201-8210) hold
 # 76,652 images: a median of 883 a volume and a maximum of 1,594 (VGISS_5116).
-# Each volume is one task. A trial on the first 20 images of VGISS_8201 took
-# about 2.7 s an image on one local core and peaked at 550 MB, so a median
-# volume takes about 40 minutes, the largest about 72, and the whole
-# collection about 57 task-hours. Retune these values after a trial on the
-# largest volume on an n2 instance.
+# Each volume is one task. A cloud trial of VGISS_5102 (317 images, on one
+# n2 task) took about 3.4 s an image; a local trial on the first 20 images of
+# VGISS_8201 peaked at 550 MB. So a median volume takes about 50 minutes, the
+# largest about 90, and the whole collection about 72 task-hours. Retune
+# these values after a trial on the largest volume.
 #
 # Each task gets 2 vCPUs, one core, and 8 GB, ample beside the trial's peak;
 # Cassini's largest volume, with over four times as many images, peaked at
 # 6.3 GB. Three 32-vCPU instances give 48 task slots: two waves of the queue,
-# about two and a half hours in all. Tasks this short lose little to a
+# about three hours in all. Tasks this short lose little to a
 # preemption, which retry_on_exit re-queues, so dispatch on spot:
 #
 #   metadata-geometry-cloud VGISS_xxxx <paths...> --use-spot \
@@ -53,7 +53,7 @@ gcp:
   cpus_per_task:            2
   min_memory_per_task:      8            # GB
 
-  # The largest volume should take under an hour and a half; four flags a
+  # The largest volume should take about an hour and a half; four flags a
   # wedged task without killing a slow-but-live one on a slower instance.
   max_runtime:              14400
 
