@@ -232,15 +232,13 @@ def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
         exceptions: List of exception specifiers. An entry that is a Python
             identifier names a geometry-config predicate function applied to
             the observation; any other entry is a regular expression tested
-            against the observation ID.
+            against the observation ID, which is read only if such an entry is
+            reached, so a host with predicates alone needs no OBSERVATION_ID.
 
     Returns:
         True if the observation is excluded.
     """
-    if not exceptions:
-        return False
-
-    obs_id = util.get_observation_id(record.observation)
+    obs_id: str | None = None
     for exception in exceptions:
         # An identifier names a config predicate function; anything else is a
         # regex tested against the observation ID. The observation is excluded if
@@ -249,8 +247,11 @@ def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
             fn = getattr(get_geometry_config(), exception)
             if fn(record.observation):
                 return True
-        elif re.match(exception, obs_id):
-            return True
+        else:
+            if obs_id is None:
+                obs_id = util.get_observation_id(record.observation)
+            if re.match(exception, obs_id):
+                return True
 
     return False
 

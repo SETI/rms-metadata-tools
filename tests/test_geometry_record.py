@@ -254,6 +254,22 @@ def test_obs_excluded_identifier_calls_config_function(
         record, ['always_true_fn']) is True  # type: ignore[arg-type]
 
 
+def test_obs_excluded_predicates_need_no_observation_id(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """Predicates alone never read the observation ID, which a host may lack."""
+    def no_id(obs: Any) -> str:
+        raise KeyError('OBSERVATION_ID')
+    monkeypatch.setattr(util, 'get_observation_id', no_id)
+    config = get_geometry_config()
+    monkeypatch.setattr(config, 'always_false_fn', lambda obs: False, raising=False)
+    monkeypatch.setattr(config, 'always_true_fn', lambda obs: True, raising=False)
+    record = types.SimpleNamespace(observation=object())
+    assert bodies_select.obs_excluded(
+        record, ['always_false_fn']) is False  # type: ignore[arg-type]
+    assert bodies_select.obs_excluded(
+        record, ['always_false_fn', 'always_true_fn']) is True  # type: ignore[arg-type]
+
+
 def test_obs_excluded_identifier_then_regex(monkeypatch: pytest.MonkeyPatch) -> None:
     """The observation is excluded if any exception matches, identifier or regex."""
     monkeypatch.setattr(util, 'get_observation_id', lambda obs: 'C0123CAL')
