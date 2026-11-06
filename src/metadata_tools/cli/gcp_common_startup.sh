@@ -46,6 +46,10 @@ if [ -n "${BRANCH:-}" ]; then
     command -v git >/dev/null 2>&1 || sudo apt-get install -y git
     git clone -b "${BRANCH}" --single-branch https://github.com/SETI/rms-metadata-tools.git
     cd rms-metadata-tools
+    # rms-host-voyager is not yet published or a dependency in pyproject.toml; its
+    # branch carries the cruise SPKs, which the VGISS_xxxx volumes outside the
+    # encounters need. Remove this command once it is on PyPI.
+    "${VENV_DIR}/bin/pip" install "rms-host-voyager @ git+https://github.com/SETI/rms-host-voyager@jns_261106_cruise_spks"
     "${VENV_DIR}/bin/pip" install ".[cloud]"
 fi
 export PATH="${VENV_DIR}/bin:$PATH"
