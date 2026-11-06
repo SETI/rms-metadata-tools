@@ -21,8 +21,9 @@
 # orchestrator neither terminates idle instances nor tracks running ones.
 #
 # The Voyager host has no index stage, so nothing else creates the volume
-# directories of the output tree: each volume to process needs one there,
-# holding at least one file, before dispatch. The startup script installs
+# directories of the output tree: each volume to process needs one there
+# before dispatch, holding the volume's supplemental index (both the .lbl and
+# the .tab), which the geometry stage reads from the output tree. The startup script installs
 # rms-host-voyager from GitHub only on the --debug-branch path, so pass
 # --debug-branch until the package is published.
 #
