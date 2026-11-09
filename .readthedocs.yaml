@@ -14,11 +14,6 @@ build:
     # nodejs: "19"
     # rust: "1.64"
     # golang: "1.19"
-  jobs:
-    # The oops.Host API and the host packages are not released. Remove this job once
-    # they are on PyPI.
-    pre_install:
-      - python -m pip install "rms-oops @ git+https://github.com/SETI/rms-oops@mrs_260925_host_reorg" "rms-host-galileo @ git+https://github.com/SETI/rms-host-galileo@ms_261013_initial_port" "rms-host-cassini @ git+https://github.com/SETI/rms-host-cassini@ms_261004_initial_port"
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:

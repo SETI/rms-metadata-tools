@@ -18,9 +18,6 @@ if [ -n "${BRANCH:-}" ]; then
     cd rms-metadata-tools
     REPO_DIR="$(pwd)"
     python3 -m venv venv
-    # The oops.Host API and the host packages are not released. Remove this command once
-    # they are on PyPI.
-    "$REPO_DIR/venv/bin/pip" install "rms-oops @ git+https://github.com/SETI/rms-oops@mrs_260925_host_reorg" "rms-host-galileo @ git+https://github.com/SETI/rms-host-galileo@ms_261013_initial_port" "rms-host-cassini @ git+https://github.com/SETI/rms-host-cassini@ms_261004_initial_port"
     "$REPO_DIR/venv/bin/pip" install ".[cloud]"
 else
     REPO_DIR="$(pwd)"
