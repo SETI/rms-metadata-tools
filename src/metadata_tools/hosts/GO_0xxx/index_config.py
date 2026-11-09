@@ -74,7 +74,9 @@ def _start_tai_from_sclk(label_dict: dict[str, Any]) -> float:
     """
     from host_galileo.oops import GalileoSSI
 
-    return float(julian.tai_from_tdb(GalileoSSI._tstart_from_sclk(label_dict)))
+    # The host's type stub leaves out its private members
+    return float(julian.tai_from_tdb(
+        GalileoSSI._tstart_from_sclk(label_dict)))  # type: ignore[attr-defined]
 
 #=========================================================================================
 def _spacecraft_clock_start_count_from_label(label_dict: dict[str, Any]) -> str:
