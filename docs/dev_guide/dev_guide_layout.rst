@@ -95,9 +95,9 @@ console-script entry points (see :doc:`dev_guide_environment`):
 .. code-block:: text
 
    src/metadata_tools/hosts/GO_0xxx/
-     host_config.py            # shared host settings + data-label glob
+     host_config.py            # shared host settings, data-label glob, FOV border
      index_config.py           # key__<NAME> column functions
-     geometry_config.py        # SPICE id, mission table, FOV border, hooks
+     geometry_config.py        # SPICE id, mission table, hooks
      host_init.py              # initializes the oops host module (side effects)
      templates/                # host_defs.lbl + the supplemental index template
 

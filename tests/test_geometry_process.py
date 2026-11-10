@@ -72,12 +72,24 @@ def test_get_args_rejects_a_negative_or_unparsable_body_samples(value: str) -> N
     assert parser.parse_args(['/meta', '/out', '--body-samples', '0']).body_samples == 0
 
 
-def test_process_tables_rejects_a_negative_body_samples(tmp_path: Path) -> None:
-    """Arguments passed in directly are checked as the command line's are."""
+@pytest.mark.parametrize('no_body_meshgrids', [False, True])
+def test_process_tables_rejects_a_negative_body_samples(tmp_path: Path,
+                                                        no_body_meshgrids: bool) -> None:
+    """Arguments passed in directly are checked as the command line's are.
+
+    The check comes first, so --no-body-meshgrids cannot hide a bad value.
+    """
     with pytest.raises(ValueError, match='body_samples must be nonnegative, not -1'):
         proc.process_tables('GO_0xxx_supplemental_index',
                             args=_args(_tree(tmp_path),  # type: ignore[arg-type]
-                                       body_samples=-1))
+                                       body_samples=-1,
+                                       no_body_meshgrids=no_body_meshgrids))
+
+
+def test_get_args_rejects_a_negative_default_body_samples() -> None:
+    """A negative default is refused as a negative command-line value is."""
+    with pytest.raises(ValueError, match='body_samples must be nonnegative, not -1'):
+        proc.get_args(host='GO', body_samples=-1)
 
 
 def test_get_args_no_body_meshgrids_is_off_by_default() -> None:

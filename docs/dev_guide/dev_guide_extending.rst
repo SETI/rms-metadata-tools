@@ -118,8 +118,27 @@ body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), and the
    def from_index(index_filename, supplemental_index_filename=None):
        return <Instrument>.from_index(index_filename)
 
-The border to allow around a field of view is not set here but in
-``host_config.py``, since the labels state it too. It reflects the uncertainty
+``geometry_config.py`` may also override these engine defaults, read through the
+accessors in :mod:`metadata_tools.config`:
+
+.. code-block:: python
+
+   EXTRA_CHILDREN = ['PHOEBE']            # default: regular children only
+   index_glob = '<HOST>_????_index.lbl'   # default: <volume_id>_index.lbl
+   def target_name(snapshot): ...         # default: snapshot['TARGET_NAME']
+   def cleanup(): ...                     # default: nothing to clean up
+   def meshgrids(sampling): ...           # default: an empty cache, and
+   def meshgrid(meshgrids, snapshot): ... #   a meshgrid of snapshot.fov
+
+The engine considers only the regular children of a planet, since the irregular
+moons of the giant planets are numerous and their number keeps growing.
+``EXTRA_CHILDREN`` names the irregular moons a host wants treated exactly as
+the regular ones are: reachable by the mission table's selections, listed in the
+inventory, and ordered with their siblings. Each must be a child of one of the
+engine's planets, or the registry refuses it.
+
+The border to allow around a field of view is not set in ``geometry_config.py``
+but in ``host_config.py``, since the labels state it too. It reflects the uncertainty
 in the spacecraft pointing, so it is an angle, the same for every instrument of
 the spacecraft:
 
@@ -145,25 +164,6 @@ both default to none:
 
 The rings apply to a row when either the observation's primary or the system of
 the row's body is named. The companions apply with the ``P`` masker and shadower.
-
-It may also override these engine defaults, read through the accessors in
-:mod:`metadata_tools.config`:
-
-.. code-block:: python
-
-   EXTRA_CHILDREN = ['PHOEBE']            # default: regular children only
-   index_glob = '<HOST>_????_index.lbl'   # default: <volume_id>_index.lbl
-   def target_name(snapshot): ...         # default: snapshot['TARGET_NAME']
-   def cleanup(): ...                     # default: nothing to clean up
-   def meshgrids(sampling): ...           # default: an empty cache, and
-   def meshgrid(meshgrids, snapshot): ... #   a meshgrid of snapshot.fov
-
-The engine considers only the regular children of a planet, since the irregular
-moons of the giant planets are numerous and their number keeps growing.
-``EXTRA_CHILDREN`` names the irregular moons a host wants treated exactly as
-the regular ones are: reachable by the mission table's selections, listed in the
-inventory, and ordered with their siblings. Each must be a child of one of the
-engine's planets, or the registry refuses it.
 
 The width of the FILE_SPECIFICATION_NAME column is whatever the host's summary
 templates declare for it (they must agree); the engine pads the file

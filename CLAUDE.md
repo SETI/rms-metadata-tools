@@ -114,8 +114,9 @@ an old release.
 - `host_config.py`, `index_config.py`, `geometry_config.py` — host-specific settings and
   optional override hooks (e.g. `key__<NAME>(label_path, label_dict)` to compute an index
   column; backplane functions for geometry). The data-label `glob` lives in `host_config`
-  alone. `get_volume_id`, `exclude`, `index_glob`, `target_name`, `cleanup`, `EXTRA_CHILDREN`, `BORDER`, `OPAQUE_RINGS`, `COMPANIONS`,
-  and `meshgrids`/`meshgrid` are optional: the engine reads them through the accessors
+  alone. Optional settings: `get_volume_id`, `exclude`, `BORDER`, `OPAQUE_RINGS`, and
+  `COMPANIONS` in `host_config`; `index_glob`, `target_name`, `cleanup`, `EXTRA_CHILDREN`,
+  and `meshgrids`/`meshgrid` in `geometry_config`. The engine reads them through the accessors
   in `config.py` (`get_volume_id()`, `get_exclude()`, `get_index_glob()`,
   `get_target_name()`, `cleanup()`, `get_border()`, `get_opaque_rings()`, `get_companions()`, `get_extra_children()`, `get_meshgrids()`), which supply
   the defaults.

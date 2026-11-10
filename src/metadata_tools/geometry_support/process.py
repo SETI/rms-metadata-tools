@@ -70,7 +70,12 @@ def get_args(host: str | None = None,
 
     Returns:
         Parser containing the argument specifications.
+
+    Raises:
+        ValueError: If body_samples is negative.
     """
+    if body_samples < 0:
+        raise ValueError(f'body_samples must be nonnegative, not {body_samples}')
 
     # Get common args
     parser = com.get_common_args(host=host, volume_arg=None)
@@ -138,9 +143,11 @@ def process_tables(template_name: str,
     metadata_tree = FCPath(args.metadata_tree)
     output_tree = FCPath(args.output_tree)
     new_only = args.new_only
+    # The value is checked before --no-body-meshgrids replaces it, so a bad
+    # value never passes unnoticed
+    if args.body_samples < 0:
+        raise ValueError(f'body_samples must be nonnegative, not {args.body_samples}')
     body_samples = 0 if args.no_body_meshgrids else args.body_samples
-    if body_samples < 0:
-        raise ValueError(f'body_samples must be nonnegative, not {body_samples}')
     labels_only = args.labels
 
     if volumes is None:
