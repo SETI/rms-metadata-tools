@@ -10,14 +10,16 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=2.3.0",
-  "rms-oops>=0.2.0",
+  "rms-oops>=0.4.0",
+  "rms-host-galileo>=0.1.0",
+  "rms-host-cassini>=0.1.1",
   "rms-polymath>=2.0.0",
   "rms-filecache>=3.1.0",
   "rms-pdslogger>=3.0.0",
   "rms-julian>=3.0.1",
-  "rms-pdsparser>=2.0.0",
+  "rms-pdsparser>=2.4.0",
   "rms-pdstable>=1.0.3",
-  "rms-vicar>=1.2.1",
+  "rms-vicar>=1.4.0",
   "rms-pdstemplate>=2.4.0",
   "rms-textkernel>=1.1.1",
   "fortranformat>=2.0.3",
@@ -84,6 +86,7 @@ where = ["src"]
 "metadata_tools" = ["py.typed", "templates/*.lbl"]
 "metadata_tools.cli" = ["gcp_common_startup.sh"]
 "metadata_tools.hosts.GO_0xxx" = ["templates/*.lbl"]
+"metadata_tools.hosts.COISS_xxxx" = ["templates/*.lbl"]
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
@@ -174,6 +177,8 @@ fail_under = 90
 [tool.mypy]
 strict = true
 disallow_subclassing_any = false
+# The host packages ship a py.typed marker, but their signatures are not annotated.
+untyped_calls_exclude = ["host_galileo", "host_cassini"]
 
 [[tool.mypy.overrides]]
 module = "metadata_tools._version"

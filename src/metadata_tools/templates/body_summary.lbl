@@ -1,0 +1,148 @@
+$NOTE
+##############################################################################
+# Geometry file template for bodies.
+#
+#  This template controls the creation of body geometry labels for every
+#  host. It takes the following from the host's host_defs.lbl:
+#
+#   instrument:       Name of the instrument, as it reads in a sentence.
+#   product:          What one data product is called, e.g. image, and
+#   products:         its plural.
+#   volume_id_bytes:  Width of a volume ID.
+#   filespec_bytes:   Width of the FILE_SPECIFICATION_NAME column.
+#   system_names:     The planetary systems observed, as they read in a list.
+#   is_visual:        True if the data were taken in visual light.
+#
+#  The engine supplies the border allowed around the field of view
+#  (FOV_BORDER, worded from the host's host_config.BORDER), the systems in the
+#  table whose opaque rings the host names (OPAQUE_RINGS, as they read in a
+#  sentence, or empty) and, when the tables are generated, the sampling used
+#  (SAMPLING and BODY_SAMPLES).
+#
+#  A host that must differ shadows this template with a copy of its own,
+#  named <HOST>_body_summary.lbl, in its templates directory.
+#
+##############################################################################
+$END_NOTE
+$ONCE(volume_id = '_'.join(BASENAME(LABEL_PATH()).split('_')[:2]))
+$ONCE(index_path = LABEL_PATH()[:-4] + '.tab')
+$ONCE(table_name = BASENAME(index_path))
+$ONCE(records = FILE_RECORDS(index_path))
+$ONCE(record_bytes = RECORD_BYTES(index_path))
+$ONCE(index_type = 'CUMULATIVE' if volume_id.endswith('999') else 'SINGLE')
+PDS_VERSION_ID                  = PDS3
+RECORD_TYPE                     = $LABEL_VALUE("RECORD_TYPE")$
+RECORD_BYTES                    = $record_bytes$
+FILE_RECORDS                    = $records$
+^BODY_SUMMARY_TABLE             = "$table_name$"
+
+$IF(index_type != 'CUMULATIVE')
+VOLUME_ID                       = "$volume_id$"
+$END_IF
+PRODUCT_CREATION_TIME           = $FILE_TIME(index_path)$
+
+$INCLUDE("host_defs.lbl")
+
+OBJECT                          = BODY_SUMMARY_TABLE
+  INTERCHANGE_FORMAT            = ASCII
+  ROWS                          = $records$
+  ROW_BYTES                     = $record_bytes$
+  INDEX_TYPE                    = $index_type$
+  DESCRIPTION                   = "This index describes the viewing
+    geometry for the planetary bodies observed in the $instrument$ $product$
+    collection. The file contains multiple rows per $product$, one for each moon
+    or other targeted body that falls inside the $product$, plus one for the body
+    identified by the SYSTEM_NAME keyword ($system_names$) whether
+    or not it appears.
+
+$IF(index_type == 'CUMULATIVE')
+    This is the cumulative index, describing all the $products$ in the collection.
+$ELSE
+    This index describes the $products$ found on volume $volume_id$.
+$END_IF
+
+    Two types of geometry are represented in this index. Gridded quantities
+    were constructed by uniformly sampling the pixels that comprise each data
+$IF(SAMPLING)
+    product on a grid spanning the field of view, at intervals of no more
+    than $SAMPLING$ pixels along each axis. Gridless quantities represent a
+    single value.
+$ELSE
+    product on a grid spanning the field of view. Gridless quantities
+    represent a single value.
+$END_IF
+$IF(BODY_SAMPLES)
+
+    Each body inside the field of view is sampled on a grid of its own, at
+    least as fine, with no fewer than $BODY_SAMPLES$ samples across the body
+    however small it appears.
+$END_IF
+
+    For each sampled pixel, a variety of geometric quantities have been
+    calculated. All quantities, gridded and gridless, are tabulated in terms
+    of a global minimum and maximum value with respect to the varying
+    geometry during the interval in which the observation was taken. For
+    angular quantities that cycle from 360 degrees to zero, the tabulated
+    minimum can be numerically greater than the maximum.
+
+    Occasionally, SPICE pointing information is unavailable for the time at
+    which an observation was taken. When this situation occurs, no row has
+    been added to the file.
+
+$IF(FOV_BORDER)
+    To accommodate pointing uncertainty, the $instrument$ field of view has
+    been expanded on every side by $FOV_BORDER$.
+
+$END_IF
+    Regions of a body that are obscured by another body are excluded from the
+    tabulation. The dark side of each body is also generally excluded.
+$IF(OPAQUE_RINGS)
+    Regions of a body in the $OPAQUE_RINGS$ system that are obscured by the
+    opaque rings are excluded too, and so, from the latitude, longitude, hour
+    angle, and surface resolution columns, are regions in the shadow of the
+    opaque rings.
+$END_IF
+$IF(BODY_SAMPLES == 0)
+    If a body is too small to have been captured by the sampling of the
+    $product$, then the associated NULL_CONSTANT will appear in each column.
+$END_IF
+    Quantities that are independent of the field of view are tabulated
+    regardless of obstruction or apparent body size."
+
+  #===========================================================================
+  OBJECT                        = COLUMN
+    NAME                        = "VOLUME_ID"
+    FORMAT                      = A$volume_id_bytes$
+    DESCRIPTION                 = "The unique identifier for the PDS3 data
+      volume."
+  END_OBJECT                    = COLUMN
+
+  #===========================================================================
+  OBJECT                        = COLUMN
+    NAME                        = "FILE_SPECIFICATION_NAME"
+    FORMAT                      = A$filespec_bytes$
+    DESCRIPTION                 = "The full directory path to the data file's
+      label, relative to the root directory of the PDS volume."
+  END_OBJECT                    = COLUMN
+
+  #===========================================================================
+  OBJECT                        = COLUMN
+    NAME                        = "SYSTEM_NAME"
+    FORMAT                      = A12
+    NULL_CONSTANT               = "NONE"
+    DESCRIPTION                 = "The planetary system to which this body
+      belongs."
+  END_OBJECT                    = COLUMN
+
+  #===========================================================================
+  OBJECT                        = COLUMN
+    NAME                        = "BODY_NAME"
+    FORMAT                      = A12
+    DESCRIPTION                 = "The name of the body for which the surface
+      geometry parameters in this row of the table are applicable."
+  END_OBJECT                    = COLUMN
+
+$INCLUDE('body_summary_columns.lbl')
+
+END_OBJECT                      = BODY_SUMMARY_TABLE
+END

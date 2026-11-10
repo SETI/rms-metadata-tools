@@ -22,12 +22,20 @@ constructs a :class:`~metadata_tools.geometry_support.suite.Suite` and calls
 option skips volumes that already contain an ``*_inventory.csv``; supplying
 explicit volumes disables it.
 
+Before the walk, :func:`~metadata_tools.geometry_support.process.limit_quick_caches`
+cuts the number of interpolation tables (``QuickPath`` and ``QuickFrame``) that
+``oops`` keeps per path and per frame from 40 to
+:data:`~metadata_tools.geometry_support.process.QUICK_CACHE_SIZE` (2). The
+tables speed up the evaluation of a single image, but each image is at a new
+time, so tables kept from earlier images are almost never reused and only add
+memory. Disabling the tables altogether makes a run about 2.6 times slower.
+
 Suite
 =====
 
 :class:`~metadata_tools.geometry_support.suite.Suite` reads the volume's
-observations through the host's ``from_index`` hook, builds the per-mode
-meshgrids once, and builds the table list: an inventory table plus the sky,
+observations through the host's ``from_index`` hook, starts the volume's cache
+of FOV meshgrids, and builds the table list: an inventory table plus the sky,
 ring, and body tables. It loops over observations, building one
 :class:`~metadata_tools.geometry_support.record.Record` each and dispatching it
 to every table. A ``RuntimeError`` is raised if a volume contains more than one
@@ -39,13 +47,57 @@ Record and prep
 :class:`~metadata_tools.geometry_support.record.Record` holds one observation's
 state: the primary body (from
 :func:`~metadata_tools.geometry_support.bodies_select.get_primary`), the selected
-bodies, and the ``oops`` backplane. Each table passes its own resolved columns
+bodies, and the ``oops`` backplanes. Each table passes its own resolved columns
 to :meth:`~metadata_tools.geometry_support.record.Record.add`, which binds the
-``BODYX`` placeholder to the body being written and calls
+``BODYX`` placeholder to the body being written, selects that body's backplane,
+and calls
 :func:`~metadata_tools.geometry_support.prep.prep_row`, which evaluates each
 column's backplane key, applies the excluded-pixel mask, and formats the result;
 :meth:`~metadata_tools.geometry_support.record.Record.postprocess` then applies
 each link function to its group of linked columns.
+
+Body-specific meshgrids
+=======================
+
+The sky and ring tables are sampled on the observation's FOV meshgrid, at the
+pixel sampling density (``--sampling``). A body that is small in the image would
+get few of those samples, or none, so each body row is instead sampled across
+its own bounding box:
+
+- :func:`~metadata_tools.geometry_support.bodies_select.bounding_boxes` asks the
+  ``oops`` inventory for the center and apparent diameter of each tabulated
+  body. The unrounded values are used, so a box may be far smaller than a
+  pixel. The inventory is taken in the field of view of the FOV meshgrid, so a
+  box is located in the coordinates that meshgrid samples.
+- :func:`~metadata_tools.geometry_support.meshgrids.box_meshgrid` pads the box
+  by 10% of its size on each side, clips it to the extent of the FOV meshgrid,
+  and samples what remains at the pixel sampling density, but with never fewer
+  than ``--body-samples`` samples along each axis (default 16).
+- :meth:`~metadata_tools.geometry_support.record.Record.backplane_for` builds
+  one backplane on each such meshgrid and reuses it for every column of that
+  body's row.
+
+A column that reaches beyond the body states a wider padding with the
+``MESHGRID_MARGIN`` keyword of its definition, as a fraction of the box's size.
+The limb columns state 1.5, which reaches 4 radii from the body's center: the
+3 radii of altitude that the limb altitude key allows. Such a column is sampled
+on a meshgrid of its own, one for each distinct margin among a table's columns,
+so a row may draw on more than one backplane;
+:func:`~metadata_tools.geometry_support.prep.prep_row` builds the masks for each.
+The minimum sample count is still counted across the body itself, so a wider
+margin adds samples around the body without spreading them thinner. Columns
+that are computed from one another, such as the limb clock angle from the limb
+altitude, must state the same margin. The margin has no effect on a row
+sampled on the FOV meshgrid.
+
+``--no-body-meshgrids`` (a ``body_samples`` of 0) turns all of this off, and no
+boxes are requested. Otherwise the FOV backplane is used instead for a body
+with no box (it is outside the field of view, wholly hidden, or the pointing is
+unavailable) and for a box that covers the whole FOV meshgrid. The masks are
+evaluated on whichever backplane the row uses.
+
+The ring row keeps the FOV meshgrid because its columns describe the unbounded
+ring plane, which is never small in the image.
 
 Masks
 =====
@@ -54,6 +106,39 @@ Masks
 boolean mask of pixels to exclude for a column, honoring the column's masker,
 shadower, and face codes. It depends only on ``oops`` and ``numpy`` so it can be
 unit-tested without a host plugin.
+
+:func:`~metadata_tools.geometry_support.masks.find_pole` and
+:func:`~metadata_tools.geometry_support.masks.pole_in_view` serve the cyclic
+columns of a body's longitude (``('longitude', <body>, ...)``). The range of such
+a column is normally inferred from the samples, as the complement of the largest
+gap between their values. That inference fails when a pole is visible: every
+longitude is then visible too, but the samples reach the region around the pole
+at scattered longitudes, so there is always a gap, and where it falls is an
+accident of sampling. :func:`~metadata_tools.geometry_support.prep.prep_row`
+therefore asks whether a pole lies on the body's visible face, within the area
+the backplane samples, and outside the column's mask; if one does, the column
+reports the whole circle (0 to 360, or -180 to 180).
+
+The same pole bounds the body's latitude columns (``('latitude', <body>, ...)``):
+when it passes a latitude column's mask, its latitude, 90 or -90 degrees, is
+added to the column's values before their minimum and maximum are taken
+(:func:`~metadata_tools.geometry_support.prep.with_pole_latitude`). No sample
+falls exactly on the pole, so without it the bound falls short, by more on a
+small body sampled coarsely.
+
+The test is costly for its size, because a backplane of one pixel takes nearly as
+long to set up as a large one, so it is arranged to do little work.
+``find_pole`` considers only the pole on the observer's side of the equatorial
+plane, the only one that can be visible, and builds one backplane at its pixel
+for each body; ``pole_in_view`` tests each column's mask on that backplane, so
+the masks share whatever they have in common. Under a ``'D'`` face code, a pole
+with the Sun across the equator is in darkness and fails without being tested.
+Both shortcuts are exact. A pole is visible
+from any vantage point away from the body's equatorial plane, so this is the
+usual case; the range is narrower only when the body is seen nearly edge-on to
+its equator, when the visible pole is masked (for example, in darkness under a
+``'D'`` face code), or when it is outside the field of view, as it often is from
+close range.
 
 Formatting and formats
 ======================
@@ -106,9 +191,7 @@ which a stub may override like ``FORMAT``):
 
 * ``BACKPLANE_KEY`` -- the key handed to ``Backplane.evaluate()``, as a Python
   tuple literal. The token ``'bodyx'`` (:data:`~metadata_tools.defs.BODYX`) is
-  substituted per body at row time, and a string of the form
-  ``'defs.<DICT>["bodyx"]'`` resolves to a ``defs`` dictionary lookup after
-  substitution.
+  substituted per body at row time.
 * ``MASK`` (default ``('', '', '')``) -- the ``(masker, shadower, face)``
   codes. The masker/shadower strings concatenate ``"P"`` (planet), ``"R"``
   (rings), and ``"M"`` (blocker body); the face is ``"D"``, ``"N"``, or ``""``.
@@ -118,6 +201,10 @@ which a stub may override like ``FORMAT``):
 * ``LINK_ID`` -- an identifier naming the column's link group: the columns in
   one table sharing it are postprocessed together by the group's link
   function, which the id names (see `Link functions`_ below).
+* ``MESHGRID_MARGIN`` (default 0.1) -- a number: the padding added to each side
+  of a body's bounding box when the column is sampled on a meshgrid of the
+  body's own, as a fraction of the box's size (see `Body-specific meshgrids`_
+  above).
 
 The right-hand side of ``BACKPLANE_KEY`` and ``MASK`` is a Python literal on a
 single line, parsed with :func:`ast.literal_eval`; nothing ever parses these
@@ -211,7 +298,7 @@ Label schema pull
 =================
 
 :func:`~metadata_tools.geometry_support.label_schema.resolve_schema` parses a
-host's summary template: a leading run of plain ``COLUMN`` objects with no
+summary template: a leading run of plain ``COLUMN`` objects with no
 ``BACKPLANE_KEY`` must match the table kind's fixed prefix columns
 (``VOLUME_ID``, ``FILE_SPECIFICATION_NAME``, and, per table kind,
 ``SYSTEM_NAME`` and ``BODY_NAME``); the rest of the table is self-contained
@@ -281,61 +368,21 @@ Important invariants
   carries the backplane key, the mask, the link fields, and one
   :class:`~metadata_tools.geometry_support.label_schema.ColumnStub` per value
   it produces -- all of it parsed from the label template.
-- **Meshgrids** are built once per :class:`~metadata_tools.geometry_support.suite.Suite`
-  and selected per observation by telemetry mode; they are not rebuilt per row.
+- **Meshgrids.** A FOV meshgrid samples an observation's own FOV -- the cutout
+  window, for an image that has one -- plus the border the host allows for
+  pointing uncertainty (``host_config.BORDER``, an angle, so a summed mode gets
+  proportionally fewer pixels of border). It is built by
+  :func:`~metadata_tools.geometry_support.meshgrids.fov_meshgrid` the first
+  time a FOV is met and cached on the
+  :class:`~metadata_tools.geometry_support.suite.Suite`, since the observations
+  of a volume share a few FOV objects. The inventory of bodies in view uses the
+  same allowance. A host may instead supply ``meshgrids`` / ``meshgrid`` hooks
+  of its own. A body-specific meshgrid is built per
+  observation, once for each body in the field of view; see "Body-specific
+  meshgrids" above.
 - **One row per observation.** A call produces at most one row; with the
   default ``allow_zero_rows=True`` an all-null row is dropped (pass
   ``allow_zero_rows=False`` to force it).
-
-Removed capability: detailed (tiled) tables
-===========================================
-
-The subsystem once carried a second processing level, *detailed*, removed
-because it had never been wired up. This section records what it was, so that
-the design is not lost if it is ever wanted again.
-
-**What it was.** Alongside each ``<vol>_<kind>_summary.tab`` a detailed run
-would emit ``<vol>_<kind>_detailed.tab`` holding one row per non-empty spatial
-subregion ("tile") per observation, rather than one row per observation. An
-extra tile-index column was inserted after the body-name prefix columns. The
-level was chosen with ``--selection``, which accepted ``"S"``, ``"D"``, or
-``"SD"``; ``Suite`` built one table set per selected level and one ``Record``
-per level, and dispatched each record to the tables whose level matched.
-
-**Column sets.** Every detailed list was a strict prefix of the corresponding
-summary list — the per-pixel columns without the gridless ones, since a
-whole-body quantity like the sub-solar longitude does not vary across tiles.
-``BODY_DETAILED_COLUMNS`` was ``BODY_COLUMNS``; ``RING_DETAILED_COLUMNS`` was
-``RING_COLUMNS + ANSA_COLUMNS``; ``SUN_DETAILED_COLUMNS`` was ``SUN_COLUMNS``;
-sky shared a single list.
-
-**Tiling definitions.** Bodies were tiled into latitude bands every 20° between
-±70°, with a ``where_in_front`` / ``where_sunward`` overlay. Rings were tiled
-into azimuth bands spanning 0.20π–1.80π, split into inner and outer sets at a
-ring radius of 150,000 km. Sky declination bands existed but were never tested.
-The first entry of each tile list was not a tile but a global area: if its
-sample count fell below ``tiling_min`` (default 100), tiling was suppressed and
-a single untiled row was produced instead. Passing a *tuple* of tile lists
-processed several tile sets in one call, chaining their indices through
-``start_index``.
-
-**Wiring status at removal.** The plumbing was complete from ``Record.add``
-down through ``prep_row``, but nothing ever drove it: no ``Table.add``
-implementation passed ``tiles=``, ``record.ring_tile_dict`` was assigned and
-never read, and no host shipped a detailed label template. The feature could
-not have worked even if called — the tile keys the tile tables actually used
-(``where_all``, ``where_below``, ``where_between``, ``where_above``, ...) had
-no ``FORMAT_DICT`` rows at all, so formatting a tiled row would have raised
-``KeyError``. It emitted no tiled row in any shipped configuration.
-
-**Reintroducing it.** Under the template-pull design the templates define the
-column set, so a detailed variant is mostly a second template: add
-``<HOST>_<kind>_detailed.lbl`` listing the per-pixel columns plus a tile-index
-``COLUMN``, then restore the tile catalog, the ``tiles=`` path through
-``Record.add``/``prep_row``, and the detailed table wiring in ``Suite`` and
-``cumulative_support``. The removal commit in the template-pull PR carries the
-full deleted code; because the repository squash-merges, retrieve it from the
-pull request rather than from ``main``'s history.
 
 API reference
 =============

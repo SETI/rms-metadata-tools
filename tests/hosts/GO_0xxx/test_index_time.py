@@ -19,6 +19,8 @@ UNKNOWN_TIME_LABEL: dict[str, Any] = {
     'SPACECRAFT_CLOCK_START_COUNT': '00030612.00',
     'IMAGE_TIME': 'UNK',
     'EXPOSURE_DURATION': 800.0,
+    'FRAME_DURATION': 60.667,
+    'EXPOSURE_TYPE': 'NORMAL',
 }
 
 # GO_0002/VENUS/C0018062600R.LBL: a frame that gives both fields
@@ -26,6 +28,8 @@ KNOWN_TIME_LABEL: dict[str, Any] = {
     'SPACECRAFT_CLOCK_START_COUNT': '00180626.00',
     'IMAGE_TIME': '1990-02-10T05:12:17.082Z',
     'EXPOSURE_DURATION': 800.0,
+    'FRAME_DURATION': 8.667,
+    'EXPOSURE_TYPE': 'NORMAL',
 }
 
 LABEL_PATH = 'GO_0002/RAW_CAL/C0003061200R.LBL'   # not read by the key functions
@@ -37,8 +41,8 @@ def _tai(iso: str) -> float:
 
 #===============================================================================
 def test_unknown_image_time_comes_from_sclk() -> None:
-    """With IMAGE_TIME = UNK, START_TIME is the clock count and STOP_TIME adds the
-    exposure."""
+    """With IMAGE_TIME = UNK, START_TIME comes from the clock count and STOP_TIME adds
+    the exposure."""
 
     start = index_config.key__start_time(LABEL_PATH, dict(UNKNOWN_TIME_LABEL))
     stop = index_config.key__stop_time(LABEL_PATH, dict(UNKNOWN_TIME_LABEL))
@@ -60,10 +64,20 @@ def test_known_image_time_is_untouched() -> None:
     assert _tai(start) == pytest.approx(midtime - 0.4, abs=1.e-6)
     assert _tai(stop) == pytest.approx(midtime + 0.4, abs=1.e-6)
 
-    # The clock count agrees with IMAGE_TIME to seconds on a frame that has both
-    from_sclk = index_config._tai_from_sclk_count(
-                                    KNOWN_TIME_LABEL['SPACECRAFT_CLOCK_START_COUNT'])
-    assert abs(from_sclk - midtime) < 10.
+    # The start derived from the clock count agrees with the start derived from
+    # IMAGE_TIME on a frame that has both, to the 2/3 s resolution of the count
+    from_sclk = index_config._start_tai_from_sclk(dict(KNOWN_TIME_LABEL))
+    assert abs(from_sclk - (midtime - 0.4)) < 0.7
+
+
+#===============================================================================
+def test_extended_exposure_starts_one_frame_earlier() -> None:
+    """An EXTENDED exposure opens its shutter in the frame before the clock count."""
+
+    extended = dict(UNKNOWN_TIME_LABEL, EXPOSURE_TYPE='EXTENDED')
+    normal = index_config.key__start_time(LABEL_PATH, dict(UNKNOWN_TIME_LABEL))
+    start = index_config.key__start_time(LABEL_PATH, extended)
+    assert _tai(normal) - _tai(start) == pytest.approx(60.667, abs=1.e-5)
 
 
 #===============================================================================

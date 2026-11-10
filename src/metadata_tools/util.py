@@ -2,8 +2,11 @@
 # util.py: Utility functions
 ################################################################################
 """Utility functions for path handling, file I/O, and metadata computations."""
+import fnmatch
+import itertools
 import math
 import re
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, cast
 
@@ -84,6 +87,33 @@ def get_template_name(filename: str, volume_id: str, code_dir: FCPath) -> str:
     """
     collection = code_dir.name
     return filename.replace(volume_id, collection).split('.')[0]
+
+#===============================================================================
+def find_template(host_template_dir: FCPath, name: str) -> FCPath:
+    """Locate a label template: the host's own, or else the one all hosts share.
+
+    A host's template is named for its collection, ``<HOST>_<kind>.lbl``, in
+    the host's ``templates/`` directory. A host with none takes the shared
+    ``<kind>.lbl`` of the global template directory, so it carries a template
+    of its own only where it must differ.
+
+    Parameters:
+        host_template_dir: The host's ``templates/`` directory.
+        name: Name of the host's template, less its suffix, e.g.
+            ``GO_0xxx_body_summary``.
+
+    Returns:
+        Path to the shared template if the host has none and a shared one
+        exists; otherwise the path to the host's template, whether or not it
+        exists.
+    """
+    host_template = host_template_dir / (name + '.lbl')
+    if not host_template.is_file():
+        kind = name.removeprefix(host_template_dir.parent.name + '_')
+        shared_template = FCPath(defs.GLOBAL_TEMPLATE_PATH) / (kind + '.lbl')
+        if shared_template.is_file():
+            return shared_template
+    return host_template
 
 #===============================================================================
 def parse_template_name(template_name: str) -> tuple[str, str, FCPath]:
@@ -172,43 +202,9 @@ def get_volume_subdir(path: FCPath, volume_id: str) -> FCPath:
     return splitpath(path, volume_id)[-1]
 
 #===============================================================================
-# Matches the only form produced by replacement_fn: "defs.<ATTR>["<key>"]"
-_DICT_REF = re.compile(r'^(\w+)\.(\w+)\["([^"]+)"\]$')
-
-
-def _resolve_dict_ref(ref: str) -> Any:
-    """Resolve a dict-reference string of the form ``defs.<ATTR>["<key>"]``.
-
-    Only dictionaries in the ``defs`` module are accessible.
-
-    Parameters:
-        ref: Reference string produced by :func:`replacement_fn`, e.g.
-            ``'defs.RING_SYSTEM_RADII["JUPITER"]'``.
-
-    Returns:
-        The value stored under ``<key>`` in the named ``defs`` dictionary.
-
-    Raises:
-        ValueError: If *ref* does not match the expected form or names a module
-            other than ``defs``.
-        AttributeError: If the named dictionary does not exist in ``defs``.
-        KeyError: If ``<key>`` is not present in the named dictionary.
-    """
-    m = _DICT_REF.match(ref)
-    if m is None:
-        raise ValueError(f'Unrecognized column reference: {ref!r}')
-    module_name, attr_name, key = m.groups()
-    if module_name != 'defs':
-        raise ValueError(f'Unknown module in column reference: {module_name!r}')
-    return getattr(defs, attr_name)[key]
-
-
-#===============================================================================
 def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> Any:
     """Return a copy of the tree of objects, with each occurrence of the
-    placeholder string replaced by the given name. Dictionary references are
-    resolved via an explicit lookup, but only within elements of nested list or
-    tuple leaves; top-level string leaves are not resolved.
+    placeholder string replaced by the given name.
 
     Parameters:
         tree: List or tuple containing the tree.
@@ -221,20 +217,9 @@ def replace(tree: list[Any] | tuple[Any, ...], placeholder: str, name: str) -> A
 
     new_tree: list[Any] = []
     for leaf in tree:
-        # Main entries: replace placeholder and evaluate dict references
+        # Nested entries: recurse
         if isinstance(leaf, (tuple, list)):
-            # replace placeholder
-            replacement = replace(leaf, placeholder, name)
-
-            # resolve any dictionary references now that placeholders are resolved
-            lrep = list(replacement)
-            for i in range(len(lrep)):
-                if isinstance(lrep[i], str) and '[' in lrep[i]:
-                    lrep[i] = _resolve_dict_ref(lrep[i])
-            # Preserve the leaf's container type: lists stay lists, tuples tuples.
-            replacement = tuple(lrep) if isinstance(leaf, tuple) else lrep
-
-            new_tree.append(replacement)
+            new_tree.append(replace(leaf, placeholder, name))
 
         # Simple str with placeholders: replace placeholder and add to tree
         elif isinstance(leaf, str) and leaf.find(placeholder) != -1:
@@ -265,6 +250,73 @@ def get_volume_glob(col: str) -> str:
     volume_glob = parts[0] + '_' + id_glob
 
     return volume_glob
+
+#===============================================================================
+def get_cumulative_id(col: str) -> str:
+    """Name the cumulative volume of a collection.
+
+    Parameters:
+        col: Collection name, e.g., GO_0xxx.
+
+    Returns:
+        The volume ID of the collection's cumulative volume, e.g., GO_0999.
+    """
+    parts = col.rsplit('_', 1)
+    return parts[0] + '_' + parts[1].replace('x', '9')
+
+#===============================================================================
+def require_volumes(volumes: Iterable[str] | None, found: Iterable[str],
+                    tree: FCPath) -> None:
+    """Raise unless every volume requested was found in a tree.
+
+    A volume is found by walking a tree of directories, and in a cloud bucket a
+    directory exists only while it holds a file; a volume missing there would
+    otherwise be skipped without a word.
+
+    Parameters:
+        volumes: The volume IDs requested; None or empty to request none in
+            particular.
+        found: The volume IDs found in the tree.
+        tree: The tree walked, for the message.
+
+    Raises:
+        FileNotFoundError: If a requested volume was not found.
+    """
+    missing = sorted(set(volumes or ()) - set(found))
+    if missing:
+        raise FileNotFoundError(f'no directory for {", ".join(missing)} in '
+                                f'{tree.as_posix()}; each volume to process needs '
+                                'one there, holding at least one file')
+
+#===============================================================================
+_COLLECTION_RE = re.compile(r'[A-Za-z][A-Za-z0-9]*_[0-9]*x+')
+_VOLUME_RE = re.compile(r'[A-Za-z][A-Za-z0-9]*_[0-9]{4}')
+
+def get_volume_id(path: str | Path | FCPath) -> str:
+    """Determine the volume ID from a path into a volume tree.
+
+    The volume is the directory under the collection directory, e.g. GO_0017
+    under GO_0xxx. Where the path names no collection, it is the first
+    component with the form of a volume ID.
+
+    Parameters:
+        path: Path to a volume, or to anything inside one.
+
+    Returns:
+        The volume ID.
+
+    Raises:
+        ValueError: If no component of the path is a volume ID.
+    """
+    parts = FCPath(path).parts
+    for part, child in itertools.pairwise(parts):
+        if (_COLLECTION_RE.fullmatch(part)
+                and fnmatch.fnmatchcase(child, get_volume_glob(part))):
+            return child
+    for part in parts:
+        if _VOLUME_RE.fullmatch(part):
+            return part
+    raise ValueError(f'no volume ID in path {str(path)!r}')
 
 #===============================================================================
 def add_by_base(x_digits: list[int], y_digits: list[int],

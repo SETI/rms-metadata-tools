@@ -7,8 +7,10 @@ from typing import Any
 
 import numpy as np
 import oops
+import pytest
 
-from metadata_tools.geometry_support import prep
+from metadata_tools.config import get_host_config
+from metadata_tools.geometry_support import bodies_select, masks, prep
 from metadata_tools.geometry_support.record import Record
 
 
@@ -28,9 +30,10 @@ def _record(record_stub: Callable[..., Record], pointing: bool = True,
 
 
 def _phase_cols(make_column: Callable[..., Any],
-                mask: tuple[str, str, str] = ('', '', '')) -> list[Any]:
+                mask: tuple[str, str, str] = ('', '', ''),
+                margin: float | None = None) -> list[Any]:
     """Return a one-column schema: the IO phase-angle min/max pair."""
-    return [make_column(key=('phase_angle', 'IO'), mask=mask, flag='DEG',
+    return [make_column(key=('phase_angle', 'IO'), mask=mask, margin=margin, flag='DEG',
                         valid_minimum=0., valid_maximum=180.)]
 
 
@@ -62,7 +65,7 @@ def test_append_body_prefix_truncates_long_name() -> None:
 # prep_row summary path
 #===============================================================================
 def test_summary_writes_single_row(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """The summary path emits one formatted row."""
     # fake_backplane: conftest-private FakeBackplane stand-in for oops.Backplane.
@@ -76,7 +79,7 @@ def test_summary_writes_single_row(
 
 
 def test_summary_no_body_omits_prefixes(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """With no_body=True no body-name columns are inserted."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
@@ -88,8 +91,45 @@ def test_summary_no_body_omits_prefixes(
     assert len(rows[0]) == 3
 
 
+@pytest.mark.parametrize(('primary', 'target', 'system', 'opaque_rings', 'companions'), [
+    ('', 'XMOON', 'XENON', 'XENON_RINGS', []),               # no primary: the system decides
+    ('XENON', 'OTHER', 'OTHER', 'XENON_RINGS', ['XMOON']),   # the primary alone decides
+    ('OTHER', 'OTHER', 'OTHER', None, []),                   # the host names neither
+])
+def test_masks_take_the_rings_and_companions_the_host_names(
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any], monkeypatch: pytest.MonkeyPatch, primary: str,
+        target: str, system: str, opaque_rings: str | None, companions: list[str]) -> None:
+    """The masks and the pole test get what the host names for this row's planet."""
+    seen: dict[str, Any] = {}
+
+    def _mask(*args: Any, **kwargs: Any) -> Any:
+        seen['mask'] = (kwargs['opaque_rings'], kwargs['companions'])
+        return oops.Boolean(False)
+
+    def _pole(*args: Any, **kwargs: Any) -> bool:
+        seen['pole'] = (kwargs['opaque_rings'], kwargs['companions'])
+        return False
+
+    host = get_host_config()
+    monkeypatch.setattr(host, 'OPAQUE_RINGS', {'XENON': 'XENON_RINGS'}, raising=False)
+    monkeypatch.setattr(host, 'COMPANIONS', {'XENON': ['XMOON']}, raising=False)
+    monkeypatch.setattr(bodies_select, 'get_system', lambda body: system)
+    monkeypatch.setattr(masks, 'construct_excluded_mask', _mask)
+    monkeypatch.setattr(masks, 'find_pole', lambda *args: None)
+    monkeypatch.setattr(masks, 'pole_in_view', _pole)
+    fake_backplane.evaluations[('longitude', target)] = \
+        oops.Scalar(np.array([0.5, 1.0]), False)
+    column = make_column(key=('longitude', target), mask=('R', 'R', ''), flag='DEG',
+                         valid_minimum=0., valid_maximum=360.)
+    rows = prep.prep_row(_record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+                         [column], primary=primary, target=target)
+    assert rows[0][2] == f'"{system:<12}"'
+    assert seen == {'mask': (opaque_rings, companions), 'pole': (opaque_rings, companions)}
+
+
 def test_primary_prefix_when_no_target(
-        record_stub: Callable[..., Record], fake_backplane: Any,
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
         make_column: Callable[..., Any]) -> None:
     """With no target, the primary name fills the body prefix column."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
@@ -98,6 +138,25 @@ def test_primary_prefix_when_no_target(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
         _phase_cols(make_column), primary='JUPITER', target=None, no_mask=True)
     assert rows[0][2] == '"JUPITER     "'
+
+
+def test_unregistered_target_is_null_not_evaluated(
+        monkeypatch: pytest.MonkeyPatch, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A column whose target body is not registered is written as its null.
+
+    The ring diameter column names the primary's ring system body, which a
+    planet such as Mars does not have; the backplane is never asked for it.
+    """
+    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: False))
+    columns = [make_column(key=('body_diameter_in_pixels', 'MARS_RING_SYSTEM'),
+                           names=['RING_DIAMETER_IN_PIXELS'], flag='',
+                           width=8, print_format='%8.3f', null_value=-999.)]
+    # fake_backplane holds no evaluation for the key, so evaluating it would raise.
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        columns, primary='MARS', allow_zero_rows=False)
+    assert rows[0][-1] == '-999.000'
 
 
 def test_pointing_unavailable_writes_null_row(
@@ -128,3 +187,125 @@ def test_excluded_mask_applied_when_not_no_mask(
         target='IO', allow_zero_rows=True)
     # Fully excluded + allow_zero_rows -> nothing_found suppresses the row.
     assert rows == []
+
+
+def test_columns_are_sampled_on_the_grid_of_their_margin(
+        exists_true: None, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A column declaring a margin is evaluated, and masked, on that grid.
+
+    Each backplane has its own mask for the same target and mask codes: the
+    wide grid here is wholly excluded while the default grid is not.
+    """
+    wide = type(fake_backplane)(shape=(2, 2))
+    fake_backplane.evaluations[('phase_angle', 'IO')] = \
+        oops.Scalar(np.full((4, 4), 0.5), False)
+    wide.evaluations[('limb_altitude', 'IO')] = oops.Scalar(np.full((2, 2), 1.0), False)
+    wide.evaluations[('emission_angle', 'IO')] = oops.Scalar(np.full((2, 2), 1.0), False)
+    wide.in_back[('IO', 'JUPITER')] = np.ones((2, 2), dtype=bool)
+    columns = [
+        make_column(key=('phase_angle', 'IO'), mask=('P', '', '')),
+        make_column(key=('limb_altitude', 'IO'), margin=1.5,
+                    names=['MINIMUM_LIMB_ALTITUDE', 'MAXIMUM_LIMB_ALTITUDE']),
+        make_column(key=('emission_angle', 'IO'), margin=1.5, mask=('P', '', ''),
+                    names=['MINIMUM_EMISSION_ANGLE', 'MAXIMUM_EMISSION_ANGLE'])]
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None, columns,
+        primary='JUPITER', target='IO', no_body=True, grids={1.5: (wide, 3)})
+    assert rows == [['"vol"', '"file"', '  28.648,  28.648', '  57.296,  57.296',
+                     '-999.000,-999.000']]
+
+
+def test_a_margin_without_a_grid_uses_the_row_backplane(
+        exists_true: None, record_stub: Callable[..., Record],
+        fake_backplane: Any, make_column: Callable[..., Any]) -> None:
+    """A declared margin is ignored when the row has no grid for it.
+
+    The ring and sky rows, and a body with no bounding box, have only the
+    backplane of the whole field of view.
+    """
+    fake_backplane.evaluations[('phase_angle', 'IO')] = \
+        oops.Scalar(np.array([0.5, 1.0]), False)
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        _phase_cols(make_column, margin=1.5), primary='JUPITER', target='IO',
+        no_mask=True, no_body=True)
+    assert rows[0][-1] == '  28.648,  57.296'
+
+
+#===============================================================================
+# Longitude coverage with a visible pole
+#===============================================================================
+def _longitude_cols(make_column: Callable[..., Any]) -> list[Any]:
+    """Return the IO longitude min/max pair and its phase-angle neighbour."""
+    return [make_column(key=('longitude', 'IO', 'iau', 'west'), mask=('', '', 'D'),
+                        names=['MINIMUM_IAU_LONGITUDE', 'MAXIMUM_IAU_LONGITUDE'],
+                        flag='360', valid_minimum=0., valid_maximum=360.),
+            make_column(key=('phase_angle', 'IO'), mask=('', '', 'D'), flag='DEG',
+                        valid_minimum=0., valid_maximum=180.)]
+
+
+@pytest.mark.parametrize(('pole_visible', 'expected'),
+                         [(False, '  10.000, 100.000'), (True, '   0.000, 360.000')])
+def test_longitude_covers_the_circle_when_a_pole_is_in_view(
+        monkeypatch: pytest.MonkeyPatch, exists_true: None,
+        record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any], pole_visible: bool, expected: str) -> None:
+    """A visible pole makes the longitudes complete; other columns are untouched."""
+    calls: list[tuple[Any, ...]] = []
+    found: list[Any] = []
+
+    def _find_pole(backplane: Any, target: Any) -> Any:
+        found.append(target)
+        return 'pole'
+
+    def _pole_in_view(pole: Any, backplane: Any, target: Any, primary: Any,
+                      mask_desc: Any, **kwargs: Any) -> bool:
+        calls.append((pole, target, mask_desc))
+        return pole_visible
+
+    monkeypatch.setattr(masks, 'find_pole', _find_pole)
+    monkeypatch.setattr(masks, 'pole_in_view', _pole_in_view)
+    fake_backplane.evaluations[('longitude', 'IO', 'iau', 'west')] = \
+        oops.Scalar(np.radians(np.arange(10., 101.)), False)
+    fake_backplane.evaluations[('phase_angle', 'IO')] = \
+        oops.Scalar(np.array([0.5, 1.0]), False)
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
+        _longitude_cols(make_column), primary='JUPITER', target='IO', no_body=True)
+    assert rows[0][-2:] == [expected, '  28.648,  57.296']
+    assert calls == [('pole', 'IO', ('', '', 'D'))]
+    assert found == ['IO']
+
+
+@pytest.mark.parametrize(('north', 'visible', 'expected'),
+                         [(False, True, ' -90.000,  40.000'),
+                          (True, True, ' -20.000,  90.000'),
+                          (True, False, ' -20.000,  40.000')])
+def test_a_visible_pole_bounds_the_latitude(
+        monkeypatch: pytest.MonkeyPatch, exists_true: None,
+        record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any], north: bool, visible: bool,
+        expected: str) -> None:
+    """The latitude range reaches the pole exactly when the pole is in view."""
+    monkeypatch.setattr(masks, 'find_pole',
+                        lambda backplane, target: masks.Pole(None, north))
+    monkeypatch.setattr(masks, 'pole_in_view', lambda *a, **k: visible)
+    fake_backplane.evaluations[('latitude', 'IO', 'centric')] = \
+        oops.Scalar(np.radians([-20., 10., 40.]), False)
+    column = make_column(key=('latitude', 'IO', 'centric'), mask=('', '', 'D'),
+                         names=['MINIMUM_PLANETOCENTRIC_LATITUDE',
+                                'MAXIMUM_PLANETOCENTRIC_LATITUDE'],
+                         flag='DEG', valid_minimum=-90., valid_maximum=90.)
+    rows = prep.prep_row(
+        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None, [column],
+        primary='JUPITER', target='IO', no_body=True)
+    assert rows[0][-1] == expected
+
+
+def test_with_pole_latitude_keeps_only_unmasked_values() -> None:
+    """Masked latitudes are dropped and the pole's latitude is added."""
+    values = oops.Scalar(np.array([0.1, 0.2, 0.3]), np.array([False, True, False]))
+    result = prep.with_pole_latitude(values, north=False)
+    assert not np.any(result.mask)
+    assert list(result.vals) == [0.1, 0.3, -np.pi/2]

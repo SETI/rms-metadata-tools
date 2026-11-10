@@ -1,12 +1,11 @@
 """Host-specific utilities and key functions for Galileo SSI (GLL SSI) index generation.
 
-This module supplies the file glob and the ``key__<NAME>`` functions used to populate
-columns of the GO_0xxx supplemental index table.
+This module supplies the ``key__<NAME>`` functions used to populate columns of the
+GO_0xxx supplemental index table.
 """
 from pathlib import Path
 from typing import Any, cast
 
-import cspyce
 import julian
 import vicar
 from filecache import FCPath
@@ -14,17 +13,6 @@ from filecache import FCPath
 import metadata_tools.common as com
 import metadata_tools.util as util
 from metadata_tools.hosts.GO_0xxx import host_config as hconf
-
-##########################################################################################
-# GO_0xxx arguments
-##########################################################################################
-glob: str = 'C0*.LBL'
-
-# Kernels needed to convert a spacecraft clock count to a time. They are loaded only
-# when a label gives no IMAGE_TIME, so ordinary index runs stay free of SPICE.
-_GALILEO_SC_ID: int = -77
-_SCLK_KERNELS: list[str] = ['General/LSK/naif0012.tls', 'Galileo/SCLK/mk00062a.tsc']
-_sclk_state: dict[str, bool] = {'furnished': False}
 
 ##########################################################################################
 # Key functions (optional)
@@ -45,20 +33,20 @@ def _event_tai(label_path: str | Path | FCPath,
 
     Returns:
         The requested TAI time. If the label has no IMAGE_TIME, the time is derived
-        from SPACECRAFT_CLOCK_START_COUNT and is accurate to a few seconds. The NULL
-        value is passed through only if the clock count is missing as well.
+        from SPACECRAFT_CLOCK_START_COUNT by the oops Galileo SSI host, so it matches
+        the time used for the geometry. The NULL value is passed through only if the
+        clock count is missing as well.
     """
     exposure = label_dict['EXPOSURE_DURATION'] / 1000
 
-    # With no IMAGE_TIME, derive the time from the spacecraft clock count. The count
-    # marks the frame start, so no half-exposure offset applies. Pass UNK through
-    # only if the count is missing too.
+    # With no IMAGE_TIME, derive the start of the exposure from the spacecraft clock
+    # count, as the oops host does. Pass UNK through only if the count is missing too.
     image_time = label_dict['IMAGE_TIME']
     if image_time == 'UNK':
         count = label_dict.get('SPACECRAFT_CLOCK_START_COUNT', 'UNK')
         if count == 'UNK':
             return cast(str, image_time)
-        return float(_tai_from_sclk_count(count) + (exposure if stop else 0.))
+        return float(_start_tai_from_sclk(label_dict) + (exposure if stop else 0.))
     image_tai = julian.tai_from_iso(image_time)
 
     # compute offset from IMAGE_TIME
@@ -68,31 +56,27 @@ def _event_tai(label_path: str | Path | FCPath,
     return float(image_tai + sign*0.5*exposure)
 
 #=========================================================================================
-def _tai_from_sclk_count(count: str) -> float:
-    """Convert a Galileo spacecraft clock count from a label to a TAI time.
+def _start_tai_from_sclk(label_dict: dict[str, Any]) -> float:
+    """Derive the start of the exposure from the spacecraft clock count in a label.
 
-    The leapseconds and Galileo SCLK kernels are loaded on the first call. On frames
-    that give both fields, the result lands within a few seconds of IMAGE_TIME.
+    The Galileo SSI host does the conversion, including the shutter delay and the
+    one-frame offset of an EXTENDED exposure. The conversion is private to the host,
+    which offers no public equivalent, but the alternative is to duplicate its clock
+    model here. The host is imported here, on first use, so ordinary index runs stay
+    free of oops; it furnishes only the leapseconds and Galileo SCLK kernels.
 
     Parameters:
-        count: The SPACECRAFT_CLOCK_START_COUNT label value, e.g. "00030612.00".
+        label_dict: Dictionary containing the PDS label fields. It must give
+            SPACECRAFT_CLOCK_START_COUNT and FRAME_DURATION.
 
     Returns:
-        The corresponding time in seconds TAI.
+        The start of the exposure in seconds TAI.
     """
-    if not _sclk_state['furnished']:
-        from spicedb import get_spice_filecache_prefix
-        prefix = get_spice_filecache_prefix()
-        for kernel in _SCLK_KERNELS:
-            path = prefix.retrieve(kernel)
-            if not isinstance(path, Path):
-                raise FileNotFoundError(f'SPICE kernel not available: {kernel}')
-            cspyce.furnsh(str(path))
-        _sclk_state['furnished'] = True
+    from host_galileo.oops import GalileoSSI
 
-    fields = util.sclk_split_count(count)
-    et = cspyce.scs2e(_GALILEO_SC_ID, util.sclk_format_count(fields, 'n:n:n:n'))
-    return float(julian.tai_from_tdb(et))
+    # The host's type stub leaves out its private members
+    return float(julian.tai_from_tdb(
+        GalileoSSI._tstart_from_sclk(label_dict)))  # type: ignore[attr-defined]
 
 #=========================================================================================
 def _spacecraft_clock_start_count_from_label(label_dict: dict[str, Any]) -> str:

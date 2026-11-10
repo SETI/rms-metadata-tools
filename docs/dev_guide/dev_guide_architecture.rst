@@ -10,8 +10,8 @@ The codebase has two halves. The **engine** (``src/metadata_tools/``, excluding
 compute geometry, format columns, and write tables and PDS3 labels. A **host
 configuration** package (``src/metadata_tools/hosts/<HOST>/``) supplies the
 collection-specific knowledge: which files to include, how to derive certain
-columns, the spacecraft ID, the body-selection mission table, the meshgrids, and
-the label templates.
+columns, the spacecraft ID, the body-selection mission table, the border allowed
+around a field of view, and the label templates.
 
 The engine never imports a specific host's config modules directly (see issue #112).
 Instead, console-script entry points call :func:`metadata_tools.config.set_host`
@@ -147,8 +147,7 @@ The volume coordinator
 :class:`~metadata_tools.geometry_support.suite.Suite` is the geometry stage's
 per-volume coordinator. It is *not* a table; it owns a list of table objects
 (one inventory table plus a sky, ring, and body table),
-reads the volume's observations through the host's ``from_index`` hook, builds
-the meshgrids, and in
+reads the volume's observations through the host's ``from_index`` hook, and in
 :meth:`~metadata_tools.geometry_support.suite.Suite.create` loops over
 observations, building a record with
 :meth:`~metadata_tools.geometry_support.suite.Suite.make_record` and dispatching

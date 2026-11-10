@@ -3,10 +3,12 @@
 ################################################################################
 """Tests for the path and name arithmetic helpers in util.py."""
 import types
+from pathlib import Path
 
 import pytest
 from filecache import FCPath
 
+import metadata_tools.defs as defs
 import metadata_tools.util as util
 
 
@@ -97,6 +99,35 @@ def test_get_volume_subdir_returns_relative_tail() -> None:
 
 
 #===============================================================================
+# find_template
+#===============================================================================
+def test_find_template_falls_back_to_the_shared_template(tmp_path: Path) -> None:
+    """A host with no template of its own for a table takes the shared one."""
+    host_dir = FCPath(tmp_path / 'GO_0xxx' / 'templates')
+    assert util.find_template(host_dir, 'GO_0xxx_body_summary') == \
+        FCPath(defs.GLOBAL_TEMPLATE_PATH) / 'body_summary.lbl'
+    assert util.find_template(host_dir, 'GO_0xxx_inventory') == \
+        FCPath(defs.GLOBAL_TEMPLATE_PATH) / 'inventory.lbl'
+
+
+def test_find_template_prefers_the_host_template(tmp_path: Path) -> None:
+    """A host's own template shadows the shared one."""
+    (tmp_path / 'GO_0xxx' / 'templates').mkdir(parents=True)
+    own = tmp_path / 'GO_0xxx' / 'templates' / 'GO_0xxx_body_summary.lbl'
+    own.write_text('END\n', encoding='utf-8')
+    host_dir = FCPath(tmp_path / 'GO_0xxx' / 'templates')
+    assert util.find_template(host_dir, 'GO_0xxx_body_summary') == FCPath(own)
+
+
+def test_find_template_names_the_host_template_when_there_is_neither(
+        tmp_path: Path) -> None:
+    """With no shared template to fall back on, the host's is the one expected."""
+    host_dir = FCPath(tmp_path / 'GO_0xxx' / 'templates')
+    assert util.find_template(host_dir, 'GO_0xxx_supplemental_index') == \
+        host_dir / 'GO_0xxx_supplemental_index.lbl'
+
+
+#===============================================================================
 # get_volume_glob
 #===============================================================================
 def test_get_volume_glob_expands_x_digits() -> None:
@@ -107,6 +138,64 @@ def test_get_volume_glob_expands_x_digits() -> None:
 def test_get_volume_glob_only_last_segment() -> None:
     """Only the last underscore-separated segment is expanded."""
     assert util.get_volume_glob('COISS_2xxx') == 'COISS_2[0-9][0-9][0-9]'
+
+
+#===============================================================================
+# get_cumulative_id
+#===============================================================================
+def test_get_cumulative_id_fills_the_x_digits_with_nines() -> None:
+    """The cumulative volume replaces each 'x' digit of the collection with 9."""
+    assert util.get_cumulative_id('GO_0xxx') == 'GO_0999'
+    assert util.get_cumulative_id('COISS_2xxx') == 'COISS_2999'
+
+
+#===============================================================================
+# require_volumes
+#===============================================================================
+@pytest.mark.parametrize('volumes', [None, [], ['GO_0001'], ['GO_0001', 'GO_0002']])
+def test_require_volumes_accepts_volumes_found(volumes: list[str] | None) -> None:
+    """No volume requested, or only volumes found, is no error."""
+    util.require_volumes(volumes, {'GO_0001', 'GO_0002', 'GO_0999'}, FCPath('/m/GO_0xxx'))
+
+
+def test_require_volumes_names_each_missing_volume() -> None:
+    """A volume requested but not found is an error naming it and the tree."""
+    with pytest.raises(FileNotFoundError,
+                       match=r'^no directory for GO_0002, GO_0003 in gs://b/GO_0xxx; '
+                             r'each volume to process needs one there'):
+        util.require_volumes(['GO_0003', 'GO_0001', 'GO_0002'], ['GO_0001'],
+                             FCPath('gs://b/GO_0xxx'))
+
+
+#===============================================================================
+# get_volume_id
+#===============================================================================
+def test_get_volume_id_is_the_directory_under_the_collection() -> None:
+    """The volume is the collection directory's child, at any depth of path."""
+    assert util.get_volume_id('/holdings/volumes/GO_0xxx/GO_0017') == 'GO_0017'
+    assert util.get_volume_id(
+        FCPath('/v/COISS_2xxx/COISS_2001/data/1455855935_1456049320/N1455970236_1.LBL')
+        ) == 'COISS_2001'
+    # Each collection of a host names its own volumes.
+    assert util.get_volume_id('/v/COISS_1xxx/COISS_1009/index/index.lbl') == 'COISS_1009'
+
+
+def test_get_volume_id_reads_remote_paths() -> None:
+    """A bucket path is searched like a local one."""
+    assert util.get_volume_id(
+        FCPath('gs://bucket/metadata/GO_0xxx/GO_0999/GO_0999_index.lbl')) == 'GO_0999'
+
+
+def test_get_volume_id_without_a_collection_directory() -> None:
+    """With no collection in the path, the first volume-like component is taken."""
+    assert util.get_volume_id('/scratch/GO_0017/C3/JUPITER/C0368976900R.LBL') == 'GO_0017'
+
+
+def test_get_volume_id_rejects_a_path_with_no_volume() -> None:
+    """A path naming no volume is an error."""
+    # The Cassini data directory is two clock counts, not a volume ID.
+    with pytest.raises(ValueError, match=r"no volume ID in path '/scratch/1455855935_1456049320'"):
+        util.get_volume_id('/scratch/1455855935_1456049320')
 
 
 #===============================================================================

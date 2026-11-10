@@ -10,11 +10,11 @@ from typing import cast
 from filecache import FCPath
 
 import metadata_tools.common as com
+import metadata_tools.config as hooks
 import metadata_tools.geometry_support as geom
 import metadata_tools.index_support as idx
 import metadata_tools.label_support as lab
 import metadata_tools.util as util
-from metadata_tools.config import get_host_config
 
 
 #===============================================================================
@@ -42,7 +42,6 @@ def _cat_rows(volume_tree: FCPath,
             regenerated. A missing cumulative table is logged and skipped.
     """
     logger = com.get_logger()
-    hconf = get_host_config()
 
     table_type = table.qualifier or ''
     if table.level:
@@ -57,14 +56,14 @@ def _cat_rows(volume_tree: FCPath,
             return
         logger.info('Writing cumulative label for %s.', cumulative_file)
         lab.create(cumulative_file, template_path,
-                   table_type=table_type.upper(),
-                   use_global_template=table.use_global_template)
+                   table_type=table_type.upper())
         return
 
     # Walk the input tree, adding lines for each found volume
     logger.info('Building Cumulative %s table', table_type)
     content: list[str] = []
     cumulative_file = FCPath('')
+    found: set[str] = set()
     for root, dirs, _files in volume_tree.walk(top_down=True):
         # __skip directory will not be scanned, so it's safe for test results
         if '__skip' in root.as_posix():
@@ -81,6 +80,7 @@ def _cat_rows(volume_tree: FCPath,
         # Determine notional volume
         parts = root.parts
         vol = parts[-1]
+        found.add(vol)
 
         # Do not continue if this volume is excluded
         skip = False
@@ -95,8 +95,8 @@ def _cat_rows(volume_tree: FCPath,
         if fnmatch.filter([vol], volume_glob):
             if not volumes or vol in volumes:
                 if vol != cumulative_dir.name:
-                    volume_id = hconf.get_volume_id(root)
-                    cumulative_id = hconf.get_volume_id(cumulative_dir)
+                    volume_id = hooks.get_volume_id(root)
+                    cumulative_id = hooks.get_volume_id(cumulative_dir)
 
                     # Read the table file; skip this volume if it has none
                     table_file = root / ('%s_%s' % (vol, table_type) + ext)
@@ -111,6 +111,8 @@ def _cat_rows(volume_tree: FCPath,
                         FCPath(table_file.as_posix().replace(volume_id, cumulative_id))
                     content += lines
 
+    util.require_volumes(volumes, found, volume_tree)
+
     # Write table and label
     if content:
         logger.info('Writing cumulative file %s.', cumulative_file)
@@ -118,8 +120,7 @@ def _cat_rows(volume_tree: FCPath,
 
         logger.info('Writing cumulative label.')
         lab.create(cumulative_file, template_path,
-                   table_type=table_type.upper(),
-                   use_global_template=table.use_global_template)
+                   table_type=table_type.upper())
 
 #===============================================================================
 def get_args(host: str | None = None,

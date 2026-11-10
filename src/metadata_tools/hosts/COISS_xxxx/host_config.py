@@ -1,0 +1,26 @@
+################################################################################
+"""General host-specific definitions for Cassini ISS.
+
+This module holds settings shared across the index, geometry, and
+cumulative generators for the COISS_1xxx and COISS_2xxx collections.
+"""
+template_name = 'COISS_xxxx_supplemental_index'
+
+################################################################################
+# Data labels to include: narrow-angle (N) and wide-angle (W) images
+################################################################################
+glob: str = '[NW]*.LBL'
+
+################################################################################
+# Border allowed around every field of view for uncertainty in the spacecraft
+# pointing, in radians. The engine expands each field of view by this angle,
+# and the labels state it.
+################################################################################
+BORDER: float = 1.5e-4
+
+################################################################################
+# The rings that obscure and shadow the bodies of a system, by system name. The
+# engine applies them in the masks of the geometry columns, and the body labels
+# say so.
+################################################################################
+OPAQUE_RINGS: dict[str, str] = {'SATURN': 'SATURN_MAIN_RINGS'}

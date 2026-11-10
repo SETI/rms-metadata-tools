@@ -4,12 +4,26 @@ Examples:
     metadata-cumulative GO_0xxx $RMS_METADATA_TEST/GO_0xxx/GO_0999/
     metadata-cumulative GO_0xxx $RMS_METADATA/GO_0xxx/GO_0999/ --volumes GO_0022
 
-The full list of command-line options is documented in the user guide.
+Command-line arguments:
+
+  HOST_ID                     Host directory, e.g. GO_0xxx or COISS_xxxx. It must
+                              come first.
+  output_dir                  The collection's cumulative volume directory, e.g.
+                              GO_0xxx/GO_0999/. Its parent holds the per-volume
+                              tables to combine.
+  --volumes [VOLUME ...]      Combine only these volumes.
+  --exclude, -e [VOLUME ...]  Skip these volumes. The default is the host's
+                              configured list.
+  --labels, -l                Write labels for existing cumulative tables; combine
+                              nothing.
+  --help, -h                  Print a summary of the arguments and exit.
+
+The user guide describes the options in more detail.
 """
 import sys
 
 from metadata_tools.cli._host import load_host
-from metadata_tools.config import get_host_config, set_host
+from metadata_tools.config import get_exclude, get_host_config, set_host
 
 
 def main() -> None:
@@ -23,4 +37,4 @@ def main() -> None:
 
     import metadata_tools.cumulative_support as cml
 
-    cml.create_cumulative_indexes(hconf.template_name, exclude=hconf.exclude)
+    cml.create_cumulative_indexes(hconf.template_name, exclude=get_exclude())

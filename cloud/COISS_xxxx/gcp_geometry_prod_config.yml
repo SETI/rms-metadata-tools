@@ -1,0 +1,62 @@
+# Production GCP config for the COISS_xxxx geometry stage.
+#
+# The 125 volumes (COISS_1001-1009 and COISS_2001-2116) hold 443,177 images:
+# a median of 3,812 a volume and a maximum of 7,361 (COISS_2072). Each volume
+# is one task. On an n2 core a task runs at about 1.8 s an image (COISS_2072
+# on n2-highmem-2, 2026-11-04: 3 h 37 min, peak 6.3 GB), so a median volume
+# takes about two hours, the largest under four, and the whole collection
+# about 220 task-hours.
+#
+# Each task gets 2 vCPUs, one core as in that trial, and 8 GB. Eight 32-vCPU
+# instances give 128 task slots, so every volume runs at once and the run takes
+# about as long as the largest volume. Spot instances are preempted too often
+# for tasks of hours, so dispatch on demand, without --use-spot:
+#
+#   metadata-geometry-cloud COISS_xxxx <paths...> \
+#       --config gcp_geometry_prod_config.yml --task-file ./tasks.json
+#
+# Keep the dispatching machine awake for the whole run: while it sleeps, the
+# orchestrator neither terminates idle instances nor tracks running ones.
+#
+# The Cassini host has no index stage, so nothing else creates the volume
+# directories of the output tree: each volume to process needs one there,
+# holding at least one file, before dispatch.
+#
+# The default (unsuffixed) gcp_geometry_config.yml remains the small test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-geometry-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  # cloud_tasks takes the cheapest type per vCPU among those that qualify, not
+  # the first listed. c4 and n4 take only hd-balanced boot disks, so with
+  # pd-balanced only n2 qualifies.
+  instance_types:           ["^n2-standard-.*"]
+  min_cpu:                  32
+  max_cpu:                  32
+  max_instances:            8
+  cpus_per_task:            2
+  min_memory_per_task:      8            # GB
+
+  # The largest volume takes under four hours; eight flags a wedged task
+  # without killing a slow-but-live one.
+  max_runtime:              28800
+
+  # Per-task FileCache holds the volume's index and label data; the OOPS
+  # resources (SPICE kernels) live on the separately attached persistent
+  # disk named by $OOPS_RESOURCES_DISK, not the boot disk.
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      20           # GB: OS + venv + clone/pip install
+  boot_disk_per_task:       5            # GB per concurrent task slot
+
+  # Re-queue tasks lost with their instance, but do not loop tasks that fail
+  # on their own.
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  # Cost guard: eight on-demand n2-standard-32 instances cost about $12.50 an
+  # hour.
+  max_total_price_per_hour: 14.00        # USD/hour

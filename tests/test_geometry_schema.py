@@ -96,10 +96,27 @@ def test_sky_and_sun_keys_are_already_bound(qualifier: str) -> None:
         assert defs.BODYX not in str(column.key), column.stubs[0].name
 
 
-def test_ring_diameter_key_holds_a_dict_reference() -> None:
-    """The ring diameter key defers a RING_SYSTEM_RADII lookup to substitution."""
+def test_ring_diameter_key_names_the_ring_system_body() -> None:
+    """The ring diameter takes its radius from the primary's ring system body."""
     columns = {c.stubs[0].name: c for c in resolve_schema(TEMPLATE_DIR, 'ring').columns}
-    assert 'RING_SYSTEM_RADII' in str(columns['RING_DIAMETER_IN_PIXELS'].key)
+    assert columns['RING_DIAMETER_IN_PIXELS'].key == (
+        'body_diameter_in_pixels', defs.BODYX + '_RING_SYSTEM')
+
+
+def test_only_the_limb_columns_widen_their_meshgrid() -> None:
+    """The limb columns reach 3 radii above the body, so they pad their box.
+
+    A margin of 1.5 diameters reaches 4 radii from the body's center, which is
+    the limit of 3 radii of altitude that the limb altitude key states. The
+    clock angle is computed from the altitude, so the two must agree.
+    """
+    margins = {stub.name: column.margin
+               for qualifier in sorted(SHIPPED)
+               for column in resolve_schema(TEMPLATE_DIR, qualifier).columns
+               for stub in column.stubs
+               if column.margin is not None}
+    assert margins == {'MINIMUM_LIMB_ALTITUDE': 1.5, 'MAXIMUM_LIMB_ALTITUDE': 1.5,
+                       'MINIMUM_LIMB_CLOCK_ANGLE': 1.5, 'MAXIMUM_LIMB_CLOCK_ANGLE': 1.5}
 
 
 def test_only_the_centre_coordinates_are_linked() -> None:
@@ -379,7 +396,7 @@ def test_every_format_entry_is_used() -> None:
     One dictionary serves all four fragments, so an entry is dead only if no
     fragment refers to it.
     """
-    template_dir = Path(metadata_tools.__file__).parent / 'templates'
+    template_dir = FCPath(Path(metadata_tools.__file__).parent / 'templates')
     dictionary = (template_dir / 'column_formats.lbl').read_text(encoding='utf-8')
     entries = set(re.findall(
         r'OBJECT *= *COLUMN_FORMAT\n *NAME *= *"(\w+)"', dictionary))
@@ -407,6 +424,22 @@ def _host_dir(tmp_path: Path) -> Path:
     host = tmp_path / 'GO_0xxx'
     shutil.copytree(TEMPLATE_DIR.as_posix(), host / 'templates')
     return host
+
+
+def _shadow_template(host: Path, qualifier: str) -> Path:
+    """Give the host a copy of its own of a shared summary template.
+
+    Parameters:
+        host: The copied host directory.
+        qualifier: The table kind.
+
+    Returns:
+        Path to the host's copy, named for its collection.
+    """
+    shared = Path(defs.GLOBAL_TEMPLATE_PATH.as_posix()) / f'{qualifier}_summary.lbl'
+    path = host / 'templates' / f'{host.name}_{qualifier}_summary.lbl'
+    shutil.copyfile(shared, path)
+    return path
 
 
 def _shadow_fragment(host: Path, fragment: str, old: str, new: str,
@@ -726,6 +759,26 @@ def test_a_link_id_without_a_function_is_an_error(tmp_path: Path) -> None:
         resolve_schema(tdir, 'sky')
 
 
+def test_a_meshgrid_margin_is_read_as_a_number(tmp_path: Path) -> None:
+    """MESHGRID_MARGIN is a Python number; an integer is read as a float."""
+    tdir = _sky_with_link(tmp_path, '    MESHGRID_MARGIN             = 2\n')
+    columns = {c.stubs[0].name: c for c in resolve_schema(tdir, 'sky').columns}
+    margin = columns['MINIMUM_RIGHT_ASCENSION'].margin
+    assert margin == 2.0
+    assert isinstance(margin, float)
+    assert columns['MINIMUM_DECLINATION'].margin is None
+
+
+@pytest.mark.parametrize('value', ['-0.5', '"wide"', 'True', '(1, 2)'])
+def test_a_meshgrid_margin_must_be_a_non_negative_number(tmp_path: Path,
+                                                         value: str) -> None:
+    """Anything but a non-negative number is rejected when the table is built."""
+    tdir = _sky_with_link(tmp_path, f'    MESHGRID_MARGIN             = {value}\n')
+    with pytest.raises(RuntimeError,
+                       match='MESHGRID_MARGIN must be a non-negative number'):
+        resolve_schema(tdir, 'sky')
+
+
 def test_a_host_may_define_a_link_function(tmp_path: Path,
                                            monkeypatch: pytest.MonkeyPatch) -> None:
     """A LINK_ID whose function only the host defines resolves to the host's."""
@@ -748,7 +801,7 @@ def test_private_keyword_on_prefix_column_is_an_error(tmp_path: Path) -> None:
     error.
     """
     host = _host_dir(tmp_path)
-    path = host / 'templates' / 'GO_0xxx_sky_summary.lbl'
+    path = _shadow_template(host, 'sky')
     text = path.read_text(encoding='utf-8')
     needle = '    NAME                        = "VOLUME_ID"\n'
     assert needle in text
@@ -757,6 +810,27 @@ def test_private_keyword_on_prefix_column_is_an_error(tmp_path: Path) -> None:
         encoding='utf-8')
     with pytest.raises(RuntimeError, match='prefix columns are not computed'):
         resolve_schema(FCPath(host / 'templates'), 'sky')
+
+
+def test_a_host_template_shadows_the_shared_one(tmp_path: Path) -> None:
+    """A host's own summary template is read in place of the shared one."""
+    host = _host_dir(tmp_path)
+    path = _shadow_template(host, 'sky')
+    text = path.read_text(encoding='utf-8')
+    needle = 'A$filespec_bytes$'
+    assert needle in text
+    path.write_text(text.replace(needle, 'A60', 1), encoding='utf-8')
+    schema = resolve_schema(FCPath(host / 'templates'), 'sky')
+    assert schema.prefix_stubs[1].width == 62
+
+
+@pytest.mark.parametrize('qualifier', sorted(SHIPPED))
+def test_prefix_widths_come_from_the_host_definitions(qualifier: str) -> None:
+    """The shared templates take the identification widths from host_defs.lbl."""
+    stubs = resolve_schema(TEMPLATE_DIR, qualifier).prefix_stubs
+    assert [stub.name for stub in stubs[:2]] == ['VOLUME_ID', 'FILE_SPECIFICATION_NAME']
+    # GO_0xxx declares 7 and 32; a written field also holds its quotes.
+    assert [stub.width for stub in stubs[:2]] == [9, 34]
 
 
 def test_narrow_overflow_format_is_an_error(tmp_path: Path) -> None:
@@ -772,7 +846,7 @@ def test_narrow_overflow_format_is_an_error(tmp_path: Path) -> None:
 def test_prefix_mismatch_is_an_error(tmp_path: Path) -> None:
     """A table whose identification columns differ from the expected run fails."""
     host = _host_dir(tmp_path)
-    path = host / 'templates' / 'GO_0xxx_sky_summary.lbl'
+    path = _shadow_template(host, 'sky')
     text = path.read_text(encoding='utf-8')
     path.write_text(text.replace('"VOLUME_ID"', '"VOLUME_IDENT"', 1), encoding='utf-8')
     with pytest.raises(RuntimeError, match='must begin with the prefix columns'):

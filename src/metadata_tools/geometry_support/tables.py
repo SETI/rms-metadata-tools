@@ -57,16 +57,21 @@ class InventoryTable(com.Table):
         super().__init__(output_dir=output_dir, template_path=template_path,
                          qualifier='inventory',
                          suffix="_inventory.csv",
-                         use_global_template=True,
                          level=None, **kwargs)
 
     #===========================================================================
     def add(self, record: 'Record') -> None:
         """Add an Inventory row.
 
+        An observation without pointing gets no row, as in the other tables: an
+        empty body list then means that nothing is in view, never that the
+        inventory could not be computed.
+
         Parameters:
             record: Record describing the row to add.
         """
+        if not record.pointing_available:
+            return
         line = ",".join(record.prefixes) + ',"' + ",".join(record.inventory) + '"'
         self.rows += [line]
 
@@ -231,10 +236,12 @@ class BodyTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a row for each body selected in the record.
 
+        Each row is sampled across its own body.
+
         Parameters:
             record: Record describing the rows to add; one row is added per
                 entry in record.bodies.
         """
         for name in record.bodies:
             self.rows += record.add(cast(TableSchema, self.schema).columns,
-                                    name=name, target=name)
+                                    name=name, target=name, grid=name)

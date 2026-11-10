@@ -17,9 +17,50 @@ is to copy the Galileo SSI host and adapt it:
    ``geometry_config.py``, ``host_init.py``, and ``__init__.py`` from an existing
    host (e.g. ``GO_0xxx``) as a starting point.
 #. Edit the configuration modules (below) and ``host_init.py``.
-#. Create a ``templates/`` subdirectory, copy the templates, rename them, edit
-   ``host_defs.lbl`` and the summary templates, and define the supplemental
-   metadata in the supplemental template.
+#. Create a ``templates/`` subdirectory holding two templates: ``host_defs.lbl``
+   and ``<HOST>_supplemental_index.lbl``. Copy them from an existing host, edit
+   ``host_defs.lbl`` (below), and define the supplemental metadata in the
+   supplemental template. The summary and inventory tables are labeled from the
+   templates all hosts share.
+
+``host_defs.lbl`` states the mission and instrument keywords that appear in
+every label, and defines the values the shared summary templates
+(``<kind>_summary.lbl`` in ``src/metadata_tools/templates/``) take from the
+host:
+
+.. code-block:: text
+
+   # The instrument, as it reads in a sentence
+   $ONCE(instrument = 'Galileo SSI')
+   # What one data product is called, and its plural: image, spectrum, ...
+   $ONCE(product = 'image')
+   $ONCE(products = 'images')
+   # Widths of a volume ID and of the FILE_SPECIFICATION_NAME column
+   $ONCE(volume_id_bytes = 7)
+   $ONCE(filespec_bytes = 32)
+   $ONCE(system_names = 'EARTH, VENUS, or JUPITER')
+   $ONCE(ring_system = 'Jupiter')
+   $ONCE(is_visual = True)
+
+The templates take four more values from the engine, not from
+``host_defs.lbl``: ``FOV_BORDER``, the host's ``host_config.BORDER`` worded as
+an angle (the border sentence is omitted for a host with no border); ``OPAQUE_RINGS``,
+the systems in a body table's ``SYSTEM_NAME`` column for which the host defines
+``host_config.OPAQUE_RINGS``, as they read in a sentence and read from the table
+itself; and ``SAMPLING``
+and ``BODY_SAMPLES``, the sampling a geometry
+table was generated with. The last two are known only to a geometry run, so a
+cumulative label describes the sampling without stating its values.
+
+Each ``$ONCE`` value must be a literal: the geometry stage reads the column
+widths from the templates without generating a label, and substitutes only
+literal definitions (:func:`~metadata_tools.column_grammar.substitute_constants`).
+The values land in fixed lines of label prose, so keep them short enough that no
+line of a generated label outgrows the PDS3 line length.
+
+A host that must differ from a shared template -- a summary table or the
+inventory -- places a copy of its own, named ``<HOST>_<kind>.lbl``, in its
+``templates/`` directory; :func:`~metadata_tools.util.find_template` prefers it.
 
 The configuration modules form the contract the engine relies on. Console-script
 entry points call :func:`metadata_tools.config.set_host` with the host id, which
@@ -35,61 +76,109 @@ convention is involved.
 .. code-block:: python
 
    template_name = '<HOST>_supplemental_index'   # base name of templates/tables
-   exclude = ['<HOST>_9999']      # volumes excluded from processing (e.g. the
-                                   # cumulative-index volume itself); lives here,
-                                   # not in geometry_config.py, so the cumulative
-                                   # stage can read it without the SPICE cost of
-                                   # importing geometry_config
+   glob = 'C0*.LBL'               # which data labels to include
 
-   def get_volume_id(label_path):
-       """Return the volume ID for a path under this collection."""
-       ...
-
-``index_config.py`` must provide the data-label ``glob`` and may provide any
-number of ``key__<name>`` column functions:
+and may override two engine defaults:
 
 .. code-block:: python
 
-   glob = 'C0*.LBL'   # which data labels to include
+   exclude = ['<HOST>_0001']      # volumes excluded from processing; by default
+                                   # the cumulative volume of the tree being
+                                   # processed (GO_0999 under GO_0xxx)
+
+   def get_volume_id(label_path):
+       """Return the volume ID for a path under this collection.
+
+       By default the volume is the directory under the collection directory,
+       e.g. COISS_2001 under COISS_2xxx (util.get_volume_id).
+       """
+       ...
+
+``index_config.py`` may provide any number of ``key__<name>`` column functions:
+
+.. code-block:: python
 
    def key__start_time(label_path, label_dict):
        """Compute the START_TIME column for one data product."""
        ...
 
-``geometry_config.py`` must provide the spacecraft ID, file globs, default
-selection, the body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), the
-``from_index`` reader, the ``meshgrids`` / ``meshgrid`` functions,
-``target_name``, and ``cleanup``. It typically re-exports ``host_config.exclude``
-under the same name, since the geometry stage (unlike the cumulative stage)
-already pays the SPICE import cost:
+``geometry_config.py`` must provide the spacecraft ID, default selection, the
+body-selection ``MISSION_TABLE`` (and its ``EXCEPTIONS``), and the
+``from_index`` reader:
 
 .. code-block:: python
 
-   import oops.hosts.<mission>.<instrument> as inst
-
-   import metadata_tools.hosts.<HOST>.host_config as host_config
+   from host_<mission>.oops import <Instrument>
 
    SC = -77                       # NAIF spacecraft ID
-   glob = 'C0*.LBL'
-   index_glob = '<HOST>_????_index.lbl'
    selection = 'S'
-   exclude = host_config.exclude
    MISSION_TABLE = [ ... ]        # SCLK ranges -> primary, secondaries, ...
    EXCEPTIONS = [ ... ]           # regexes/predicates excluded from the SCLK test
-   from_index = inst.from_index
 
-   def meshgrids(sampling): ...
-   def meshgrid(meshgrids, snapshot): ...
-   def target_name(snapshot): ...
-   def cleanup(): ...
+   def from_index(index_filename, supplemental_index_filename=None):
+       return <Instrument>.from_index(index_filename)
 
-``host_init.py`` initializes the ``oops`` host module so the body registry is
-populated, and is imported only for that side effect:
+The border to allow around a field of view is not set here but in
+``host_config.py``, since the labels state it too. It reflects the uncertainty
+in the spacecraft pointing, so it is an angle, the same for every instrument of
+the spacecraft:
 
 .. code-block:: python
 
-   import oops.hosts.<mission>.<instrument> as inst
-   inst.initialize()
+   BORDER = 1.5e-4     # radians
+
+With no ``BORDER``, the field of view is sampled as it is. The engine samples
+each observation's own FOV (``observation.fov``) with that border around it, and
+takes the inventory of bodies in view with the same allowance. Because the
+border is an angle, a summed mode or a wider camera gets proportionally fewer
+pixels of it, and the labels state it as an angle alone.
+
+A host whose planets have rings to be treated as opaque, hiding and shadowing
+other bodies, names them in ``host_config.py``, by system. A primary with
+companions that do the same names those too. The engine itself names no planet;
+both default to none:
+
+.. code-block:: python
+
+   OPAQUE_RINGS = {'SATURN': 'SATURN_MAIN_RINGS'}
+   COMPANIONS = {'PLUTO': ['CHARON']}
+
+The rings apply to a row when either the observation's primary or the system of
+the row's body is named. The companions apply with the ``P`` masker and shadower.
+
+It may also override these engine defaults, read through the accessors in
+:mod:`metadata_tools.config`:
+
+.. code-block:: python
+
+   EXTRA_CHILDREN = ['PHOEBE']            # default: regular children only
+   index_glob = '<HOST>_????_index.lbl'   # default: <volume_id>_index.lbl
+   def target_name(snapshot): ...         # default: snapshot['TARGET_NAME']
+   def cleanup(): ...                     # default: nothing to clean up
+   def meshgrids(sampling): ...           # default: an empty cache, and
+   def meshgrid(meshgrids, snapshot): ... #   a meshgrid of snapshot.fov
+
+The engine considers only the regular children of a planet, since the irregular
+moons of the giant planets are numerous and their number keeps growing.
+``EXTRA_CHILDREN`` names the irregular moons a host wants treated exactly as
+the regular ones are: reachable by the mission table's selections, listed in the
+inventory, and ordered with their siblings. Each must be a child of one of the
+engine's planets, or the registry refuses it.
+
+The width of the FILE_SPECIFICATION_NAME column is whatever the host's summary
+templates declare for it (they must agree); the engine pads the file
+specification to that width in every table, and the inventory label reports the
+widths found in the table.
+
+``host_init.py`` initializes the mission's ``oops`` host package
+(``rms-host-<mission>``) so the body registry is populated, and is imported only
+for that side effect:
+
+.. code-block:: python
+
+   from host_<mission>.oops import <Instrument>
+
+   <Instrument>.initialize()
 
 Finally, add tests under ``tests/hosts/<HOST>/`` (marked ``requires_archive``).
 
@@ -120,8 +209,8 @@ and its computation -- so a new column is a template edit plus, at most, a new
 backplane function. The geometry column set is the same for every collection:
 it lives in the shared fragments in ``src/metadata_tools/templates/``
 (``body_summary_columns.lbl``, ``ring_summary_columns.lbl``, and so on), which
-every host's summary template pulls in with ``$INCLUDE``. A host's own
-``<HOST>_<kind>_summary.lbl`` carries only the prefix columns and the
+the shared summary templates pull in with ``$INCLUDE``. A summary template
+itself, ``<kind>_summary.lbl``, carries only the prefix columns and the
 table-level boilerplate.
 
 #. For a two-valued column, add a ``COLUMN_DEFINITION`` object to the shared
@@ -134,7 +223,8 @@ table-level boilerplate.
    ``DESCRIPTION`` (what the quantity *is*), and the computation --
    ``BACKPLANE_KEY`` (a Python tuple literal, with ``'bodyx'`` where the body
    name goes), ``MASK`` if any bodies mask it, ``OVERFLOW_FORMAT`` (in PDS3
-   FORMAT notation) if a value can outgrow its field, and ``LINK_ID`` if a
+   FORMAT notation) if a value can outgrow its field, ``MESHGRID_MARGIN`` if
+   the quantity reaches beyond the body's bounding box, and ``LINK_ID`` if a
    postprocessing rule ties the column to others. A ``LINK_ID`` names its link
    function: ``X`` calls ``link__x()``, which must exist in
    ``geometry_support/link_fns.py`` or the host's ``geometry_config``
@@ -160,6 +250,7 @@ Removing a column is likewise a template-only edit: delete the definition and
 its stubs (or the single ``COLUMN``), and the computation goes with them.
 
 In the rare case that one collection must genuinely differ, a host can place
-its own edited copy of a fragment in its ``templates/`` directory: the
-directory holding the summary template is searched first when ``$INCLUDE``
-resolves, so the host copy shadows the shared one for that host alone.
+its own edited copy of a fragment in its ``templates/`` directory: the host's
+directory is searched first when ``$INCLUDE`` resolves
+(:class:`~metadata_tools.label_support.HostTemplate`), so the host copy shadows
+the shared one for that host alone.

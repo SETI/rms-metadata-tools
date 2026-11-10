@@ -1,23 +1,18 @@
 """Host-specific definitions and utilities for Galileo SSI (GLL SSI) geometry generation.
 
-This module defines the mission table, meshgrid construction, target-name resolution,
-and other settings used to compute geometry tables for the GO_0xxx collection.
+This module defines the mission table and other settings used to compute geometry
+tables for the GO_0xxx collection.
 """
-from typing import Any, cast
+from typing import Any
 
-import oops
-import oops.hosts.galileo.ssi as ssi
+from host_galileo.oops import GalileoSSI
 
-import metadata_tools.hosts.GO_0xxx.host_config as host_config
 import metadata_tools.hosts.GO_0xxx.host_init  # noqa: F401  (side-effect import)
 
 ##########################################################################################
 # GO_0xxx arguments
 ##########################################################################################
 SC: int = -77
-index_glob: str = 'GO_????_index.lbl'
-exclude: list[str] = host_config.exclude
-glob: str = 'C0*.LBL'
 
 
 ##########################################################################################
@@ -34,8 +29,9 @@ glob: str = 'C0*.LBL'
 #
 #  RULES:
 #   1. The primary and secondary bodies, if specified, are always included.
-#   2. Children of the primary are included if they intersect the FOV. If
-#      there are selections, then only the selected children are considered.
+#   2. Children of the primary (its regular children and any EXTRA_CHILDREN)
+#      are included if they intersect the FOV. If there are selections, then
+#      only the selected children are considered.
 #   3. If there is no primary, all selections that intersect the FOV are included.
 #   4. The target is always included.
 #   5. If the target is a satellite, the parent is included.
@@ -87,124 +83,21 @@ MISSION_TABLE: list[Any] = [
                                                                       'THEBE'],
                                                                                    ['SATURN'])]
 
-##########################################################################################
-# Exception functions
-##########################################################################################
-
 #=========================================================================================
-def except_test(observation: Any) -> bool:
-    """Return True if this observation should be skipped for geometry.
+def from_index(index_filename: Any, supplemental_index_filename: Any = None) -> list[Any]:
+    """Return one observation per index row with a nonzero exposure.
 
-    GO_0xxx never skips observations. Hosts that need to filter specific
-    observations can override this function in their geometry_config.
+    The host returns an observation for every row. Zero-exposure rows are dropped
+    here, so the geometry tables hold the same rows as before.
 
     Parameters:
-        observation: OOPS Observation object.
+        index_filename: Path to the label of the index file.
+        supplemental_index_filename: Path to the label of the supplemental index file,
+            if any.
 
     Returns:
-        True if the observation should be skipped; always False for GO_0xxx.
+        The observations of the index, in row order, less those with zero exposure.
     """
-    return False
-
-
-##########################################################################################
-# Mission-specific data (required)
-##########################################################################################
-BORDER: int = 25             # in units of full-size SSI pixels
-NAC_PIXEL: float = 6.0e-6    # approximate full-size SSI pixel in units of radians
-EXPAND: float = BORDER * NAC_PIXEL  # Amount to expand FOV in units of radians
-from_index = ssi.from_index
-
-
-##########################################################################################
-# Meshgrid functions (required)
-##########################################################################################
-
-MODE_SIZES: dict[str, int] = {"FULL": 1,
-              "NONE":  1,
-              "HMA":  1,
-              "HIM":  1,
-              "IM8":  1,
-              "HCA":  1,
-              "IM4":  1,
-              "XCM":  1,
-              "HCM":  1,
-              "HCJ":  1,
-              "HIS":  2,
-              "AI8":  2}
-
-#=========================================================================================
-def meshgrids(sampling: float) -> dict[str, Any]:
-    """Build a meshgrid for each SSI telemetry mode at the given pixel sampling.
-
-    Parameters:
-        sampling: Pixel sampling density.
-
-    Returns:
-        Mapping from telemetry mode name to its meshgrid object.
-    """
-    meshgrids: dict[str, Any] = {}
-    for mode in MODE_SIZES:
-        pixel_wrt_full = MODE_SIZES[mode]
-        pixels = 800 / MODE_SIZES[mode]
-
-        # Define sampling of FOV
-        origin = -float(BORDER) / pixel_wrt_full
-        limit = pixels - origin
-
-        # Revise the sampling to be exact
-        samples = int((limit - origin) / sampling + 0.999)
-        under = (limit - origin) / samples
-
-        # Construct the meshgrid
-        limit += 0.0001
-        meshgrid = oops.Meshgrid.for_fov(ssi.SSI.fovs[mode], origin,
-                                         undersample=under, limit=limit, swap=True)
-        meshgrids[mode] = meshgrid
-
-    return meshgrids
-
-#=========================================================================================
-def meshgrid(meshgrids: dict[str, Any], snapshot: Any) -> Any:
-    """Determine the meshgrid given the dictionary derived from the SSI index file.
-
-    Parameters:
-        meshgrids: Meshgrid objects to choose from.
-        snapshot: Observation object for a GOSSI image.
-
-    Returns:
-        The selected meshgrid for this observation.
-    """
-    return meshgrids[snapshot.dict['TELEMETRY_FORMAT_ID']]
-
-
-##########################################################################################
-# Utilities (required)
-##########################################################################################
-
-#=========================================================================================
-# Defined once in host_config and re-exported here so both configs stay in sync.
-get_volume_id = host_config.get_volume_id
-
-
-##########################################################################################
-# SSI geometry functions (required)
-##########################################################################################
-
-#=========================================================================================
-def target_name(snapshot: dict[str, Any]) -> str:
-    """Determine the target name from the snapshot's dictionary.
-
-    Parameters:
-        snapshot: Snapshot observation dictionary.
-
-    Returns:
-        The snapshot's TARGET_NAME value.
-    """
-
-    return cast(str, snapshot["TARGET_NAME"])
-
-#=========================================================================================
-def cleanup() -> None:
-    """Clean up after geometry generation, called after tables and labels are written."""
-    pass
+    observations = GalileoSSI.from_index(index_filename,
+                                         supplement=supplemental_index_filename)
+    return [observation for observation in observations if observation.texp != 0]

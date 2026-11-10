@@ -6,6 +6,7 @@ import types
 from pathlib import Path
 from typing import Any
 
+import oops
 import pytest
 from filecache import FCPath
 
@@ -25,7 +26,7 @@ def _args(tree: FCPath, **over: Any) -> types.SimpleNamespace:
     ns = types.SimpleNamespace(
         metadata_tree=str(tree), output_tree=str(tree), new_only=False,
         labels=False, volumes=None, exclude=None, first=None, sampling=8,
-        pattern=None)
+        body_samples=16, no_body_meshgrids=False, pattern=None)
     for k, v in over.items():
         setattr(ns, k, v)
     return ns
@@ -51,6 +52,60 @@ def test_get_args_defaults_and_parse() -> None:
     parser = proc.get_args(host='GO', sampling=8)
     args = parser.parse_args(['/meta', '/out', '--sampling', '4'])
     assert args.sampling == 4
+
+
+def test_get_args_body_samples_default_and_override() -> None:
+    """--body-samples defaults to 16 and parses over the provided default."""
+    parser = proc.get_args(host='GO')
+    assert parser.parse_args(['/meta', '/out']).body_samples == 16
+    assert parser.parse_args(['/meta', '/out', '--body-samples', '32']).body_samples == 32
+    assert proc.get_args(host='GO', body_samples=8).parse_args(
+        ['/meta', '/out']).body_samples == 8
+
+
+@pytest.mark.parametrize('value', ['-1', 'many'])
+def test_get_args_rejects_a_negative_or_unparsable_body_samples(value: str) -> None:
+    """--body-samples is a count; 0 disables body meshgrids, and nothing is below it."""
+    parser = proc.get_args(host='GO')
+    with pytest.raises(SystemExit):
+        parser.parse_args(['/meta', '/out', '--body-samples', value])
+    assert parser.parse_args(['/meta', '/out', '--body-samples', '0']).body_samples == 0
+
+
+def test_process_tables_rejects_a_negative_body_samples(tmp_path: Path) -> None:
+    """Arguments passed in directly are checked as the command line's are."""
+    with pytest.raises(ValueError, match='body_samples must be nonnegative, not -1'):
+        proc.process_tables('GO_0xxx_supplemental_index',
+                            args=_args(_tree(tmp_path),  # type: ignore[arg-type]
+                                       body_samples=-1))
+
+
+def test_get_args_no_body_meshgrids_is_off_by_default() -> None:
+    """--no-body-meshgrids is a flag, unset unless given."""
+    parser = proc.get_args(host='GO')
+    assert parser.parse_args(['/meta', '/out']).no_body_meshgrids is False
+    assert parser.parse_args(['/meta', '/out', '--no-body-meshgrids']).no_body_meshgrids is True
+
+
+@pytest.mark.parametrize(('disabled', 'expected'), [(False, 16), (True, 0)])
+def test_process_tables_passes_body_samples(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+        disabled: bool, expected: int) -> None:
+    """The suite gets the sample count, or 0 when body meshgrids are disabled."""
+    tree = _tree(tmp_path)
+    seen: list[int] = []
+
+    class FakeSuite:
+        def __init__(self, indir: str, *a: Any, **k: Any) -> None:
+            seen.append(k['body_samples'])
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    proc.process_tables('GO_0xxx_supplemental_index',
+                        args=_args(tree, no_body_meshgrids=disabled))  # type: ignore[arg-type]
+    assert seen == [expected, expected]
 
 
 def test_get_args_new_only_is_a_flag() -> None:
@@ -88,6 +143,27 @@ def test_process_tables_builds_suite(
     assert built.count('created') == 2
 
 
+def test_process_tables_limits_quick_caches(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The oops QuickPath and QuickFrame caches are cut to QUICK_CACHE_SIZE."""
+    quick = oops.config.QUICK.dictionary
+    monkeypatch.setitem(quick, 'quickpath_cache_size', 40)
+    monkeypatch.setitem(quick, 'quickframe_cache_size', 40)
+
+    class FakeSuite:
+        def __init__(self, *a: Any, **k: Any) -> None:
+            pass
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    proc.process_tables('GO_0xxx_supplemental_index',
+                        args=_args(_tree(tmp_path)))  # type: ignore[arg-type]
+    assert quick['quickpath_cache_size'] == proc.QUICK_CACHE_SIZE
+    assert quick['quickframe_cache_size'] == proc.QUICK_CACHE_SIZE
+
+
 def test_process_tables_excludes_volume(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Volumes listed in exclude are skipped."""
@@ -106,6 +182,26 @@ def test_process_tables_excludes_volume(
                         args=_args(tree),  # type: ignore[arg-type]
                         exclude=['GO_0002'])
     assert built == ['GO_0001']
+
+
+def test_process_tables_excludes_the_cumulative_volume_by_default(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """With no exclude at all, the tree's cumulative volume is skipped."""
+    tree = _tree(tmp_path)
+    (Path(tree.as_posix()) / 'GO_0999').mkdir()
+    built: list[str] = []
+
+    class FakeSuite:
+        def __init__(self, indir: str, *a: Any, **k: Any) -> None:
+            built.append(FCPath(indir).name)
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    proc.process_tables('GO_0xxx_supplemental_index',
+                        args=_args(tree))  # type: ignore[arg-type]
+    assert sorted(built) == ['GO_0001', 'GO_0002']
 
 
 def test_process_tables_uses_args_exclude_over_parameter(
@@ -208,4 +304,49 @@ def test_process_tables_volumes_filter(
     proc.process_tables('GO_0xxx_supplemental_index',
                         args=_args(tree),  # type: ignore[arg-type]
                         volumes=['GO_0001'])
+    assert built == ['GO_0001']
+
+
+def test_process_tables_rejects_a_volume_not_in_the_tree(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A volume requested with no directory in the output tree is an error.
+
+    In a cloud bucket an empty volume directory does not exist, and the worker
+    would otherwise report success having written nothing.
+    """
+    tree = _tree(tmp_path)
+    built: list[str] = []
+
+    class FakeSuite:
+        def __init__(self, indir: str, *a: Any, **k: Any) -> None:
+            built.append(FCPath(indir).name)
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    with pytest.raises(FileNotFoundError, match=r'^no directory for GO_0003 in '):
+        proc.process_tables('GO_0xxx_supplemental_index',
+                            args=_args(tree),  # type: ignore[arg-type]
+                            volumes=['GO_0001', 'GO_0003'])
+    assert built == ['GO_0001']
+
+
+def test_process_tables_accepts_a_requested_volume_that_is_excluded(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A volume found but excluded is skipped, not reported missing."""
+    tree = _tree(tmp_path)
+    built: list[str] = []
+
+    class FakeSuite:
+        def __init__(self, indir: str, *a: Any, **k: Any) -> None:
+            built.append(FCPath(indir).name)
+
+        def create(self, **k: Any) -> None:
+            pass
+
+    monkeypatch.setattr(proc, 'Suite', FakeSuite)
+    proc.process_tables('GO_0xxx_supplemental_index',
+                        args=_args(tree),  # type: ignore[arg-type]
+                        volumes=['GO_0001', 'GO_0002'], exclude=['GO_0002'])
     assert built == ['GO_0001']

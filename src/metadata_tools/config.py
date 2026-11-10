@@ -11,6 +11,12 @@ engine code, to populate the registry for the host being processed.
 """
 import importlib
 import types
+from pathlib import Path
+from typing import Any, cast
+
+from filecache import FCPath
+
+import metadata_tools.util as util
 
 _host_id: str | None = None
 _host_config: types.ModuleType | None = None
@@ -138,3 +144,131 @@ def get_geometry_config() -> types.ModuleType:
         _geometry_config = importlib.import_module(
             f'metadata_tools.hosts.{_host_id}.geometry_config')
     return _geometry_config
+
+################################################################################
+# Host hooks with engine defaults
+#
+#  A host defines one of these only where it must differ from the default.
+################################################################################
+
+#===============================================================================
+def get_volume_id(path: str | Path | FCPath) -> str:
+    """Determine the volume ID from a path into a volume tree.
+
+    Parameters:
+        path: Path to a volume, or to anything inside one.
+
+    Returns:
+        The result of the host's ``host_config.get_volume_id`` if it defines
+        one; otherwise that of :func:`metadata_tools.util.get_volume_id`.
+    """
+    hook = getattr(get_host_config(), 'get_volume_id', None)
+    if hook is not None:
+        return cast(str, hook(path))
+    return util.get_volume_id(path)
+
+#===============================================================================
+def get_border() -> float:
+    """The border the host allows around a field of view, for pointing uncertainty.
+
+    Returns:
+        The host's ``host_config.BORDER``, in radians, if it defines one;
+        otherwise 0.
+    """
+    return float(getattr(get_host_config(), 'BORDER', 0.))
+
+#===============================================================================
+def get_opaque_rings() -> dict[str, str]:
+    """The ring bodies treated as opaque, which obscure and shadow the bodies of their systems.
+
+    Returns:
+        The host's ``host_config.OPAQUE_RINGS``, keyed by system name, if it defines
+        one; otherwise an empty dictionary, for which rings never mask a body.
+    """
+    return dict(getattr(get_host_config(), 'OPAQUE_RINGS', {}))
+
+#===============================================================================
+def get_companions() -> dict[str, list[str]]:
+    """The bodies that obscure and shadow a target wherever its primary does.
+
+    Returns:
+        The host's ``host_config.COMPANIONS``, keyed by primary name, if it defines
+        one; otherwise an empty dictionary.
+    """
+    return dict(getattr(get_host_config(), 'COMPANIONS', {}))
+
+#===============================================================================
+def get_exclude() -> list[str] | None:
+    """The volumes the host excludes from processing.
+
+    Returns:
+        The host's ``host_config.exclude`` if it defines one; otherwise None,
+        for which each stage excludes the cumulative volume of the tree it is
+        processing.
+    """
+    return cast('list[str] | None', getattr(get_host_config(), 'exclude', None))
+
+#===============================================================================
+def get_index_glob() -> str | None:
+    """The glob matching a volume's index label in its metadata directory.
+
+    Returns:
+        The host's ``geometry_config.index_glob`` if it defines one; otherwise
+        None, for which the label is named for the volume,
+        ``<volume_id>_index.lbl``.
+    """
+    return cast('str | None', getattr(get_geometry_config(), 'index_glob', None))
+
+#===============================================================================
+def get_target_name(observation_dict: dict[str, Any]) -> str:
+    """Determine the target of an observation.
+
+    Parameters:
+        observation_dict: The observation's dictionary of index values.
+
+    Returns:
+        The result of the host's ``geometry_config.target_name`` if it defines
+        one; otherwise the observation's TARGET_NAME.
+    """
+    hook = getattr(get_geometry_config(), 'target_name', None)
+    if hook is not None:
+        return str(hook(observation_dict))
+    return str(observation_dict['TARGET_NAME'])
+
+#===============================================================================
+def cleanup() -> None:
+    """Clean up after a volume's geometry tables and labels are written.
+
+    Calls the host's ``geometry_config.cleanup`` if it defines one.
+    """
+    hook = getattr(get_geometry_config(), 'cleanup', None)
+    if hook is not None:
+        hook()
+
+#===============================================================================
+def get_extra_children() -> list[str]:
+    """The irregular children the host treats as it does the regular ones.
+
+    Returns:
+        The host's ``geometry_config.EXTRA_CHILDREN`` if it defines one;
+        otherwise an empty list, for which only the regular children of a
+        planet are considered.
+    """
+    return list(getattr(get_geometry_config(), 'EXTRA_CHILDREN', []))
+
+#===============================================================================
+def get_meshgrids(sampling: float) -> dict[Any, Any]:
+    """The meshgrids a volume's observations choose from.
+
+    Parameters:
+        sampling: Pixel sampling density.
+
+    Returns:
+        The result of the host's ``geometry_config.meshgrids`` if it defines
+        one; otherwise an empty dictionary, which the engine fills with a
+        meshgrid for each FOV it meets.
+    """
+    hook = getattr(get_geometry_config(), 'meshgrids', None)
+    if hook is not None:
+        return cast('dict[Any, Any]', hook(sampling))
+    return {}

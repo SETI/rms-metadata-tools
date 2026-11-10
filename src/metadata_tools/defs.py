@@ -3,8 +3,8 @@
 ##########################################################################################
 """Shared constants for the metadata tools.
 
-Defines package paths, null markers, body-name lists, and ring-system radii used
-throughout the index and geometry table generators.
+Defines package paths, null markers, and body-name lists used throughout the
+index and geometry table generators.
 """
 import sys
 
@@ -43,16 +43,3 @@ BODY_NAMES = [
     'PLUTO'
 ]
 """Planet names whose systems are processed, in registry order."""
-
-RING_SYSTEM_RADII = {
-    'MERCURY':  0,
-    'VENUS':    0,
-    'EARTH':    0,
-    'MARS':     0,
-    'JUPITER':  128940.,
-    'SATURN':   136780.,
-    'URANUS':   51604.,
-    'NEPTUNE':  62940.,
-    'PLUTO':    0
-    }
-"""Outer radius (km) of each planet's main ring system; 0 if it has none."""

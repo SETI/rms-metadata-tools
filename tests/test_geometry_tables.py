@@ -2,19 +2,21 @@
 # tests/test_geometry_tables.py: table classes, Record.add, Suite helpers.
 ################################################################################
 """Tests for the geometry table classes, Record.add, and Suite helpers."""
+import re
 import types
 from collections.abc import Callable
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import oops
 import pytest
+from filecache import FCPath
 
 import metadata_tools.common as com
 import metadata_tools.defs as defs
 from metadata_tools.config import get_geometry_config
+from metadata_tools.geometry_support import prep, tables
 from metadata_tools.geometry_support import suite as suite_mod
-from metadata_tools.geometry_support import tables
 from metadata_tools.geometry_support.record import Record
 from metadata_tools.geometry_support.suite import Suite
 
@@ -42,9 +44,18 @@ def test_inventory_table_add_formats_prefixes_and_list() -> None:
     """InventoryTable.add joins the prefixes and body list into one CSV row."""
     table = tables.InventoryTable()
     record = types.SimpleNamespace(prefixes=['"vol"', '"file"'],
-                                   inventory=['IO', 'EUROPA'])
+                                   inventory=['IO', 'EUROPA'], pointing_available=True)
     table.add(record)  # type: ignore[arg-type]
     assert table.rows == ['"vol","file","IO,EUROPA"']
+
+
+def test_inventory_table_skips_an_observation_without_pointing() -> None:
+    """An observation without pointing gets no inventory row, as in the other tables."""
+    table = tables.InventoryTable()
+    record = types.SimpleNamespace(prefixes=['"vol"', '"file"'], inventory=[],
+                                   pointing_available=False)
+    table.add(record)  # type: ignore[arg-type]
+    assert table.rows == []
 
 
 def _with_schema(table: Any, columns: Any = ('COLS',)) -> Any:
@@ -70,7 +81,10 @@ def test_sun_table_add_targets_sun() -> None:
 
 
 def test_ring_table_add_only_when_rings_present() -> None:
-    """RingTable.add dispatches with the primary's name when rings are present."""
+    """RingTable.add dispatches with the primary's name when rings are present.
+
+    No grid is named: the ring plane is sampled across the whole field of view.
+    """
     table = _with_schema(tables.RingTable(level='summary'))
     record = RecordingRecord(primary='JUPITER', rings_present=True)
     table.add(record)
@@ -94,13 +108,13 @@ def test_ring_table_add_skips_without_primary() -> None:
 
 
 def test_body_table_add_iterates_bodies() -> None:
-    """BodyTable.add dispatches once per body with matching name and target."""
+    """BodyTable.add dispatches once per body, each sampled on its own grid."""
     table = _with_schema(tables.BodyTable(level='summary'))
     record = RecordingRecord(bodies=['IO', 'EUROPA'])
     table.add(record)
     assert record.calls == [
-        (('COLS',), {'name': 'IO', 'target': 'IO'}),
-        (('COLS',), {'name': 'EUROPA', 'target': 'EUROPA'})]
+        (('COLS',), {'name': 'IO', 'target': 'IO', 'grid': 'IO'}),
+        (('COLS',), {'name': 'EUROPA', 'target': 'EUROPA', 'grid': 'EUROPA'})]
 
 
 #===============================================================================
@@ -136,7 +150,8 @@ def test_record_add_builds_summary_line(
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     record = record_stub(
         pointing_available=True, sampling=8, blocker=None,
-        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane())
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Backplane(),
+        boxes={})
     columns = [make_column(key=('phase_angle', 'IO'), flag='DEG',
                            valid_minimum=0., valid_maximum=180.)]
     lines = record.add(columns, no_body=True)
@@ -160,12 +175,42 @@ def test_record_add_binds_the_body_name(
 
     record = record_stub(
         pointing_available=True, sampling=8, blocker=None,
-        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Recording())
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=_Recording(),
+        boxes={})
     columns = [make_column(key=('phase_angle', defs.BODYX), flag='DEG',
                            valid_minimum=0., valid_maximum=180.)]
     lines = record.add(columns, name='JUPITER', no_body=True)
     assert seen == [('phase_angle', 'JUPITER')]
     assert lines == ['"vol","file",  28.648,  57.296']
+
+
+def test_record_add_samples_the_named_grid(
+        record_stub: Callable[..., Record], make_column: Callable[..., Any],
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """A grid names the body whose backplane, and sampling, the row is built on."""
+    monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
+    record = record_stub(
+        pointing_available=True, sampling=8, blocker=None,
+        primary='JUPITER', prefixes=['"vol"', '"file"'], backplane=None,
+        boxes={'IO': 'BOX'},
+        _backplanes={('IO', 0.1): (_Backplane(), 3), ('IO', 1.5): (_Backplane(), 5)})
+    seen: list[Any] = []
+    real = prep.prep_row
+
+    def _prep_row(*args: Any, **kwargs: Any) -> Any:
+        seen.append((args[2], kwargs['sampling'], kwargs['grids']))
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(prep, 'prep_row', _prep_row)
+    columns = [make_column(key=('phase_angle', 'IO'), flag='DEG',
+                           valid_minimum=0., valid_maximum=180.),
+               make_column(key=('limb_altitude', 'IO'), margin=1.5, flag='DEG',
+                           valid_minimum=0., valid_maximum=180.)]
+    lines = record.add(columns, grid='IO', no_body=True)
+    assert lines == ['"vol","file",  28.648,  57.296,  28.648,  57.296']
+    # The row's own backplane, plus one for the margin that a column declares.
+    assert seen == [(record._backplanes[('IO', 0.1)][0], 3,
+                     {1.5: record._backplanes[('IO', 1.5)]})]
 
 
 #===============================================================================
@@ -212,13 +257,44 @@ def test_suite_make_record_builds_one_record(monkeypatch: pytest.MonkeyPatch) ->
     suite.volume_id = 'GO_0001'
     suite.meshgrids = {}
     suite.sampling = 8
+    suite.body_samples = 16
+    suite.filespec_width = 32
     created: list[Any] = []
     monkeypatch.setattr(
         suite_mod, 'Record',
         lambda *args: created.append(args) or 'RECORD')  # type: ignore[func-returns-value]
     record = suite.make_record(0)
     assert record == 'RECORD'  # type: ignore[comparison-overlap]
-    assert created == [('obs0', 'GO_0001', {}, 8)]
+    assert created == [('obs0', 'GO_0001', {}, 8, 16, 32)]
+
+
+def _table_with_filespec(width: int) -> Any:
+    """Return a table stand-in whose schema declares a file-specification width."""
+    stub = types.SimpleNamespace(name='FILE_SPECIFICATION_NAME', width=width)
+    other = types.SimpleNamespace(name='VOLUME_ID', width=9)
+    return types.SimpleNamespace(schema=types.SimpleNamespace(prefix_stubs=(other, stub)))
+
+
+def test_suite_filespec_width_comes_from_the_templates() -> None:
+    """The width is the templates' FILE_SPECIFICATION_NAME width, less the quotes."""
+    suite = Suite.__new__(Suite)
+    # The inventory table has no schema; a bare table has schema None.
+    suite.tables = cast(Any, [types.SimpleNamespace(), types.SimpleNamespace(schema=None),
+                              _table_with_filespec(46), _table_with_filespec(46)])
+    assert suite._filespec_width() == 44
+
+
+def test_suite_filespec_width_rejects_templates_that_disagree(tmp_path: Any) -> None:
+    """Tables that share a row prefix must declare one width for it."""
+    suite = Suite.__new__(Suite)
+    suite.template_path = FCPath(tmp_path / 'templates' / 'X_supplemental_index.lbl')
+    suite.tables = [_table_with_filespec(34), _table_with_filespec(46)]
+    with pytest.raises(RuntimeError, match=re.escape(
+            'must declare one width for FILE_SPECIFICATION_NAME, but declare [32, 44]')):
+        suite._filespec_width()
+    suite.tables = []
+    with pytest.raises(RuntimeError, match='but declare none'):
+        suite._filespec_width()
 
 
 def test_suite_add_dispatches_to_every_table() -> None:
@@ -255,7 +331,7 @@ def test_suite_create_processes_observations(
     """create() makes, adds, and writes records for a matching observation."""
     suite = Suite.__new__(Suite)
     suite.observations = [types.SimpleNamespace(basename='C0123.IMG',
-                                                filespec='data/C0123.IMG')]
+                                                filepath='data/C0123.IMG')]
     suite.glob = 'C0*'
     suite.first = None
     suite.volume_id = 'GO_0001'
@@ -275,12 +351,40 @@ def test_suite_create_processes_observations(
     assert written == [False]
 
 
+def test_suite_create_matches_a_data_file_to_the_label_glob(
+        monkeypatch: pytest.MonkeyPatch) -> None:
+    """An index that names data files is matched against a glob of labels."""
+    suite = Suite.__new__(Suite)
+    suite.observations = [
+        types.SimpleNamespace(basename='N1454725799_1.IMG',
+                              filepath='data/1454725799_1455008789/N1454725799_1.IMG'),
+        types.SimpleNamespace(basename='X1454725799_1.IMG',
+                              filepath='data/1454725799_1455008789/X1454725799_1.IMG')]
+    suite.glob = '[NW]*.LBL'
+    suite.first = None
+    suite.volume_id = 'COISS_2001'
+    added: list[Any] = []
+    warnings: list[str] = []
+    monkeypatch.setattr(Suite, 'make_record', lambda self, i: i)
+    monkeypatch.setattr(Suite, 'add', lambda self, record: added.append(record))
+    monkeypatch.setattr(Suite, 'write', lambda self, labels_only=False: None)
+    monkeypatch.setattr(config, 'cleanup', lambda: None, raising=False)
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            info=lambda *a, **k: None,
+                            warning=lambda msg, *a: warnings.append(msg % a),
+                            close=lambda: None))
+    suite.create()
+    assert added == [0]
+    assert warnings == ['Skipping X1454725799_1.IMG; glob mismatch.']
+
+
 def test_suite_create_skips_glob_mismatch(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """Observations not matching the glob are skipped entirely."""
     suite = Suite.__new__(Suite)
     suite.observations = [types.SimpleNamespace(basename='OTHER.IMG',
-                                                filespec='data/OTHER.IMG')]
+                                                filepath='data/OTHER.IMG')]
     suite.glob = 'C0*'
     suite.first = None
     suite.volume_id = 'GO_0001'
@@ -305,7 +409,7 @@ def test_suite_create_skips_pattern_mismatch(monkeypatch: pytest.MonkeyPatch) ->
     """Observations outside the --pattern selection are skipped with a warning."""
     suite = Suite.__new__(Suite)
     suite.observations = [types.SimpleNamespace(basename='C0123.IMG',
-                                                filespec='data/C0123.IMG')]
+                                                filepath='data/C0123.IMG')]
     suite.glob = 'C0*'
     suite.first = None
     suite.volume_id = 'GO_0001'
@@ -328,7 +432,7 @@ def test_suite_create_skips_pattern_mismatch(monkeypatch: pytest.MonkeyPatch) ->
 def test_suite_create_stops_at_first(monkeypatch: pytest.MonkeyPatch) -> None:
     """With first=N, create() stops after N records and examines no further files."""
     suite = Suite.__new__(Suite)
-    suite.observations = [types.SimpleNamespace(basename=name, filespec='data/' + name)
+    suite.observations = [types.SimpleNamespace(basename=name, filepath='data/' + name)
                           for name in ('C01.IMG', 'C02.IMG', 'OTHER.IMG')]
     suite.glob = 'C0*'
     suite.first = 1

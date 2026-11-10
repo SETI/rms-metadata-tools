@@ -40,17 +40,41 @@ To preview the startup script that would be sent to the GCP instance:
   metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ \\
       --create-startup-file startup.sh
 
-Optional overrides (all consumed before dispatch; do not reach cloud_tasks or the worker):
-  --startup-template <file>   Use <file> instead of the packaged template.
-  --oops-resources <name>     Persistent disk name for OOPS resources.
-  --service-account <account> GCP service account (overrides $GCP_SERVICE_ACCOUNT).
-  --debug-branch <branch>     Git branch to clone on GCP VMs (overrides
+Command-line arguments:
+
+  HOST_ID                     Host directory, e.g. GO_0xxx or COISS_xxxx. It must
+                              come first.
+  output_dir                  The collection's cumulative volume directory, e.g.
+                              GO_0xxx/GO_0999/. Its parent holds the per-volume
+                              tables to combine.
+  --volumes [VOLUME ...]      Combine only these volumes.
+  --exclude, -e [VOLUME ...]  Skip these volumes. The default is the host's
+                              configured list.
+  --labels, -l                Write labels for existing cumulative tables; combine
+                              nothing.
+  --help, -h                  Print a summary of the arguments and exit.
+
+Dispatch arguments, which are not passed to the workers:
+
+  --config FILE               cloud_tasks configuration. The default is
+                              cloud/<HOST>/gcp_cumulative_config.yml, if it exists.
+  --create-startup-file FILE  Write the instances' startup script to FILE and exit
+                              without dispatching.
+  --startup-template FILE     Build the startup script from FILE instead of the
+                              packaged template.
+  --oops-resources NAME       Persistent disk holding the OOPS resources.
+  --service-account ACCOUNT   GCP service account (overrides $GCP_SERVICE_ACCOUNT).
+  --debug-branch BRANCH       Git branch to clone on the instances (overrides
                               $GCP_DEBUG_BRANCH).
-  --ssh-paste                 With --create-startup-file: replace ``cd /root`` with
+  --ssh-paste                 With --create-startup-file, replace ``cd /root`` with
                               ``cd ~`` so the script can be pasted into an SSH
                               terminal as a non-root user.
 
-The full list of command-line options is documented in the user guide.
+All other ``cloud_tasks run`` arguments are also accepted and passed to it, for
+example --use-spot, --image, --max-instances and --continue; ``cloud_tasks run
+--help`` lists them all.
+
+The user guide describes the options in more detail.
 """
 import sys
 from pathlib import Path
