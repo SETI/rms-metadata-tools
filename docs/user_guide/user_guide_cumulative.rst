@@ -49,9 +49,9 @@ Options
    * - ``--volumes VOL [VOL ...]``
      - Concatenate only these volume IDs.
    * - ``--labels``, ``-l``
-     - Generate the cumulative labels only, from existing cumulative tables.
-   * - ``--pattern PATTERN``, ``-p``
-     - Glob pattern used to select files.
+     - Regenerate the cumulative labels only, from the existing cumulative
+       tables; no volume is read and no table is rewritten. A table with no
+       existing cumulative file is logged and skipped.
    * - ``-h``, ``--help``
      - Show the help message and exit.
 

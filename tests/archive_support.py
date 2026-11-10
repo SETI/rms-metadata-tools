@@ -7,6 +7,7 @@ import os
 from typing import Any
 
 import numpy as np
+import pytest
 
 # Read lazily so that importing this support module never fails at collection
 # time when the holdings tree is absent. The tests that actually use these are
@@ -14,17 +15,28 @@ import numpy as np
 METADATA = os.environ.get('RMS_METADATA')
 VOLUMES = os.environ.get('RMS_VOLUMES')
 
+
+def metadata_tree() -> str:
+    """Return $RMS_METADATA, skipping the calling test if it is unset.
+
+    Returns:
+        The root of the metadata holdings tree.
+    """
+    if not METADATA:
+        pytest.skip('RMS_METADATA is not set; the archive-backed tests need it')
+    return METADATA
+
 #===============================================================================
 # get summary filenames  ### LIB
 def match(tree: str, pattern: str) -> list[str]:
     """Walk a directory tree and find all files matching a given pattern.
 
     Parameters:
-        tree (str): Directory to walk.
-        pattern (str): glob pattern to match.
+        tree: Directory to walk.
+        pattern: Glob pattern to match.
 
     Returns:
-        list: List of filenames matching the given pattern.
+        List of filenames matching the given pattern.
     """
     all_files: list[str] = []
     for root, _dirs, _files in os.walk(tree):
@@ -37,11 +49,11 @@ def exclude(files: list[str], *patterns: str) -> list[str]:
     """Exclude files matching given patterns.
 
     Parameters:
-        files (list): List of file names to test.
-        patterns (str): One or more strings containing forbidden patterns.
+        files: List of file names to test.
+        patterns: One or more strings containing forbidden patterns.
 
     Returns:
-        list: List of filenames that did not match any of the given patterns.
+        List of filenames that did not match any of the given patterns.
     """
     result: list[str] = []
     for i in range(len(files)):
@@ -59,17 +71,15 @@ def bounds(file: str, table: Any, key: str,
     """Assert that all non-null values of a column lie within the given bounds.
 
     Parameters:
-        file (str): Name of data file.
-        table (PdsTable): PdsTable object containing the data table.
-        key (str):
-            Name of quantity to test. If minmax==True, the "MINIMUM_" and
+        file: Name of data file.
+        table: PdsTable object containing the data table.
+        key: Name of quantity to test. If minmax is True, the "MINIMUM_" and
             "MAXIMUM_" prefixes must be omitted, and the function will add them
             and test both keys.
-        min_val (float): Minimum allowable value.
-        max_val (float): Maximum allowable value.
-        minmax (bool): If True, both the "MINIMUM_" and "MAXIMUM_" keys are
-                       tested. In this case, those prefixes must be omitted
-                       from the key argument.
+        min_val: Minimum allowable value.
+        max_val: Maximum allowable value.
+        minmax: If True, both the "MINIMUM_" and "MAXIMUM_" keys are tested. In
+            this case, those prefixes must be omitted from the key argument.
 
     Raises:
         AssertionError: If any non-null value lies outside [min_val, max_val].

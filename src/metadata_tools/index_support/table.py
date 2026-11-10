@@ -54,6 +54,7 @@ class IndexTable(com.Table):
                 the Table base class.
 
         Raises:
+            ValueError: If input_dir is given without a template_path.
             FileNotFoundError: If a primary index is required but its label is
                 not found.
         """
@@ -62,6 +63,9 @@ class IndexTable(com.Table):
         super().__init__(output_dir, template_path, level="index", qualifier=qualifier, **kwargs)
         if not input_dir:
             return
+
+        if template_path is None:
+            raise ValueError('IndexTable requires a template_path when input_dir is given')
 
         # Save inputs
         self.input_dir = FCPath(input_dir)
@@ -116,7 +120,7 @@ class IndexTable(com.Table):
         label_path = self.output_dir / FCPath(label_name + '.lbl')
 
         # as_string is True, so the result is a single string.
-        template = cast(str, util.read_txt_file(cast('str | Path | FCPath', template_path),
+        template = cast(str, util.read_txt_file(template_path,
                                                 as_string=True))
         pds3_table = Pds3Table(label_path, template, validate=False,
                                numbers=True, formats=True)
@@ -130,6 +134,9 @@ class IndexTable(com.Table):
             labels_only: If True, labels are generated for any existing index
                 tables.
             pattern: Glob pattern for sub-selecting files to process.
+
+        Raises:
+            ValueError: If index rows are to be built but the table has no glob.
         """
         if not hasattr(self, 'files'):
             return
@@ -140,6 +147,8 @@ class IndexTable(com.Table):
         # Build the index
         n = len(self.files)
         if not labels_only:
+            if self.glob is None:
+                raise ValueError('IndexTable.create requires a glob pattern')
             for i in range(n):
                 file = self.files[i]
                 name = file.name
@@ -150,7 +159,7 @@ class IndexTable(com.Table):
                     continue
 
                 # Match the glob pattern
-                matches = fnmatch.filter([name], cast(str, self.glob))
+                matches = fnmatch.filter([name], self.glob)
                 if matches == []:
                     continue
                 matched_name = matches[0]

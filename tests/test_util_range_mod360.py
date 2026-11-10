@@ -25,6 +25,12 @@ def test_ninety_percent_gap_power_law_above_1000() -> None:
     assert util._ninety_percent_gap_degrees(2000) == pytest.approx(expected)
 
 
+def test_ninety_percent_gap_at_1000_uses_power_law() -> None:
+    """n == 1000 is the first value past the table, so the power law applies."""
+    expected = 1808. * 1000**(-0.912)
+    assert util._ninety_percent_gap_degrees(1000) == pytest.approx(expected)
+
+
 def test_ninety_percent_gap_scale_factor() -> None:
     """The scale factor multiplies the gap linearly."""
     base = util._ninety_percent_gap_degrees(50)

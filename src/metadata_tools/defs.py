@@ -31,20 +31,6 @@ replacement helpers (see :func:`metadata_tools.util.replace`)."""
 NAME_LENGTH = 12
 """Character width of a column that holds a body name."""
 
-_translations: dict[str, str] = {}
-"""Maps raw target names to canonical body names. Set via :func:`set_translations`."""
-
-
-def set_translations(mapping: dict[str, str]) -> None:
-    """Replace the active target-name translation table.
-
-    Parameters:
-        mapping: Dict mapping raw target names to canonical body names.
-            Pass an empty dict to clear all translations.
-    """
-    global _translations
-    _translations = dict(mapping)
-
 BODY_NAMES = [
     'MERCURY',
     'VENUS',

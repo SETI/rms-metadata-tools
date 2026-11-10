@@ -30,9 +30,10 @@ Python style and typing
 =======================
 
 Maximum line length is 100. ``ruff check`` is the linter (run by
-``scripts/run-all-checks.sh`` and CI); code is formatted with ``ruff format``
-using single quotes. ``ruff format --check`` is available via
-``ENABLE_RUFF_FORMAT=true`` but is off by default. Annotate every parameter and return value
+``scripts/run-all-checks.sh`` and CI). Code is hand-formatted in the house
+style -- single quotes, continuation lines aligned with the opening delimiter,
+``#===`` section separators -- so match the surrounding code; do not run
+``ruff format``, which would rewrite that style. Annotate every parameter and return value
 (including ``-> None``); ``mypy`` runs in strict mode. Use modern generic syntax
 (``list[str]``, ``X | None``). Docstrings are Google style with a
 ``Parameters:`` section, wrapped at 90 columns. Do not add backwards-compatibility

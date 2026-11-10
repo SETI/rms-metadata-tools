@@ -111,7 +111,8 @@ def _create_index(volume_tree: FCPath,
                 try:
                     index = IndexTable(indir, outdir, template_path, metadata_dir,
                                    qualifier=qualifier or '', volume_id=vol, glob=glob)
-                except FileNotFoundError:
+                except FileNotFoundError as e:
+                    logger.warning('Skipping %s: %s', vol, e)
                     continue
 
                 index.create(labels_only=labels_only, pattern=pattern)
@@ -154,7 +155,7 @@ def process_index(template_name: str,
                   metadata_tree=(FCPath(args.metadata_tree)
                                  if args.metadata_tree is not None else None),
                   volumes=volumes,
-                  labels_only=args.labels is not False,
+                  labels_only=args.labels,
                   qualifier=args.type,
                   glob=glob,
                   pattern=args.pattern)

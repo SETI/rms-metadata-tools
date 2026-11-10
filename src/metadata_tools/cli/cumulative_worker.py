@@ -64,8 +64,7 @@ class _CumulativeTask:
         # evicts); write_text uploads on close so remote output survives cache deletion.
         with FileCache(cache_name=None, delete_on_exit=True) as fc:
             args = copy(worker_data.args)
-            if getattr(args, 'output_dir', None) is not None:
-                args.output_dir = fc.new_path(args.output_dir)
+            args.output_dir = fc.new_path(args.output_dir)
             create_cumulative_indexes(self._template_name, args=args,
                                       exclude=self._exclude)
         return False, None

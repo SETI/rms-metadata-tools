@@ -101,8 +101,9 @@ e.g. ``--config my_gcp_config.yml --task-file ./retry_tasks.json``.
 
 The ``gcp_*_config.yml`` machine/queue configuration files live in
 ``cloud/<HOST>/`` at the repository root (not inside the installed package).
-The instance startup script is generated at dispatch time and delivered to
-``cloud_tasks`` via the config YAML; it is not stored on disk.
+The instance startup script is generated at dispatch time into a temporary
+file, which is referenced from a temporary copy of the config YAML handed to
+``cloud_tasks`` and deleted afterward; it is never committed to the repository.
 
 Each host carries two config tiers. The default (unsuffixed)
 ``gcp_<type>_config.yml`` files describe a small single-instance setup for
@@ -189,7 +190,7 @@ Cloud-only overrides (consumed before dispatch):
        dispatching. ``--config`` is not required when this flag is used.
    * - ``--startup-template FILE``
      - Use ``FILE`` as the startup script template instead of the default
-       ``cloud/gcp_common_startup.sh``. Overrides ``$GCP_STARTUP_TEMPLATE``.
+       template shipped with the package. Overrides ``$GCP_STARTUP_TEMPLATE``.
    * - ``--oops-resources NAME``
      - Name of the persistent GCP disk to attach as OOPS resources on each VM.
        Overrides ``$OOPS_RESOURCES_DISK``. One of this flag or the environment
@@ -203,10 +204,19 @@ Cloud-only overrides (consumed before dispatch):
 Environment variables
 =====================
 
-Cloud-related settings can be provided via environment variables, which are
-loaded from a ``.env`` file at the repository root at import time (shell
-environment takes precedence over ``.env``). The file is git-ignored so it
-never contains committed credentials.
+Cloud-related settings can be provided via environment variables, which can
+also be supplied as ``NAME=value`` lines in a ``.env`` file. When
+``metadata_tools`` is imported, the first ``.env`` found is loaded:
+
+1. the file named by ``$RMS_METADATA_ENV``, if set (an error if it is missing);
+2. a ``.env`` in the current directory or the nearest parent directory that has
+   one -- so a ``.env`` in a project directory serves every run directory
+   beneath it; or
+3. in a source checkout only, the ``.env`` at the repository root.
+
+Values are defaults: variables already set in the shell take precedence, and
+``$VAR`` references in values are expanded. The repository's ``.env`` is
+git-ignored so it never contains committed credentials.
 
 .. list-table::
    :header-rows: 1
@@ -223,8 +233,8 @@ never contains committed credentials.
        Overridden by ``--oops-resources``. Required — either this variable or
        that flag must be set.
    * - ``GCP_STARTUP_TEMPLATE``
-     - Path to a custom startup script template to use instead of
-       ``cloud/gcp_common_startup.sh``. Overridden by ``--startup-template``.
+     - Path to a custom startup script template to use instead of the
+       template shipped with the package. Overridden by ``--startup-template``.
        Leave blank or unset to use the default.
    * - ``GCP_DEBUG_BRANCH``
      - Git branch to clone on GCP VMs. When unset and ``--debug-branch`` is not
@@ -236,7 +246,7 @@ A typical ``.env`` file:
 .. code-block:: bash
 
    # GCP service account to pass to cloud_tasks run (--service-account).
-   GCP_SERVICE_ACCOUNT=rms-metadata-tools-154@rms-metadata.iam.gserviceaccount.com
+   GCP_SERVICE_ACCOUNT=<SERVICE-ACCOUNT>@<PROJECT>.iam.gserviceaccount.com
 
    # Name of the persistent disk to attach on each GCP VM for OOPS resources.
    OOPS_RESOURCES_DISK=standard-oops-resources-central1-a-1
@@ -294,15 +304,16 @@ passes back to the engine:
 
    [
      {
-       "task_id": "geometry-task-GO_0017",
+       "task_id": "task-GO_0017",
        "data": { "volume_id": "GO_0017" }
      },
      {
-       "task_id": "geometry-task-GO_0018",
+       "task_id": "task-GO_0018",
        "data": { "volume_id": "GO_0018" }
      }
    ]
 
-The ``task_id`` prefix identifies the stage that produced the file. The worker
+``task_id`` values must be unique within the file; ``metadata-task-list`` uses
+``task-<volume_id>``, and the same task file works for any stage. The worker
 reads each entry, invokes the engine for ``data.volume_id``, and reports success
 or failure back to ``rms-cloud-tasks``.

@@ -53,7 +53,7 @@ def test_pop_argv_flag_returns_value_and_strips(monkeypatch: pytest.MonkeyPatch)
 def test_pop_argv_flag_no_value_exits(monkeypatch: pytest.MonkeyPatch) -> None:
     """A flag with no following value exits via SystemExit."""
     monkeypatch.setattr(sys, 'argv', ['cmd', '--flag'])
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit, match='--flag requires a value'):
         pop_argv_flag('--flag')
 
 
@@ -186,6 +186,32 @@ def test_resolve_host_paths_dot_slash_stays_cwd_relative(
     assert sys.argv[2] == str((run_dir / 'tasks_remaining.json').resolve())
 
 
+def test_resolve_host_paths_falls_back_to_repo_root(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A relative path with directories, missing from the cwd, resolves from the repo root."""
+    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
+    cloud_dir.mkdir(parents=True)
+    (tmp_path / 'runs').mkdir()
+    (tmp_path / 'runs' / 'cfg.yml').write_text('x', encoding='utf-8')
+    elsewhere = tmp_path / 'elsewhere'
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+    monkeypatch.setattr(sys, 'argv', ['cmd', '--config', 'runs/cfg.yml'])
+    resolve_host_paths(tmp_path / 'host', cloud_dir)
+    assert sys.argv[2] == str(tmp_path / 'runs' / 'cfg.yml')
+
+
+def test_resolve_host_paths_repo_root_fallback_keeps_unfound_path(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """If the repo-root candidate does not exist either, the value is left as given."""
+    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
+    cloud_dir.mkdir(parents=True)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(sys, 'argv', ['cmd', '--config', 'runs/missing.yml'])
+    resolve_host_paths(tmp_path / 'host', cloud_dir)
+    assert sys.argv[2] == 'runs/missing.yml'
+
+
 def test_resolve_host_paths_dot_dot_stays_cwd_relative(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """An explicit ../ prefix resolves against the cwd's parent."""
@@ -286,84 +312,82 @@ def test_default_task_file_arg_missing_file_is_noop(
     assert sys.argv == argv
 
 
-#===============================================================================
-# build_startup_script
-#===============================================================================
+@pytest.fixture
+def startup_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """Arrange a build_startup_script call: a stub template and a clean environment.
 
-def test_build_startup_starts_with_shebang(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """The generated startup script begins with a bash shebang."""
+    Sets sys.argv to a single volume-tree argument and removes GCP_DEBUG_BRANCH
+    and GCP_STARTUP_TEMPLATE; a test may override either afterward.
+
+    Returns:
+        The path of a startup template containing ``echo hello``.
+    """
     tpl = tmp_path / 'startup.sh'
     tpl.write_text('echo hello\n')
     monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
     monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
     monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    return tpl
+
+
+#===============================================================================
+# build_startup_script
+#===============================================================================
+
+def test_build_startup_starts_with_shebang(startup_env: Path) -> None:
+    """The generated startup script begins with a bash shebang."""
+    tpl = startup_env
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk')
     assert script.startswith('#!/bin/bash\n')
 
 
-def test_build_startup_includes_oops_resources(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_startup_includes_oops_resources(startup_env: Path) -> None:
     """The oops_resources argument is exported as OOPS_RESOURCES_DISK."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    tpl = startup_env
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk')
-    assert 'export OOPS_RESOURCES_DISK=my-disk' in script
+    assert 'export OOPS_RESOURCES_DISK=my-disk' in script.splitlines()
+
+
+def test_build_startup_quotes_oops_resources(startup_env: Path) -> None:
+    """A disk name needing shell quoting is exported shlex-quoted."""
+    script = build_startup_script('GO_0xxx', _simple_parser(),
+                                  startup_template=str(startup_env),
+                                  oops_resources='my disk')
+    assert "export OOPS_RESOURCES_DISK='my disk'" in script.splitlines()
 
 
 def test_build_startup_oops_resources_from_env(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch: pytest.MonkeyPatch, startup_env: Path) -> None:
     """OOPS_RESOURCES_DISK from the environment supplies the resources disk."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    tpl = startup_env
     monkeypatch.setenv('OOPS_RESOURCES_DISK', 'env-disk')
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl))
     assert 'export OOPS_RESOURCES_DISK=env-disk' in script
 
 
 def test_build_startup_missing_oops_resources_exits(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch: pytest.MonkeyPatch, startup_env: Path) -> None:
     """A missing resources disk exits with a message naming --oops-resources."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    tpl = startup_env
     monkeypatch.delenv('OOPS_RESOURCES_DISK', raising=False)
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
     with pytest.raises(SystemExit, match='--oops-resources'):
         build_startup_script('GO_0xxx', _simple_parser(), startup_template=str(tpl))
 
 
-def test_build_startup_no_branch_line_in_pip_mode(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_startup_no_branch_line_in_pip_mode(startup_env: Path) -> None:
     """Without a debug branch, no BRANCH export appears (pip install mode)."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    tpl = startup_env
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk')
     assert 'BRANCH' not in script
 
 
-def test_build_startup_branch_from_arg(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_startup_branch_from_arg(startup_env: Path) -> None:
     """The debug_branch argument is exported as BRANCH."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    tpl = startup_env
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk',
                                   debug_branch='my-feature')
@@ -371,26 +395,20 @@ def test_build_startup_branch_from_arg(
 
 
 def test_build_startup_branch_from_env(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch: pytest.MonkeyPatch, startup_env: Path) -> None:
     """GCP_DEBUG_BRANCH from the environment supplies the BRANCH export."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    tpl = startup_env
     monkeypatch.setenv('GCP_DEBUG_BRANCH', 'env-branch')
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk')
     assert 'export BRANCH=env-branch' in script
 
 
 def test_build_startup_branch_arg_overrides_env(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch: pytest.MonkeyPatch, startup_env: Path) -> None:
     """The debug_branch argument takes precedence over GCP_DEBUG_BRANCH."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
+    tpl = startup_env
     monkeypatch.setenv('GCP_DEBUG_BRANCH', 'env-branch')
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk',
                                   debug_branch='cli-branch')
@@ -413,15 +431,21 @@ def test_build_startup_template_from_env(
 def test_build_startup_empty_startup_template_env_uses_default(
         monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Regression: GCP_STARTUP_TEMPLATE='' must not be passed to Path()."""
-    cloud_dir = tmp_path / 'cloud' / 'GO_0xxx'
-    cloud_dir.mkdir(parents=True)
-    (tmp_path / 'cloud' / 'gcp_common_startup.sh').write_text('echo default\n')
-    monkeypatch.setattr(_host_mod, 'cloud_dir_for', lambda _hid: cloud_dir)
+    default = tmp_path / 'gcp_common_startup.sh'
+    default.write_text('echo default\n')
+    monkeypatch.setattr(_host_mod, 'DEFAULT_STARTUP_TEMPLATE', default)
     monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
     monkeypatch.setenv('GCP_STARTUP_TEMPLATE', '')
     monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
     script = build_startup_script('GO_0xxx', _simple_parser(), oops_resources='my-disk')
     assert 'echo default' in script
+
+
+def test_default_startup_template_ships_with_package() -> None:
+    """The default template is the packaged file beside cli/_host.py, not a checkout path."""
+    expected = Path(_host_mod.__file__).parent / 'gcp_common_startup.sh'
+    assert expected == _host_mod.DEFAULT_STARTUP_TEMPLATE
+    assert expected.is_file()
 
 
 def test_build_startup_template_arg_overrides_env(
@@ -440,18 +464,13 @@ def test_build_startup_template_arg_overrides_env(
     assert 'from env' not in script
 
 
-def test_build_startup_contains_worker_command(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_startup_contains_worker_command(startup_env: Path) -> None:
     """The worker command line with the host id is appended to the script."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    tpl = startup_env
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   worker_cmd_name='metadata-index-worker',
                                   startup_template=str(tpl), oops_resources='my-disk')
-    assert 'metadata-index-worker GO_0xxx' in script
+    assert script.splitlines()[-1] == 'metadata-index-worker GO_0xxx gs://bucket/vol/'
 
 
 def test_build_startup_contains_template_body(
@@ -468,14 +487,9 @@ def test_build_startup_contains_template_body(
     assert 'apt-get install python3' in script
 
 
-def test_build_startup_ssh_paste_exports_quota_project(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_startup_ssh_paste_exports_quota_project(startup_env: Path) -> None:
     """SSH-paste mode exports the quota project fetched from instance metadata."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    tpl = startup_env
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk',
                                   for_ssh=True)
@@ -483,14 +497,9 @@ def test_build_startup_ssh_paste_exports_quota_project(
     assert 'metadata.google.internal' in script
 
 
-def test_build_startup_non_ssh_no_quota_project(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_startup_non_ssh_no_quota_project(startup_env: Path) -> None:
     """Non-SSH mode omits the quota-project export."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    tpl = startup_env
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk',
                                   for_ssh=False)
@@ -529,14 +538,9 @@ def test_build_startup_ssh_paste_false_keeps_cd_root(
     assert 'SSH-pastable' not in script
 
 
-def test_build_startup_ssh_paste_no_cd_root_is_noop(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_build_startup_ssh_paste_no_cd_root_is_noop(startup_env: Path) -> None:
     """SSH-paste rewriting is a no-op for templates without a 'cd /root' line."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
-    monkeypatch.setattr(sys, 'argv', ['cmd', 'gs://bucket/vol/'])
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
+    tpl = startup_env
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk',
                                   for_ssh=True)
@@ -638,14 +642,11 @@ def test_build_startup_non_ssh_task_file_not_included(
 
 
 def test_build_startup_expands_env_vars_in_argv(
-        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        monkeypatch: pytest.MonkeyPatch, startup_env: Path) -> None:
     """$VAR references in argv are expanded via os.environ (which includes .env values)."""
-    tpl = tmp_path / 'startup.sh'
-    tpl.write_text('echo hello\n')
+    tpl = startup_env
     monkeypatch.setenv('RMS_VOLUMES_GCP', 'gs://my-bucket/volumes')
     monkeypatch.setattr(sys, 'argv', ['cmd', '$RMS_VOLUMES_GCP/GO_0xxx/'])
-    monkeypatch.delenv('GCP_DEBUG_BRANCH', raising=False)
-    monkeypatch.delenv('GCP_STARTUP_TEMPLATE', raising=False)
     script = build_startup_script('GO_0xxx', _simple_parser(),
                                   startup_template=str(tpl), oops_resources='my-disk')
     assert 'gs://my-bucket/volumes/GO_0xxx/' in script

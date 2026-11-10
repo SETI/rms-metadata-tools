@@ -65,7 +65,6 @@ def _pds3_table_preprocessor(template_path: object, content: str) -> str:
 #===============================================================================
 def create(filepath: str | Path | FCPath,
            host_template_path: str | Path | FCPath | None,
-           system: str | None = None,
            *,
            use_global_template: bool = False,
            table_type: str | None = '') -> None:
@@ -79,12 +78,14 @@ def create(filepath: str | Path | FCPath,
         host_template_path: Path to the host template. If None, it is treated as
             an empty path; a real host template path is needed only when
             use_global_template is False.
-        system: Name of system, for rings and moons.
         use_global_template: If True, the label template is to be found in the
             global template directory.
         table_type: One of BODY_SUMMARY, RING_SUMMARY, SKY_SUMMARY,
             SUPPLEMENTAL_INDEX, or INVENTORY; case-insensitive (the value is
             uppercased). None is treated as an empty string.
+
+    Raises:
+        ValueError: If the table filename does not start with a volume id.
     """
     filepath = FCPath(filepath)
     if not filepath.is_file():
@@ -93,8 +94,6 @@ def create(filepath: str | Path | FCPath,
     table_type = (table_type or '').upper()
 
     # Get the label path
-    if not system:
-        system = ''
     filename = filepath.name
     parent_dir = filepath.parent
     body = filepath.stem
@@ -102,14 +101,15 @@ def create(filepath: str | Path | FCPath,
     host_template_dir = host_template_path.parent
 
     # Get the volume id
-    underscore = filename.index('_')
+    underscore = filename.find('_')
+    if underscore < 0:
+        raise ValueError(f'table filename {filename!r} does not start with a volume id')
     volume_id = filename[:underscore + 5]
 
     # Default template path
-    offset = 0 if not system else len(system) + 1
     if use_global_template:
         template_path = (FCPath(defs.GLOBAL_TEMPLATE_PATH) /
-                         FCPath('%s.lbl' % body[underscore+6+offset:]))
+                         FCPath('%s.lbl' % body[underscore+6:]))
     else:
         template_name = util.get_template_name(filename, volume_id, host_template_dir.parent)
         template_path = host_template_dir / (template_name + '.lbl')

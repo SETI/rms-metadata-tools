@@ -30,8 +30,6 @@ The Galileo Solid-State Imaging (SSI) host.
      - ``-77``
    * - Data label glob
      - ``C0*.LBL``
-   * - Default geometry selection
-     - ``"S"`` (summary tables)
    * - Cumulative directory
      - ``GO_0xxx/GO_0999`` (excluded from the per-volume stages)
    * - ``oops`` host module

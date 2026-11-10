@@ -93,8 +93,11 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
-# CONTRIBUTING.md is split in contributing.rst; the tail fragment starts at
-# "## ..." so MyST reports a false-positive heading-level warning.
+# index.rst includes README.md from its start-after-point marker, and
+# contributing.rst includes CONTRIBUTING.md in two fragments; each included
+# fragment begins at a "## ..." heading below the file's own "# ..." title, so
+# MyST reports "headings start at H2". The H2 levels are right for GitHub, so
+# the warning is suppressed rather than the Markdown sources restructured.
 suppress_warnings = ['myst.header']
 
 # The suffix(es) of source filenames.
@@ -146,7 +149,6 @@ napoleon_attr_annotations = True
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'matplotlib': ('https://matplotlib.org/stable/', None),
 }
 
 # MyST-Parser settings

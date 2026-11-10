@@ -22,7 +22,25 @@ if TYPE_CHECKING:
 # Record class
 ################################################################################
 class Record:
-    """Class describing a single geometry record, i.e., a single row in a table.
+    """The geometry of one observation, from which each table builds its rows.
+
+    Construction does all of the SPICE work for the observation, after which these
+    attributes are always set:
+
+    - ``primary``, ``secondaries``, ``selections``, ``additions``: the bodies the
+      host's mission table assigns to the observation's spacecraft clock
+      (``primary`` is empty when there is none).
+    - ``rings_present``: True only when there is a primary with a ring frame.
+    - ``target``: the target name, from the host's ``target_name`` hook.
+    - ``prefixes``: the quoted volume ID and file specification that begin every row.
+    - ``backplane``: the ``oops`` Backplane for the observation.
+    - ``inventory``: the bodies in the field of view; empty, with
+      ``pointing_available`` set to False, when SPICE pointing is unavailable.
+    - ``bodies``: the bodies to tabulate, and ``blocker``: the target, when it is
+      in the field of view and can block or shadow the others, else None.
+
+    Each table then calls :meth:`add` with its resolved columns to produce its
+    rows for this observation.
     """
 
     #===========================================================================
@@ -40,7 +58,7 @@ class Record:
         config = get_geometry_config()
 
         # Determine primary, if any
-        sclk = observation.dict["SPACECRAFT_CLOCK_START_COUNT"] + ''
+        sclk = str(observation.dict["SPACECRAFT_CLOCK_START_COUNT"])
         self.primary, self.secondaries, self.selections, self.additions = \
             bodies_select.get_primary(self, formats.get_mission_table(), sclk)
         self.sampling = sampling
@@ -50,14 +68,13 @@ class Record:
         self.bodies: list[str] = []
         self.blocker: str | None = None
 
+        self.rings_present = False
         if self.primary:
             registry = bodies_mod.get_bodies_registry()
-            self.rings_present: bool = registry[self.primary].ring_frame is not None
+            self.rings_present = registry[self.primary].ring_frame is not None
 
         # Determine target
         self.target = str(config.target_name(observation.dict))
-        if self.target in defs._translations:
-            self.target = defs._translations[self.target]
 
         # Create the record prefix
         filespec = observation.dict["FILE_SPECIFICATION_NAME"]

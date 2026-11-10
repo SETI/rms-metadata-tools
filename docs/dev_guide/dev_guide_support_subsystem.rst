@@ -91,6 +91,12 @@ Invariants
   :class:`str`. The package never creates directories through ``FCPath``.
 - **Logging.** There is a single global logger; per-run handlers are added by
   :func:`~metadata_tools.common.init_logger`.
+- **Process-local state.** The module-level caches (the resolved label schemas
+  in ``geometry_support.label_schema``, the mission table in
+  ``geometry_support.formats``, the ``bodies`` registry) and the
+  :mod:`metadata_tools.config` host registry are plain globals with no locking.
+  The package is not thread-safe; parallel runs use separate processes (the
+  cloud Worker spawns them), each with its own copies.
 - **Import order.** The :func:`~metadata_tools.bodies.get_bodies_registry`
   singleton is built on its first call and requires an initialized ``oops``
   registry, so the host's ``host_init`` must have run first.

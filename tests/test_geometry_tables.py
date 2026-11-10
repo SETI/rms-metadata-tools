@@ -165,7 +165,7 @@ def test_record_add_binds_the_body_name(
                            valid_minimum=0., valid_maximum=180.)]
     lines = record.add(columns, name='JUPITER', no_body=True)
     assert seen == [('phase_angle', 'JUPITER')]
-    assert lines[0].endswith('  28.648,  57.296')
+    assert lines == ['"vol","file",  28.648,  57.296']
 
 
 #===============================================================================
@@ -285,14 +285,66 @@ def test_suite_create_skips_glob_mismatch(
     suite.first = None
     suite.volume_id = 'GO_0001'
     added: list[Any] = []
+    warnings: list[str] = []
     monkeypatch.setattr(Suite, 'make_record', lambda self, i: 'rec')
     monkeypatch.setattr(Suite, 'add', lambda self, record: added.append(record))
     monkeypatch.setattr(Suite, 'write', lambda self, labels_only=False: None)
     monkeypatch.setattr(config, 'cleanup', lambda: None, raising=False)
     monkeypatch.setattr(com, 'get_logger',
                         lambda: types.SimpleNamespace(
-                            info=lambda *a, **k: None, warning=lambda *a, **k: None,
+                            info=lambda *a, **k: None,
+                            warning=lambda msg, *a: warnings.append(msg % a),
                             close=lambda: None))
     suite.create()
-    # The lone observation does not match the glob -> nothing added.
+    # The lone observation does not match the glob -> nothing added, skip logged.
     assert added == []
+    assert warnings == ['Skipping OTHER.IMG; glob mismatch.']
+
+
+def test_suite_create_skips_pattern_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Observations outside the --pattern selection are skipped with a warning."""
+    suite = Suite.__new__(Suite)
+    suite.observations = [types.SimpleNamespace(basename='C0123.IMG',
+                                                filespec='data/C0123.IMG')]
+    suite.glob = 'C0*'
+    suite.first = None
+    suite.volume_id = 'GO_0001'
+    added: list[Any] = []
+    warnings: list[str] = []
+    monkeypatch.setattr(Suite, 'make_record', lambda self, i: 'rec')
+    monkeypatch.setattr(Suite, 'add', lambda self, record: added.append(record))
+    monkeypatch.setattr(Suite, 'write', lambda self, labels_only=False: None)
+    monkeypatch.setattr(config, 'cleanup', lambda: None, raising=False)
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            info=lambda *a, **k: None,
+                            warning=lambda msg, *a: warnings.append(msg % a),
+                            close=lambda: None))
+    suite.create(pattern='*/C9*')
+    assert added == []
+    assert warnings == ['Skipping C0123.IMG; pattern mismatch.']
+
+
+def test_suite_create_stops_at_first(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With first=N, create() stops after N records and examines no further files."""
+    suite = Suite.__new__(Suite)
+    suite.observations = [types.SimpleNamespace(basename=name, filespec='data/' + name)
+                          for name in ('C01.IMG', 'C02.IMG', 'OTHER.IMG')]
+    suite.glob = 'C0*'
+    suite.first = 1
+    suite.volume_id = 'GO_0001'
+    added: list[Any] = []
+    warnings: list[Any] = []
+    monkeypatch.setattr(Suite, 'make_record', lambda self, i: i)
+    monkeypatch.setattr(Suite, 'add', lambda self, record: added.append(record))
+    monkeypatch.setattr(Suite, 'write', lambda self, labels_only=False: None)
+    monkeypatch.setattr(config, 'cleanup', lambda: None, raising=False)
+    monkeypatch.setattr(com, 'get_logger',
+                        lambda: types.SimpleNamespace(
+                            info=lambda *a, **k: None,
+                            warning=lambda *a, **k: warnings.append(a),
+                            close=lambda: None))
+    suite.create()
+    assert added == [0]
+    # The loop ended before reaching OTHER.IMG, so no glob-mismatch warning.
+    assert warnings == []

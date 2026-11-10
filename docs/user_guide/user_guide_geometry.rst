@@ -66,7 +66,7 @@ Volume selection
    * - ``--exclude VOL [VOL ...]``, ``-e``
      - Volume IDs to skip. Repeatable list. Default: the host's configured
        exclusions (e.g. the cumulative directory ``GO_0999``).
-   * - ``--new_only [VOL ...]``, ``-n``
+   * - ``--new_only``, ``-n``
      - Process only volumes that contain no geometry output yet (no
        ``*_inventory.csv``). Useful for resuming an interrupted run.
    * - ``--pattern PATTERN``, ``-p``
@@ -126,5 +126,6 @@ directory:
 - a matching ``.lbl`` label for each table; and
 - a processing log named ``<volume>_geometry-log.txt``.
 
-Observations with no usable pointing (no C-kernel data) are logged and written
-with null geometry values.
+Observations with no usable SPICE pointing (no C-kernel data) are logged; each
+gets an inventory row with an empty body list, but no row in the sky, body, or
+ring summary tables.

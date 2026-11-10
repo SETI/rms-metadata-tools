@@ -9,7 +9,7 @@ import asyncio
 import contextlib
 import os
 import shlex
-import subprocess  # nosec B404 - launches the trusted sibling cloud_tasks console script
+import subprocess  # nosec B404  # launches the trusted sibling cloud_tasks console script
 import sys
 import tempfile
 from collections.abc import Iterator
@@ -55,6 +55,10 @@ def host_dir_for(host_id: str) -> Path:
         Absolute path to the host directory (not validated to exist).
     """
     return Path(__file__).parent.parent / 'hosts' / host_id
+
+
+DEFAULT_STARTUP_TEMPLATE = Path(__file__).parent / 'gcp_common_startup.sh'
+"""The GCP startup-script template shipped with the package."""
 
 
 def cloud_dir_for(host_id: str) -> Path:
@@ -244,7 +248,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
         worker_cmd_name: Name of the worker console script to embed. Defaults to
             the name of the current executable.
         startup_template: Path to the startup template file to use instead of the
-            default ``cloud/gcp_common_startup.sh``. Falls back to the
+            packaged default, :data:`DEFAULT_STARTUP_TEMPLATE`. Falls back to the
             ``GCP_STARTUP_TEMPLATE`` environment variable when ``None``.
         oops_resources: Name of the persistent disk to mount as OOPS resources,
             injected as ``OOPS_RESOURCES_DISK`` in the script header. Falls back
@@ -275,7 +279,7 @@ def build_startup_script(host_id: str, parser: argparse.ArgumentParser,
 
     resolved_template = startup_template or os.environ.get('GCP_STARTUP_TEMPLATE')
     template_path = (Path(resolved_template) if resolved_template
-                     else cloud_dir_for(host_id).parent / 'gcp_common_startup.sh')
+                     else DEFAULT_STARTUP_TEMPLATE)
 
     resolved_oops = oops_resources or os.environ.get('OOPS_RESOURCES_DISK')
     if not resolved_oops:

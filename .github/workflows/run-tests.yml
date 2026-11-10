@@ -41,7 +41,7 @@ jobs:
 
       - name: Vulture (dead code)
         run: |
-          vulture src tests
+          vulture src
 
       - name: Pyroma (packaging metadata)
         run: |

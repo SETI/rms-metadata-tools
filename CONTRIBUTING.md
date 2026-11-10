@@ -43,10 +43,12 @@ See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
    scripts/run-all-checks.sh
    ```
 
-5. Commit your changes with a descriptive message:
+5. Commit your changes with a [Conventional Commits](https://www.conventionalcommits.org/)
+   message (`feat:`, `fix:`, `docs:`, ...); see the coding conventions page of the
+   developer guide:
 
    ```bash
-   git commit -m "Add feature: description of your changes"
+   git commit -m "feat: add <thing>"
    ```
 
 6. Push your branch to your fork:

@@ -21,7 +21,7 @@ def test_inventory() -> None:
     """Every inventory label parses as a PDS label."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*_inventory.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*_inventory.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/')
 
     # Test labels
@@ -37,7 +37,7 @@ def test_geometry_cumulative() -> None:
     """At least one cumulative summary label exists and parses as a PdsTable."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*_summary.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/')
 
     # Cumulative labels declare INDEX_TYPE == "CUMULATIVE" inside their single
@@ -66,7 +66,7 @@ def test_geometry_common() -> None:
     """Every summary table has consistent counts and string identifier columns."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*_summary.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/')
 
     # Test labels
@@ -90,7 +90,7 @@ def test_geometry_body() -> None:
     """Body summary angle and latitude columns lie within their physical bounds."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*_summary.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/', '_ring_', '_sky_')
 
     # Test labels
@@ -130,7 +130,7 @@ def test_geometry_ring() -> None:
     """Ring summary angle and elevation columns lie within their physical bounds."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*ring_summary.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*ring_summary.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/')
 
     # Test labels
@@ -174,7 +174,7 @@ def test_geometry_sky() -> None:
     """Sky summary right ascension and declination lie within physical bounds."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*sky_summary.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*sky_summary.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/')
 
     # Test labels

@@ -20,7 +20,7 @@ def test_geometry_common() -> None:
     """Every summary table's VOLUME_ID column matches the volume in the filename."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*_summary.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/', 'GO_0999/')
 
     # Test labels
@@ -40,7 +40,7 @@ def test_geometry_body() -> None:
     """Body summary tables exist and their BODY_NAME column holds string values."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*_summary.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*_summary.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/', '_ring_', '_sky_', 'GO_0999/')
     assert files, 'no body summary labels found under $RMS_METADATA'
 
@@ -60,7 +60,7 @@ def test_geometry_ring() -> None:
     """Ring summary values honor the GOSSI-specific angle bounds."""
 
     # Get labels to test
-    files = support.match(support.METADATA, '*ring_summary.lbl')  # type: ignore[arg-type]
+    files = support.match(support.metadata_tree(), '*ring_summary.lbl')
     files = support.exclude(files, 'templates/', 'old/', '__skip/', '_body_', '_sky_', 'GO_0999/')
 
     # Test labels

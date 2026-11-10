@@ -35,8 +35,7 @@ def get_args(host: str | None = None,
     gr.add_argument('--exclude', '-e', nargs='*', type=str, metavar='exclude',
                     default=exclude,
                     help='''List of volumes to exclude.''')
-    gr.add_argument('--new_only', '-n', nargs='*', type=str, metavar='new_only',
-                    default=False,
+    gr.add_argument('--new_only', '-n', action='store_true',
                     help='''Only volumes that contain no output files are processed.''')
     gr.add_argument('--first', '-f', type=int, metavar='first',
                     help='''If given, at most this many input files are processed
@@ -77,11 +76,16 @@ def process_tables(template_name: str,
 
     metadata_tree = FCPath(args.metadata_tree)
     output_tree = FCPath(args.output_tree)
-    new_only = args.new_only is not False
-    labels_only = args.labels is not False
+    new_only = args.new_only
+    labels_only = args.labels
 
     if volumes is None:
         volumes = args.volumes
+
+    # A user-supplied --exclude on the command line takes precedence over the
+    # exclude= parameter (typically the host's configured default).
+    if args.exclude is not None:
+        exclude = args.exclude
 
     if volumes:
         new_only = False

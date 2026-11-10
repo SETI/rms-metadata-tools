@@ -84,3 +84,35 @@ def test_write_and_read_expand_env_vars(tmp_path: Path,
     util.write_txt_file('$TEXTDIR/env.txt', ['one', 'two'])
     assert (tmp_path / 'env.txt').exists()
     assert util.read_txt_file('$TEXTDIR/env.txt') == ['one', 'two']
+
+
+def test_unset_env_var_stays_literal_in_path(tmp_path: Path,
+                                            monkeypatch: pytest.MonkeyPatch) -> None:
+    """An unset $VAR is left in the path verbatim, so the read fails naming it."""
+    monkeypatch.delenv('MT_UNSET_DIR', raising=False)
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(FileNotFoundError, match=r'\$MT_UNSET_DIR/x\.txt'):
+        util.read_txt_file('$MT_UNSET_DIR/x.txt')
+
+
+#===============================================================================
+# failure and edge cases
+#===============================================================================
+def test_read_missing_file_raises(tmp_path: Path) -> None:
+    """Reading a file that does not exist propagates FileNotFoundError."""
+    with pytest.raises(FileNotFoundError, match='absent\\.txt'):
+        util.read_txt_file(FCPath(tmp_path / 'absent.txt'))
+
+
+def test_read_lines_without_final_terminator(tmp_path: Path) -> None:
+    """A last line with no terminator is still returned as a line."""
+    path = tmp_path / 'noeol.txt'
+    path.write_bytes(b'a\r\nb')
+    assert util.read_txt_file(FCPath(path)) == ['a', 'b']
+
+
+def test_append_string_content_normalizes_terminators(tmp_path: Path) -> None:
+    """String content is split into lines and rejoined with the given terminator."""
+    path = tmp_path / 'app.txt'
+    util.append_txt_file(FCPath(path), 'x\ny\r\nz', terminator='\r\n')
+    assert path.read_bytes() == b'x\r\ny\r\nz\r\n'
