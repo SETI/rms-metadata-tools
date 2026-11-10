@@ -196,7 +196,7 @@ def _patch_record_spice(monkeypatch: pytest.MonkeyPatch, primary: str = '') -> N
     """
     monkeypatch.setattr(oops.Body, 'exists', staticmethod(lambda name: True))
     monkeypatch.setattr(bodies_select, 'get_primary',
-                        lambda record, table, sclk: (primary, [], [], []))
+                        lambda record, table: (primary, [], [], []))
     monkeypatch.setattr(bodies_select, 'inventory',
                         lambda record, bodies: [])
     monkeypatch.setattr(bodies_select, 'select_bodies',

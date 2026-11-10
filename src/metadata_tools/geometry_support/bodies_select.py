@@ -226,15 +226,13 @@ def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
         exceptions: List of exception specifiers. An entry that is a Python
             identifier names a geometry-config predicate function applied to
             the observation; any other entry is a regular expression tested
-            against the observation ID.
+            against the observation ID, which is read only if such an entry is
+            reached, so a host with predicates alone needs no OBSERVATION_ID.
 
     Returns:
         True if the observation is excluded.
     """
-    if not exceptions:
-        return False
-
-    obs_id = util.get_observation_id(record.observation)
+    obs_id: str | None = None
     for exception in exceptions:
         # An identifier names a config predicate function; anything else is a
         # regex tested against the observation ID. The observation is excluded if
@@ -243,39 +241,51 @@ def obs_excluded(record: 'Record', exceptions: list[str]) -> bool:
             fn = getattr(get_geometry_config(), exception)
             if fn(record.observation):
                 return True
-        elif re.match(exception, obs_id):
-            return True
+        else:
+            if obs_id is None:
+                obs_id = util.get_observation_id(record.observation)
+            if re.match(exception, obs_id):
+                return True
 
     return False
 
 #===============================================================================
-def get_primary(record: 'Record', table: list[Any],
-                sclk: str) -> tuple[str, list[str], list[str], list[str]]:
-    """Determine the primary for a given spacecraft clock count.
+def get_primary(record: 'Record',
+                table: list[Any]) -> tuple[str, list[str], list[str], list[str]]:
+    """Determine the primary for an observation from the mission table.
 
-    Uses the converted default bodies table, which contains sclk ticks instead
-    of strings.
+    A row keyed by spacecraft clock spans the observation if it spans the
+    observation's SPACECRAFT_CLOCK_START_COUNT; a row keyed by time spans it if
+    it spans the observation's start time. Each is read only if some row needs
+    it, so a host keyed by time alone needs no clock count.
 
     Parameters:
         record: The geometry record.
-        table: Converted default bodies table containing sclk ticks instead of
-            strings.
-        sclk: Spacecraft clock string corresponding to the observation time.
+        table: The converted mission table (``formats.get_mission_table``),
+            each row's span a ``util.MissionRange``.
 
     Returns:
         A tuple (primary, secondaries, selections, additions), where primary is
-        the name of the primary corresponding to the given SCLK value,
+        the name of the primary of the first row that spans the observation,
         secondaries holds the names of any secondaries, selections holds the
         names of any selected bodies, and additions holds the names of any added
-        bodies. If the observation is excluded or no table row spans the given
-        SCLK value, ('', [], [], []) is returned.
+        bodies. If the observation is excluded or no table row spans it,
+        ('', [], [], []) is returned.
     """
     fail: tuple[str, list[str], list[str], list[str]] = ('', [], [], [])
-    sclk_ticks = util.sclk_to_ticks(sclk, get_geometry_config().SC)
+    observation = record.observation
+    values: dict[str, float] = {}
     for row in table:
         if obs_excluded(record, row[1]):
             return fail
-        sclks = row[0]
-        if sclk_ticks >= sclks[0] and sclk_ticks <= sclks[1]:
+        span: util.MissionRange = row[0]
+        if span.key not in values:
+            if span.key == 'TIME':
+                values['TIME'] = float(observation.time[0])
+            else:
+                sclk = str(observation.dict['SPACECRAFT_CLOCK_START_COUNT'])
+                values['SCLK'] = util.sclk_to_ticks(sclk,
+                                                    cast(int, hooks.get_spacecraft_id()))
+        if span.start <= values[span.key] <= span.stop:
             return (row[2], row[3], row[4], row[5])
     return fail

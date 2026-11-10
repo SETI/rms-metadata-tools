@@ -1,0 +1,75 @@
+# Production GCP config for the VGISS_xxxx geometry stage.
+#
+# The 87 volumes (VGISS_5101-5214, 6101-6215, 7201-7207, and 8201-8210) hold
+# 76,652 images: a median of 883 a volume and a maximum of 1,594 (VGISS_5116).
+# Each volume is one task. A cloud trial of VGISS_5102 (317 images, on one
+# n2 task) took about 3.4 s an image; a local trial on the first 20 images of
+# VGISS_8201 peaked at 550 MB. So a median volume takes about 50 minutes, the
+# largest about 90, and the whole collection about 72 task-hours. Retune
+# these values after a trial on the largest volume.
+#
+# Each task gets 2 vCPUs, one core, and 8 GB, ample beside the trial's peak;
+# Cassini's largest volume, with over four times as many images, peaked at
+# 6.3 GB. Three 32-vCPU instances give 48 task slots: two waves of the queue,
+# about three hours in all. Tasks this short lose little to a
+# preemption, which retry_on_exit re-queues, so dispatch on spot:
+#
+#   metadata-geometry-cloud VGISS_xxxx <paths...> --use-spot \
+#       --config gcp_geometry_prod_config.yml --task-file ./tasks.json
+#
+# Keep the dispatching machine awake for the whole run: while it sleeps, the
+# orchestrator neither terminates idle instances nor tracks running ones.
+#
+# The Voyager host has no index stage, so nothing else creates the volume
+# directories of the output tree: each volume to process needs one there
+# before dispatch, holding the volume's supplemental index (both the .lbl and
+# the .tab), which the geometry stage reads from the output tree. The startup script installs
+# rms-host-voyager from GitHub only on the --debug-branch path, so pass
+# --debug-branch until the package is published.
+#
+# The encounter SP kernels cover only each encounter's core weeks, so 13,232
+# images in 22 volumes (VGISS_5101-5104, 5119, 5120, 5201-5205, 6101,
+# 6115-6121, 6201, 6212, 7207) need the spacecraft positions in NAIF's merged
+# cruise SPKs, voyager_{1,2}.ST+199x_*.merged.bsp. Both are in
+# SPICE/Voyager/SPK on the OOPS resources disk; rms-host-voyager furnishes
+# them from its cruise-SPK change (branch jns_261106_cruise_spks) on. With an
+# older rms-host-voyager, those volumes stop at their first such image.
+#
+# The default (unsuffixed) gcp_geometry_config.yml remains the small test setup.
+provider: gcp
+gcp:
+  job_id:                   metadata-geometry-job
+  project_id:               rms-metadata
+  region:                   us-central1
+  zone:                     us-central1-a
+
+  # cloud_tasks takes the cheapest type per vCPU among those that qualify, not
+  # the first listed. c4 and n4 take only hd-balanced boot disks, so with
+  # pd-balanced only n2 qualifies.
+  instance_types:           ["^n2-standard-.*"]
+  min_cpu:                  32
+  max_cpu:                  32
+  max_instances:            3
+  cpus_per_task:            2
+  min_memory_per_task:      8            # GB
+
+  # The largest volume should take about an hour and a half; four flags a
+  # wedged task without killing a slow-but-live one on a slower instance.
+  max_runtime:              14400
+
+  # Per-task FileCache holds the volume's index and label data; the OOPS
+  # resources (SPICE kernels) live on the separately attached persistent
+  # disk named by $OOPS_RESOURCES_DISK, not the boot disk.
+  boot_disk_types:          pd-balanced
+  boot_disk_base_size:      20           # GB: OS + venv + clone/pip install
+  boot_disk_per_task:       5            # GB per concurrent task slot
+
+  # Spot fleet hygiene: re-queue tasks lost to preemption, but do not loop
+  # tasks that fail on their own.
+  retry_on_exit:            true
+  retry_on_exception:       false
+  retry_on_timeout:         false
+
+  # Cost guard: three spot n2-standard-32 instances typically land well under
+  # this; three on demand cost about $4.70 an hour, which it also covers.
+  max_total_price_per_hour: 5.00         # USD/hour

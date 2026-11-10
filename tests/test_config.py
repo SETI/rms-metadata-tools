@@ -247,6 +247,14 @@ def test_get_extra_children_defaults_to_none(monkeypatch: pytest.MonkeyPatch) ->
     assert cfg.get_extra_children() == ['PHOEBE']
 
 
+def test_get_spacecraft_id_defaults_to_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With no host SC, the mission table must be keyed by time alone."""
+    _, geom = _bare_host(monkeypatch)
+    assert cfg.get_spacecraft_id() is None
+    geom.SC = -32  # type: ignore[attr-defined]
+    assert cfg.get_spacecraft_id() == -32
+
+
 def test_get_meshgrids_defaults_to_an_empty_cache(monkeypatch: pytest.MonkeyPatch) -> None:
     """With no host hook, the engine starts each volume with an empty cache."""
     _, geom = _bare_host(monkeypatch)

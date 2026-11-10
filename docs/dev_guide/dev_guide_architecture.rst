@@ -10,7 +10,7 @@ The codebase has two halves. The **engine** (``src/metadata_tools/``, excluding
 compute geometry, format columns, and write tables and PDS3 labels. A **host
 configuration** package (``src/metadata_tools/hosts/<HOST>/``) supplies the
 collection-specific knowledge: which files to include, how to derive certain
-columns, the spacecraft ID, the body-selection mission table, the border allowed
+columns, the body-selection mission table and the spacecraft ID that keys it, the border allowed
 around a field of view, and the label templates.
 
 The engine never imports a specific host's config modules directly (see issue #112).

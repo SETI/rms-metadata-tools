@@ -1,0 +1,62 @@
+$NOTE
+##############################################################################
+# Host-specific label definitions.
+#
+#  This file provides host-specific definitions to appear in the supplemental
+#  and geometry labels.
+#
+##############################################################################
+$END_NOTE
+$NOTE
+##############################################################################
+# Values the shared summary templates take from this host
+##############################################################################
+$END_NOTE
+$ONCE(instrument = 'Voyager ISS')
+$ONCE(product = 'image')
+$ONCE(products = 'images')
+$ONCE(volume_id_bytes = 10)
+$ONCE(filespec_bytes = 34)
+$ONCE(system_names = 'JUPITER, SATURN, URANUS, or NEPTUNE')
+$ONCE(ring_system = 'Jupiter, Saturn, Uranus, or Neptune')
+$ONCE(is_visual = True)
+MISSION_NAME                    = "VOYAGER"
+$NOTE
+##############################################################################
+# VGISS_<P><S><NN>: P is the planet (5-8: Jupiter, Saturn, Uranus, Neptune)
+# and S the spacecraft (1 or 2; 9 for the cumulative volume, which holds both).
+##############################################################################
+$END_NOTE
+$ONCE(volume_number = int(BASENAME(LABEL_PATH()).split('_')[1]))
+$ONCE(planet_digit = volume_number // 1000)
+$ONCE(spacecraft_digit = (volume_number // 100) % 10)
+$IF(spacecraft_digit == 1)
+INSTRUMENT_HOST_NAME            = "VOYAGER 1"
+INSTRUMENT_HOST_ID              = "VG1"
+$ELSE_IF(spacecraft_digit == 2)
+INSTRUMENT_HOST_NAME            = "VOYAGER 2"
+INSTRUMENT_HOST_ID              = "VG2"
+$ELSE_IF(planet_digit <= 6)
+INSTRUMENT_HOST_NAME            = {"VOYAGER 1", "VOYAGER 2"}
+INSTRUMENT_HOST_ID              = {"VG1", "VG2"}
+$ELSE
+INSTRUMENT_HOST_NAME            = "VOYAGER 2"
+INSTRUMENT_HOST_ID              = "VG2"
+$END_IF
+INSTRUMENT_NAME                 = "IMAGING SCIENCE SUBSYSTEM"
+INSTRUMENT_ID                   = "ISS"
+
+$NOTE
+##############################################################################
+# DATA_SET_ID definitions: one data set per planet
+##############################################################################
+$END_NOTE
+$IF(planet_digit == 5)
+DATA_SET_ID                     = "VG1/VG2-J-ISS-2/3/4/6-PROCESSED-V1.0"
+$ELSE_IF(planet_digit == 6)
+DATA_SET_ID                     = "VG1/VG2-S-ISS-2/3/4/6-PROCESSED-V1.1"
+$ELSE_IF(planet_digit == 7)
+DATA_SET_ID                     = "VG2-U-ISS-2/3/4/6-PROCESSED-V1.0"
+$ELSE
+DATA_SET_ID                     = "VG2-N-ISS-2/3/4/6-PROCESSED-V1.0"
+$END_IF
