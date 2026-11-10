@@ -444,23 +444,25 @@ def test_record_init_without_primary_has_no_rings(monkeypatch: pytest.MonkeyPatc
 
 
 #===============================================================================
-# Suite.__init__ early-return paths
+# Suite.__init__ index lookup
 #===============================================================================
-def test_suite_init_returns_without_index(tmp_path: Path) -> None:
-    """With no index file, __init__ returns early and never builds observations."""
-    suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path,
-                  index_glob='*_index.tab')
-    assert not hasattr(suite, 'observations')
+def test_suite_init_raises_without_index(tmp_path: Path) -> None:
+    """With no index file, __init__ raises rather than skipping the volume."""
+    with pytest.raises(FileNotFoundError,
+                       match=re.escape('No index file matching *_index.tab found in '
+                                       f'{FCPath(tmp_path)}.')):
+        Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path,
+              index_glob='*_index.tab')
 
 
 def test_suite_init_defaults_index_glob_to_the_volume(tmp_path: Path) -> None:
     """With no index_glob, the index label is the one named for the volume."""
-    # A second volume's label in the directory is not a match, so nothing is
-    # ambiguous; the conftest host names the volume GO_0001.
+    # A second volume's label in the directory is not a match, so the lookup
+    # fails naming the volume's own label; the conftest host names it GO_0001.
     (tmp_path / 'GO_0002_index.lbl').write_text('a', encoding='utf-8')
-    suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path)
-    assert suite.index_glob == 'GO_0001_index.lbl'
-    assert not hasattr(suite, 'observations')
+    with pytest.raises(FileNotFoundError,
+                       match=re.escape('No index file matching GO_0001_index.lbl')):
+        Suite(tmp_path, tmp_path, tmp_path, metadata_dir=tmp_path)
 
 
 def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
@@ -475,9 +477,9 @@ def test_suite_init_multiple_indexes_raises(tmp_path: Path) -> None:
               index_glob='*_index.tab')
 
 
-def test_suite_init_missing_index_file_logs_and_returns(
+def test_suite_init_missing_index_file_logs_and_raises(
         tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """from_index raising FileNotFoundError is logged; the Suite has no observations."""
+    """from_index raising FileNotFoundError is logged and raised."""
     meta = tmp_path / 'meta'
     meta.mkdir()
     (meta / 'GO_0001_index.tab').write_text('a', encoding='utf-8')
@@ -493,9 +495,9 @@ def test_suite_init_missing_index_file_logs_and_returns(
                         lambda: types.SimpleNamespace(
                             info=lambda *a, **k: None,
                             exception=lambda msg, *a: logged.append(msg % a)))
-    suite = Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
-                  index_glob='*_index.tab')
-    assert not hasattr(suite, 'observations')
+    with pytest.raises(FileNotFoundError):
+        Suite(tmp_path, tmp_path, tmp_path, metadata_dir=meta,
+              index_glob='*_index.tab')
     assert logged == ['Index file not found for GO_0001']
 
 

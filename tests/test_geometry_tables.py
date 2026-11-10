@@ -320,12 +320,6 @@ def test_suite_write_calls_each_table(monkeypatch: pytest.MonkeyPatch) -> None:
     assert written == [True]
 
 
-def test_suite_create_returns_early_without_observations() -> None:
-    """Without an observations attribute, create() returns immediately."""
-    suite = Suite.__new__(Suite)
-    assert suite.create() is None  # type: ignore[func-returns-value]
-
-
 def test_suite_create_processes_observations(
         monkeypatch: pytest.MonkeyPatch) -> None:
     """create() makes, adds, and writes records for a matching observation."""

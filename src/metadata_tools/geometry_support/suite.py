@@ -29,12 +29,10 @@ class Suite:
     finally writes the tables and labels with :meth:`write`.
 
     Construction reads the volume's observations through the host's
-    ``from_index`` hook. It returns early, leaving the Suite without
-    ``observations``, ``tables``, or ``meshgrids``, when no index file in
-    ``metadata_dir`` matches ``index_glob`` or
-    when ``from_index`` raises FileNotFoundError (logged). :meth:`create` on such a
-    Suite does nothing. Otherwise all of those attributes are set, ``tables``
-    holding one inventory table plus a sky, ring, and body summary table.
+    ``from_index`` hook and sets ``observations``, ``meshgrids``, and
+    ``tables``, the last holding one inventory table plus a sky, ring, and body
+    summary table. A volume whose index cannot be found is an error, never a
+    silent skip, so a run cannot report a volume done that it never processed.
     """
 
     #===========================================================================
@@ -61,6 +59,9 @@ class Suite:
                 a body; 0 to disable body-specific meshgrids.
 
         Raises:
+            FileNotFoundError: If no index file in the metadata directory
+                matches the index glob, or the host's ``from_index`` cannot find
+                an index file it reads (logged).
             RuntimeError: If more than one index file is found in the metadata
                 directory.
         """
@@ -82,7 +83,8 @@ class Suite:
             self.index_glob = util.get_index_name(self.volume_id, None) + '.lbl'
         index_filenames = list(self.metadata_dir.glob(self.index_glob))
         if len(index_filenames) == 0:
-            return
+            raise FileNotFoundError('No index file matching %s found in %s.'
+                                    % (self.index_glob, self.metadata_dir))
         if len(index_filenames) > 1:
             raise RuntimeError('Multiple index files found in %s.' % self.metadata_dir)
 
@@ -105,7 +107,7 @@ class Suite:
                                                   supplemental_index_filename)
         except FileNotFoundError:
             logger.exception('Index file not found for %s', self.volume_id)
-            return
+            raise
 
         # Initialize data tables
         self.tables: list[InventoryTable | SkyTable | RingTable | BodyTable] = []
@@ -213,9 +215,6 @@ class Suite:
             pattern: Glob pattern for sub-selecting files to process.
         """
         logger = com.get_logger()
-
-        if not hasattr(self, 'observations'):
-            return
 
         # Loop through the observations...
         nobs = len(self.observations)
