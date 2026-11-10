@@ -103,7 +103,11 @@ the engine. Cloud variants accept `cloud_tasks` options; `--config` defaults to
 `cloud/<HOST>/gcp_<type>_config.yml` (source checkout only) and `--task-file` to
 `./tasks.json` when those files exist. GCP instance startup scripts are generated at
 dispatch time from the packaged template `src/metadata_tools/cli/gcp_common_startup.sh`;
-only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`.
+only the `gcp_*_config.yml` machine/queue configs live in `cloud/<HOST>/`. Instances
+boot a stock Ubuntu image unless dispatched with `--image <family>` (or a config sets
+`image:`); `scripts/build-gcp-image.sh` bakes such an image with the venv preinstalled,
+and the startup script then upgrades it in place, so a stale image never silently runs
+an old release.
 
 **Per-host directory** (`src/metadata_tools/hosts/<HOST>/`) contains config modules and templates:
 

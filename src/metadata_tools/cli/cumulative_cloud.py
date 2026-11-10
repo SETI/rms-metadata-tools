@@ -24,12 +24,12 @@ Instance software -- scratch install vs. a stored image:
   without touching any config) or a full image URI:
 
     metadata-cumulative-cloud GO_0xxx $RMS_METADATA_TEST_GCP/GO_0xxx/GO_0999/ \\
-        --use-spot --image metadata-tools-worker
+        --use-spot --image metadata-tools
 
   The same choice can be stored per stage in the config YAML's provider section:
 
     gcp:
-      image: metadata-tools-worker
+      image: metadata-tools
 
   The startup script still runs on a stored image; its install steps largely
   reduce to no-ops against the preinstalled software. Pair with
