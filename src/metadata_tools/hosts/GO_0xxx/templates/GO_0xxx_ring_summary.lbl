@@ -65,6 +65,7 @@ $END_IF
     been expanded on every side by a distance equivalent to 25 narrow-angle
     pixels."
 
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "VOLUME_ID"
     FORMAT                      = A7
@@ -72,6 +73,7 @@ $END_IF
       volume."
   END_OBJECT                    = COLUMN
 
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "FILE_SPECIFICATION_NAME"
     FORMAT                      = A32
@@ -79,6 +81,7 @@ $END_IF
       label, relative to the root directory of the PDS volume."
   END_OBJECT                    = COLUMN
 
+  #===========================================================================
   OBJECT                        = COLUMN
     NAME                        = "SYSTEM_NAME"
     FORMAT                      = A7

@@ -128,7 +128,9 @@ table-level boilerplate.
    fragment for its table kind, naming the quantity and declaring what its
    values share: ``FORMAT``,
    ``UNIT`` (which drives the unit conversion), ``NULL_CONSTANT``, the valid
-   range, the shared lead-in ``DESCRIPTION`` (what the quantity *is*), and
+   range -- or, when the column shares one of the common formats,
+   ``COLUMN_FORMAT`` naming its entry in the format dictionary
+   (``column_formats.lbl``) in place of those keywords -- the shared lead-in ``DESCRIPTION`` (what the quantity *is*), and
    the computation -- ``BACKPLANE_KEY`` (a Python tuple literal, with
    ``'bodyx'`` where the body name goes), ``MASK`` if any bodies mask it,
    ``OVERFLOW_FORMAT`` (in PDS3 FORMAT notation) if a value can outgrow its
@@ -144,6 +146,9 @@ table-level boilerplate.
    label keywords. See :doc:`dev_guide_geometry_subsystem` for the full
    grammar; the write path lowers every group to plain ``COLUMN`` objects and
    removes the spec keywords, so none of this reaches the archive.
+#. If the new column's format recurs among other columns but has no entry
+   yet, consider adding one to ``column_formats.lbl`` and referring the
+   columns to it; a one-off format stays inline.
 #. Add the corresponding backplane function in ``oops`` if the quantity is new.
 #. Regenerate a volume and update the unit tests -- the shipped templates'
    column counts are pinned in ``tests/test_geometry_schema.py``.

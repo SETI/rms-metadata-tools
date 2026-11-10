@@ -76,9 +76,11 @@ Core engine modules:
   metadata and computation spec alike — from its label template.
 - `cumulative_support.py` — walks a volume tree and concatenates per-volume tables.
 - `label_support.py` — generates PDS3 `.lbl` labels from templates using `rms-pdstemplate`;
-  lowers the column grammar and strips the spec keywords so they never reach a shipped label.
+  strips `#` comment lines, expands format references, lowers the column grammar, and strips the spec keywords so they
+  never reach a shipped label.
 - `column_grammar.py` — the definition/stub column grammar shared by the template read and
-  write paths, including the write-time lowering to plain COLUMN objects.
+  write paths, including format-dictionary expansion and the write-time lowering to plain
+  COLUMN objects.
 - `config.py` — the host config registry (`set_host()` / `get_*_config()`).
 - `task_list_support.py` — task-file generation for cloud/Worker runs.
 - `common.py` — `Table` base class, the global `PdsLogger`, and the shared argument parser.
@@ -135,14 +137,21 @@ conversion, NULL_CONSTANT, valid range, OVERFLOW_FORMAT) and the computation spe
 and the shared lead-in DESCRIPTION — followed by one `COLUMN_STUB` object per value,
 carrying its NAME, its own per-value DESCRIPTION (appended to the definition's at write
 time), and any override; a single-valued column is simply a plain COLUMN carrying its
-own spec keywords. Group size is the stub count. `geometry_support/label_schema.py` parses and
+own spec keywords. Group size is the stub count. Instead of spelling out its format
+keywords, any column block may state `COLUMN_FORMAT = "<entry>"`, naming an
+`OBJECT = COLUMN_FORMAT` entry in the **format dictionary**
+(`src/metadata_tools/templates/column_formats.lbl`, `$INCLUDE`d by each shared fragment);
+a keyword the block states itself wins over the entry's, and one-off formats stay inline.
+`expand_format_references` substitutes the entries first on both the read and write paths.
+`geometry_support/label_schema.py` parses and
 validates it all loudly at table construction; the write path lowers every group to plain
 COLUMN objects (`merge_column_definitions`), so shipped labels never carry the grammar.
 
 **Adding a geometry column:** the column set is collection-independent and lives in the
 shared fragments in `src/metadata_tools/templates/`, which every host's summary template
 `$INCLUDE`s. (1) add a COLUMN_DEFINITION plus its COLUMN_STUB object(s) — or a plain
-COLUMN for a single value — to the shared fragment for its table kind, (2) add the
+COLUMN for a single value — to the shared fragment for its table kind, referring to a
+format-dictionary entry by `COLUMN_FORMAT` when its format is a common one, (2) add the
 backplane function if the quantity is new, (3) update tests (column counts are pinned).
 Removing a column is likewise a fragment-only edit — the computation travels with the
 definition. A host that must differ shadows a fragment with its own copy in its
