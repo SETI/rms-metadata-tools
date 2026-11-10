@@ -13,15 +13,13 @@ from metadata_tools.geometry_support.suite import Suite
 
 
 #===============================================================================
-def get_args(host: str | None = None, selection: str | None = None,
+def get_args(host: str | None = None,
              exclude: list[str] | None = None,
              sampling: int = 8) -> argparse.ArgumentParser:
     """Build the argument parser for geometric metadata.
 
     Parameters:
         host: Host name, e.g. 'GOISS'.
-        selection: A string containing "S" to generate summary files and "D" to
-            generate detailed files.
         exclude: List of volumes to exclude.
         sampling: Pixel sampling density.
 
@@ -34,11 +32,6 @@ def get_args(host: str | None = None, selection: str | None = None,
 
     # Add geometry args
     gr = parser.add_argument_group('Geometry Arguments')
-    gr.add_argument('--selection', type=str, metavar='selection',
-                    default=selection,
-                    help='''A string containing:
-                             "S" to generate summary files;
-                             "D" to generate detailed files.''')
     gr.add_argument('--exclude', '-e', nargs='*', type=str, metavar='exclude',
                     default=exclude,
                     help='''List of volumes to exclude.''')
@@ -58,7 +51,6 @@ def get_args(host: str | None = None, selection: str | None = None,
 #===============================================================================
 def process_tables(template_name: str,
                    volumes: list[str] | None = None,
-                   selection: str | None = None,
                    exclude: list[str] | None = None,
                    sampling: int = 8,
                    glob: str | None = None,
@@ -69,8 +61,6 @@ def process_tables(template_name: str,
     Parameters:
         template_name: Name of index template.
         volumes: List of volume ids to process. Overrides args.volumes.
-        selection: A string containing "S" to generate summary files and "D" to
-            generate detailed files.
         exclude: List of volumes to exclude.
         sampling: Pixel sampling density.
         glob: Glob pattern for data files.
@@ -82,7 +72,7 @@ def process_tables(template_name: str,
     host, _index_type, template_dir = util.parse_template_name(template_name)
     template_path = template_dir / FCPath(template_name).with_suffix('.lbl')
     if args is None:
-        parser = get_args(host=host, selection=selection, exclude=exclude, sampling=sampling)
+        parser = get_args(host=host, exclude=exclude, sampling=sampling)
         args = parser.parse_args()
 
     metadata_tree = FCPath(args.metadata_tree)
@@ -137,6 +127,6 @@ def process_tables(template_name: str,
                     continue
 
                 suite = Suite(indir, outdir, template_path, metadata_dir,
-                              selection=args.selection, glob=glob, index_glob=index_glob,
+                              glob=glob, index_glob=index_glob,
                               first=args.first, sampling=args.sampling)
                 suite.create(labels_only=labels_only, pattern=args.pattern)

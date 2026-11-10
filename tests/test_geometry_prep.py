@@ -27,9 +27,11 @@ def _record(record_stub: Callable[..., Record], pointing: bool = True,
     return record_stub(pointing_available=pointing, sampling=sampling)
 
 
-def _phase_desc() -> list[tuple[tuple[str, str], tuple[str, str, str]]]:
-    """Return one phase-angle descriptor: ((backplane_key, target), (flags, ...))."""
-    return [(('phase_angle', 'IO'), ('', '', ''))]
+def _phase_cols(make_column: Callable[..., Any],
+                mask: tuple[str, str, str] = ('', '', '')) -> list[Any]:
+    """Return a one-column schema: the IO phase-angle min/max pair."""
+    return [make_column(key=('phase_angle', 'IO'), mask=mask, flag='DEG',
+                        valid_minimum=0., valid_maximum=180.)]
 
 
 #===============================================================================
@@ -60,48 +62,51 @@ def test_append_body_prefix_truncates_long_name() -> None:
 # prep_row summary path
 #===============================================================================
 def test_summary_writes_single_row(
-        record_stub: Callable[..., Record], fake_backplane: Any) -> None:
-    """The summary path emits one formatted row and one override list."""
+        record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
+    """The summary path emits one formatted row."""
     # fake_backplane: conftest-private FakeBackplane stand-in for oops.Backplane.
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
         oops.Scalar(np.array([0.5, 1.0]), False)
-    rows, overrides = prep.prep_row(
+    rows = prep.prep_row(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-        _phase_desc(), primary='JUPITER', target='IO', no_mask=True)
+        _phase_cols(make_column), primary='JUPITER', target='IO', no_mask=True)
     assert len(rows) == 1
     assert rows[0][-1] == '  28.648,  57.296'
-    assert len(overrides) == 1
 
 
 def test_summary_no_body_omits_prefixes(
-        record_stub: Callable[..., Record], fake_backplane: Any) -> None:
+        record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
     """With no_body=True no body-name columns are inserted."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
         oops.Scalar(np.array([0.5, 1.0]), False)
-    rows, _ = prep.prep_row(
+    rows = prep.prep_row(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-        _phase_desc(), primary='JUPITER', target='IO', no_mask=True, no_body=True)
+        _phase_cols(make_column), primary='JUPITER', target='IO', no_mask=True, no_body=True)
     # Only the two prefixes + one data column, no body-name columns inserted.
     assert len(rows[0]) == 3
 
 
 def test_primary_prefix_when_no_target(
-        record_stub: Callable[..., Record], fake_backplane: Any) -> None:
+        record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
     """With no target, the primary name fills the body prefix column."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
         oops.Scalar(np.array([0.5, 1.0]), False)
-    rows, _ = prep.prep_row(
+    rows = prep.prep_row(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-        _phase_desc(), primary='JUPITER', target=None, no_mask=True)
+        _phase_cols(make_column), primary='JUPITER', target=None, no_mask=True)
     assert rows[0][2] == '"JUPITER     "'
 
 
 def test_pointing_unavailable_writes_null_row(
-        record_stub: Callable[..., Record], fake_backplane: Any) -> None:
+        record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
     """Without pointing, a forced null row is written if allow_zero_rows is False."""
-    rows, _ = prep.prep_row(
+    rows = prep.prep_row(
         _record(record_stub, pointing=False), ['"vol"', '"file"'],
-        fake_backplane, None, _phase_desc(), primary='JUPITER', target='IO',
+        fake_backplane, None, _phase_cols(make_column), primary='JUPITER', target='IO',
         no_mask=True, allow_zero_rows=False)
     # null_flag path substitutes the null value (-999) for every column; with
     # allow_zero_rows=False a null row is forced rather than suppressed.
@@ -110,96 +115,16 @@ def test_pointing_unavailable_writes_null_row(
 
 def test_excluded_mask_applied_when_not_no_mask(
         exists_true: None, record_stub: Callable[..., Record],
-        fake_backplane: Any) -> None:
+        fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
     """A fully excluded mask suppresses the row when allow_zero_rows is True."""
     fake_backplane.evaluations[('phase_angle', 'IO')] = \
         oops.Scalar(np.full((4, 4), 0.5), False)
     # Mask out everything -> the only row is suppressed unless allow_zero_rows.
     fake_backplane.in_back[('IO', 'JUPITER')] = np.ones((4, 4), dtype=bool)
-    descs = [(('phase_angle', 'IO'), ('P', '', ''))]
-    rows, _ = prep.prep_row(
+    rows = prep.prep_row(
         _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-        descs, primary='JUPITER', target='IO', allow_zero_rows=True)
+        _phase_cols(make_column, mask=('P', '', '')), primary='JUPITER',
+        target='IO', allow_zero_rows=True)
     # Fully excluded + allow_zero_rows -> nothing_found suppresses the row.
     assert rows == []
-
-
-def test_override_is_built_per_column(
-        record_stub: Callable[..., Record], fake_backplane: Any) -> None:
-    """Each row's overrides hold one dict per column, in column order."""
-    fake_backplane.evaluations[('phase_angle', 'IO')] = \
-        oops.Scalar(np.array([0.5, 1.0]), False)
-    fake_backplane.evaluations[('distance', 'IO')] = \
-        oops.Scalar(np.array([100., 200.]), False)
-    descs = [(('phase_angle', 'IO'), ('', '', '')),
-             (('distance', 'IO'), ('', '', ''))]
-    _rows, overrides = prep.prep_row(
-        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-        descs, primary='JUPITER', target='IO', no_mask=True)
-    # overrides[row][column]; phase_angle keeps VALID_MAXIMUM 180, distance 0.
-    assert overrides[0][0]['VALID_MAXIMUM'] == 180
-    assert overrides[0][1]['VALID_MAXIMUM'] == 0
-
-
-#===============================================================================
-# prep_row detailed (tiled) path
-#===============================================================================
-def test_tiling_suppressed_below_min(
-        record_stub: Callable[..., Record], fake_backplane: Any) -> None:
-    """A global area below tiling_min clears the tiles and yields a summary row."""
-    small = np.zeros((4, 4), dtype=bool)
-    small[0, 0] = True
-    fake_backplane.evaluations['global'] = oops.Scalar(small, False)
-    fake_backplane.evaluations[('phase_angle', 'IO')] = \
-        oops.Scalar(np.array([0.5, 1.0]), False)
-    rows, _ = prep.prep_row(
-        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-        _phase_desc(), primary='JUPITER', target='IO', tiles=['global', 't1'],
-        tiling_min=100, no_mask=True)
-    # Collapsed to a single summary row (no subregion index column present is
-    # not asserted here; just that exactly one row is produced).
-    assert len(rows) == 1
-
-
-def test_multiple_tile_sets_tuple_emits_a_row_per_set(
-        record_stub: Callable[..., Record], fake_backplane: Any) -> None:
-    """A tuple of tile sets recurses once per set, emitting one row for each.
-
-    The recursion passes the keyword-only arguments by keyword, so it does not
-    raise TypeError.
-    """
-    big = np.ones((4, 4), dtype=bool)
-    t1 = np.zeros((4, 4), dtype=bool)
-    t1[0, :] = True
-    t2 = np.zeros((4, 4), dtype=bool)
-    t2[1, :] = True
-    fake_backplane.evaluations['global'] = oops.Scalar(big, False)
-    fake_backplane.evaluations['t1'] = oops.Scalar(t1, False)
-    fake_backplane.evaluations['t2'] = oops.Scalar(t2, False)
-    fake_backplane.evaluations[('phase_angle', 'IO')] = \
-        oops.Scalar(np.full((4, 4), 0.5), False)
-    rows, _ = prep.prep_row(
-        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-        _phase_desc(), primary='JUPITER', target='IO',
-        tiles=(['global', 't1'], ['global', 't2']), tiling_min=1, no_mask=True)
-    # One non-empty subregion per tile set -> two rows.
-    assert len(rows) == 2
-
-
-def test_detailed_subregions_emit_rows(
-        record_stub: Callable[..., Record], fake_backplane: Any) -> None:
-    """A populated tile emits a row with a subregion index column inserted."""
-    big = np.ones((4, 4), dtype=bool)
-    tile1 = np.zeros((4, 4), dtype=bool)
-    tile1[0, :] = True
-    fake_backplane.evaluations['global'] = oops.Scalar(big, False)
-    fake_backplane.evaluations['t1'] = oops.Scalar(tile1, False)
-    fake_backplane.evaluations[('phase_angle', 'IO')] = \
-        oops.Scalar(np.full((4, 4), 0.5), False)
-    rows, _ = prep.prep_row(
-        _record(record_stub), ['"vol"', '"file"'], fake_backplane, None,
-        _phase_desc(), primary='JUPITER', target='IO', tiles=['global', 't1'],
-        tiling_min=1, no_mask=True)
-    assert len(rows) == 1
-    # A subregion index column was inserted before the data column.
-    assert rows[0][-2].strip().isdigit()

@@ -36,6 +36,7 @@ tests, docs, and tooling.
          geometry_support/     # geometry engine (package)
          cumulative_support.py # cumulative table concatenation
          label_support.py      # PDS3 label generation from templates
+         column_grammar.py     # the definition/stub column grammar + its lowering
          cli/                  # installed console-script entry points
            index.py            # metadata-index
            geometry.py         # metadata-geometry
@@ -48,7 +49,6 @@ tests, docs, and tooling.
            cumulative_cloud.py # metadata-cumulative-cloud (GCP dispatch)
            task_list.py        # metadata-task-list
            _host.py            # shared host-directory injection helpers
-         columns/              # geometry column definitions (body/ring/sky/sun)
          bodies.py             # builds the oops Body registry
          util.py               # path, text, time, and math utilities
          defs.py               # constants (body names, ring radii, paths)
@@ -80,7 +80,8 @@ The geometry engine is a package:
      prep.py            # prep_row(): builds the formatted columns for a row
      masks.py           # construct_excluded_mask(): excluded-pixel masks
      formatting.py      # numeric/ISO column formatting
-     formats.py         # FORMAT_DICT: per-column format/units/null/range metadata
+     label_schema.py    # resolve_schema(): reads the column schema from the template
+     formats.py         # get_mission_table(): the host's SCLK-resolved mission table
      bodies_select.py   # primary/body selection and field-of-view inventory
 
 A host directory contains configuration and templates only — there are no

@@ -70,12 +70,14 @@ Core engine modules:
   and the built-in `key__<NAME>` functions (`key_fns.py`); builds supplemental index tables.
 - `geometry_support/` — geometry table generation: `process.py` (entry point), `suite.py`
   (`Suite`), `record.py` (`Record`), `tables.py` (the table classes), `prep.py`, `masks.py`,
-  `formatting.py`, `bodies_select.py`, and `formats.py`, which holds `FORMAT_DICT`, the master
-  map from column name to formatting/units/null/range/link metadata.
+  `formatting.py`, `bodies_select.py`, `formats.py` (the host's SCLK-resolved mission
+  table), and `label_schema.py`, which reads each table's full column schema — label
+  metadata and computation spec alike — from its label template.
 - `cumulative_support.py` — walks a volume tree and concatenates per-volume tables.
-- `label_support.py` — generates PDS3 `.lbl` labels from templates using `rms-pdstemplate`.
-- `columns/` — geometry column definitions (`body.py`, `ring.py`, `sky.py`, `sun.py`), plain
-  modules re-exported by the package `__init__`.
+- `label_support.py` — generates PDS3 `.lbl` labels from templates using `rms-pdstemplate`;
+  lowers the column grammar and strips the spec keywords so they never reach a shipped label.
+- `column_grammar.py` — the definition/stub column grammar shared by the template read and
+  write paths, including the write-time lowering to plain COLUMN objects.
 - `config.py` — the host config registry (`set_host()` / `get_*_config()`).
 - `task_list_support.py` — task-file generation for cloud/Worker runs.
 - `common.py` — `Table` base class, the global `PdsLogger`, and the shared argument parser.
@@ -123,11 +125,28 @@ host_config`), not a bare `import host_config`.
 and `templates/`. See "Adding a new host" in the developer guide
 (`docs/dev_guide/dev_guide_extending.rst`).
 
-**Adding a geometry column:** (1) add a definition to the relevant `columns/<kind>.py`,
-(2) add the backplane function, (3) add a `FORMAT_DICT` row in
-`geometry_support/formats.py`, (4) add the column description to the host's summary label
-template, (5) update tests. (See "Adding a geometry column" in
-`docs/dev_guide/dev_guide_extending.rst` and the comment block at the top of `formats.py`.)
+**Geometry columns are defined entirely by the label templates**, in the definition/stub
+grammar of `column_grammar.py`: each computed column is one `COLUMN_DEFINITION` object —
+carrying the shared label metadata (FORMAT hence width/print format, UNIT hence unit
+conversion, NULL_CONSTANT, valid range, OVERFLOW_FORMAT) and the computation spec
+(`BACKPLANE_KEY` and `MASK` as Python literals parsed with `ast.literal_eval`, the
+`'bodyx'` token substituted per body at run time; `LINK_FN`/`LINK_ID` naming a postprocess function and its column group) —
+and the shared lead-in DESCRIPTION — followed by one `COLUMN_STUB` object per value,
+carrying its NAME, its own per-value DESCRIPTION (appended to the definition's at write
+time), and any override; a single-valued column is simply a plain COLUMN carrying its
+own spec keywords. Group size is the stub count. `geometry_support/label_schema.py` parses and
+validates it all loudly at table construction; the write path lowers every group to plain
+COLUMN objects (`merge_column_definitions`), so shipped labels never carry the grammar.
+
+**Adding a geometry column:** the column set is collection-independent and lives in the
+shared fragments in `src/metadata_tools/templates/`, which every host's summary template
+`$INCLUDE`s. (1) add a COLUMN_DEFINITION plus its COLUMN_STUB object(s) — or a plain
+COLUMN for a single value — to the shared fragment for its table kind, (2) add the
+backplane function if the quantity is new, (3) update tests (column counts are pinned).
+Removing a column is likewise a fragment-only edit — the computation travels with the
+definition. A host that must differ shadows a fragment with its own copy in its
+`templates/` directory. (See "Adding a geometry column" in
+`docs/dev_guide/dev_guide_extending.rst`.)
 
 ## Conventions (from `.cursor/rules/`)
 

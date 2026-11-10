@@ -6,7 +6,8 @@
 ################################################################################
 """Column value formatting utilities for geometry tables."""
 import warnings
-from typing import Any, cast
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, cast
 
 import julian
 import numpy as np
@@ -14,7 +15,9 @@ import oops
 import polymath
 
 import metadata_tools.util as util
-from metadata_tools.geometry_support.formats import FormatTuple
+
+if TYPE_CHECKING:
+    from metadata_tools.geometry_support.label_schema import ColumnStub
 
 
 #===============================================================================
@@ -51,12 +54,16 @@ def circle_coverage(angles: Any, null_value: float | str, sampling: int,
                                   width=sampling+1, diffmin=1, alt_format=flag)
 
 #===============================================================================
-def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
+def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
+                     sampling: int) -> str:
     """Return one formatted column (or a pair of columns) as a string.
 
     Parameters:
         values: A Scalar of values with its applied mask (or a string).
-        fmt: Format tuple from FORMAT_DICT/ALT_FORMAT_DICT.
+        stubs: The label metadata for each value this column writes, in slot
+            order; its length is the number of values. The unit conversion,
+            width, print format, overflow format, null value, and valid range
+            all come from here, which is to say from the host's label template.
         sampling: Pixel sampling density.
 
     Returns:
@@ -67,10 +74,13 @@ def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
             be clipped to fit.
     """
 
-    # Interpret the format
-    (flag, number_of_values, column_width,
-     standard_format, overflow_format,
-     null_value, valid_minimum, valid_maximum, _, _) = fmt
+    # Interpret the format. The conversion flag is derived from the label, so
+    # every slot of a column carries the same one; resolve_schema checks that.
+    flag = stubs[0].flag
+    number_of_values = len(stubs)
+    # A column's slots share one null value; per-slot nulls are applied below.
+    # resolve_schema guarantees every data column declares a null.
+    null_value = cast('float | str', stubs[0].null_value)
 
     # Convert from radians to degrees if necessary
     if flag in ("DEG", "360", "-180"):
@@ -98,7 +108,11 @@ def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
         else:
             results = [values.min().as_builtin(), values.max().as_builtin()]
     else:
-        results = [values]
+        # A string value is the column's null, substituted upstream when
+        # pointing is unavailable. Every slot gets one: emitting a single field
+        # for a two-slot column would short the row and shift every column
+        # after it.
+        results = [values] * number_of_values
 
     # Convert results to ISO
     if flag in ("ISO", "iso"):
@@ -108,8 +122,9 @@ def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
 
     # Write the formatted value(s)
     strings: list[str] = []
-    for entry in results:
+    for stub, entry in zip(stubs, results, strict=True):
         number: Any = entry
+        column_width = stub.width
         error_message = ""
         string: str
 
@@ -117,14 +132,15 @@ def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
         if not isinstance(number, str):
             if np.isnan(number):
                 warnings.warn("NaN encountered", stacklevel=2)
-                number = null_value
+                number = stub.null_value
             if np.isinf(number):
                 warnings.warn("infinity encountered", stacklevel=2)
-                number = null_value
-            if valid_minimum != valid_maximum:
-                if (number < valid_minimum) | (number > valid_maximum):
-                    number = null_value
-            string = standard_format % number
+                number = stub.null_value
+            # A template that declares no range asks for no range check.
+            if stub.valid_minimum is not None and stub.valid_maximum is not None:
+                if (number < stub.valid_minimum) | (number > stub.valid_maximum):
+                    number = stub.null_value
+            string = stub.print_format % number
         # string values: left justify and enclose in double quotes
         else:
             string = '"' + number.strip('"').ljust(column_width-2) + '"'
@@ -132,7 +148,7 @@ def formatted_column(values: Any, fmt: FormatTuple, sampling: int) -> str:
         # handle formatting overflow
         if len(string) > column_width:
             # An overflow format is always defined for columns that can overflow.
-            overflow = cast(str, overflow_format)
+            overflow = cast(str, stub.overflow_format)
             string = overflow % number
 
             if len(string) > column_width:

@@ -48,20 +48,13 @@ consumed by ``rms-cloud-tasks`` workers. The four public functions are:
 
 :func:`~metadata_tools.label_support.create` generates a ``.lbl`` label for a
 table by rendering the host's template (or a shared template from the global
-``templates/`` directory) with ``rms-pdstemplate``. The inventory table uses no
-table preprocessor; the other kinds use the PDS3 table preprocessor so column
-definitions are validated against the data.
-
-``columns`` -- geometry column definitions
-==========================================
-
-The :mod:`metadata_tools.columns` package assembles and re-exports the geometry
-column-definition tables for the body, ring, sky, and sun tables (see
-:doc:`api/columns`). The per-body dictionaries are built at import time by
-substituting each body name into a placeholder
-(:data:`~metadata_tools.defs.BODYX`) in the generic column lists. Because this
-substitution runs at import, the ``oops`` body registry must already be
-populated (see ``bodies`` below).
+``templates/`` directory) with ``rms-pdstemplate``. The inventory template has
+no COLUMN objects and uses no preprocessor; the other kinds chain three:
+:func:`~metadata_tools.column_grammar.merge_column_definitions` lowers the
+definition/stub column grammar to plain ``COLUMN`` objects, the PDS3 table
+preprocessor validates the lowered columns against the data, and a strip step
+sweeps any stray spec keyword so nothing non-PDS3 reaches a shipped label; see
+:doc:`dev_guide_geometry_subsystem`.
 
 ``bodies`` -- the oops body registry
 ====================================
@@ -82,10 +75,9 @@ is excluded from the hermetic test coverage and stubbed in the test fixtures.
 :func:`~metadata_tools.util.parse_template_name`,
 :func:`~metadata_tools.util.get_volume_glob`), text-file read/write helpers that
 work for local and remote paths, spacecraft-clock parsing/formatting, the
-placeholder-substitution helpers used by the columns package
-(:func:`~metadata_tools.util.replace`,
-:func:`~metadata_tools.util.replacement_dict`), and the cyclic-range estimator
-used by longitude columns.
+placeholder-substitution helper used to bind a body name into a column's
+backplane key (:func:`~metadata_tools.util.replace`), and the cyclic-range
+estimator used by longitude columns.
 
 :mod:`metadata_tools.defs` holds the constants: the planet name list
 (:data:`~metadata_tools.defs.BODY_NAMES`), the ring-system radii, the global
@@ -99,11 +91,11 @@ Invariants
   :class:`str`. The package never creates directories through ``FCPath``.
 - **Logging.** There is a single global logger; per-run handlers are added by
   :func:`~metadata_tools.common.init_logger`.
-- **Import order.** The :func:`~metadata_tools.bodies.get_bodies_registry` singleton and the
-  :mod:`metadata_tools.columns` tables are computed at import and depend on an
-  initialized ``oops`` registry.
+- **Import order.** The :func:`~metadata_tools.bodies.get_bodies_registry`
+  singleton is built on its first call and requires an initialized ``oops``
+  registry, so the host's ``host_init`` must have run first.
 
 API reference
 =============
 
-See :doc:`api/core`, :doc:`api/task_list_support`, and :doc:`api/columns`.
+See :doc:`api/core` and :doc:`api/task_list_support`.

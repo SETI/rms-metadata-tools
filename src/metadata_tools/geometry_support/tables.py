@@ -8,9 +8,33 @@ from typing import TYPE_CHECKING, Any, cast
 from filecache import FCPath
 
 import metadata_tools.common as com
+from metadata_tools.geometry_support.label_schema import TableSchema, resolve_schema
 
 if TYPE_CHECKING:
     from metadata_tools.geometry_support.record import Record
+
+
+#===============================================================================
+def _resolve(output_dir: str | Path | FCPath | None,
+             template_path: str | Path | FCPath | None,
+             qualifier: str) -> TableSchema | None:
+    """Resolve a table's column schema from its host template, when it has one.
+
+    Cumulative tables are built bare, with neither an output directory nor a
+    template path, purely to name the per-volume files to concatenate; they
+    never build a row, so they need no schema.
+
+    Parameters:
+        output_dir: The table's output directory, if any.
+        template_path: Path to the host template, if any.
+        qualifier: The table kind.
+
+    Returns:
+        The resolved schema, or None for a bare table.
+    """
+    if not template_path or not output_dir:
+        return None
+    return resolve_schema(FCPath(template_path).parent, qualifier)
 
 
 ################################################################################
@@ -66,6 +90,7 @@ class SkyTable(com.Table):
         """
         super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sky',
                          **kwargs)
+        self.schema = _resolve(output_dir, template_path, 'sky')
 
     #===============================================================================
     def add(self, record: 'Record') -> None:
@@ -74,7 +99,7 @@ class SkyTable(com.Table):
         Parameters:
             record: Record describing the row to add.
         """
-        self.rows += record.add(cast(str, self.qualifier), no_body=True)
+        self.rows += record.add(cast(TableSchema, self.schema).columns, no_body=True)
 
 
 ################################################################################
@@ -86,8 +111,8 @@ class SunTable(com.Table):
     The Sun is a body like any other, so a sun table is structured like the body
     table (its rows carry the same SYSTEM_NAME/BODY_NAME prefixes) with a single
     fixed target. It differs only in that the Sun is itself the illumination
-    source, so its column set (``SUN_SUMMARY_COLUMNS`` in ``columns/sun.py``)
-    omits every illumination-based quantity (phase, incidence, sub-solar, ...).
+    source, so its column set (``templates/sun_summary_columns.lbl``) omits
+    every illumination-based quantity (phase, incidence, sub-solar, ...).
 
     This table is intentionally NOT wired into the pipeline, because ``oops``
     cannot evaluate any Sun-surface backplane. ``oops`` models the Sun
@@ -95,20 +120,17 @@ class SunTable(com.Table):
     event key; when the target surface is itself the Sun,
     ``Backplane.standardize_event_key`` collapses the duplicate
     ``('SUN<', 'SUN')`` to the illegal length-1 key ``('SUN<',)`` and raises
-    ``ValueError: illegal surface event key``. Every ``SUN_COLUMNS`` key hits
+    ``ValueError: illegal surface event key``. Every sun-column key hits
     this, so no sun row can be generated. Resolving it requires additional
     backplane support that ``oops`` does not provide (e.g. a self-illuminated /
     observer-only surface event key), not a change here.
 
     Enablement recipe, should ``oops`` gain support for Sun-surface geometry:
-      1. In ``suite.Suite.add_tables``, add ``SunTable`` at the ``'summary'``
-         level (the Sun has no per-body tiling, so no detailed variant), and add
-         it to the ``self.tables`` type annotation.
-      2. In ``suite.Suite.get_overrides``, add
-         ``overrides['sun'] = Suite.get_override(record, 'sun')``.
-      3. In ``cumulative_support.create_cumulative_indexes``, add
+      1. In ``suite.Suite.add_tables``, add ``SunTable`` to the table list and
+         to the ``self.tables`` type annotation.
+      2. In ``cumulative_support.create_cumulative_indexes``, add
          ``geom.SunTable(level='summary')`` to the table list.
-      4. The label templates already exist and are validated:
+      3. The label templates already exist and are validated:
          ``hosts/GO_0xxx/templates/GO_0xxx_sun_summary.lbl`` and the shared
          ``templates/sun_summary_columns.lbl`` (guarded by
          ``tests/test_geometry_sun_label.py``).
@@ -127,6 +149,7 @@ class SunTable(com.Table):
         """
         super().__init__(output_dir=output_dir, template_path=template_path, qualifier='sun',
                          **kwargs)
+        self.schema = _resolve(output_dir, template_path, 'sun')
 
     #===========================================================================
     def add(self, record: 'Record') -> None:
@@ -140,7 +163,7 @@ class SunTable(com.Table):
         Parameters:
             record: Record describing the row to add.
         """
-        self.rows += record.add(cast(str, self.qualifier), target='SUN')
+        self.rows += record.add(cast(TableSchema, self.schema).columns, target='SUN')
 
 
 ################################################################################
@@ -162,6 +185,7 @@ class RingTable(com.Table):
         """
         super().__init__(output_dir=output_dir, template_path=template_path, qualifier='ring',
                          **kwargs)
+        self.schema = _resolve(output_dir, template_path, 'ring')
 
     #===========================================================================
     def add(self, record: 'Record') -> None:
@@ -177,7 +201,8 @@ class RingTable(com.Table):
         # Add record
         if record.primary:
             if record.rings_present:
-                self.rows += record.add(cast(str, self.qualifier), name=record.primary)
+                self.rows += record.add(cast(TableSchema, self.schema).columns,
+                                        name=record.primary)
 
 
 ################################################################################
@@ -199,6 +224,7 @@ class BodyTable(com.Table):
         """
         super().__init__(output_dir=output_dir, template_path=template_path, qualifier='body',
                          **kwargs)
+        self.schema = _resolve(output_dir, template_path, 'body')
 
     #===========================================================================
     def add(self, record: 'Record') -> None:
@@ -209,4 +235,5 @@ class BodyTable(com.Table):
                 entry in record.bodies.
         """
         for name in record.bodies:
-            self.rows += record.add(cast(str, self.qualifier), name=name, target=name)
+            self.rows += record.add(cast(TableSchema, self.schema).columns,
+                                    name=name, target=name)

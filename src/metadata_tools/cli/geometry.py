@@ -30,5 +30,4 @@ def main() -> None:
     geom.process_tables(hconf.template_name,
                         glob=config.glob,
                         index_glob=config.index_glob,
-                        selection=config.selection,
                         exclude=config.exclude)

@@ -115,18 +115,43 @@ label field) is described in :doc:`dev_guide_index_subsystem`.
 Adding a geometry column
 ========================
 
-Adding a geometry column touches the column definition, the backplane, the
-format dictionary, the label template, and the tests:
+The label templates define a geometry column end to end -- its label metadata
+and its computation -- so a new column is a template edit plus, at most, a new
+backplane function. The geometry column set is the same for every collection:
+it lives in the shared fragments in ``src/metadata_tools/templates/``
+(``body_summary_columns.lbl``, ``ring_summary_columns.lbl``, and so on), which
+every host's summary template pulls in with ``$INCLUDE``. A host's own
+``<HOST>_<kind>_summary.lbl`` carries only the prefix columns and the
+table-level boilerplate.
 
-#. Add a column-description tuple to the relevant module in the
-   :mod:`metadata_tools.columns` package (``body``, ``ring``, ``sky``, or
-   ``sun``). The tuple is ``(backplane_key, (masker, shadower, face))`` with an
-   optional alternate-format tag (see :doc:`dev_guide_geometry_subsystem`).
-#. Add the corresponding backplane function in ``oops`` if the backplane key is
-   new.
-#. Add a row for the column to
-   :data:`~metadata_tools.geometry_support.formats.FORMAT_DICT` (the ten-element
-   format tuple described in :ref:`format-dict-contract`).
-#. Add the column description(s) to the host's summary (or detailed) label
-   template, e.g. ``GO_0xxx_body_summary.lbl``.
-#. Run the host's geometry program and update the unit tests.
+#. For a two-valued column, add a ``COLUMN_DEFINITION`` object to the shared
+   fragment for its table kind, naming the quantity and declaring what its
+   values share: ``FORMAT``,
+   ``UNIT`` (which drives the unit conversion), ``NULL_CONSTANT``, the valid
+   range, the shared lead-in ``DESCRIPTION`` (what the quantity *is*), and
+   the computation -- ``BACKPLANE_KEY`` (a Python tuple literal, with
+   ``'bodyx'`` where the body name goes), ``MASK`` if any bodies mask it,
+   ``OVERFLOW_FORMAT`` (in PDS3 FORMAT notation) if a value can outgrow its
+   field, and ``LINK_FN`` / ``LINK_ID`` if a postprocessing rule ties the
+   column to others (``'null'``, the one link function defined so far, nulls
+   the whole group when any member is null).
+#. Follow it with one ``COLUMN_STUB`` object per value -- minimum then
+   maximum -- each declaring
+   its ``NAME``, its own ``DESCRIPTION`` (what *this value* tabulates, which
+   the write path appends to the definition's lead-in), and any keyword it
+   overrides. A single-valued column needs neither definition nor stub: write
+   it as a plain ``COLUMN`` carrying its own spec keywords alongside its
+   label keywords. See :doc:`dev_guide_geometry_subsystem` for the full
+   grammar; the write path lowers every group to plain ``COLUMN`` objects and
+   removes the spec keywords, so none of this reaches the archive.
+#. Add the corresponding backplane function in ``oops`` if the quantity is new.
+#. Regenerate a volume and update the unit tests -- the shipped templates'
+   column counts are pinned in ``tests/test_geometry_schema.py``.
+
+Removing a column is likewise a template-only edit: delete the definition and
+its stubs (or the single ``COLUMN``), and the computation goes with them.
+
+In the rare case that one collection must genuinely differ, a host can place
+its own edited copy of a fragment in its ``templates/`` directory: the
+directory holding the summary template is searched first when ``$INCLUDE``
+resolves, so the host copy shadows the shared one for that host alone.
