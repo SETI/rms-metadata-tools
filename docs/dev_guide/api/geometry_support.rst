@@ -70,6 +70,14 @@ documented on its submodule's page.
    :undoc-members:
    :show-inheritance:
 
+``metadata_tools.geometry_support.link_fns``
+============================================
+
+.. automodule:: metadata_tools.geometry_support.link_fns
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ``metadata_tools.geometry_support.label_schema``
 ================================================
 

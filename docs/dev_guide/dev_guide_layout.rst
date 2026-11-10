@@ -82,6 +82,7 @@ The geometry engine is a package:
      masks.py           # construct_excluded_mask(): excluded-pixel masks
      formatting.py      # numeric/ISO column formatting
      label_schema.py    # resolve_schema(): reads the column schema from the template
+     link_fns.py        # link functions for columns sharing a LINK_ID
      formats.py         # get_mission_table(): the host's SCLK-resolved mission table
      bodies_select.py   # primary/body selection and field-of-view inventory
 

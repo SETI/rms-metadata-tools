@@ -121,53 +121,64 @@ def formatted_column(values: Any, stubs: Sequence['ColumnStub'],
             results = [str(s[0]), str(s[1])]
 
     # Write the formatted value(s)
-    strings: list[str] = []
-    for stub, entry in zip(stubs, results, strict=True):
-        number: Any = entry
-        column_width = stub.width
-        error_message = ""
-        string: str
+    return ",".join(format_field(stub, entry)
+                    for stub, entry in zip(stubs, results, strict=True))
 
-        # numeric values: flag common exceptions and use standard format
-        if not isinstance(number, str):
-            if np.isnan(number):
-                com.get_logger().warning('NaN encountered in %s', stub.name)
-                number = stub.null_value
-            if np.isinf(number):
-                com.get_logger().warning('Infinity encountered in %s', stub.name)
-                number = stub.null_value
-            # A template that declares no range asks for no range check.
-            if stub.valid_minimum is not None and stub.valid_maximum is not None:
-                if number < stub.valid_minimum or number > stub.valid_maximum:
-                    number = stub.null_value
-            string = stub.print_format % number
-        # string values: left justify and enclose in double quotes
-        else:
-            string = '"' + number.strip('"').ljust(column_width-2) + '"'
 
-        # handle formatting overflow
+#===============================================================================
+def format_field(stub: 'ColumnStub', value: Any) -> str:
+    """Format one value into its column's field.
+
+    A numeric value that is NaN, infinite, or outside the declared valid
+    range becomes the column's null. A value too wide for the field is
+    rewritten with the overflow format, clipped if necessary.
+
+    Parameters:
+        stub: The label metadata of the value's column.
+        value: The number, or a string written quoted and left-justified.
+
+    Returns:
+        The formatted field, exactly ``stub.width`` characters wide.
+
+    Raises:
+        RuntimeError: If the value overflows the field and cannot be clipped
+            to fit.
+    """
+    number: Any = value
+    column_width = stub.width
+    string: str
+
+    # numeric values: flag common exceptions and use standard format
+    if not isinstance(number, str):
+        if np.isnan(number):
+            com.get_logger().warning('NaN encountered in %s', stub.name)
+            number = stub.null_value
+        if np.isinf(number):
+            com.get_logger().warning('Infinity encountered in %s', stub.name)
+            number = stub.null_value
+        # A template that declares no range asks for no range check.
+        if stub.valid_minimum is not None and stub.valid_maximum is not None:
+            if number < stub.valid_minimum or number > stub.valid_maximum:
+                number = stub.null_value
+        string = stub.print_format % number
+    # string values: left justify and enclose in double quotes
+    else:
+        string = '"' + number.strip('"').ljust(column_width-2) + '"'
+
+    # handle formatting overflow
+    if len(string) > column_width:
+        # An overflow format is always defined for columns that can overflow.
+        overflow = cast(str, stub.overflow_format)
+        string = overflow % number
+
         if len(string) > column_width:
-            # An overflow format is always defined for columns that can overflow.
-            overflow = cast(str, stub.overflow_format)
-            string = overflow % number
+            number = min(max(-9.99e99, number), 9.99e99)
+            string99 = overflow % number
 
-            if len(string) > column_width:
-                number = min(max(-9.99e99, number), 9.99e99)
-                string99 = overflow % number
+            if len(string99) > column_width:
+                raise RuntimeError("column overflow: " + string)
+            com.get_logger().warning('Column overflow in %s: %s clipped to %s',
+                                     stub.name, string, string99)
+            string = string99[:column_width]
 
-                if len(string99) > column_width:
-                    error_message = "column overflow: " + string
-                else:
-                    com.get_logger().warning('Column overflow in %s: %s clipped to %s',
-                                             stub.name, string, string99)
-                    string = string99
-
-                string = string[:column_width]
-
-        # add the formatted value
-        strings.append(string)
-
-        if error_message != "":
-            raise RuntimeError(error_message)
-
-    return ",".join(strings)
+    return string
