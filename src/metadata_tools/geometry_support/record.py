@@ -200,7 +200,7 @@ class Record:
 
         Raises:
             RuntimeError: If a linked column's field count disagrees with its
-                number of values.
+                number of values, or if two values of a link group share a NAME.
         """
         ndata = len(resolved)
         if not ndata:
@@ -227,8 +227,14 @@ class Record:
             groups.setdefault(column.link_id, (column.link_fn, []))[1].append(
                 (position, fields))
 
-        # Call each group's link function, then write its fields back.
-        for link_fn, members in groups.values():
+        # Call each group's link function, then write its fields back. A link
+        # function reaches each value by NAME, so the names must be distinct.
+        for link_id, (link_fn, members) in groups.items():
+            names = [field.stub.name for _position, fields in members for field in fields]
+            repeated = sorted({name for name in names if names.count(name) > 1})
+            if repeated:
+                raise RuntimeError(f'link group {link_id!r} names more than one value '
+                                   f'{", ".join(repeated)}')
             link_fn({field.stub.name: field
                      for _position, fields in members for field in fields})
             for position, fields in members:

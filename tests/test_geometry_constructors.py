@@ -30,7 +30,7 @@ def test_inventory_success(monkeypatch: pytest.MonkeyPatch) -> None:
     """inventory() returns the observation's body list when the call succeeds."""
     monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
     obs = types.SimpleNamespace(
-        inventory=lambda bodies, expand, cache: ['IO', 'EUROPA'])
+        inventory=lambda bodies, expand: ['IO', 'EUROPA'])
     record = types.SimpleNamespace(observation=obs, pointing_available=True)
     # `record` is a SimpleNamespace stub standing in for a Record.
     assert bodies_select.inventory(
@@ -59,7 +59,7 @@ def test_bounding_boxes_keeps_only_bodies_in_view(
                                    pointing_available=True)
     boxes = bodies_select.bounding_boxes(record, ['IO', 'EUROPA'])  # type: ignore[arg-type]
     assert boxes == {'IO': ((10.5, 20.5), (3.25, 3.5))}
-    assert seen == [{'expand': 0.5, 'cache': False, 'return_type': 'full', 'fov': 'FOV'}]
+    assert seen == [{'expand': 0.5, 'return_type': 'full', 'fov': 'FOV'}]
 
 
 def test_bounding_boxes_without_bodies_skips_the_inventory() -> None:
@@ -103,7 +103,7 @@ def test_inventory_missing_ckernel_clears_pointing(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
     logged = _recording_logger(monkeypatch)
 
-    def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
+    def _raise(bodies: Any, expand: Any) -> Any:
         raise RuntimeError('SPICE(CKINSUFFDATA): no pointing')
 
     obs = types.SimpleNamespace(inventory=_raise)
@@ -119,7 +119,7 @@ def test_inventory_unexpected_runtime_error_is_logged(
     monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
     logged = _recording_logger(monkeypatch)
 
-    def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
+    def _raise(bodies: Any, expand: Any) -> Any:
         raise RuntimeError('SPICE(SOMETHINGELSE)')
 
     obs = types.SimpleNamespace(inventory=_raise)
@@ -133,7 +133,7 @@ def test_inventory_other_error_propagates(monkeypatch: pytest.MonkeyPatch) -> No
     """Non-SPICE exceptions from observation.inventory() propagate as genuine bugs."""
     monkeypatch.setattr(get_host_config(), 'BORDER', 0.0, raising=False)
 
-    def _raise(bodies: Any, expand: Any, cache: Any) -> Any:
+    def _raise(bodies: Any, expand: Any) -> Any:
         raise ValueError('boom')
 
     obs = types.SimpleNamespace(inventory=_raise)

@@ -368,7 +368,7 @@ def _format_entry(block: Block) -> tuple[str, list[tuple[str, str]]]:
         (keyword, full line) pair in order.
 
     Raises:
-        ValueError: If the entry has no NAME, holds anything but keyword
+        ValueError: If the entry has no NAME or an empty one, holds anything but keyword
             lines, repeats a keyword, carries a keyword that is not label
             format metadata, or carries none at all.
     """
@@ -377,6 +377,8 @@ def _format_entry(block: Block) -> tuple[str, list[tuple[str, str]]]:
     if len(names) != 1:
         raise ValueError('a COLUMN_FORMAT entry must declare exactly one NAME')
     name = names[0].split('=', 1)[1].strip().strip('"')
+    if not name:
+        raise ValueError('a COLUMN_FORMAT entry must declare a nonempty NAME')
     if rest.strip():
         raise ValueError(f'format entry {name!r} may hold only keyword lines; '
                          f'a description belongs on the column')

@@ -3,6 +3,8 @@
 ################################################################################
 """Tests for the label_support.create template paths."""
 
+import csv
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -173,6 +175,31 @@ def test_create_reads_opaque_rings_from_the_system_column(monkeypatch: pytest.Mo
     lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
                table_type='BODY_SUMMARY', fields={'SAMPLING': 8})
     assert captured['fields']['OPAQUE_RINGS'] == systems
+
+
+def test_create_stops_reading_once_every_ring_system_is_found(
+        monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The rows after the last configured system appears are never read."""
+    captured = _capture_template(monkeypatch)
+    monkeypatch.setattr(get_host_config(), 'OPAQUE_RINGS', {'XENON': 'XENON_RINGS'},
+                        raising=False)
+    read: list[list[str]] = []
+    reader = csv.reader
+
+    def counting_reader(stream: Any) -> Iterator[list[str]]:
+        for row in reader(stream):
+            read.append(row)
+            yield row
+
+    monkeypatch.setattr(csv, 'reader', counting_reader)
+    table = tmp_path / 'X_0001_body_summary.tab'
+    table.write_text('"X_0001","f","JUPITER","IO"\r\n'
+                     '"X_0001","f","XENON","XENON"\r\n'
+                     '"X_0001","f","XENON","MOON"\r\n', encoding='utf-8')
+    lab.create(FCPath(table), FCPath(tmp_path / 'templates' / 'x.lbl'),
+               table_type='BODY_SUMMARY', fields={'SAMPLING': 8})
+    assert captured['fields']['OPAQUE_RINGS'] == 'Xenon'
+    assert len(read) == 2
 
 
 def test_create_with_no_host_rings_names_no_system(monkeypatch: pytest.MonkeyPatch,

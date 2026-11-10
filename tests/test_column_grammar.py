@@ -355,6 +355,13 @@ def test_an_entry_without_a_name_is_an_error() -> None:
         expand_format_references(None, entry)
 
 
+def test_an_entry_with_an_empty_name_is_an_error() -> None:
+    """An empty NAME would let an empty COLUMN_FORMAT reference resolve."""
+    entry = _ENTRY.replace('"DISTANCE_KM"', '""', 1)
+    with pytest.raises(ValueError, match='nonempty NAME'):
+        expand_format_references(None, entry)
+
+
 def test_an_empty_entry_is_an_error() -> None:
     """An entry with nothing but a NAME shares nothing."""
     entry = ('  OBJECT                        = COLUMN_FORMAT\n'

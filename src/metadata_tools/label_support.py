@@ -143,9 +143,16 @@ def _opaque_ring_systems(filepath: FCPath) -> str:
         empty if there are none.
     """
     with_rings = hooks.get_opaque_rings()
-    with filepath.open('r', encoding='utf-8', newline='') as stream:
-        systems = {row[2].strip() for row in csv.reader(stream) if len(row) > 2}
-    return ' or '.join(sorted(name.title() for name in systems if name in with_rings))
+    systems: set[str] = set()
+    if with_rings:
+        with filepath.open('r', encoding='utf-8', newline='') as stream:
+            for row in csv.reader(stream):
+                if len(row) > 2 and row[2].strip() in with_rings:
+                    systems.add(row[2].strip())
+                    # A cumulative table can run to millions of rows
+                    if len(systems) == len(with_rings):
+                        break
+    return ' or '.join(sorted(name.title() for name in systems))
 
 
 #===============================================================================

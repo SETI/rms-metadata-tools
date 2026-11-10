@@ -52,11 +52,11 @@ and ``BODY_SAMPLES``, the sampling a geometry
 table was generated with. The last two are known only to a geometry run, so a
 cumulative label describes the sampling without stating its values.
 
-Each ``$ONCE`` value must be a literal: the geometry stage reads the column widths from the
-templates without generating a label, and substitutes only literal definitions
-(:func:`~metadata_tools.column_grammar.substitute_constants`). The values land
-in fixed lines of label prose, so keep them short enough that no line of a
-generated label outgrows the PDS3 line length.
+Each ``$ONCE`` value must be a literal: the geometry stage reads the column
+widths from the templates without generating a label, and substitutes only
+literal definitions (:func:`~metadata_tools.column_grammar.substitute_constants`).
+The values land in fixed lines of label prose, so keep them short enough that no
+line of a generated label outgrows the PDS3 line length.
 
 A host that must differ from a shared template -- a summary table or the
 inventory -- places a copy of its own, named ``<HOST>_<kind>.lbl``, in its
@@ -133,9 +133,10 @@ takes the inventory of bodies in view with the same allowance. Because the
 border is an angle, a summed mode or a wider camera gets proportionally fewer
 pixels of it, and the labels state it as an angle alone.
 
-A host whose planets have rings to be treated as opaque, hiding and shadowing other
-bodies, names them in ``host_config.py``, by system. A primary with companions that do the same
-names those too. The engine itself names no planet; both default to none:
+A host whose planets have rings to be treated as opaque, hiding and shadowing
+other bodies, names them in ``host_config.py``, by system. A primary with
+companions that do the same names those too. The engine itself names no planet;
+both default to none:
 
 .. code-block:: python
 

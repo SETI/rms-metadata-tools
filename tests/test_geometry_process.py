@@ -63,6 +63,23 @@ def test_get_args_body_samples_default_and_override() -> None:
         ['/meta', '/out']).body_samples == 8
 
 
+@pytest.mark.parametrize('value', ['-1', 'many'])
+def test_get_args_rejects_a_negative_or_unparsable_body_samples(value: str) -> None:
+    """--body-samples is a count; 0 disables body meshgrids, and nothing is below it."""
+    parser = proc.get_args(host='GO')
+    with pytest.raises(SystemExit):
+        parser.parse_args(['/meta', '/out', '--body-samples', value])
+    assert parser.parse_args(['/meta', '/out', '--body-samples', '0']).body_samples == 0
+
+
+def test_process_tables_rejects_a_negative_body_samples(tmp_path: Path) -> None:
+    """Arguments passed in directly are checked as the command line's are."""
+    with pytest.raises(ValueError, match='body_samples must be nonnegative, not -1'):
+        proc.process_tables('GO_0xxx_supplemental_index',
+                            args=_args(_tree(tmp_path),  # type: ignore[arg-type]
+                                       body_samples=-1))
+
+
 def test_get_args_no_body_meshgrids_is_off_by_default() -> None:
     """--no-body-meshgrids is a flag, unset unless given."""
     parser = proc.get_args(host='GO')

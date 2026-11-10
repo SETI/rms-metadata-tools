@@ -178,6 +178,16 @@ def test_postprocess_rejects_a_misjoined_linked_column(
         record.postprocess(['"vol"', '"file"', '   1.000'], resolved)
 
 
+def test_postprocess_rejects_a_link_group_repeating_a_name(
+        record_stub: Callable[..., Any], make_column: Callable[..., Any]) -> None:
+    """Two values of one link group under one NAME would hide one from its function."""
+    record = record_stub()
+    resolved = [make_column(names=['Q'], link_id='Q', link_fn=link_fns.null_together),
+                make_column(names=['Q'], link_id='Q', link_fn=link_fns.null_together)]
+    with pytest.raises(RuntimeError, match="link group 'Q' names more than one value Q"):
+        record.postprocess(['"vol"', '"file"', '   1.000', '   2.000'], resolved)
+
+
 #===============================================================================
 # bodies_select.get_system
 #===============================================================================

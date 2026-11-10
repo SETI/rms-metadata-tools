@@ -109,6 +109,14 @@ def test_axis_samples_subpixel_box_is_resolved() -> None:
     assert samples[-1] == pytest.approx(100.256)
 
 
+@pytest.mark.parametrize('min_samples', [0, 1])
+def test_axis_samples_spans_at_least_one_interval(min_samples: int) -> None:
+    """A box too small to need samples still gets both of its ends."""
+    samples = meshgrids.axis_samples(100.25, 1e-12, -25., 825., 8, min_samples)
+    assert samples is not None
+    assert len(samples) == 2
+
+
 def test_axis_samples_large_box_keeps_the_pixel_sampling() -> None:
     """A large box is sampled no more coarsely than the pixel sampling density."""
     samples = meshgrids.axis_samples(400., 400., -25., 825., 8, 16)

@@ -396,7 +396,7 @@ def test_every_format_entry_is_used() -> None:
     One dictionary serves all four fragments, so an entry is dead only if no
     fragment refers to it.
     """
-    template_dir = Path(metadata_tools.__file__).parent / 'templates'
+    template_dir = FCPath(Path(metadata_tools.__file__).parent / 'templates')
     dictionary = (template_dir / 'column_formats.lbl').read_text(encoding='utf-8')
     entries = set(re.findall(
         r'OBJECT *= *COLUMN_FORMAT\n *NAME *= *"(\w+)"', dictionary))

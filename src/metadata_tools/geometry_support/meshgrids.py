@@ -116,7 +116,7 @@ def axis_samples(center: float, size: float, lower: float, upper: float,
     body = min(extent, size * (1 + 2*MARGIN))
     # The tolerance keeps a ratio that is a whole number in exact arithmetic
     # from being rounded up to the next one.
-    intervals = max(math.ceil(extent / sampling - 1e-9),
+    intervals = max(1, math.ceil(extent / sampling - 1e-9),
                     math.ceil(extent / body * (min_samples - 1) - 1e-9))
     return np.linspace(start, stop, intervals + 1)
 

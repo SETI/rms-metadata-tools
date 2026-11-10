@@ -12,12 +12,12 @@ import metadata_tools.common as com
 import metadata_tools.util as util
 from metadata_tools.geometry_support.suite import Suite
 
-# Number of QuickPath and QuickFrame tables oops keeps per path and per frame.
-# The tables pay off within an image, but every image is at a new time, so a
-# table is almost never reused by another one. With the oops default of 40, a
-# 3,745-image Cassini volume grew past 7 GB. With 2, the first 60 images ran at
-# the same speed, wrote identical tables, and used 879 MB rather than 1,554 MB.
-# Disabling the tables instead made the run 2.6 times slower.
+#: Number of QuickPath and QuickFrame tables oops keeps per path and per frame.
+#: The tables pay off within an image, but every image is at a new time, so a
+#: table is almost never reused by another one. With the oops default of 40, a
+#: 3,745-image Cassini volume grew past 7 GB. With 2, the first 60 images ran at
+#: the same speed, wrote identical tables, and used 879 MB rather than 1,554 MB.
+#: Disabling the tables instead made the run 2.6 times slower.
 QUICK_CACHE_SIZE = 2
 
 
@@ -32,6 +32,27 @@ def limit_quick_caches(size: int = QUICK_CACHE_SIZE) -> None:
     oops.config.QUICK.dictionary['quickpath_cache_size'] = size
     oops.config.QUICK.dictionary['quickframe_cache_size'] = size
 
+
+#===============================================================================
+def _nonnegative_int(text: str) -> int:
+    """Parse a command-line count that may be zero but not negative.
+
+    Parameters:
+        text: The argument as given.
+
+    Returns:
+        The count.
+
+    Raises:
+        argparse.ArgumentTypeError: If the argument is not a nonnegative integer.
+    """
+    try:
+        value = int(text)
+    except ValueError:
+        value = -1
+    if value < 0:
+        raise argparse.ArgumentTypeError(f'{text!r} is not a nonnegative integer')
+    return value
 
 #===============================================================================
 def get_args(host: str | None = None,
@@ -67,7 +88,7 @@ def get_args(host: str | None = None,
     gr.add_argument('--sampling', '-s', type=int, metavar='sampling',
                     default=sampling,
                     help='''Pixel sampling density.''')
-    gr.add_argument('--body-samples', '-b', type=int, metavar='body_samples',
+    gr.add_argument('--body-samples', '-b', type=_nonnegative_int, metavar='body_samples',
                     default=body_samples,
                     help='''Minimum number of samples across the bounding box of
                             each body, however small it appears.''')
@@ -100,6 +121,10 @@ def process_tables(template_name: str,
         glob: Glob pattern for data files.
         index_glob: Glob pattern for index files.
         args: Parsed arguments.
+
+    Raises:
+        ValueError: If body_samples is negative.
+        FileNotFoundError: If a volume requested is not in the output tree.
     """
 
     # Parse arguments
@@ -114,6 +139,8 @@ def process_tables(template_name: str,
     output_tree = FCPath(args.output_tree)
     new_only = args.new_only
     body_samples = 0 if args.no_body_meshgrids else args.body_samples
+    if body_samples < 0:
+        raise ValueError(f'body_samples must be nonnegative, not {body_samples}')
     labels_only = args.labels
 
     if volumes is None:
