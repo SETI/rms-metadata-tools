@@ -47,7 +47,7 @@ def test_supplemental_index_common() -> None:
 
         # verify # rows, columns
         assert table.info.rows == len(table.column_values['VOLUME_ID']), file
-        assert table.info.columns == len(table.keys), file
+        assert table.info.columns == len(table.get_keys()), file
 
         # validate column values
         assert isinstance(table.column_values['VOLUME_ID'][0], np.str_), file

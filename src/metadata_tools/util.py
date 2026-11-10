@@ -5,7 +5,7 @@
 import math
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import cspyce
 import numpy as np
@@ -26,7 +26,8 @@ def pds_table(label_path: FCPath) -> pdstable.PdsTable:
     Returns:
         Table associated with the given label.
     """
-    local_label_path = label_path.retrieve(lock_timeout=-1)
+    # A single path that cannot be retrieved raises, so the result is a Path
+    local_label_path = cast(Path, label_path.retrieve(lock_timeout=-1))
     _local_table_path = label_path.with_suffix('.tab').retrieve(lock_timeout=-1)
     return pdstable.PdsTable(local_label_path)
 

@@ -191,6 +191,8 @@ nitpick_ignore_regex = [
     # numpy inventory.
     (r'py:.*', r'npt\..*'),
     (r'py:.*', r'numpy\.typing\..*'),
+    # numpy >= 2.5 names NDArray by its private module.
+    (r'py:.*', r'numpy\._typing\..*'),
     (r'py:.*', r'numpy\.float64'),
     (r'py:.*', r'numpy\.bool_'),
     # pytest publishes no Sphinx inventory in this build's intersphinx config.
