@@ -178,7 +178,7 @@ def key__product_creation_time(label_path: str | Path | FCPath,
                                  image_path, err)
         return None
 
-    pct = viclab['DAT_TIM', -1]
+    pct = str(viclab['DAT_TIM', -1])
 
     # Convert to ISO format
     pct = pct[20:] + pct[3:20]

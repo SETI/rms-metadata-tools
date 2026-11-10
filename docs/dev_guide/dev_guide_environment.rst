@@ -134,8 +134,8 @@ pushes to ``main``, a weekly schedule, and manual dispatch. It has two jobs:
   ``pyroma``, ``pip-audit``, the ``sphinx-build -W`` docs build, and ``pymarkdown``.
   ``pip-audit`` queries the PyPI advisory database, so it runs in CI only and has
   no ``run-all-checks.sh`` counterpart.
-- **test**: the pytest suite with coverage across Python 3.11, 3.12, and 3.13,
-  uploading coverage to Codecov.
+- **test**: the pytest suite with coverage across Python 3.11, 3.12, 3.13, 3.14, and
+  3.15, uploading coverage to Codecov.
 
 Releases are tag-driven: the version is derived from Git tags by
 ``setuptools_scm`` (written to ``src/metadata_tools/_version.py``), and separate

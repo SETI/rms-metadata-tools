@@ -6,7 +6,7 @@ Supported Python versions
 =========================
 
 ``rms-metadata-tools`` requires **Python 3.11 or later** and is tested on
-Python 3.11, 3.12, and 3.13. It runs on Linux, macOS, and Windows.
+Python 3.11, 3.12, 3.13, 3.14, and 3.15. It runs on Linux, macOS, and Windows.
 
 Prerequisites
 =============
