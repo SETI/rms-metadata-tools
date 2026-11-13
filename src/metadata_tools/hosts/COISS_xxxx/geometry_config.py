@@ -44,8 +44,12 @@ EXTRA_CHILDREN: list[str] = ['HIMALIA', 'PHOEBE']
 #   5. If the target is a satellite, the parent is included.
 #   6. Additions are included whenever they intersect the FOV, regardless of the primary.
 #
-#  The SCLK ranges are 1999-08-01 to 1999-09-15 (Earth flyby), 2000-10-01 to 2001-03-31
-#  (Jupiter flyby), and 2004-01-01 to 2017-09-16 (Saturn approach and tour).
+#  The SCLK ranges are 1999-08-01 to 1999-09-15 (Earth flyby), 1999-09-16 to 2002-07-11
+#  (Jupiter, from the Earth flyby until the end of COISS_1007), and 2002-07-12 to
+#  2017-09-16 (Saturn, from the start of COISS_1008 through the approach and tour). Jupiter
+#  and Saturn span the cruise images between their encounters, as in the earlier
+#  release of these tables; only the images before the Earth flyby (Venus, Spica and
+#  the sky) have no primary.
 #
 ##########################################################################################
 EXCEPTIONS: list[str] = []
@@ -61,9 +65,9 @@ MISSION_TABLE: list[Any] = [
 #--------------------------------------------------------------------------------------------------
   ('EARTH   ', ('1312157197.240',
                 '1316045223.124'), EXCEPTIONS, 'EARTH',   [],  ['EARTH', 'MOON'], []),
-  ('JUPITER ', ('1349050243.174',
-                '1364688751.233'), EXCEPTIONS, 'JUPITER', [],  JUPITER_MOONS,     []),
-  ('SATURN  ', ('1451607752.159',
+  ('JUPITER ', ('1316131624.014',
+                '1405037836.010'), EXCEPTIONS, 'JUPITER', [],  JUPITER_MOONS,     []),
+  ('SATURN  ', ('1405124236.165',
                 '1884215387.221'), EXCEPTIONS, 'SATURN',  [],  SATURN_MOONS,      [])]
 
 #=========================================================================================

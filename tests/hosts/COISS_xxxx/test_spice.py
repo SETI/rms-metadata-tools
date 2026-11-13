@@ -2,12 +2,15 @@
 # tests/hosts/COISS_xxxx/test_spice.py: Cassini ISS host with SPICE
 ################################################################################
 """The Cassini ISS mission table and body registry, checked against SPICE."""
+import types
+
 import cspyce
 import julian
 import pytest
 
 import metadata_tools.bodies as bodies
 from metadata_tools.config import get_geometry_config, set_host
+from metadata_tools.geometry_support import bodies_select, formats
 
 # These tests initialize the oops Cassini ISS host, which furnishes SPICE kernels
 # (see the integration marker in pyproject.toml).
@@ -16,8 +19,8 @@ pytestmark = pytest.mark.integration
 # The phase boundaries the mission table's comment documents, in UTC
 PHASE_DATES = {
     'EARTH': ('1999-08-01T00:00:00', '1999-09-15T00:00:00'),
-    'JUPITER': ('2000-10-01T00:00:00', '2001-03-31T00:00:00'),
-    'SATURN': ('2004-01-01T00:00:00', '2017-09-16T00:00:00'),
+    'JUPITER': ('1999-09-16T00:00:00', '2002-07-11T00:00:00'),
+    'SATURN': ('2002-07-12T00:00:00', '2017-09-16T00:00:00'),
 }
 
 
@@ -39,6 +42,25 @@ def test_phase_clock_counts_fall_on_the_documented_dates() -> None:
     for row in get_geometry_config().MISSION_TABLE:
         phase = row[0].strip()
         assert (_utc(row[1][0]), _utc(row[1][1])) == PHASE_DATES[phase], phase
+
+
+@pytest.mark.parametrize(('sclk', 'primary'), [
+    ('1308947812.000', ''),             # COISS_1001, last image before the Earth flyby
+    ('1313413581.000', 'EARTH'),        # COISS_1001, Earth flyby
+    ('1351738470.070', 'JUPITER'),      # COISS_1001, last image
+    ('1404903617.118', 'JUPITER'),      # COISS_1007, last image
+    ('1405160033.115', 'SATURN'),       # COISS_1008, first image
+    ('1444749850.143', 'SATURN'),       # COISS_1009, first image
+    ('1451040707.166', 'SATURN'),       # COISS_1009, last image
+])
+def test_cruise_volumes_have_the_primaries_of_the_earlier_release(sclk: str,
+                                                                  primary: str) -> None:
+    """Every image from the Earth flyby on has a primary, Jupiter through COISS_1007
+    and Saturn from COISS_1008, as in the earlier release of these tables."""
+    record = types.SimpleNamespace(observation=None)
+    result = bodies_select.get_primary(record,                  # type: ignore[arg-type]
+                                       formats.get_mission_table(), sclk)
+    assert result[0] == primary
 
 
 @pytest.mark.parametrize(('moon', 'planet'), [('HIMALIA', 'JUPITER'),
