@@ -63,15 +63,12 @@ class InventoryTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add an Inventory row.
 
-        An observation without pointing gets no row, as in the other tables: an
-        empty body list then means that nothing is in view, never that the
-        inventory could not be computed.
+        Every observation gets a row. Without pointing, its inventory cannot be
+        computed and its body list is empty; the label says so.
 
         Parameters:
             record: Record describing the row to add.
         """
-        if not record.pointing_available:
-            return
         line = ",".join(record.prefixes) + ',"' + ",".join(record.inventory) + '"'
         self.rows += [line]
 
@@ -101,10 +98,13 @@ class SkyTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a Sky row.
 
+        Every observation gets a row; without pointing, its values are null.
+
         Parameters:
             record: Record describing the row to add.
         """
-        self.rows += record.add(cast(TableSchema, self.schema).columns, no_body=True)
+        self.rows += record.add(cast(TableSchema, self.schema).columns, no_body=True,
+                                allow_zero_rows=record.pointing_available)
 
 
 ################################################################################
@@ -198,7 +198,8 @@ class RingTable(com.Table):
         """Add a Ring row.
 
         A row is added only when the record has a primary body and that primary
-        has rings.
+        has rings. Without pointing, each value that needs the pointing is null,
+        while a gridless value that oops can compute is still written.
 
         Parameters:
             record: Record describing the row to add.
@@ -208,7 +209,8 @@ class RingTable(com.Table):
         if record.primary:
             if record.rings_present:
                 self.rows += record.add(cast(TableSchema, self.schema).columns,
-                                        name=record.primary)
+                                        name=record.primary,
+                                        allow_zero_rows=record.pointing_available)
 
 
 ################################################################################
@@ -236,7 +238,10 @@ class BodyTable(com.Table):
     def add(self, record: 'Record') -> None:
         """Add a row for each body selected in the record.
 
-        Each row is sampled across its own body.
+        Each row is sampled across its own body. Without pointing, the bodies
+        are those selected regardless of the field of view (the primary, and the
+        target and its system). Each row's values that need the pointing are
+        null, while a gridless value that oops can compute is still written.
 
         Parameters:
             record: Record describing the rows to add; one row is added per
@@ -244,4 +249,5 @@ class BodyTable(com.Table):
         """
         for name in record.bodies:
             self.rows += record.add(cast(TableSchema, self.schema).columns,
-                                    name=name, target=name, grid=name)
+                                    name=name, target=name, grid=name,
+                                    allow_zero_rows=record.pointing_available)

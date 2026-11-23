@@ -127,10 +127,17 @@ class FakeBackplane:
         return self._lookup(self.sunward, target)
 
     def evaluate(self, key: tuple[Any, ...]) -> Any:
-        """Return the registered evaluation for key, or an all-masked Scalar."""
+        """Return the registered evaluation for key, or an all-masked Scalar.
+
+        A registered exception is raised instead, as SPICE raises one for a
+        quantity that needs pointing the observation does not have.
+        """
         import oops
         if key in self.evaluations:
-            return self.evaluations[key]
+            value = self.evaluations[key]
+            if isinstance(value, BaseException):
+                raise value
+            return value
         # Default: an all-masked Scalar of the backplane shape.
         return oops.Scalar(np.zeros(self.shape), True)
 

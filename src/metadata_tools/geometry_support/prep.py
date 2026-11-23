@@ -3,7 +3,7 @@
 ################################################################################
 """Row preparation and body-prefix utilities for geometry table generation."""
 from collections.abc import Mapping, Sequence
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import oops
@@ -132,10 +132,17 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
         # as the ring system of a planet that has none, has nothing to evaluate.
         if event_key[1] == defs.NULL or not masks.target_exists(event_key[1]):
             values: Any = oops.Scalar(0., True)
+        elif record.pointing_available:
+            values = column_backplane.evaluate(event_key)
         else:
-            if record.pointing_available:
+            # Without pointing, a gridless quantity, which depends only on the
+            # paths of the observer, the body and the Sun, can still be computed;
+            # any quantity that needs the pointing is null
+            try:
                 values = column_backplane.evaluate(event_key)
-            else:
+            except (OSError, RuntimeError) as error:
+                if not bodies_select.missing_pointing(error):
+                    raise
                 values = oops.Scalar(0., True)
                 null_flag = True
 
@@ -175,14 +182,13 @@ def prep_row(record: 'Record', prefixes: list[str], backplane: Any,
                 elif len(stubs) == 2:
                     values = with_pole_latitude(values, pole.north)
 
-        # Save the column, formatted as its label template declares
+        # Save the column, formatted as its label template declares. A numeric
+        # column stays fully masked, which formatted_column writes as its null
+        # after any unit conversion; a string column has no mask to carry, so its
+        # null is substituted here
         null_value = stubs[0].null_value
-        if null_flag:
-            if isinstance(null_value, str):
-                values = null_value
-            else:
-                # resolve_schema guarantees every data column declares a null.
-                values = oops.Scalar(cast(float, null_value), False)
+        if null_flag and isinstance(null_value, str):
+            values = null_value
         data_columns.append(
             formatting.formatted_column(values, stubs, column_sampling,
                                         complete=complete))

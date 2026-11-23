@@ -10,7 +10,9 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, ClassVar
 
+import cspyce
 import pytest
+import spicedb
 from filecache import FCPath
 
 import metadata_tools
@@ -54,12 +56,39 @@ def test_saturn_has_the_opaque_rings() -> None:
 #===============================================================================
 # geometry_config, with the oops host replaced
 #===============================================================================
+# The cruise C kernels of the stand-in SPICE tree, which host_init furnishes in this order
+CRUISE_CKS = ['00001_00092rc.bc', '03274_04001rc.bc', '97288_98002rc.bc']
+
+
 @pytest.fixture
-def geometry_config(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
+def spice_tree(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """A stand-in SPICE tree holding empty cruise C kernels, and a record of furnsh.
+
+    TEMPORARY: remove with the cruise C-kernel workaround in host_init.py once
+    SETI/rms-host-cassini#42 is released.
+
+    Returns:
+        The paths furnished, in order, filled in as host_init furnishes them.
+    """
+    cruise = tmp_path / 'Cassini' / 'CK-cruise'
+    cruise.mkdir(parents=True)
+    for name in CRUISE_CKS:
+        (cruise / name).touch()
+    (cruise / 'README.txt').touch()
+    furnished: list[str] = []
+    monkeypatch.setattr(spicedb, 'get_spice_path', lambda: str(tmp_path))
+    monkeypatch.setattr(cspyce, 'furnsh', furnished.append)
+    return furnished
+
+
+@pytest.fixture
+def geometry_config(monkeypatch: pytest.MonkeyPatch,
+                    spice_tree: list[str]) -> Iterator[Any]:
     """Import the host's geometry_config with a stand-in for the Cassini ISS host.
 
     The real host furnishes SPICE kernels when it is initialized; the stand-in
-    records the index files it is asked to read in its ``calls`` attribute.
+    records the index files it is asked to read in its ``calls`` attribute. The
+    cruise C kernels come from the stand-in SPICE tree.
     """
     class FakeISS:
         calls: ClassVar[list[Any]] = []
@@ -83,6 +112,33 @@ def geometry_config(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
     for name in ('metadata_tools.hosts.COISS_xxxx.geometry_config',
                  'metadata_tools.hosts.COISS_xxxx.host_init'):
         sys.modules.pop(name, None)
+
+
+def test_cruise_kernels_are_furnished_in_order(geometry_config: Any,
+                                              spice_tree: list[str]) -> None:
+    """Every C kernel in the cruise directory, and nothing else, is furnished.
+
+    TEMPORARY: remove with the workaround in host_init.py once
+    SETI/rms-host-cassini#42 is released.
+    """
+    assert [Path(path).name for path in spice_tree] == sorted(CRUISE_CKS)
+    host_init = sys.modules['metadata_tools.hosts.COISS_xxxx.host_init']
+    assert spice_tree == host_init.CRUISE_CKS
+
+
+def test_an_empty_cruise_directory_is_an_error(geometry_config: Any, tmp_path: Path,
+                                               spice_tree: list[str]) -> None:
+    """With no cruise C kernels, every cruise image would silently lose its pointing.
+
+    TEMPORARY: remove with the workaround in host_init.py once
+    SETI/rms-host-cassini#42 is released.
+    """
+    host_init = sys.modules['metadata_tools.hosts.COISS_xxxx.host_init']
+    root = tmp_path / 'Cassini' / 'CK-cruise'
+    for path in root.glob('*.bc'):
+        path.unlink()
+    with pytest.raises(FileNotFoundError, match='no C kernels'):
+        host_init._furnish_cruise_cks()
 
 
 def test_mission_phases_are_ordered_and_disjoint(geometry_config: Any) -> None:

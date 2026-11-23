@@ -49,13 +49,13 @@ def test_inventory_table_add_formats_prefixes_and_list() -> None:
     assert table.rows == ['"vol","file","IO,EUROPA"']
 
 
-def test_inventory_table_skips_an_observation_without_pointing() -> None:
-    """An observation without pointing gets no inventory row, as in the other tables."""
+def test_inventory_table_lists_no_bodies_for_an_observation_without_pointing() -> None:
+    """An observation without pointing still gets a row, with an empty body list."""
     table = tables.InventoryTable()
     record = types.SimpleNamespace(prefixes=['"vol"', '"file"'], inventory=[],
                                    pointing_available=False)
     table.add(record)  # type: ignore[arg-type]
-    assert table.rows == []
+    assert table.rows == ['"vol","file",""']
 
 
 def _with_schema(table: Any, columns: Any = ('COLS',)) -> Any:
@@ -64,12 +64,16 @@ def _with_schema(table: Any, columns: Any = ('COLS',)) -> Any:
     return table
 
 
-def test_sky_table_add_uses_no_body() -> None:
-    """SkyTable.add hands its resolved columns over with no_body=True."""
+@pytest.mark.parametrize('pointing', [True, False])
+def test_sky_table_add_uses_no_body(pointing: bool) -> None:
+    """SkyTable.add hands its resolved columns over with no_body=True.
+
+    Without pointing, the row is kept although every value in it is null.
+    """
     table = _with_schema(tables.SkyTable(level='summary'))
-    record = RecordingRecord()
+    record = RecordingRecord(pointing_available=pointing)
     table.add(record)
-    assert record.calls == [(('COLS',), {'no_body': True})]
+    assert record.calls == [(('COLS',), {'no_body': True, 'allow_zero_rows': pointing})]
 
 
 def test_sun_table_add_targets_sun() -> None:
@@ -80,15 +84,18 @@ def test_sun_table_add_targets_sun() -> None:
     assert record.calls == [(('COLS',), {'target': 'SUN'})]
 
 
-def test_ring_table_add_only_when_rings_present() -> None:
+@pytest.mark.parametrize('pointing', [True, False])
+def test_ring_table_add_only_when_rings_present(pointing: bool) -> None:
     """RingTable.add dispatches with the primary's name when rings are present.
 
     No grid is named: the ring plane is sampled across the whole field of view.
+    Without pointing, the row is kept although every value in it is null.
     """
     table = _with_schema(tables.RingTable(level='summary'))
-    record = RecordingRecord(primary='JUPITER', rings_present=True)
+    record = RecordingRecord(primary='JUPITER', rings_present=True,
+                             pointing_available=pointing)
     table.add(record)
-    assert record.calls == [(('COLS',), {'name': 'JUPITER'})]
+    assert record.calls == [(('COLS',), {'name': 'JUPITER', 'allow_zero_rows': pointing})]
 
 
 def test_ring_table_add_skips_without_rings() -> None:
@@ -107,14 +114,20 @@ def test_ring_table_add_skips_without_primary() -> None:
     assert record.calls == []
 
 
-def test_body_table_add_iterates_bodies() -> None:
-    """BodyTable.add dispatches once per body, each sampled on its own grid."""
+@pytest.mark.parametrize('pointing', [True, False])
+def test_body_table_add_iterates_bodies(pointing: bool) -> None:
+    """BodyTable.add dispatches once per body, each sampled on its own grid.
+
+    Without pointing, each row is kept although every value in it is null.
+    """
     table = _with_schema(tables.BodyTable(level='summary'))
-    record = RecordingRecord(bodies=['IO', 'EUROPA'])
+    record = RecordingRecord(bodies=['IO', 'EUROPA'], pointing_available=pointing)
     table.add(record)
     assert record.calls == [
-        (('COLS',), {'name': 'IO', 'target': 'IO', 'grid': 'IO'}),
-        (('COLS',), {'name': 'EUROPA', 'target': 'EUROPA', 'grid': 'EUROPA'})]
+        (('COLS',), {'name': 'IO', 'target': 'IO', 'grid': 'IO',
+                     'allow_zero_rows': pointing}),
+        (('COLS',), {'name': 'EUROPA', 'target': 'EUROPA', 'grid': 'EUROPA',
+                     'allow_zero_rows': pointing})]
 
 
 #===============================================================================

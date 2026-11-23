@@ -86,8 +86,12 @@ $END_IF
     minimum can be numerically greater than the maximum.
 
     Occasionally, SPICE pointing information is unavailable for the time at
-    which an observation was taken. When this situation occurs, no row has
-    been added to the file.
+    which an observation was taken. When this situation occurs, the $product$
+    has rows only for the body identified by the SYSTEM_NAME keyword and for
+    any targeted body, since the moons in view cannot be determined. In those
+    rows, every quantity that depends on the pointing holds the NULL_CONSTANT;
+    gridless quantities, which depend only on the positions of the spacecraft,
+    the body and the Sun, are still tabulated where they can be computed.
 
 $IF(FOV_BORDER)
     To accommodate pointing uncertainty, the $instrument$ field of view has

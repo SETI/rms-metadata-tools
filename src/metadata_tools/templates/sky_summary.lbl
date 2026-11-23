@@ -49,6 +49,10 @@ OBJECT                          = SKY_SUMMARY_TABLE
     per $product$, indicating the ranges of J2000 right ascension and declination
     sampled by the field of view.
 
+    Occasionally, SPICE pointing information is unavailable for the time at
+    which an observation was taken. When this situation occurs, every quantity
+    in the row holds the NULL_CONSTANT.
+
 $IF(FOV_BORDER)
     To accommodate pointing uncertainty, the $instrument$ field of view has
     been expanded on every side by $FOV_BORDER$.

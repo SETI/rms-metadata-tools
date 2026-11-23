@@ -1,7 +1,7 @@
 $ONCE(csv_file = LABEL_PATH()[:-4] + '.csv')
 $ONCE(records = FILE_RECORDS(csv_file))
 $ONCE(record_bytes = RECORD_BYTES(csv_file))
-$ONCE(name_bytes = record_bytes - (VOLUME_ID_BYTES + 3 + FILESPEC_BYTES + 3 + 2 + 2))
+$ONCE(name_bytes = max(1, record_bytes - (VOLUME_ID_BYTES + 3 + FILESPEC_BYTES + 3 + 2 + 2)))
 $ONCE(index_type = 'CUMULATIVE' if VOLUME_ID.endswith('999') else 'SINGLE')
 PDS_VERSION_ID                  = PDS3
 RECORD_TYPE                     = STREAM
@@ -24,7 +24,12 @@ OBJECT                          = INVENTORY_SPREADSHEET
   FIELD_DELIMITER               = COMMA
   INDEX_TYPE                    = $index_type$
   DESCRIPTION                   = "This table identifies every body partially or fully
-    inside each $product$'s field of view."
+    inside each $product$'s field of view.
+
+    Occasionally, SPICE pointing information is unavailable for the time at
+    which an observation was taken. When this situation occurs, the list of
+    bodies is empty, as it is when no body is in view; the $product$'s row in
+    the sky summary then holds the NULL_CONSTANT."
 
   OBJECT                        = FIELD
     FIELD_NUMBER                = 1
@@ -50,7 +55,7 @@ OBJECT                          = INVENTORY_SPREADSHEET
     NAME                        = BODY_NAMES
     DATA_TYPE                   = CHARACTER
     BYTES                       = $str(name_bytes).ljust(3)$   /* max length */
-
+    FORMAT                      = A$name_bytes$
     DESCRIPTION                 = "The names of all the bodies estimated to be
         partially or fully inside the field of view, separated by commas."
   END_OBJECT                    = FIELD
