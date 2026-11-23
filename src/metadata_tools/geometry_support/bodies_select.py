@@ -76,6 +76,19 @@ def bounding_boxes(record: 'Record',
             for name, entry in full.items() if entry['inside']}
 
 #===============================================================================
+def missing_pointing(error: BaseException) -> bool:
+    """Whether an error from SPICE means that the observation has no pointing.
+
+    Parameters:
+        error: An error raised while computing an observation's geometry.
+
+    Returns:
+        True if it reports C-kernel data missing for the time of the observation.
+    """
+    message = str(error)
+    return 'SPICE(NOFRAMECONNECT)' in message or 'SPICE(CKINSUFFDATA)' in message
+
+#===============================================================================
 def _inventory(record: 'Record', bodies: list[str] | dict[str, Any],
                **kwargs: Any) -> Any:
     """Call the observation's inventory, handling missing pointing data.
@@ -105,11 +118,9 @@ def _inventory(record: 'Record', bodies: list[str] | dict[str, Any],
     # A RuntimeError is probably caused by missing spice data. There is
     # probably nothing we can do.
     except (OSError, RuntimeError) as e:
-        error = str(e)
-
         # If no C-kernel data for this observation, proceed with a warning and set the
         # pointing_available flag.
-        if 'SPICE(NOFRAMECONNECT)' in error or 'SPICE(CKINSUFFDATA)' in error:
+        if missing_pointing(e):
             logger.warning(str(e))
             record.pointing_available = False
         # Other kinds of errors are genuine bugs.

@@ -24,7 +24,12 @@ OBJECT                          = INVENTORY_SPREADSHEET
   FIELD_DELIMITER               = COMMA
   INDEX_TYPE                    = $index_type$
   DESCRIPTION                   = "This table identifies every body partially or fully
-    inside each $product$'s field of view."
+    inside each $product$'s field of view.
+
+    Occasionally, SPICE pointing information is unavailable for the time at
+    which an observation was taken. When this situation occurs, the list of
+    bodies is empty, as it is when no body is in view; the $product$'s row in
+    the sky summary then holds the NULL_CONSTANT."
 
   OBJECT                        = FIELD
     FIELD_NUMBER                = 1

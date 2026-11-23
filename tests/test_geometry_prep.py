@@ -172,6 +172,62 @@ def test_pointing_unavailable_writes_null_row(
     assert rows[0][-1] == '-999.000,-999.000'
 
 
+_NO_POINTING = RuntimeError('SPICE(NOFRAMECONNECT) -- sxform -- insufficient information')
+
+
+def test_without_pointing_a_gridless_quantity_is_still_written(
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
+    """Without pointing, a quantity that needs only the paths is still computed."""
+    fake_backplane.evaluations[('center_phase_angle', 'IO')] = oops.Scalar(0.5, False)
+    column = make_column(key=('center_phase_angle', 'IO'), names=['CENTER_PHASE_ANGLE'],
+                         valid_minimum=0., valid_maximum=180.)
+    rows = prep.prep_row(_record(record_stub, pointing=False), ['"vol"', '"file"'],
+                         fake_backplane, None, [column], primary='JUPITER', target='IO')
+    assert rows[0][-1] == '  28.648'
+
+
+def test_without_pointing_a_quantity_that_needs_it_is_null(
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
+    """Without pointing, a quantity whose evaluation needs the pointing is null.
+
+    The row is then all null, so it is written only when it is demanded.
+    """
+    fake_backplane.evaluations[('phase_angle', 'IO')] = _NO_POINTING
+    args = (_record(record_stub, pointing=False), ['"vol"', '"file"'], fake_backplane,
+            None, _phase_cols(make_column))
+    assert prep.prep_row(*args, primary='JUPITER', target='IO') == []
+    rows = prep.prep_row(*args, primary='JUPITER', target='IO', allow_zero_rows=False)
+    assert rows[0][-1] == '-999.000,-999.000'
+
+
+def test_without_pointing_a_null_is_not_unit_converted(
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
+    """A null in degrees with no valid range is written as the null, not -999 x 57.3."""
+    fake_backplane.evaluations[('ring_angular_resolution', 'IO')] = _NO_POINTING
+    column = make_column(key=('ring_angular_resolution', 'IO'),
+                         names=['FINEST_LONGITUDINAL_RESOLUTION',
+                                'COARSEST_LONGITUDINAL_RESOLUTION'],
+                         width=10, print_format='%10.5f')
+    rows = prep.prep_row(_record(record_stub, pointing=False), ['"vol"', '"file"'],
+                         fake_backplane, None, [column], primary='JUPITER', target='IO',
+                         allow_zero_rows=False)
+    assert rows[0][-1] == '-999.00000,-999.00000'
+
+
+def test_without_pointing_any_other_error_is_raised(
+        exists_true: None, record_stub: Callable[..., Record], fake_backplane: Any,
+        make_column: Callable[..., Any]) -> None:
+    """Only the errors of missing pointing are taken to mean a null."""
+    fake_backplane.evaluations[('phase_angle', 'IO')] = RuntimeError('something else')
+    with pytest.raises(RuntimeError, match='something else'):
+        prep.prep_row(_record(record_stub, pointing=False), ['"vol"', '"file"'],
+                      fake_backplane, None, _phase_cols(make_column), primary='JUPITER',
+                      target='IO')
+
+
 def test_excluded_mask_applied_when_not_no_mask(
         exists_true: None, record_stub: Callable[..., Record],
         fake_backplane: Any,
