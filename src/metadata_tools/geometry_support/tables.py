@@ -198,7 +198,8 @@ class RingTable(com.Table):
         """Add a Ring row.
 
         A row is added only when the record has a primary body and that primary
-        has rings; without pointing, its values are null.
+        has rings. Without pointing, each value that needs the pointing is null,
+        while a gridless value that oops can compute is still written.
 
         Parameters:
             record: Record describing the row to add.
@@ -239,7 +240,8 @@ class BodyTable(com.Table):
 
         Each row is sampled across its own body. Without pointing, the bodies
         are those selected regardless of the field of view (the primary, and the
-        target and its system), and each gets a row of null values.
+        target and its system). Each row's values that need the pointing are
+        null, while a gridless value that oops can compute is still written.
 
         Parameters:
             record: Record describing the rows to add; one row is added per
