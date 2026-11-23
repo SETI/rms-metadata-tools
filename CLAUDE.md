@@ -121,7 +121,9 @@ an old release.
   `get_target_name()`, `cleanup()`, `get_border()`, `get_opaque_rings()`, `get_companions()`, `get_extra_children()`, `get_meshgrids()`), which supply
   the defaults.
 - `host_init.py` — initializes the mission's `oops` host package, e.g. `host_galileo.oops` from
-  `rms-host-galileo` (side-effect import).
+  `rms-host-galileo` (side-effect import). **Temporary:** `COISS_xxxx/host_init.py` also
+  furnishes the cruise C kernels (`Cassini/CK-cruise/`), which the SPICE database omits;
+  remove that block, its test, and this note once SETI/rms-host-cassini#42 is released.
 - `templates/` — the host's PDS3 label templates: `host_defs.lbl` (mission keywords plus
   the literal `$ONCE` values the shared templates take from the host: instrument name,
   the noun for one data product (`product`/`products`, e.g. image),

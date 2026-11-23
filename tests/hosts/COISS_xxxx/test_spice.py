@@ -63,6 +63,20 @@ def test_cruise_volumes_have_the_primaries_of_the_earlier_release(sclk: str,
     assert result[0] == primary
 
 
+def test_cruise_kernels_give_pointing() -> None:
+    """The cruise C kernels are furnished, so a cruise image has pointing.
+
+    TEMPORARY: remove with the workaround in host_init.py once
+    SETI/rms-host-cassini#42 is released.
+    """
+    from metadata_tools.hosts.COISS_xxxx import host_init
+    assert len(host_init.CRUISE_CKS) == 31
+    # W1444858008_1 (COISS_1009, 2003-10-14), covered only by 03274_04001rc.bc
+    et = cspyce.scs2e(-82, '1444858005.077')
+    rotation = cspyce.pxform('J2000', 'CASSINI_ISS_WAC', et)
+    assert rotation.shape == (3, 3)
+
+
 @pytest.mark.parametrize(('moon', 'planet'), [('HIMALIA', 'JUPITER'),
                                               ('PHOEBE', 'SATURN')])
 def test_extra_children_join_their_planets(moon: str, planet: str) -> None:
